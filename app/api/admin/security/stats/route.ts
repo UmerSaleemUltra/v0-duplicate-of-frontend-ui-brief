@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { verifyToken } from "@/config/jwt"
-import { getSecurityStats } from "@/lib/security/automated-response"
+import { getSecurityStats, cleanupOldTrackers } from "@/lib/security/automated-response"
 import { connectDB } from "@/lib/db"
 
 export async function GET(req: NextRequest) {
@@ -17,17 +17,14 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
     }
 
+    cleanupOldTrackers()
+
     // Get in-memory security stats
     const stats = getSecurityStats()
 
     // Get recent security logs from database
     const db = await connectDB()
-    const recentLogs = await db
-      .collection("security_logs")
-      .find({})
-      .sort({ timestamp: -1 })
-      .limit(50)
-      .toArray()
+    const recentLogs = await db.collection("security_logs").find({}).sort({ timestamp: -1 }).limit(50).toArray()
 
     // Get blocked IPs count by type
     const threatTypes = await db

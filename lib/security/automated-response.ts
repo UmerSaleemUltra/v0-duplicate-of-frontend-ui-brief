@@ -1,13 +1,13 @@
-import { NextRequest } from "next/server"
+import type { NextRequest } from "next/server"
 import { connectDB } from "@/lib/db"
 
 interface ThreatDetection {
   ip: string
-  type: 'brute_force' | 'sql_injection' | 'xss_attempt' | 'ddos' | 'suspicious_pattern' | 'account_takeover'
-  severity: 'low' | 'medium' | 'high' | 'critical'
+  type: "brute_force" | "sql_injection" | "xss_attempt" | "ddos" | "suspicious_pattern" | "account_takeover"
+  severity: "low" | "medium" | "high" | "critical"
   timestamp: number
   details: any
-  action: 'warn' | 'throttle' | 'block_temporary' | 'block_permanent'
+  action: "warn" | "throttle" | "block_temporary" | "block_permanent"
 }
 
 interface SecurityTracker {
@@ -28,11 +28,11 @@ const SECURITY_CONFIG = {
   MAX_WARNINGS: 3,
   MAX_MEDIUM_VIOLATIONS: 2,
   MAX_HIGH_VIOLATIONS: 1,
-  
+
   // Block durations (in milliseconds)
   TEMPORARY_BLOCK: 30 * 60 * 1000, // 30 minutes
   EXTENDED_BLOCK: 24 * 60 * 60 * 1000, // 24 hours
-  
+
   // Pattern detection
   FAILED_LOGIN_THRESHOLD: 5,
   SQL_INJECTION_PATTERNS: [
@@ -44,7 +44,7 @@ const SECURITY_CONFIG = {
     /UPDATE.*SET/i,
     /--/,
     /;.*--/,
-    /'.*OR.*'.*=/i
+    /'.*OR.*'.*=/i,
   ],
   XSS_PATTERNS: [
     /<script[^>]*>.*<\/script>/i,
@@ -52,16 +52,9 @@ const SECURITY_CONFIG = {
     /on\w+\s*=/i,
     /<iframe/i,
     /eval\(/i,
-    /document\.cookie/i
+    /document\.cookie/i,
   ],
-  SUSPICIOUS_PATHS: [
-    '/admin',
-    '/wp-admin',
-    '/.env',
-    '/config',
-    '/../',
-    '/etc/passwd'
-  ]
+  SUSPICIOUS_PATHS: ["/admin", "/wp-admin", "/.env", "/config", "/../", "/etc/passwd"],
 }
 
 // Detect threats in request
@@ -70,7 +63,7 @@ export async function detectThreats(req: NextRequest): Promise<ThreatDetection |
   const url = new URL(req.url)
   const path = url.pathname
   const query = url.searchParams.toString()
-  
+
   try {
     const body = await req.clone().text()
     const fullContent = `${path} ${query} ${body}`.toLowerCase()
@@ -80,11 +73,11 @@ export async function detectThreats(req: NextRequest): Promise<ThreatDetection |
       if (pattern.test(fullContent)) {
         return {
           ip,
-          type: 'sql_injection',
-          severity: 'critical',
+          type: "sql_injection",
+          severity: "critical",
           timestamp: Date.now(),
           details: { pattern: pattern.toString(), path, query },
-          action: 'block_permanent'
+          action: "block_permanent",
         }
       }
     }
@@ -94,11 +87,11 @@ export async function detectThreats(req: NextRequest): Promise<ThreatDetection |
       if (pattern.test(fullContent)) {
         return {
           ip,
-          type: 'xss_attempt',
-          severity: 'high',
+          type: "xss_attempt",
+          severity: "high",
           timestamp: Date.now(),
           details: { pattern: pattern.toString(), path, query },
-          action: 'block_temporary'
+          action: "block_temporary",
         }
       }
     }
@@ -108,27 +101,27 @@ export async function detectThreats(req: NextRequest): Promise<ThreatDetection |
       if (path.includes(suspiciousPath)) {
         return {
           ip,
-          type: 'suspicious_pattern',
-          severity: 'medium',
+          type: "suspicious_pattern",
+          severity: "medium",
           timestamp: Date.now(),
           details: { path, suspiciousPath },
-          action: 'throttle'
+          action: "throttle",
         }
       }
     }
 
     // Check for unusually long payloads (potential overflow attacks)
-    if (body.length > 1000000) { // 1MB
+    if (body.length > 1000000) {
+      // 1MB
       return {
         ip,
-        type: 'suspicious_pattern',
-        severity: 'medium',
+        type: "suspicious_pattern",
+        severity: "medium",
         timestamp: Date.now(),
         details: { payloadSize: body.length },
-        action: 'throttle'
+        action: "throttle",
       }
     }
-
   } catch (error) {
     // Cannot read body, skip content inspection
   }
@@ -139,7 +132,7 @@ export async function detectThreats(req: NextRequest): Promise<ThreatDetection |
 // Take automated action based on threat
 export async function respondToThreat(threat: ThreatDetection) {
   const { ip, type, severity, action } = threat
-  
+
   let tracker = securityTrackers.get(ip)
   if (!tracker) {
     tracker = {
@@ -147,7 +140,7 @@ export async function respondToThreat(threat: ThreatDetection) {
       violations: [],
       blocked: false,
       permanentBlock: false,
-      warningCount: 0
+      warningCount: 0,
     }
     securityTrackers.set(ip, tracker)
   }
@@ -158,20 +151,20 @@ export async function respondToThreat(threat: ThreatDetection) {
   // Log to database
   try {
     const db = await connectDB()
-    await db.collection('security_logs').insertOne({
+    await db.collection("security_logs").insertOne({
       ...threat,
-      timestamp: new Date(threat.timestamp)
+      timestamp: new Date(threat.timestamp),
     })
   } catch (error) {
-    console.error('[SECURITY] Failed to log threat:', error)
+    console.error("[SECURITY] Failed to log threat:", error)
   }
 
   // Take action based on severity and violation history
   switch (action) {
-    case 'warn':
+    case "warn":
       tracker.warningCount++
       console.warn(`[SECURITY] Warning #${tracker.warningCount} for IP ${ip}: ${type}`)
-      
+
       if (tracker.warningCount >= SECURITY_CONFIG.MAX_WARNINGS) {
         tracker.blocked = true
         tracker.blockedUntil = Date.now() + SECURITY_CONFIG.TEMPORARY_BLOCK
@@ -179,19 +172,21 @@ export async function respondToThreat(threat: ThreatDetection) {
       }
       break
 
-    case 'throttle':
+    case "throttle":
       tracker.blocked = true
       tracker.blockedUntil = Date.now() + SECURITY_CONFIG.TEMPORARY_BLOCK
       console.error(`[SECURITY] IP ${ip} temporarily blocked for ${type}`)
       break
 
-    case 'block_temporary':
-      const highViolations = tracker.violations.filter(v => v.severity === 'high' || v.severity === 'critical')
-      
+    case "block_temporary":
+      const highViolations = tracker.violations.filter((v) => v.severity === "high" || v.severity === "critical")
+
       if (highViolations.length >= SECURITY_CONFIG.MAX_HIGH_VIOLATIONS) {
         tracker.blocked = true
         tracker.blockedUntil = Date.now() + SECURITY_CONFIG.EXTENDED_BLOCK
-        console.error(`[SECURITY] IP ${ip} blocked for 24 hours after ${highViolations.length} high-severity violations`)
+        console.error(
+          `[SECURITY] IP ${ip} blocked for 24 hours after ${highViolations.length} high-severity violations`,
+        )
       } else {
         tracker.blocked = true
         tracker.blockedUntil = Date.now() + SECURITY_CONFIG.TEMPORARY_BLOCK
@@ -199,12 +194,12 @@ export async function respondToThreat(threat: ThreatDetection) {
       }
       break
 
-    case 'block_permanent':
+    case "block_permanent":
       tracker.permanentBlock = true
       tracker.blocked = true
       permanentBlocklist.add(ip)
       console.error(`[SECURITY] IP ${ip} PERMANENTLY BLOCKED for ${type} (CRITICAL)`)
-      
+
       // Alert admins (could send email/notification here)
       await alertAdmins(threat)
       break
@@ -217,9 +212,9 @@ export async function respondToThreat(threat: ThreatDetection) {
 export function isBlocked(ip: string): { blocked: boolean; reason?: string; unblockTime?: number } {
   // Check permanent blocklist
   if (permanentBlocklist.has(ip)) {
-    return { 
-      blocked: true, 
-      reason: 'Permanently blocked due to critical security violation' 
+    return {
+      blocked: true,
+      reason: "Permanently blocked due to critical security violation",
     }
   }
 
@@ -229,18 +224,18 @@ export function isBlocked(ip: string): { blocked: boolean; reason?: string; unbl
   }
 
   if (tracker.permanentBlock) {
-    return { 
-      blocked: true, 
-      reason: 'Permanently blocked due to critical security violation' 
+    return {
+      blocked: true,
+      reason: "Permanently blocked due to critical security violation",
     }
   }
 
   if (tracker.blocked && tracker.blockedUntil) {
     if (Date.now() < tracker.blockedUntil) {
-      return { 
-        blocked: true, 
-        reason: 'Temporarily blocked due to suspicious activity',
-        unblockTime: tracker.blockedUntil
+      return {
+        blocked: true,
+        reason: "Temporarily blocked due to suspicious activity",
+        unblockTime: tracker.blockedUntil,
       }
     } else {
       // Unblock after duration
@@ -260,7 +255,7 @@ async function alertAdmins(threat: ThreatDetection) {
     type: threat.type,
     severity: threat.severity,
     details: threat.details,
-    timestamp: new Date(threat.timestamp).toISOString()
+    timestamp: new Date(threat.timestamp).toISOString(),
   })
 
   // TODO: Send email/SMS/Slack notification to admins
@@ -286,7 +281,7 @@ export function getSecurityStats() {
     totalTracked: securityTrackers.size,
     permanentBlocks: permanentBlocklist.size,
     temporaryBlocks: 0,
-    recentViolations: [] as ThreatDetection[]
+    recentViolations: [] as ThreatDetection[],
   }
 
   const now = Date.now()
@@ -300,17 +295,17 @@ export function getSecurityStats() {
   return stats
 }
 
-// Cleanup old trackers every hour
-setInterval(() => {
+// Cleanup old trackers on-demand
+export function cleanupOldTrackers() {
   const now = Date.now()
   const oneHourAgo = now - 3600000
 
   for (const [ip, tracker] of securityTrackers.entries()) {
     if (!tracker.blocked && !tracker.permanentBlock) {
-      const hasRecentViolation = tracker.violations.some(v => v.timestamp > oneHourAgo)
+      const hasRecentViolation = tracker.violations.some((v) => v.timestamp > oneHourAgo)
       if (!hasRecentViolation) {
         securityTrackers.delete(ip)
       }
     }
   }
-}, 3600000)
+}
