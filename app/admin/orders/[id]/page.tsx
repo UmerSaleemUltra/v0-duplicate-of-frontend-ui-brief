@@ -1,0 +1,3288 @@
+"use client"
+
+import { Switch } from "@/components/ui/switch"
+
+import type React from "react"
+
+import { useEffect, useState, useCallback } from "react"
+import { useParams, useRouter } from "next/navigation"
+import { ApiClient } from "@/lib/api-client"
+import { authService } from "@/lib/auth"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import {
+  ArrowLeft,
+  Package,
+  User,
+  Building2,
+  CreditCard,
+  FileText,
+  CheckCircle2,
+  Clock,
+  AlertCircle,
+  Download,
+  Edit,
+  Upload,
+  Hash,
+  UserCheck,
+  Home,
+  FileCheck,
+  HashIcon,
+  FileBarChart,
+  Users,
+  Briefcase,
+  ShoppingCart,
+  Loader2,
+  Eye,
+  MapPin,
+  Trash2,
+} from "lucide-react"
+import { useToast } from "@/hooks/use-toast"
+import { useAuthGuard } from "@/lib/use-auth-guard"
+import { CompanyDetailsModal } from "@/components/modals/company-details-modal"
+
+const getDisplayValue = (value: any, defaultValue = "N/A"): string => {
+  if (value === null || value === undefined || value === "") return defaultValue
+  if (typeof value === "string" && value.trim() === "") return defaultValue
+  return String(value)
+}
+
+const formatEIN = (ein: string | undefined, includeHyphen = false): string => {
+  if (!ein || ein === "N/A") return "N/A"
+  const cleaned = ein.replace(/[^0-9]/g, "")
+  if (cleaned.length === 9) {
+    return includeHyphen ? `${cleaned.substring(0, 2)}-${cleaned.substring(2, 9)}` : cleaned
+  }
+  return ein
+}
+
+const formatBusinessId = (businessId: string | undefined): string => {
+  if (!businessId || businessId === "N/A") return "N/A"
+  return businessId.toUpperCase()
+}
+
+const getWeeksSinceOrder = (createdAt: string | undefined): number => {
+  if (!createdAt) return 0
+  const orderDate = new Date(createdAt)
+  const now = new Date()
+  const diffTime = Math.abs(now.getTime() - orderDate.getTime())
+  const diffWeeks = Math.floor(diffTime / (1000 * 60 * 60 * 24 * 7))
+  return diffWeeks
+}
+
+export default function OrderDetailPage() {
+  const router = useRouter()
+  const { toast } = useToast()
+  const { isAuthenticated, isLoading: authLoading } = useAuthGuard("admin")
+
+  const orderParams = useParams()
+  const orderId = orderParams?.id as string
+
+  const [order, setOrder] = useState<any>(null)
+  const [customer, setCustomer] = useState<any>(null)
+  const [company, setCompany] = useState<any>(null)
+  const [newStatus, setNewStatus] = useState("")
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+  const [addons, setAddons] = useState<any[]>([])
+  const [passportDocuments, setPassportDocuments] = useState<any[]>([])
+  const [passportUrls, setPassportUrls] = useState<string[]>([])
+  const [user, setUser] = useState<any>(null)
+
+  const [editingSection, setEditingSection] = useState<string | null>(null)
+
+  const [statusUpdating, setStatusUpdating] = useState(false)
+  const [agentUpdating, setAgentUpdating] = useState(false)
+  const [addressUpdating, setAddressUpdating] = useState(false)
+  const [einUpdating, setEinUpdating] = useState(false)
+  const [itinUpdating, setItinUpdating] = useState(false)
+  const [businessIdUpdating, setBusinessIdUpdating] = useState(false)
+  const [docUploading, setDocUploading] = useState(false)
+  const [milestoneUpdating, setMilestoneUpdating] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleting, setDeleting] = useState(false)
+
+  const [registeredAgentDialogOpen, setRegisteredAgentDialogOpen] = useState(false)
+  const [mailingAddressDialogOpen, setMailingAddressDialogOpen] = useState(false)
+  const [einDialogOpen, setEinDialogOpen] = useState(false)
+  const [itinDialogOpen, setItinDialogOpen] = useState(false)
+  const [businessIdDialogOpen, setBusinessIdDialogOpen] = useState(false)
+  const [uploadDocDialogOpen, setUploadDocDialogOpen] = useState(false)
+  const [milestonesDialogOpen, setMilestonesDialogOpen] = useState(false)
+  const [customMilestoneDialogOpen, setCustomMilestoneDialogOpen] = useState(false)
+
+  const [einValue, setEinValue] = useState("")
+  const [itinValue, setItinValue] = useState("")
+  const [businessIdValue, setBusinessIdValue] = useState("")
+  const [newMilestoneTitle, setNewMilestoneTitle] = useState("")
+  const [newMilestoneDescription, setNewMilestoneDescription] = useState("")
+  const [uploadDocType, setUploadDocType] = useState("general")
+
+  const [mailingAddress, setMailingAddress] = useState({
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+  })
+
+  const [agentForm, setAgentForm] = useState({
+    name: "",
+    company: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    phone: "",
+    email: "",
+    servicePeriod: "1 Year",
+  })
+
+  const [milestones, setMilestones] = useState({
+    orderProcessed: false,
+    registeredAgentAssigned: false,
+    mailingAddressIssued: false,
+    formationCompleted: false,
+    einProcessed: false,
+    boiReportFiled: false,
+  })
+
+  const [companyModalOpen, setCompanyModalOpen] = useState(false)
+  const [selectedCompany, setSelectedCompany] = useState<any>(null)
+
+  const hasEIN =
+    company?.ein &&
+    company.ein.trim() !== "" &&
+    company.ein !== "Pending" &&
+    company.ein !== "pending" &&
+    company.ein !== "N/A"
+
+  const hasBusinessId =
+    company?.businessId &&
+    company.businessId.trim() !== "" &&
+    !company.businessId.includes("PENDING") &&
+    company.businessId !== "BIZ-PENDING" &&
+    company.businessId !== "N/A"
+
+  const hasRegisteredAgent = company?.registeredAgent?.name && company.registeredAgent?.name.trim() !== ""
+
+  const hasMailingAddress =
+    company?.mailingAddress?.street &&
+    company.mailingAddress?.city &&
+    company.mailingAddress?.state &&
+    company.mailingAddress?.zip
+
+  const weeksSinceOrder = getWeeksSinceOrder(order?.createdAt)
+  const isOverdue = weeksSinceOrder >= 7
+
+  const getAddonName = (addonId: string) => {
+    const addon = addons.find((a) => a.id === addonId)
+    if (addon) return addon.name
+
+    if (addonId.startsWith("itin-")) return "ITIN Application"
+    if (addonId === "reseller-certificate") return "Reseller Certificate"
+    if (addonId === "business-website") return "Business Website"
+
+    return addonId
+  }
+
+  const handleAddCustomMilestone = async () => {
+    if (!newMilestoneTitle || !company) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a milestone title",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const newMilestone = {
+        id: Date.now().toString(),
+        title: newMilestoneTitle,
+        description: newMilestoneDescription || "",
+        completed: false,
+        createdAt: new Date().toISOString(),
+      }
+
+      const updatedCustomMilestones = [...(company.customMilestones || []), newMilestone]
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customMilestones: updatedCustomMilestones,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to add custom milestone")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setCustomMilestoneDialogOpen(false)
+
+      setNewMilestoneTitle("")
+      setNewMilestoneDescription("")
+
+      toast({
+        title: "Custom Milestone Added",
+        description: `Successfully added "${newMilestone.title}"`,
+      })
+    } catch (error) {
+      console.log("[v0] Error adding custom milestone:", error)
+      toast({
+        title: "Add Failed",
+        description: "Failed to add custom milestone. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleCustomMilestoneToggle = async (milestoneId: string) => {
+    if (!company) return
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      // Store previous state for rollback
+      const previousCompany = { ...company }
+
+      // Optimistic update
+      const updatedCustomMilestones = (company.customMilestones || []).map((m: any) =>
+        m.id === milestoneId
+          ? { ...m, completed: !m.completed, completedAt: !m.completed ? new Date().toISOString() : undefined }
+          : m,
+      )
+
+      setCompany({
+        ...company,
+        customMilestones: updatedCustomMilestones,
+      })
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customMilestones: updatedCustomMilestones,
+        }),
+      })
+
+      if (!response.ok) {
+        // Revert on failure
+        setCompany(previousCompany)
+        throw new Error("Failed to update custom milestone")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+
+      const milestone = updatedCustomMilestones.find((m) => m.id === milestoneId)
+      toast({
+        title: "Milestone Updated",
+        description: `${milestone?.title} has been ${milestone?.completed ? "completed" : "uncompleted"}`,
+      })
+    } catch (error) {
+      console.log("[v0] Error updating custom milestone:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update custom milestone. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const loadOrderData = useCallback(async () => {
+    if (!orderId) {
+      setError("Invalid order ID")
+      setLoading(false)
+      return
+    }
+
+    try {
+      setLoading(true)
+      const token = authService.getToken()
+
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      console.log("[v0] Loading order data for ID:", orderId)
+      const result = await ApiClient.orders.getById(orderId, token)
+
+      if (result.success && result.data) {
+        const orderData = result.data
+        console.log("[v0] Order data loaded successfully:", orderData)
+
+        setOrder(orderData)
+        setCompany(orderData.company)
+        setCustomer(orderData.user)
+        setUser(orderData.user)
+        setPassportDocuments(orderData.passportDocuments || [])
+
+        if (orderData.company?.milestones) {
+          console.log("[v0] Initializing milestones from company data:", orderData.company.milestones)
+          setMilestones({
+            orderProcessed: orderData.company.milestones.orderProcessed || false,
+            registeredAgentAssigned: orderData.company.milestones.registeredAgentAssigned || false,
+            mailingAddressIssued: orderData.company.milestones.mailingAddressIssued || false,
+            formationCompleted: orderData.company.milestones.formationCompleted || false,
+            einProcessed: orderData.company.milestones.einProcessed || false,
+            boiReportFiled: orderData.company.milestones.boiReportFiled || false,
+          })
+        } else {
+          // Initialize with default false values if no milestones exist
+          setMilestones({
+            orderProcessed: false,
+            registeredAgentAssigned: false,
+            mailingAddressIssued: false,
+            formationCompleted: false,
+            einProcessed: false,
+            boiReportFiled: false,
+          })
+        }
+
+        if (orderData.company?.registeredAgent) {
+          const agent = orderData.company.registeredAgent
+          console.log("[v0] Pre-populating registered agent form:", agent)
+          setAgentForm({
+            name: agent.name || "",
+            company: agent.company || "",
+            address: agent.address || "",
+            city: agent.city || "",
+            state: agent.state || "",
+            zip: agent.zip || "",
+            phone: agent.phone || "",
+            email: agent.email || "",
+            servicePeriod: agent.servicePeriod || "1 Year",
+          })
+        }
+
+        if (orderData.company?.mailingAddress) {
+          const address = orderData.company.mailingAddress
+          console.log("[v0] Pre-populating mailing address form:", address)
+          setMailingAddress({
+            street: address.street || "",
+            city: address.city || "",
+            state: address.state || "",
+            zip: address.zip || "",
+          })
+        }
+
+        const orderAddons = orderData.purchasedAddons || orderData.selectedAddons || []
+        const companyAddons = orderData.company?.purchasedAddons || []
+
+        const allAddons = [...orderAddons]
+        companyAddons.forEach((companyAddon: any) => {
+          const addonId = typeof companyAddon === "object" ? companyAddon.serviceId : companyAddon
+          const alreadyExists = allAddons.some((orderAddon: any) => {
+            const orderAddonId = typeof orderAddon === "object" ? orderAddon.serviceId : orderAddon
+            return orderAddonId === addonId
+          })
+          if (!alreadyExists) {
+            allAddons.push(companyAddon)
+          }
+        })
+
+        setAddons(allAddons)
+        setNewStatus(orderData.status || "")
+        setError(null)
+      } else {
+        setError("Failed to load order data")
+        toast({
+          title: "Error",
+          description: "Failed to load order data",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("[v0] Error loading order data:", error)
+      setError("Failed to load order")
+      toast({
+        title: "Error",
+        description: "Failed to load order details",
+        variant: "destructive",
+      })
+    } finally {
+      setLoading(false)
+    }
+  }, [orderId, router, toast])
+
+  useEffect(() => {
+    if (isAuthenticated && orderId) {
+      loadOrderData()
+    } else if (!authLoading && !isAuthenticated) {
+      router.push("/login")
+    }
+  }, [orderId, isAuthenticated, authLoading, loadOrderData, router])
+
+  // Milestones are now initialized directly in loadOrderData
+
+  const handleStatusUpdate = async () => {
+    if (!order || !newStatus) return
+
+    setStatusUpdating(true)
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/orders/${order.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update order status")
+      }
+
+      const result = await response.json()
+      setOrder(result.data)
+
+      toast({
+        title: "Status Updated",
+        description: `Order status changed to ${newStatus}`,
+      })
+    } catch (error) {
+      console.log("[v0] Error updating status:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update order status. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setStatusUpdating(false)
+    }
+  }
+
+  const handleMilestoneToggle = async (milestone: keyof typeof milestones) => {
+    if (!company || milestoneUpdating) return
+
+    // Store previous state before any updates
+    const previousMilestones = { ...milestones }
+    const isTogglingOn = !milestones[milestone]
+
+    if (!isTogglingOn && company.id) {
+      const celebrationKey = `celebration_shown_${company.id}`
+      localStorage.removeItem(celebrationKey)
+      console.log("[v0] Cleared celebration flag - milestone toggled off")
+    }
+
+    // Optimistic update - immediately update UI
+    const optimisticMilestones = {
+      ...previousMilestones,
+      [milestone]: isTogglingOn,
+    }
+
+    setMilestones(optimisticMilestones)
+    setMilestoneUpdating(true)
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        // Revert on auth failure
+        setMilestones(previousMilestones)
+        setMilestoneUpdating(false)
+        router.push("/login")
+        return
+      }
+
+      console.log("[v0] Updating milestone:", milestone, "to:", isTogglingOn)
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          milestones: optimisticMilestones,
+        }),
+      })
+
+      if (!response.ok) {
+        // Revert on API failure
+        setMilestones(previousMilestones)
+        setMilestoneUpdating(false)
+        throw new Error("Failed to update milestone")
+      }
+
+      const result = await response.json()
+
+      console.log("[v0] Milestone update successful:", result.data)
+
+      if (result.data?.milestones) {
+        setMilestones(result.data.milestones)
+        setCompany(result.data)
+      } else {
+        // If API doesn't return milestones, keep optimistic state
+        console.log("[v0] API didn't return milestones, keeping optimistic state")
+      }
+
+      toast({
+        title: "Milestone Updated",
+        description: `${milestone} has been ${isTogglingOn ? "completed" : "uncompleted"}`,
+      })
+    } catch (error) {
+      console.error("[v0] Error updating milestone:", error)
+      // Revert to previous state on error
+      setMilestones(previousMilestones)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update milestone. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setMilestoneUpdating(false)
+    }
+  }
+
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !company) return
+
+    setDocUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("type", uploadDocType)
+      formData.append("companyId", company.id)
+      formData.append("userId", customer?.id || "")
+      formData.append("orderId", order?.id || "")
+
+      const response = await fetch("/api/documents", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to upload document")
+      }
+
+      toast({
+        title: "Document Uploaded",
+        description: `${file.name} has been uploaded successfully`,
+      })
+
+      setUploadDocDialogOpen(false)
+
+      await loadOrderData()
+
+      const titleLower = file.name.toLowerCase()
+      const updatedMilestones = { ...milestones }
+
+      if (titleLower.includes("articles") || titleLower.includes("organization")) {
+        updatedMilestones.orderProcessed = true
+      }
+      if (titleLower.includes("registered agent") || titleLower.includes("agent appointed")) {
+        updatedMilestones.registeredAgentAssigned = true
+      }
+      if (titleLower.includes("address") || titleLower.includes("mailing")) {
+        updatedMilestones.mailingAddressIssued = true
+      }
+      if (titleLower.includes("formation") || titleLower.includes("certificate")) {
+        updatedMilestones.formationCompleted = true
+      }
+      if (titleLower.includes("ein") || titleLower.includes("tax id")) {
+        updatedMilestones.einProcessed = true
+      }
+      if (titleLower.includes("boi") || titleLower.includes("beneficial ownership")) {
+        updatedMilestones.boiReportFiled = true
+      }
+
+      const milestonesChanged = Object.keys(updatedMilestones).some(
+        (key) =>
+          updatedMilestones[key as keyof typeof updatedMilestones] !== milestones[key as keyof typeof milestones],
+      )
+
+      if (milestonesChanged) {
+        const milestoneUpdateResponse = await fetch(`/api/companies/${company.id}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${authService.getToken()}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ milestones: updatedMilestones }),
+        })
+
+        if (milestoneUpdateResponse.ok) {
+          const milestoneResult = await milestoneUpdateResponse.json()
+          setMilestones(updatedMilestones)
+          setCompany(milestoneResult.data)
+
+          toast({
+            title: "Milestones Auto-Updated",
+            description: "Formation progress updated based on document type",
+          })
+        }
+      }
+    } catch (error) {
+      console.log("[v0] Error uploading document:", error)
+      toast({
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "Failed to upload document. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setDocUploading(false)
+      const fileInput = document.getElementById("documentFile") as HTMLInputElement | null
+      if (fileInput) fileInput.value = ""
+    }
+  }
+
+  const handleAssignRegisteredAgent = async () => {
+    if (!company) {
+      toast({
+        title: "Error",
+        description: "Company information not available",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!agentForm.name || !agentForm.name.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Agent name is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!agentForm.address || !agentForm.address.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Agent address is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setAgentUpdating(true)
+    try {
+      console.log("[v0] Assigning registered agent:", agentForm)
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          registeredAgent: {
+            name: agentForm.name.trim(),
+            company: agentForm.company.trim(),
+            address: agentForm.address.trim(),
+            city: agentForm.city.trim(),
+            state: agentForm.state.trim(),
+            zip: agentForm.zip.trim(),
+            phone: agentForm.phone.trim(),
+            email: agentForm.email.trim(),
+            servicePeriod: agentForm.servicePeriod,
+            status: "Active",
+          },
+          milestones: {
+            ...milestones,
+            registeredAgentAssigned: true,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to assign registered agent")
+      }
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] Registered agent assigned successfully:", updatedCompany.registeredAgent)
+
+      setCompany(updatedCompany)
+      setMilestones(updatedCompany.milestones || { ...milestones, registeredAgentAssigned: true })
+      setRegisteredAgentDialogOpen(false)
+
+      toast({
+        title: "Registered Agent Assigned",
+        description: "Registered agent has been successfully assigned to the company",
+      })
+    } catch (error) {
+      console.error("[v0] Error assigning registered agent:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to assign registered agent. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAgentUpdating(false)
+    }
+  }
+
+  const handleAssignMailingAddress = async () => {
+    if (!company) {
+      toast({
+        title: "Error",
+        description: "Company information not available",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!mailingAddress.street || !mailingAddress.street.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Street address is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!mailingAddress.city || !mailingAddress.city.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "City is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!mailingAddress.state || !mailingAddress.state.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "State is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!mailingAddress.zip || !mailingAddress.zip.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "ZIP code is required",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setAddressUpdating(true)
+    try {
+      console.log("[v0] Assigning mailing address:", mailingAddress)
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          mailingAddress: {
+            street: mailingAddress.street.trim(),
+            city: mailingAddress.city.trim(),
+            state: mailingAddress.state.trim(),
+            zip: mailingAddress.zip.trim(),
+          },
+          milestones: {
+            ...milestones,
+            mailingAddressIssued: true,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to assign mailing address")
+      }
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] Mailing address assigned successfully:", updatedCompany.mailingAddress)
+
+      setCompany(updatedCompany)
+      setMilestones(updatedCompany.milestones || { ...milestones, mailingAddressIssued: true })
+      setMailingAddressDialogOpen(false)
+
+      toast({
+        title: "Mailing Address Assigned",
+        description: "Mailing address has been successfully assigned to the company",
+      })
+    } catch (error) {
+      console.error("[v0] Error assigning mailing address:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to assign mailing address. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAddressUpdating(false)
+    }
+  }
+
+  const handleAssignEIN = async () => {
+    if (!company || !einValue.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a valid EIN",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setEinUpdating(true)
+    try {
+      console.log("[v0] Assigning EIN:", einValue)
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          ein: einValue.trim(),
+          milestones: {
+            ...milestones,
+            einProcessed: true,
+          },
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to assign EIN")
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] EIN assigned successfully")
+
+      setCompany(updatedCompany)
+      setMilestones(updatedCompany.milestones || { ...milestones, einProcessed: true })
+      setEinDialogOpen(false)
+      setEinValue("")
+
+      toast({
+        title: "EIN Assigned",
+        description: "EIN has been successfully assigned to the company",
+      })
+    } catch (error) {
+      console.error("[v0] Error assigning EIN:", error)
+      toast({
+        title: "Error",
+        description: "Failed to assign EIN. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setEinUpdating(false)
+    }
+  }
+
+  const handleAssignITIN = async () => {
+    if (!company || !itinValue.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a valid ITIN",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setItinUpdating(true)
+    try {
+      console.log("[v0] Assigning ITIN:", itinValue)
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          itin: itinValue.trim(),
+          // ITIN assignment doesn't directly correspond to a core milestone,
+          // but could be tied to a custom one if needed.
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to assign ITIN")
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] ITIN assigned successfully")
+
+      setCompany(updatedCompany)
+      setItinDialogOpen(false)
+      setItinValue("")
+
+      toast({
+        title: "ITIN Assigned",
+        description: "ITIN has been successfully assigned to the company",
+      })
+    } catch (error) {
+      console.error("[v0] Error assigning ITIN:", error)
+      toast({
+        title: "Error",
+        description: "Failed to assign ITIN. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setItinUpdating(false)
+    }
+  }
+
+  const handleAssignBusinessId = async () => {
+    if (!company || !businessIdValue.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a valid Business ID",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setBusinessIdUpdating(true)
+    try {
+      console.log("[v0] Assigning Business ID:", businessIdValue)
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          businessId: businessIdValue.trim(),
+          milestones: {
+            ...milestones,
+            formationCompleted: true,
+          },
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to assign Business ID")
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] Business ID assigned successfully")
+
+      setCompany(updatedCompany)
+      setMilestones(updatedCompany.milestones || { ...milestones, formationCompleted: true })
+      setBusinessIdDialogOpen(false)
+      setBusinessIdValue("")
+
+      toast({
+        title: "Business ID Assigned",
+        description: "Business ID has been successfully assigned to the company",
+      })
+    } catch (error) {
+      console.error("[v0] Error assigning Business ID:", error)
+      toast({
+        title: "Error",
+        description: "Failed to assign Business ID. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setBusinessIdUpdating(false)
+    }
+  }
+
+  const handleCompanyInfoUpdate = async (field: string) => {
+    if (!company) return
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const input = document.getElementById(field) as HTMLInputElement | HTMLTextAreaElement
+      if (!input) return
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          [field]: input.value,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update company info")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+
+      toast({
+        title: "Company Updated",
+        description: `${field} has been updated`,
+      })
+    } catch (error) {
+      console.log("[v0] Error updating company info:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update company info. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteOrder = async () => {
+    setDeleting(true)
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Authentication required",
+          variant: "destructive",
+        })
+        return
+      }
+
+      await ApiClient.orders.delete(order.id, token)
+
+      toast({
+        title: "Success",
+        description: "Order deleted successfully",
+      })
+
+      setDeleteDialogOpen(false)
+      router.push("/admin/orders")
+    } catch (error) {
+      console.log("[v0] Error deleting order:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete order",
+        variant: "destructive",
+      })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
+  const handleCloseRegisteredAgentDialog = () => {
+    setRegisteredAgentDialogOpen(false)
+    // Don't reset form - keep it populated for easy re-editing
+  }
+
+  const handleCloseMailingAddressDialog = () => {
+    setMailingAddressDialogOpen(false)
+    // Don't reset form - keep it populated for easy re-editing
+  }
+
+  const handleCloseEinDialog = () => {
+    setEinDialogOpen(false)
+    setEinValue("")
+  }
+
+  const handleCloseItinDialog = () => {
+    setItinDialogOpen(false)
+    setItinValue("")
+  }
+
+  const handleCloseBusinessIdDialog = () => {
+    setBusinessIdDialogOpen(false)
+    setBusinessIdValue("")
+  }
+
+  const handleCloseCustomMilestoneDialog = () => {
+    setCustomMilestoneDialogOpen(false)
+    setNewMilestoneTitle("")
+    setNewMilestoneDescription("")
+  }
+
+  // Initial loading states
+  if (authLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
+          <p className="text-slate-600">Authenticating...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Redirect if not authenticated
+  if (!isAuthenticated) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">Access Denied</h2>
+          <p className="text-slate-600 mb-4">You are not authorized to view this page.</p>
+          <Button onClick={() => router.push("/login")} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+            Go to Login
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Loading state for order data
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+          <p className="text-slate-600">Loading order details...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error or order not found state
+  if (error || !order) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <AlertCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+          <h2 className="text-xl font-semibold text-slate-900 mb-2">{error || "Order Not Found"}</h2>
+          <p className="text-slate-600 mb-4">The order you're looking for doesn't exist.</p>
+          <Button onClick={() => router.push("/admin/orders")} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Back to Orders
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // Helper function to get status color
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200"
+      case "processing":
+        return "bg-blue-50 text-blue-700 border-blue-200"
+      case "pending":
+        return "bg-amber-50 text-amber-700 border-amber-200"
+      default:
+        return "bg-slate-50 text-slate-700 border-slate-200"
+    }
+  }
+
+  // Helper function to get status icon
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle2 className="w-4 h-4" />
+      case "processing":
+        return <Clock className="w-4 h-4" />
+      case "pending":
+        return <AlertCircle className="w-4 h-4" />
+      default:
+        return null
+    }
+  }
+
+  // Milestone progress calculation
+  const completedDefaultMilestones = Object.values(milestones).filter(Boolean).length
+  const totalDefaultMilestones = Object.keys(milestones).length
+  const completionPercentage =
+    totalDefaultMilestones > 0 ? Math.round((completedDefaultMilestones / totalDefaultMilestones) * 100) : 0
+
+  const totalMilestonesWithCustom = totalDefaultMilestones + (company?.customMilestones?.length || 0)
+  const completedMilestonesWithCustom =
+    completedDefaultMilestones + (company?.customMilestones?.filter((m: any) => m.completed).length || 0)
+
+  const handleViewCompanyDetails = () => {
+    if (!company || !company.id) {
+      toast({
+        title: "Error",
+        description: "Company information is not available for this order.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setSelectedCompany(company)
+    setCompanyModalOpen(true)
+  }
+
+  const handleRemoveEIN = async () => {
+    if (!company) return
+
+    setEinUpdating(true)
+    try {
+      console.log("[v0] Removing EIN")
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          ein: null,
+          milestones: {
+            ...milestones,
+            einProcessed: false,
+          },
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to remove EIN")
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] EIN removed successfully")
+
+      setCompany(updatedCompany)
+      setMilestones(updatedCompany.milestones || { ...milestones, einProcessed: false })
+
+      toast({
+        title: "EIN Removed",
+        description: "EIN has been successfully removed from the company",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error removing EIN:", error)
+      toast({
+        title: "Error",
+        description: "Failed to remove EIN. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setEinUpdating(false)
+    }
+  }
+
+  const handleRemoveITIN = async () => {
+    if (!company) return
+
+    setItinUpdating(true)
+    try {
+      console.log("[v0] Removing ITIN")
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          itin: null,
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to remove ITIN")
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] ITIN removed successfully")
+
+      setCompany(updatedCompany)
+
+      toast({
+        title: "ITIN Removed",
+        description: "ITIN has been successfully removed from the company",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error removing ITIN:", error)
+      toast({
+        title: "Error",
+        description: "Failed to remove ITIN. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setItinUpdating(false)
+    }
+  }
+
+  const handleRemoveBusinessId = async () => {
+    if (!company) return
+
+    setBusinessIdUpdating(true)
+    try {
+      console.log("[v0] Removing Business ID")
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          businessId: null,
+          milestones: {
+            ...milestones,
+            formationCompleted: false,
+          },
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to remove Business ID")
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] Business ID removed successfully")
+
+      setCompany(updatedCompany)
+      setMilestones(updatedCompany.milestones || { ...milestones, formationCompleted: false })
+
+      toast({
+        title: "Business ID Removed",
+        description: "Business ID has been successfully removed from the company",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error removing Business ID:", error)
+      toast({
+        title: "Error",
+        description: "Failed to remove Business ID. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setBusinessIdUpdating(false)
+    }
+  }
+
+  return (
+    <div className="space-y-8">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => router.push("/admin/orders")}
+            className="h-10 w-10 p-0 bg-transparent"
+          >
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className="text-3xl font-semibold text-slate-900">Order Details</h1>
+            <p className="text-slate-600 mt-1">Order ID: {order.id}</p>
+          </div>
+        </div>
+        <div className="flex gap-3">
+          <Button
+            variant="outline"
+            className="h-10 gap-2 bg-transparent"
+            onClick={handleViewCompanyDetails}
+            disabled={!company || !company.id}
+          >
+            <Eye className="w-4 h-4" />
+            View Company Details
+          </Button>
+        </div>
+      </div>
+
+      <div className="grid lg:grid-cols-3 gap-8">
+        {/* Main Content */}
+        <div className="lg:col-span-2 space-y-8">
+          {/* Order Status */}
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                Order Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Current Status</p>
+                  <Badge className={`${getStatusColor(order.status)} text-sm`}>
+                    {getStatusIcon(order.status)}
+                    <span className="ml-1 capitalize">{order.status}</span>
+                  </Badge>
+                </div>
+                <div className="flex items-center gap-3">
+                  <Select value={newStatus} onValueChange={setNewStatus}>
+                    <SelectTrigger className="w-[180px] h-10">
+                      <SelectValue placeholder="Update status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="processing">Processing</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button
+                    onClick={handleStatusUpdate}
+                    disabled={newStatus === order.status || statusUpdating}
+                    className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                  >
+                    {statusUpdating ? "Updating..." : "Update Status"}
+                  </Button>
+                </div>
+              </div>
+
+              {/* Timeline */}
+              <div className="pt-4 border-t border-slate-200">
+                <p className="text-sm font-medium text-slate-900 mb-3">Order Timeline</p>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-slate-900">Order Placed</p>
+                      <p className="text-xs text-slate-600">{new Date(order.createdAt).toLocaleString()}</p>
+                    </div>
+                  </div>
+                  {order.status !== "pending" && (
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
+                        <Clock className="w-4 h-4 text-blue-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">Processing Started</p>
+                        <p className="text-xs text-slate-600">{new Date(order.createdAt).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  )}
+                  {order.status === "completed" && (
+                    <div className="flex items-start gap-3">
+                      <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">Order Completed</p>
+                        <p className="text-xs text-slate-600">{new Date(order.createdAt).toLocaleString()}</p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-slate-200">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <FileCheck className="w-5 h-5" />
+                  Formation Progress
+                </CardTitle>
+                <p className="text-sm text-slate-600 mt-1">
+                  {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed (
+                  {completionPercentage}%)
+                  {company?.customMilestones && company.customMilestones.length > 0 && (
+                    <span className="text-slate-500">
+                      {" "}
+                      • {completedMilestonesWithCustom} of {totalMilestonesWithCustom} total
+                    </span>
+                  )}
+                </p>
+              </div>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCustomMilestoneDialogOpen(true)}
+                  className="h-9 gap-2"
+                  disabled={milestoneUpdating}
+                >
+                  <Edit className="w-4 h-4" />
+                  Add Milestone
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setMilestonesDialogOpen(true)}
+                  className="h-9 gap-2"
+                  disabled={milestoneUpdating}
+                >
+                  <Edit className="w-4 h-4" />
+                  Manage Milestones
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {/* Progress Bar */}
+              <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-6">
+                <div
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full transition-all duration-700"
+                  style={{ width: `${completionPercentage}%` }}
+                />
+              </div>
+
+              {/* Milestone List */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <Package className={`w-5 h-5 ${milestones.orderProcessed ? "text-green-600" : "text-slate-400"}`} />
+                    <span className="text-sm font-medium">Order Successfully Processed</span>
+                  </div>
+                  {milestones.orderProcessed && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <UserCheck
+                      className={`w-5 h-5 ${milestones.registeredAgentAssigned ? "text-green-600" : "text-slate-400"}`}
+                    />
+                    <span className="text-sm font-medium">Registered Agent Assigned</span>
+                  </div>
+                  {milestones.registeredAgentAssigned && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <Home
+                      className={`w-5 h-5 ${milestones.mailingAddressIssued ? "text-green-600" : "text-slate-400"}`}
+                    />
+                    <span className="text-sm font-medium">Business Mailing Address Issued</span>
+                  </div>
+                  {milestones.mailingAddressIssued && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <FileCheck
+                      className={`w-5 h-5 ${milestones.formationCompleted ? "text-green-600" : "text-slate-400"}`}
+                    />
+                    <span className="text-sm font-medium">Company Formation Completed</span>
+                  </div>
+                  {milestones.formationCompleted && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <HashIcon className={`w-5 h-5 ${milestones.einProcessed ? "text-green-600" : "text-slate-400"}`} />
+                    <span className="text-sm font-medium">EIN Successfully Processed</span>
+                  </div>
+                  {milestones.einProcessed && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                </div>
+                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                  <div className="flex items-center gap-3">
+                    <FileBarChart
+                      className={`w-5 h-5 ${milestones.boiReportFiled ? "text-green-600" : "text-slate-400"}`}
+                    />
+                    <span className="text-sm font-medium">BOI Report Filed</span>
+                  </div>
+                  {milestones.boiReportFiled && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                </div>
+
+                {company?.customMilestones && company.customMilestones.length > 0 && (
+                  <>
+                    <div className="pt-3 border-t border-slate-200">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
+                        Custom Milestones
+                      </p>
+                    </div>
+                    {company.customMilestones.map((milestone) => (
+                      <div key={milestone.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                        <div className="flex items-center gap-3">
+                          <FileCheck
+                            className={`w-5 h-5 ${milestone.completed ? "text-green-600" : "text-slate-400"}`}
+                          />
+                          <div>
+                            <span className="text-sm font-medium">{milestone.title}</span>
+                            {milestone.description && (
+                              <p className="text-xs text-slate-500 mt-0.5">{milestone.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        {milestone.completed && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Building2 className="w-5 h-5" />
+                Company Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {company ? (
+                <div className="space-y-6">
+                  <div className="grid md:grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Company Name</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {getDisplayValue(company.name, "Not provided")}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Entity Type</p>
+                      <p className="text-sm font-medium text-slate-900">{company?.type || "Not provided"}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">State</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {getDisplayValue(company.state, "Not provided")}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Package Type</p>
+                      <p className="text-sm font-medium text-slate-900 capitalize">
+                        {company?.packageType || "Standard"}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-200">
+                    <div className="flex items-center justify-between mb-3">
+                      <p className="text-sm font-semibold text-slate-900">Identification Numbers</p>
+                      {isOverdue && (!hasEIN || !hasBusinessId) && (
+                        <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
+                          {weeksSinceOrder} weeks since order
+                        </Badge>
+                      )}
+                    </div>
+
+                    <div className="grid md:grid-cols-2 gap-4">
+                      {/* EIN Section */}
+                      <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-slate-600 flex items-center gap-1">
+                            <Hash className="w-3 h-3" />
+                            EIN
+                          </p>
+                          {!hasEIN && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setEinDialogOpen(true)}
+                              className="h-7 text-xs gap-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0"
+                              disabled={einUpdating}
+                            >
+                              {einUpdating ? "Assigning..." : "Assign"}
+                            </Button>
+                          )}
+                        </div>
+                        {hasEIN ? (
+                          <div>
+                            <p className="text-sm font-mono font-medium text-slate-900">
+                              {formatEIN(company.ein, true)}
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setEinValue(company.ein || "")
+                                  setEinDialogOpen(true)
+                                }}
+                                className="h-6 text-xs px-2"
+                                disabled={einUpdating}
+                              >
+                                <Edit className="w-3 h-3 mr-1" />
+                                Update
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleRemoveEIN}
+                                className="h-6 text-xs px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                disabled={einUpdating}
+                              >
+                                <Trash2 className="w-3 h-3 mr-1" />
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-sm italic text-slate-500">Not yet assigned</p>
+                            {isOverdue && (
+                              <p className="text-xs text-amber-600 mt-1">Expected within 7 weeks of order</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+
+                      {/* ITIN Section - Always show */}
+                      <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-slate-600 flex items-center gap-1">
+                            <FileBarChart className="w-3 h-3" />
+                            ITIN
+                          </p>
+                          {(!company?.itin || company.itin === "N/A") && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setItinDialogOpen(true)}
+                              className="h-7 text-xs gap-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0"
+                              disabled={itinUpdating}
+                            >
+                              {itinUpdating ? "Assigning..." : "Assign"}
+                            </Button>
+                          )}
+                        </div>
+                        {company?.itin && company.itin !== "N/A" ? (
+                          <div>
+                            <p className="text-sm font-mono font-medium text-slate-900">{company.itin}</p>
+                            <div className="flex gap-2 mt-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setItinValue(company.itin || "")
+                                  setItinDialogOpen(true)
+                                }}
+                                className="h-6 text-xs px-2"
+                                disabled={itinUpdating}
+                              >
+                                <Edit className="w-3 h-3 mr-1" />
+                                Update
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleRemoveITIN}
+                                className="h-6 text-xs px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                disabled={itinUpdating}
+                              >
+                                <Trash2 className="w-3 h-3 mr-1" />
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <p className="text-sm italic text-slate-500">Not assigned (Optional)</p>
+                        )}
+                      </div>
+
+                      {/* Business ID Section */}
+                      <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
+                        <div className="flex items-center justify-between mb-2">
+                          <p className="text-sm text-slate-600 flex items-center gap-1">
+                            <Building2 className="w-3 h-3" />
+                            Business ID
+                          </p>
+                          {!hasBusinessId && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => setBusinessIdDialogOpen(true)}
+                              className="h-7 text-xs gap-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0"
+                              disabled={businessIdUpdating}
+                            >
+                              {businessIdUpdating ? "Assigning..." : "Assign"}
+                            </Button>
+                          )}
+                        </div>
+                        {hasBusinessId ? (
+                          <div>
+                            <p className="text-sm font-mono font-medium text-slate-900">
+                              {formatBusinessId(company.businessId)}
+                            </p>
+                            <div className="flex gap-2 mt-2">
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => {
+                                  setBusinessIdValue(company.businessId || "")
+                                  setBusinessIdDialogOpen(true)
+                                }}
+                                className="h-6 text-xs px-2"
+                                disabled={businessIdUpdating}
+                              >
+                                <Edit className="w-3 h-3 mr-1" />
+                                Update
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={handleRemoveBusinessId}
+                                className="h-6 text-xs px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
+                                disabled={businessIdUpdating}
+                              >
+                                <Trash2 className="w-3 h-3 mr-1" />
+                                Remove
+                              </Button>
+                            </div>
+                          </div>
+                        ) : (
+                          <div>
+                            <p className="text-sm italic text-slate-500">Not yet assigned</p>
+                            {isOverdue && (
+                              <p className="text-xs text-amber-600 mt-1">Expected within 7 weeks of order</p>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {isOverdue && (!hasEIN || !hasBusinessId) && (
+                      <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
+                        <p className="text-sm text-amber-800">
+                          <strong>Action Required:</strong> It's been {weeksSinceOrder} weeks since order placement.
+                          Please assign the missing identifiers.
+                        </p>
+                      </div>
+                    )}
+                  </div>
+
+                  {company.address && (
+                    <div className="pt-4 border-t border-slate-200">
+                      <p className="text-sm text-slate-600 mb-1">Address</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {typeof company.address === "string"
+                          ? company.address
+                          : company.address
+                            ? `${company.address.street || ""}, ${company.address.city || ""}, ${company.address.state || ""} ${company.address.zip || ""}`.trim()
+                            : "Not provided"}
+                      </p>
+                    </div>
+                  )}
+
+                  {company?.businessCategory && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Business Category</p>
+                      <p className="text-sm font-medium text-slate-900">{company.businessCategory}</p>
+                    </div>
+                  )}
+
+                  {company?.businessDescription && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Business Description</p>
+                      <p className="text-sm text-700 whitespace-pre-wrap">{company.businessDescription}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-600">No company information available</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <CreditCard className="w-5 h-5" />
+                Payment Information
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                  <span className="text-sm text-slate-600">Package Price</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    ${order?.pricing?.packagePrice || order?.packagePrice || 149}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                  <span className="text-sm text-slate-600">State Filing Fee</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    ${order?.pricing?.stateFilingFee || order?.stateFilingFee || 0}
+                  </span>
+                </div>
+                {(order?.selectedAddons && order.selectedAddons.length > 0) ||
+                (order?.pricing?.addonsTotal && order.pricing.addonsTotal > 0) ? (
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-200">
+                    <span className="text-sm text-slate-600">Add-ons</span>
+                    <span className="text-sm font-medium text-slate-900">
+                      $
+                      {order?.pricing?.addonsTotal ||
+                        (order?.selectedAddons || []).reduce(
+                          (sum: number, addon: any) => sum + (addon.price || 0),
+                          0,
+                        ) ||
+                        0}
+                    </span>
+                  </div>
+                ) : null}
+                <div className="flex items-center justify-between pt-3 border-t-2 border-slate-300">
+                  <span className="text-base font-semibold text-slate-900">Total Amount</span>
+                  <span className="text-2xl font-bold text-slate-900">
+                    ${order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 149}
+                  </span>
+                </div>
+                <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Payment Method</p>
+                    <div className="flex items-center gap-2">
+                      <CreditCard className="w-4 h-4 text-blue-600" />
+                      <p className="text-sm font-medium text-slate-900 capitalize">
+                        {order?.paymentInfo?.method || "Card Payment"}
+                      </p>
+                    </div>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Payment Status</p>
+                    <Badge
+                      className={
+                        order?.paymentInfo?.status === "paid"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-amber-50 text-amber-700 border-amber-200"
+                      }
+                    >
+                      {order?.paymentInfo?.status || "Pending"}
+                    </Badge>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Payment Date</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {order?.paymentInfo?.date || order?.createdAt
+                      ? new Date(order.paymentInfo?.date || order.createdAt).toLocaleDateString("en-US", {
+                          month: "2-digit",
+                          day: "2-digit",
+                          year: "numeric",
+                        })
+                      : "Not available"}
+                  </p>
+                </div>
+                {order?.paymentInfo?.terms && (
+                  <div className="mt-4 p-3 bg-slate-50 rounded-lg">
+                    <p className="text-xs font-medium text-slate-600 mb-1">Payment Terms</p>
+                    <p className="text-sm text-slate-700">{order.paymentInfo.terms}</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <ShoppingCart className="w-5 h-5" />
+                Purchased Add-ons
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {addons && addons.length > 0 ? (
+                  addons.map((addon: any, index: number) => {
+                    const isObject = typeof addon === "object" && addon !== null
+                    const addonName = isObject
+                      ? addon.memberName
+                        ? `${addon.name} - ${addon.memberName}`
+                        : addon.name
+                      : getAddonName(addon)
+                    const addonPrice = isObject ? addon.price : 0
+                    const serviceId = isObject ? addon.serviceId : addon
+
+                    return (
+                      <div key={index} className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <div className="flex items-center justify-between">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-3 mb-2">
+                              <p className="text-sm font-medium text-slate-900">{addonName}</p>
+                              <Badge variant="outline" className="text-xs">
+                                Active
+                              </Badge>
+                            </div>
+                            <p className="text-xs text-slate-600">
+                              {serviceId === "itin-application"
+                                ? "Individual Taxpayer Identification Number application"
+                                : serviceId === "reseller-certificate"
+                                  ? "Sales tax exemption certificate for wholesale purchasing"
+                                  : serviceId === "business-website"
+                                    ? "Professional website design and hosting"
+                                    : "Add-on service"}
+                            </p>
+                          </div>
+                          <div className="text-right">
+                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">${addonPrice}</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                ) : (
+                  <div className="p-8 text-center">
+                    <ShoppingCart className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                    <p className="text-sm text-slate-500">No add-ons purchased</p>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <div>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Briefcase className="w-5 h-5" />
+                  Checkout Data & Business Details
+                </CardTitle>
+                <p className="text-sm text-slate-600 mt-1">Complete information collected during checkout</p>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {company ? (
+                <div className="space-y-6">
+                  {/* Company Status */}
+                  <div className="p-4 rounded-lg bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-xs text-slate-600 mb-1">Company Status</p>
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-sm">
+                          {company.status || "Active"}
+                        </Badge>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-xs text-slate-600 mb-1">Formation Date</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {company.formationDate
+                            ? new Date(company.formationDate).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })
+                            : new Date(company.createdAt).toLocaleDateString("en-US", {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              })}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Business Information */}
+                  <div>
+                    <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                      <Building2 className="w-4 h-4" />
+                      Business Information
+                    </h3>
+                    <div className="grid md:grid-cols-2 gap-4">
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">Business Name</p>
+                        <p className="text-sm font-medium text-slate-900">{company.name}</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">State of Formation</p>
+                        <p className="text-sm font-medium text-slate-900">{company.state}</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">Entity Type</p>
+                        <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">Business Category</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          {company.businessCategory || "Not provided"}
+                        </p>
+                      </div>
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">Package Type</p>
+                        <Badge variant="outline" className="text-xs capitalize">
+                          {company.packageType || "Starter"}
+                        </Badge>
+                      </div>
+                    </div>
+                    {company.businessDescription && (
+                      <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">Business Description</p>
+                        <p className="text-sm text-700">{company.businessDescription}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Members & Owners */}
+                  {company.members && company.members.length > 0 && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <Users className="w-4 h-4" />
+                        Members & Owners
+                      </h3>
+                      <div className="space-y-3">
+                        {company.members.map((member: any, index: number) => {
+                          const passport = passportDocuments.find(
+                            (p: any) =>
+                              p.memberId === member.id ||
+                              p.memberName === `${member.firstName} ${member.lastName}` ||
+                              p.memberName === `${member.firstName} ${member.middleName} ${member.lastName}`,
+                          )
+
+                          const fullName = [member.firstName, member.middleName, member.lastName]
+                            .filter(Boolean)
+                            .join(" ")
+
+                          return (
+                            <div key={index} className="p-4 border border-slate-200 rounded-lg">
+                              <div className="flex items-start justify-between mb-3">
+                                <div className="space-y-1">
+                                  <h4 className="font-medium text-slate-900">{fullName}</h4>
+                                  <p className="text-sm text-slate-600">{member.email}</p>
+                                  {member.phone && <p className="text-sm text-slate-600">{member.phone}</p>}
+                                  {member.isResponsiblePerson && (
+                                    <Badge variant="secondary" className="text-xs">
+                                      Responsible Person
+                                    </Badge>
+                                  )}
+                                </div>
+                                <div className="text-right">
+                                  {member.ownershipPercentage !== undefined && (
+                                    <div className="text-2xl font-bold text-primary">{member.ownershipPercentage}%</div>
+                                  )}
+                                  <p className="text-xs text-slate-500 mt-1">Ownership</p>
+                                </div>
+                              </div>
+
+                              <div className="mt-3 p-3 bg-slate-50 rounded-lg">
+                                <p className="text-sm text-slate-700">
+                                  {member.address}
+                                  {member.city && `, ${member.city}`}
+                                  {member.state && `, ${member.state}`}
+                                  {member.zip && ` ${member.zip}`}
+                                </p>
+                              </div>
+
+                              {passport ? (
+                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                                  <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-2">
+                                      <FileText className="w-4 h-4 text-blue-600" />
+                                      <span className="text-sm font-medium text-slate-900">
+                                        {passport.fileName || "Passport Document"}
+                                      </span>
+                                    </div>
+                                    {passport.fileUrl && (
+                                      <Button
+                                        variant="ghost"
+                                        size="sm"
+                                        onClick={() => window.open(passport.fileUrl, "_blank")}
+                                        className="h-7 text-xs"
+                                      >
+                                        <Eye className="w-3 h-3 mr-1" />
+                                        View
+                                      </Button>
+                                    )}
+                                  </div>
+                                  {passport.uploadedAt && (
+                                    <p className="text-xs text-slate-500 mt-2">
+                                      Uploaded: {new Date(passport.uploadedAt).toLocaleDateString()}
+                                    </p>
+                                  )}
+                                </div>
+                              ) : (
+                                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                                  <p className="text-sm text-amber-800">No passport document uploaded</p>
+                                </div>
+                              )}
+                            </div>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Registered Agent */}
+                  {hasRegisteredAgent && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <UserCheck className="w-4 h-4" />
+                        Registered Agent
+                      </h3>
+                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-slate-600 mb-1">Agent Name</p>
+                            <p className="text-sm font-medium text-slate-900">{company.registeredAgent.name}</p>
+                          </div>
+                          {company.registeredAgent.company && (
+                            <div>
+                              <p className="text-xs text-slate-600 mb-1">Company</p>
+                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.company}</p>
+                            </div>
+                          )}
+                          <div className="md:col-span-2">
+                            <p className="text-xs text-slate-600 mb-1">Full Address</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {company.registeredAgent.address}
+                              {company.registeredAgent.city && `, ${company.registeredAgent.city}`}
+                              {company.registeredAgent.state && `, ${company.registeredAgent.state}`}
+                              {company.registeredAgent.zip && ` ${company.registeredAgent.zip}`}
+                            </p>
+                          </div>
+                          {company.registeredAgent.phone && (
+                            <div>
+                              <p className="text-xs text-slate-600 mb-1">Phone</p>
+                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.phone}</p>
+                            </div>
+                          )}
+                          {company.registeredAgent.email && (
+                            <div>
+                              <p className="text-xs text-slate-600 mb-1">Email</p>
+                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.email}</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs text-slate-600 mb-1">Service Period</p>
+                            <Badge variant="outline" className="text-xs">
+                              {company.registeredAgent.servicePeriod || "1 Year"}
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-600 mb-1">Status</p>
+                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
+                              {company.registeredAgent.status || "Active"}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {hasMailingAddress && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <Home className="w-4 h-4" />
+                        Mailing Address
+                      </h3>
+                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="md:col-span-2">
+                            <p className="text-xs text-slate-600 mb-1">Complete Address</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {company.mailingAddress.street}
+                              <br />
+                              {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-600 mb-1">Status</p>
+                            <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Assigned</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tax Information */}
+                  {hasEIN && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <Hash className="w-4 h-4" />
+                        EIN Information
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                          <p className="text-xs text-slate-600 mb-1">EIN (Employer Identification Number)</p>
+                          <p className="text-sm font-mono font-medium text-slate-900">{formatEIN(company.ein, true)}</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="text-sm text-slate-600">No checkout data available</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-8">
+          {/* Customer Information */}
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Customer
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {customer ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Name</p>
+                    <p className="text-sm font-medium text-slate-900">{customer.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Email</p>
+                    <p className="text-sm font-medium text-slate-900">{customer.email}</p>
+                  </div>
+                  {customer.phone && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Phone</p>
+                      <p className="text-sm font-medium text-slate-900">{customer.phone}</p>
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="w-full h-10 bg-transparent"
+                    onClick={() => router.push(`/admin/customers/${customer.id}`)}
+                    disabled={
+                      statusUpdating ||
+                      agentUpdating ||
+                      addressUpdating ||
+                      einUpdating ||
+                      itinUpdating ||
+                      businessIdUpdating ||
+                      docUploading ||
+                      milestoneUpdating ||
+                      deleting
+                    }
+                  >
+                    View Customer Profile
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-600">No customer information available</p>
+              )}
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900">Admin Actions</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              <Button
+                variant="outline"
+                className="w-full h-10 justify-start gap-2 bg-transparent"
+                onClick={() => setRegisteredAgentDialogOpen(true)}
+                disabled={agentUpdating || !company} // Disable if updating or company not loaded
+              >
+                <UserCheck className="w-4 h-4" />
+                Assign Registered Agent
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full h-10 justify-start gap-2 bg-transparent"
+                onClick={() => setMailingAddressDialogOpen(true)}
+                disabled={addressUpdating || !company} // Disable if updating or company not loaded
+              >
+                <MapPin className="w-4 h-4" />
+                Assign Mailing Address
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full h-10 justify-start gap-2 bg-transparent"
+                onClick={() => {
+                  setUploadDocDialogOpen(true)
+                  setUploadDocType("general") // Default type
+                }}
+                disabled={docUploading || !company} // Disable if updating or company not loaded
+              >
+                <Upload className="w-4 h-4" />
+                Upload Document
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full h-10 justify-start gap-2 bg-transparent"
+                onClick={() => setMilestonesDialogOpen(true)}
+                disabled={milestoneUpdating}
+              >
+                <FileCheck className="w-4 h-4" />
+                Manage Milestones
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full h-10 justify-start gap-2 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                onClick={() => {
+                  // DEPRECATED: Invoice download is no longer supported.
+                  toast({
+                    title: "Feature Removed",
+                    description:
+                      "Invoice download has been removed from the system. Order details are available on this page.",
+                    variant: "default",
+                  })
+                }}
+                disabled={deleting}
+              >
+                <Download className="w-4 h-4" />
+                Download Invoice
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full h-10 justify-start gap-2 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                onClick={() => setDeleteDialogOpen(true)}
+                disabled={deleting}
+              >
+                {deleting ? "Deleting..." : <Trash2 className="w-4 h-4" />}
+                Delete Order
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Order Summary */}
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Order Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {company?.transactionReference && (
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-sm font-medium text-slate-700 mb-1">Transaction Reference</p>
+                    <p className="text-base font-semibold text-slate-900">{company.transactionReference}</p>
+                  </div>
+                )}
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Order ID</span>
+                  <span className="text-sm font-mono font-medium text-slate-900">{order.id}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Order Date</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    {new Date(order.createdAt).toLocaleDateString()}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Status</span>
+                  <Badge className={getStatusColor(order.status)}>
+                    {getStatusIcon(order.status)}
+                    <span className="ml-1 capitalize">{order.status}</span>
+                  </Badge>
+                </div>
+                <div className="pt-3 border-t border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-900">Total Amount</span>
+                    <span className="text-lg font-semibold text-slate-900">
+                      ${order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 149}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      {/* Upload Document Dialog */}
+      <Dialog open={uploadDocDialogOpen} onOpenChange={setUploadDocDialogOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Upload Document</DialogTitle>
+            <DialogDescription>
+              Upload a document for {company?.name} - Order #{order.id}
+              <br />
+              <span className="text-xs text-amber-600 mt-2 block">
+                💡 Tip: Document titles like "EIN", "Articles of Organization", "BOI Report" will automatically update
+                milestones
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-6 py-4">
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="documentFile">Select File</Label>
+                <Input
+                  id="documentFile"
+                  type="file"
+                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
+                  className="h-10"
+                  onChange={handleDocumentUpload}
+                  disabled={docUploading}
+                />
+                <p className="text-xs text-slate-500">Supported formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</p>
+                <p className="text-xs text-amber-600">
+                  💡 File names with keywords like "EIN", "Articles", "BOI", "Formation" will auto-update milestones
+                </p>
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button
+                variant="outline"
+                onClick={() => setUploadDocDialogOpen(false)}
+                className="h-10"
+                disabled={docUploading}
+              >
+                {docUploading ? "Uploading..." : "Close"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Manage Milestones Dialog */}
+      <Dialog open={milestonesDialogOpen} onOpenChange={setMilestonesDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Manage Formation Milestones</DialogTitle>
+            <DialogDescription>
+              Toggle milestones to update the formation progress for {company?.name}
+              <br />
+              <span className="text-sm text-slate-600 mt-2 block">
+                Core Progress: {completedDefaultMilestones}/{totalDefaultMilestones} ({completionPercentage}%)
+                {company?.customMilestones && company.customMilestones.length > 0 && (
+                  <span className="text-slate-500">
+                    {" "}
+                    • Total with Custom: {completedMilestonesWithCustom}/{totalMilestonesWithCustom}
+                  </span>
+                )}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Package className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Order Successfully Processed</p>
+                    <p className="text-xs text-slate-500">Articles of Organization uploaded</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.orderProcessed}
+                  onCheckedChange={() => handleMilestoneToggle("orderProcessed")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <UserCheck className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Registered Agent Assigned</p>
+                    <p className="text-xs text-slate-500">
+                      {company?.registeredAgent?.servicePeriod || "1 Year"} service period
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.registeredAgentAssigned}
+                  onCheckedChange={() => handleMilestoneToggle("registeredAgentAssigned")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Home className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Business Mailing Address Issued</p>
+                    <p className="text-xs text-slate-500">Address confirmation received</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.mailingAddressIssued}
+                  onCheckedChange={() => handleMilestoneToggle("mailingAddressIssued")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <FileCheck className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Company Formation Completed</p>
+                    <p className="text-xs text-slate-500">Formation certificate issued</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.formationCompleted}
+                  onCheckedChange={() => handleMilestoneToggle("formationCompleted")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <HashIcon className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">EIN Successfully Processed</p>
+                    <p className="text-xs text-slate-500">EIN letter uploaded</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.einProcessed}
+                  onCheckedChange={() => handleMilestoneToggle("einProcessed")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <FileBarChart className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">BOI Report Filed</p>
+                    <p className="text-xs text-slate-500">Beneficial ownership report submitted</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.boiReportFiled}
+                  onCheckedChange={() => handleMilestoneToggle("boiReportFiled")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              {company?.customMilestones && company.customMilestones.length > 0 && (
+                <>
+                  <div className="pt-4 border-t border-slate-200">
+                    <p className="text-sm font-semibold text-slate-900 mb-1">Custom Milestones</p>
+                    <p className="text-xs text-slate-500 mb-3">
+                      Custom milestones are tracked separately and don't affect the core progress percentage
+                    </p>
+                  </div>
+                  {company.customMilestones.map((milestone) => (
+                    <div
+                      key={milestone.id}
+                      className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <FileCheck className={`w-5 h-5 ${milestone.completed ? "text-green-600" : "text-slate-400"}`} />
+                        <div>
+                          <span className="text-sm font-medium">{milestone.title}</span>
+                          {milestone.description && (
+                            <p className="text-xs text-slate-500 mt-0.5">{milestone.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Switch
+                        checked={milestone.completed}
+                        onCheckedChange={() => handleCustomMilestoneToggle(milestone.id)}
+                        disabled={milestoneUpdating}
+                      />
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setMilestonesDialogOpen(false)} className="h-10">
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Milestone Dialog */}
+      <Dialog open={customMilestoneDialogOpen} onOpenChange={handleCloseCustomMilestoneDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Add Custom Milestone</DialogTitle>
+            <DialogDescription>
+              Create a custom milestone for {company?.name} that will appear in their progress tracker
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="customMilestoneTitle">Milestone Title *</Label>
+              <Input
+                id="customMilestoneTitle"
+                placeholder="e.g., Business License Approved"
+                value={newMilestoneTitle}
+                onChange={(e) => setNewMilestoneTitle(e.target.value)}
+                className="h-10"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customMilestoneDescription">Description (Optional)</Label>
+              <Textarea
+                id="customMilestoneDescription"
+                placeholder="Add any notes about this milestone..."
+                value={newMilestoneDescription}
+                onChange={(e) => setNewMilestoneDescription(e.target.value)}
+                className="min-h-[80px]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setCustomMilestoneDialogOpen(false)} className="h-10">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddCustomMilestone}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!newMilestoneTitle.trim() || milestoneUpdating}
+              >
+                {milestoneUpdating ? "Adding..." : "Add Milestone"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={registeredAgentDialogOpen} onOpenChange={handleCloseRegisteredAgentDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign Registered Agent</DialogTitle>
+            <DialogDescription>
+              Assign a registered agent for {company?.name}. This will update the company records and mark the milestone
+              as complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agentName">Agent Name *</Label>
+                <Input
+                  id="agentName"
+                  placeholder="John Doe"
+                  value={agentForm.name}
+                  onChange={(e) => setAgentForm({ ...agentForm, name: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentCompany">Company Name</Label>
+                <Input
+                  id="agentCompany"
+                  placeholder="Agent Services LLC"
+                  value={agentForm.company}
+                  onChange={(e) => setAgentForm({ ...agentForm, company: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="agentAddress">Street Address *</Label>
+              <Input
+                id="agentAddress"
+                placeholder="123 Main Street"
+                value={agentForm.address}
+                onChange={(e) => setAgentForm({ ...agentForm, address: e.target.value })}
+                className="h-10"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agentCity">City</Label>
+                <Input
+                  id="agentCity"
+                  placeholder="Miami"
+                  value={agentForm.city}
+                  onChange={(e) => setAgentForm({ ...agentForm, city: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentState">State</Label>
+                <Input
+                  id="agentState"
+                  placeholder="FL"
+                  value={agentForm.state}
+                  onChange={(e) => setAgentForm({ ...agentForm, state: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentZip">ZIP Code</Label>
+                <Input
+                  id="agentZip"
+                  placeholder="33101"
+                  value={agentForm.zip}
+                  onChange={(e) => setAgentForm({ ...agentForm, zip: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agentPhone">Phone</Label>
+                <Input
+                  id="agentPhone"
+                  placeholder="(305) 555-0123"
+                  value={agentForm.phone}
+                  onChange={(e) => setAgentForm({ ...agentForm, phone: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentEmail">Email</Label>
+                <Input
+                  id="agentEmail"
+                  type="email"
+                  placeholder="agent@example.com"
+                  value={agentForm.email}
+                  onChange={(e) => setAgentForm({ ...agentForm, email: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="servicePeriod">Service Period</Label>
+              <Select
+                value={agentForm.servicePeriod}
+                onValueChange={(value) => setAgentForm({ ...agentForm, servicePeriod: value })}
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1 Year">1 Year</SelectItem>
+                  <SelectItem value="2 Years">2 Years</SelectItem>
+                  <SelectItem value="3 Years">3 Years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setRegisteredAgentDialogOpen(false)} disabled={agentUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignRegisteredAgent}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={agentUpdating}
+              >
+                {agentUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <UserCheck className="w-4 h-4 mr-2" />
+                    Assign Agent
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={einDialogOpen} onOpenChange={handleCloseEinDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign EIN</DialogTitle>
+            <DialogDescription>
+              Assign an Employer Identification Number (EIN) for {company?.name}. This will update the company records
+              and mark the EIN milestone as complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="einInput">EIN (Employer Identification Number) *</Label>
+              <Input
+                id="einInput"
+                placeholder="12-3456789"
+                value={einValue}
+                onChange={(e) => setEinValue(e.target.value)}
+                className="h-10 font-mono"
+                maxLength={10}
+              />
+              <p className="text-xs text-slate-500">Format: XX-XXXXXXX (9 digits with hyphen)</p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> The EIN will be formatted automatically and the "EIN Successfully Processed"
+                milestone will be marked as complete.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setEinDialogOpen(false)} disabled={einUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignEIN}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!einValue.trim() || einUpdating}
+              >
+                {einUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <Hash className="w-4 h-4 mr-2" />
+                    Assign EIN
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={itinDialogOpen} onOpenChange={handleCloseItinDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign ITIN</DialogTitle>
+            <DialogDescription>
+              Enter the ITIN (Individual Taxpayer Identification Number) for this company.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="itinInput">ITIN Number *</Label>
+              <Input
+                id="itinInput"
+                placeholder="9XX-XX-XXXX"
+                value={itinValue}
+                onChange={(e) => setItinValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <p className="text-xs text-slate-500">
+                Format: 9XX-XX-XXXX (starts with 9, followed by two digits from 50-65, 70-88, 90-92, 94-99)
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> The ITIN will be entered as provided.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setItinDialogOpen(false)} disabled={itinUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignITIN}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!itinValue.trim() || itinUpdating}
+              >
+                {itinUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <FileBarChart className="w-4 h-4 mr-2" />
+                    Assign ITIN
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={businessIdDialogOpen} onOpenChange={handleCloseBusinessIdDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign Business ID</DialogTitle>
+            <DialogDescription>
+              Assign a Business ID (State Filing Number) for {company?.name}. This identifier is issued by the state
+              after formation is complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="businessIdInput">Business ID / State Filing Number *</Label>
+              <Input
+                id="businessIdInput"
+                placeholder="L21000123456"
+                value={businessIdValue}
+                onChange={(e) => setBusinessIdValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <p className="text-xs text-slate-500">
+                Enter the business ID or filing number issued by the state (format varies by state)
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> This is the official state-issued identifier for the business entity, different
+                from the EIN.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setBusinessIdDialogOpen(false)} disabled={businessIdUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignBusinessId}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!businessIdValue.trim() || businessIdUpdating}
+              >
+                {businessIdUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <Building2 className="w-4 h-4 mr-2" />
+                    Assign Business ID
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={mailingAddressDialogOpen} onOpenChange={handleCloseMailingAddressDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Home className="w-5 h-5 text-[#dc2626]" />
+              Assign Mailing Address
+            </DialogTitle>
+            <DialogDescription>
+              Assign a mailing address to {company?.name}. This will be displayed on the user dashboard and company
+              page.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="street">Street Address *</Label>
+              <Input
+                id="street"
+                value={mailingAddress.street}
+                onChange={(e) => setMailingAddress({ ...mailingAddress, street: e.target.value })}
+                placeholder="123 Main Street"
+                disabled={addressUpdating}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="city">City *</Label>
+                <Input
+                  id="city"
+                  value={mailingAddress.city}
+                  onChange={(e) => setMailingAddress({ ...mailingAddress, city: e.target.value })}
+                  placeholder="New York"
+                  disabled={addressUpdating}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="state">State *</Label>
+                <Input
+                  id="state"
+                  value={mailingAddress.state}
+                  onChange={(e) => setMailingAddress({ ...mailingAddress, state: e.target.value })}
+                  placeholder="NY"
+                  maxLength={2}
+                  disabled={addressUpdating}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="zip">ZIP Code *</Label>
+              <Input
+                id="zip"
+                value={mailingAddress.zip}
+                onChange={(e) => setMailingAddress({ ...mailingAddress, zip: e.target.value })}
+                placeholder="10001"
+                maxLength={10}
+                disabled={addressUpdating}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMailingAddressDialogOpen(false)} disabled={addressUpdating}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssignMailingAddress}
+              disabled={addressUpdating}
+              className="bg-[#dc2626] hover:bg-[#b91c1c]"
+            >
+              {addressUpdating ? "Assigning..." : "Assign Mailing Address"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Card className="bg-white border-slate-200">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <Users className="w-5 h-5" />
+            Members & Passport Documents
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-4">
+            {company?.members && company.members.length > 0 ? (
+              company.members.map((member: any, index: number) => {
+                const passport = passportDocuments.find(
+                  (p: any) =>
+                    p.memberId === member.id ||
+                    p.memberName === `${member.firstName} ${member.lastName}` ||
+                    p.memberName === `${member.firstName} ${member.middleName} ${member.lastName}`,
+                )
+
+                const fullName = [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ")
+
+                return (
+                  <div key={index} className="p-4 border border-slate-200 rounded-lg">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="space-y-1">
+                        <h4 className="font-medium text-slate-900">{fullName}</h4>
+                        <p className="text-sm text-slate-600">{member.email}</p>
+                        {member.phone && <p className="text-sm text-slate-600">{member.phone}</p>}
+                        {member.isResponsiblePerson && (
+                          <Badge variant="secondary" className="text-xs">
+                            Responsible Person
+                          </Badge>
+                        )}
+                      </div>
+                      <div className="text-right">
+                        {member.ownershipPercentage !== undefined && (
+                          <div className="text-2xl font-bold text-primary">{member.ownershipPercentage}%</div>
+                        )}
+                        <p className="text-xs text-slate-500 mt-1">Ownership</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-3 p-3 bg-slate-50 rounded-lg">
+                      <p className="text-sm text-slate-700">
+                        {member.address}
+                        {member.city && `, ${member.city}`}
+                        {member.state && `, ${member.state}`}
+                        {member.zip && ` ${member.zip}`}
+                      </p>
+                    </div>
+
+                    {passport ? (
+                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm font-medium text-slate-900">
+                              {passport.fileName || "Passport Document"}
+                            </span>
+                          </div>
+                          {passport.fileUrl && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(passport.fileUrl, "_blank")}
+                              className="h-7 text-xs"
+                            >
+                              <Eye className="w-3 h-3 mr-1" />
+                              View
+                            </Button>
+                          )}
+                        </div>
+                        {passport.uploadedAt && (
+                          <p className="text-xs text-slate-500 mt-2">
+                            Uploaded: {new Date(passport.uploadedAt).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-sm text-amber-800">No passport document uploaded</p>
+                      </div>
+                    )}
+                  </div>
+                )
+              })
+            ) : (
+              <p className="text-sm text-slate-500">No members information available</p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+
+      {hasRegisteredAgent && (
+        <Card className="bg-white border-slate-200">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <UserCheck className="w-5 h-5" />
+              Registered Agent
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid md:grid-cols-2 gap-4">
+              <div>
+                <p className="text-xs text-slate-600 mb-1">Agent Name</p>
+                <p className="text-sm font-medium text-slate-900">{company.registeredAgent.name}</p>
+              </div>
+              {company.registeredAgent.company && (
+                <div>
+                  <p className="text-xs text-slate-600 mb-1">Company</p>
+                  <p className="text-sm font-medium text-slate-900">{company.registeredAgent.company}</p>
+                </div>
+              )}
+              <div className="md:col-span-2">
+                <p className="text-xs text-slate-600 mb-1">Full Address</p>
+                <p className="text-sm font-medium text-slate-900">
+                  {company.registeredAgent.address}
+                  {company.registeredAgent.city && `, ${company.registeredAgent.city}`}
+                  {company.registeredAgent.state && `, ${company.registeredAgent.state}`}
+                  {company.registeredAgent.zip && ` ${company.registeredAgent.zip}`}
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {!hasRegisteredAgent && (
+        <Card className="bg-white border-slate-200">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <UserCheck className="w-5 h-5" />
+              Registered Agent
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+              <p className="text-sm text-amber-800">
+                <strong>Not Yet Assigned</strong> - Registered agent will be assigned during formation process
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Company Details Modal */}
+      <CompanyDetailsModal
+        company={selectedCompany}
+        orderId={order?.id || ""}
+        isOpen={companyModalOpen && !!selectedCompany}
+        onClose={() => setCompanyModalOpen(false)}
+        passportDocuments={passportDocuments}
+        orderDate={order?.createdAt}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this order? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete Order"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  )
+}

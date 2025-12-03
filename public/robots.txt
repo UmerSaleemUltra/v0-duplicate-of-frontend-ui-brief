@@ -1,0 +1,11 @@
+# Allow all search engines to crawl the site
+User-agent: *
+Allow: /
+
+# Disallow admin and client dashboard areas
+Disallow: /admin/
+Disallow: /client/
+Disallow: /api/
+
+# Sitemap location
+Sitemap: https://buzzfiling.com/sitemap.xml
