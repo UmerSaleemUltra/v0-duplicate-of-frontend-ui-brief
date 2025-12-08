@@ -2,7 +2,7 @@
 
 import { cache } from "./cache"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://v0-frontend-ui-brief-20.vercel.app"
+const API_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://v0-frontend-ui-brief.vercel.app"
 
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
