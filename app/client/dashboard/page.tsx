@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { ClientShell } from "@/components/client/client-shell"
 import {
   Building2,
@@ -33,6 +35,11 @@ import { useRouter } from "next/navigation"
 import { NoCompanyState } from "@/components/client/no-company-state"
 import { toast } from "@/components/ui/use-toast"
 import { OrderCelebration } from "@/components/celebration/order-celebration"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function ClientDashboard() {
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
@@ -53,6 +60,21 @@ export default function ClientDashboard() {
   const [showCelebration, setShowCelebration] = useState(false)
   const [notifications, setNotifications] = useState<any[]>([])
   const [celebrationShown, setCelebrationShown] = useState(false)
+
+  const [isBankingModalOpen, setIsBankingModalOpen] = useState(false)
+  const [selectedBank, setSelectedBank] = useState("")
+  const [bankingFormData, setBankingFormData] = useState({
+    fullName: "",
+    email: "",
+    phone: "",
+    businessName: "",
+    ein: "",
+    expectedMonthlyRevenue: "",
+    businessDescription: "",
+    fundingSource: "",
+    additionalNotes: "",
+  })
+  const [isSubmittingBanking, setIsSubmittingBanking] = useState(false)
 
   useEffect(() => {
     const checkAuth = () => {
@@ -261,6 +283,60 @@ export default function ClientDashboard() {
   const handleCloseCelebration = () => {
     console.log("[v0] Closing celebration modal")
     setShowCelebration(false)
+  }
+
+  const handleBankingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    setIsSubmittingBanking(true)
+
+    try {
+      const token = authService.getToken()
+      if (!token) throw new Error("Not authenticated")
+
+      const response = await fetch("/api/banking-applications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          ...bankingFormData,
+          bankName: selectedBank,
+          companyId: company?.id,
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to submit application")
+
+      toast({
+        title: "Success",
+        description: "Banking application submitted successfully!",
+      })
+      setIsBankingModalOpen(false)
+      setBankingFormData({
+        fullName: "",
+        email: "",
+        phone: "",
+        businessName: "",
+        ein: "",
+        expectedMonthlyRevenue: "",
+        businessDescription: "",
+        fundingSource: "",
+        additionalNotes: "",
+      })
+
+      // Refresh company data
+      const companyResponse = await ApiClient.companies.getById(company.id, token)
+      setCompany(companyResponse.data)
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to submit banking application",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmittingBanking(false)
+    }
   }
 
   const recentActivities = useMemo(() => {
@@ -781,7 +857,15 @@ export default function ClientDashboard() {
                         <p className="text-sm font-semibold text-slate-900">{bank.name}</p>
                         <p className="text-xs text-slate-600 mt-1">{bank.features}</p>
                       </div>
-                      <Button size="sm" variant="ghost" className="text-[#880000] hover:bg-red-50 hover:text-[#ff0d13]">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-[#880000] hover:bg-red-50 hover:text-[#ff0d13]"
+                        onClick={() => {
+                          setSelectedBank(bank.name)
+                          setIsBankingModalOpen(true)
+                        }}
+                      >
                         Apply
                       </Button>
                     </div>
@@ -1077,6 +1161,160 @@ export default function ClientDashboard() {
           </div>
         </div>
       </TooltipProvider>
+
+      {/* Banking Application Modal */}
+      <Dialog open={isBankingModalOpen} onOpenChange={setIsBankingModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold text-slate-900">
+              Apply for Business Banking - {selectedBank}
+            </DialogTitle>
+            <p className="text-sm text-slate-600 mt-2">
+              Fill out the form below and we'll help you get your business bank account set up with {selectedBank}.
+            </p>
+          </DialogHeader>
+
+          <form onSubmit={handleBankingSubmit} className="space-y-6 mt-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <Label htmlFor="fullName">Full Name *</Label>
+                <Input
+                  id="fullName"
+                  value={bankingFormData.fullName}
+                  onChange={(e) => setBankingFormData({ ...bankingFormData, fullName: e.target.value })}
+                  required
+                  placeholder="John Doe"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="email">Email Address *</Label>
+                <Input
+                  id="email"
+                  type="email"
+                  value={bankingFormData.email}
+                  onChange={(e) => setBankingFormData({ ...bankingFormData, email: e.target.value })}
+                  required
+                  placeholder="john@example.com"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="phone">Phone Number *</Label>
+                <Input
+                  id="phone"
+                  type="tel"
+                  value={bankingFormData.phone}
+                  onChange={(e) => setBankingFormData({ ...bankingFormData, phone: e.target.value })}
+                  required
+                  placeholder="+1 (555) 000-0000"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="businessName">Business Name *</Label>
+                <Input
+                  id="businessName"
+                  value={bankingFormData.businessName}
+                  onChange={(e) => setBankingFormData({ ...bankingFormData, businessName: e.target.value })}
+                  required
+                  placeholder="Your LLC Name"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="ein">EIN (Employer Identification Number) *</Label>
+                <Input
+                  id="ein"
+                  value={bankingFormData.ein}
+                  onChange={(e) => setBankingFormData({ ...bankingFormData, ein: e.target.value })}
+                  required
+                  placeholder="XX-XXXXXXX"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="expectedMonthlyRevenue">Expected Monthly Revenue *</Label>
+                <Select
+                  value={bankingFormData.expectedMonthlyRevenue}
+                  onValueChange={(value) => setBankingFormData({ ...bankingFormData, expectedMonthlyRevenue: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select range" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="0-5000">$0 - $5,000</SelectItem>
+                    <SelectItem value="5000-25000">$5,000 - $25,000</SelectItem>
+                    <SelectItem value="25000-100000">$25,000 - $100,000</SelectItem>
+                    <SelectItem value="100000+">$100,000+</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div>
+              <Label htmlFor="businessDescription">Business Description *</Label>
+              <Textarea
+                id="businessDescription"
+                value={bankingFormData.businessDescription}
+                onChange={(e) => setBankingFormData({ ...bankingFormData, businessDescription: e.target.value })}
+                required
+                placeholder="Briefly describe what your business does..."
+                rows={3}
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="fundingSource">Source of Funds *</Label>
+              <Select
+                value={bankingFormData.fundingSource}
+                onValueChange={(value) => setBankingFormData({ ...bankingFormData, fundingSource: value })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Select funding source" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="personal-savings">Personal Savings</SelectItem>
+                  <SelectItem value="business-revenue">Business Revenue</SelectItem>
+                  <SelectItem value="investor">Investor Funding</SelectItem>
+                  <SelectItem value="loan">Business Loan</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label htmlFor="additionalNotes">Additional Notes (Optional)</Label>
+              <Textarea
+                id="additionalNotes"
+                value={bankingFormData.additionalNotes}
+                onChange={(e) => setBankingFormData({ ...bankingFormData, additionalNotes: e.target.value })}
+                placeholder="Any additional information you'd like to share..."
+                rows={3}
+              />
+            </div>
+
+            <div className="flex gap-3 pt-4">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setIsBankingModalOpen(false)}
+                className="flex-1"
+                disabled={isSubmittingBanking}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#660000] hover:to-[#cc0a10]"
+                disabled={isSubmittingBanking}
+              >
+                {isSubmittingBanking ? "Submitting..." : "Submit Application"}
+              </Button>
+            </div>
+          </form>
+        </DialogContent>
+      </Dialog>
     </ClientShell>
   )
 }
