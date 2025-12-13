@@ -18,6 +18,7 @@ import {
   HashIcon,
   FileBarChart,
   LogOut,
+  Landmark,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -667,6 +668,152 @@ export default function ClientDashboard() {
               </div>
             </div>
           </div>
+
+          {/* Banking Setup Status section */}
+          <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg shadow-red-500/20">
+                  <Landmark className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Banking Setup Status</h2>
+                  <p className="text-sm text-slate-600">Track your business bank account setup</p>
+                </div>
+              </div>
+              <Badge
+                className={
+                  company?.bankingStatus === "completed"
+                    ? "bg-green-100 text-green-700 border-green-200"
+                    : company?.bankingStatus === "in_progress"
+                      ? "bg-amber-100 text-amber-700 border-amber-200"
+                      : "bg-slate-100 text-slate-700 border-slate-200"
+                }
+              >
+                {company?.bankingStatus === "completed"
+                  ? "Completed"
+                  : company?.bankingStatus === "in_progress"
+                    ? "In Progress"
+                    : "Not Started"}
+              </Badge>
+            </div>
+
+            {/* Banking Progress */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+              {/* Required Documents Checklist */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                  <FileCheck className="w-4 h-4 text-[#880000]" />
+                  Required Documents
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    { name: "EIN Confirmation Letter", completed: !!ein },
+                    { name: "Articles of Organization", completed: milestones.formationCompleted },
+                    {
+                      name: "Operating Agreement",
+                      completed: documents.some((d: any) => d.type?.toLowerCase().includes("operating")),
+                    },
+                    { name: "Business License", completed: !!businessId },
+                  ].map((doc, index) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div
+                          className={`w-5 h-5 rounded-full flex items-center justify-center ${
+                            doc.completed ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : "bg-slate-200"
+                          }`}
+                        >
+                          {doc.completed && <Check className="w-3 h-3 text-white" />}
+                        </div>
+                        <span className={`text-sm ${doc.completed ? "text-slate-900 font-medium" : "text-slate-500"}`}>
+                          {doc.name}
+                        </span>
+                      </div>
+                      <span
+                        className={`text-xs px-2 py-1 rounded-full ${doc.completed ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-600"}`}
+                      >
+                        {doc.completed ? "Ready" : "Pending"}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Bank Recommendations */}
+              <div className="space-y-4">
+                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
+                  <Landmark className="w-4 h-4 text-[#880000]" />
+                  Recommended Banks
+                </h3>
+                <div className="space-y-3">
+                  {[
+                    {
+                      name: "Mercury",
+                      features: "No fees • Fast approval • Ideal for startups",
+                      logo: "/mercury-bank-logo.jpg",
+                    },
+                    {
+                      name: "Relay",
+                      features: "Multiple accounts • No minimums • Great support",
+                      logo: "/relay-bank-logo.jpg",
+                    },
+                    {
+                      name: "Novo",
+                      features: "Easy setup • Invoicing tools • Free transfers",
+                      logo: "/novo-bank-logo.jpg",
+                    },
+                  ].map((bank, index) => (
+                    <div
+                      key={index}
+                      className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 hover:border-[#880000] hover:shadow-md transition-all cursor-pointer"
+                    >
+                      <Image
+                        src={bank.logo || "/placeholder.svg"}
+                        alt={bank.name}
+                        width={40}
+                        height={40}
+                        className="rounded-lg border border-slate-200"
+                      />
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900">{bank.name}</p>
+                        <p className="text-xs text-slate-600 mt-1">{bank.features}</p>
+                      </div>
+                      <Button size="sm" variant="ghost" className="text-[#880000] hover:bg-red-50 hover:text-[#ff0d13]">
+                        Apply
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            {/* Application Status */}
+            {company?.bankingApplication && (
+              <div className="mt-6 p-4 rounded-lg bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 border border-[#880000]/20">
+                <div className="flex items-start justify-between">
+                  <div className="flex items-start gap-3">
+                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                      <Landmark className="w-5 h-5 text-white" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-slate-900">Banking Application Submitted</p>
+                      <p className="text-xs text-slate-600 mt-1">
+                        Your application with {company.bankingApplication.bankName} is being processed
+                      </p>
+                      <p className="text-xs text-slate-500 mt-2">
+                        Submitted on {new Date(company.bankingApplication.submittedAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <Badge className="bg-amber-100 text-amber-700 border-amber-200">Processing</Badge>
+                </div>
+              </div>
+            )}
+          </div>
+
           <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -675,12 +822,10 @@ export default function ClientDashboard() {
                   {completedDefaultCount} of {formationMilestones.length} core milestones completed
                 </p>
               </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
-                  {Math.round(progressPercentage)}%
-                </div>
-                <p className="text-xs text-slate-500 mt-1">Complete</p>
-              </div>
+
+              <Badge className="bg-green-100 text-green-700 border-green-200 capitalize font-semibold">
+                {company?.status || "Processing"}
+              </Badge>
             </div>
 
             {/* Progress Bar */}
@@ -817,7 +962,7 @@ export default function ClientDashboard() {
             </div>
 
             {hasRegisteredAgent && (
-              <div className="bg-gradient-to-br from-[#880000] to-[#ff0d13] rounded-2xl p-6 shadow-lg shadow-red-500/20 text-white">
+              <div className="bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 rounded-2xl p-6 shadow-lg shadow-red-500/20 text-white">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
                     <MapPin className="w-6 h-6 text-white" />
@@ -877,10 +1022,7 @@ export default function ClientDashboard() {
           </div>
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
-                <Clock className="w-5 h-5 text-white" />
-              </div>
+            <div className="flex items-center justify-between mb-6">
               <div>
                 <h2 className="text-lg font-semibold text-slate-900">Recent Activity</h2>
                 <p className="text-xs text-slate-600">Latest updates on your formation</p>
