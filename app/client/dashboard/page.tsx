@@ -897,25 +897,29 @@ export default function ClientDashboard() {
                       className={`flex items-start gap-3 p-3 rounded-lg border transition-all hover:shadow-md ${
                         activity.type === "milestone"
                           ? "bg-green-50/50 border-green-100 hover:bg-green-50"
-                          : "bg-blue-50/50 border-blue-100 hover:bg-blue-50"
+                          : "bg-red-50/50 border-red-100 hover:bg-red-50"
                       }`}
                     >
                       <div
                         className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
                           activity.type === "milestone"
                             ? "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
-                            : "bg-gradient-to-br from-blue-500 to-indigo-500"
+                            : "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
                         }`}
                       >
                         <Icon className="w-4 h-4 text-white" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 leading-tight">{activity.title}</p>
-                        <p className="text-xs text-slate-600 mt-1 leading-relaxed">{activity.description}</p>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900 leading-tight break-words">
+                          {activity.title}
+                        </p>
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed break-words">
+                          {activity.description}
+                        </p>
                       </div>
                       <CheckCircle2
                         className={`w-5 h-5 flex-shrink-0 ${
-                          activity.type === "milestone" ? "text-green-600" : "text-blue-600"
+                          activity.type === "milestone" ? "text-green-600" : "text-[#ff0d13]"
                         }`}
                       />
                     </div>
