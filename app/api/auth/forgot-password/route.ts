@@ -28,9 +28,7 @@ export async function POST(request: NextRequest) {
 
   // Single request at a time
   if (isProcessing) {
-    return addSecurityHeaders(
-      apiError("Server busy. Try again later.", 429)
-    )
+    return addSecurityHeaders(apiError("Server busy. Try again later.", 429))
   }
 
   isProcessing = true // lock
@@ -50,9 +48,7 @@ export async function POST(request: NextRequest) {
     const user = await usersCollection.findOne({ email })
     if (!user) {
       // Don't reveal if email exists or not
-      return addSecurityHeaders(
-        apiResponse({ message: "If email exists, reset link will be sent" })
-      )
+      return addSecurityHeaders(apiResponse({ message: "If email exists, reset link will be sent" }))
     }
 
     // Generate reset token
@@ -73,7 +69,7 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_APP_URL ||
       (process.env.VERCEL_URL ? `https://${process.env.PUBLIC_APP_URL}` : null) ||
       request.headers.get("origin") ||
-      "https://v0-frontend-ui-brief-20.vercel.app/"
+      "https://v0-frontend-ui-brief.vercel.app/"
 
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}&userId=${user._id.toString()}`
 
@@ -85,9 +81,7 @@ export async function POST(request: NextRequest) {
       html: resetEmail.html,
     })
 
-    return addSecurityHeaders(
-      apiResponse({ message: "If email exists, reset link will be sent" })
-    )
+    return addSecurityHeaders(apiResponse({ message: "If email exists, reset link will be sent" }))
   } catch (error) {
     console.error("Forgot password error:", error)
     return addSecurityHeaders(apiError("Failed to process request", 500))

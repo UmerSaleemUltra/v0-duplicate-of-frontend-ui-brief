@@ -2,7 +2,7 @@
 
 import { cache } from "./cache"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://v0-frontend-ui-brief-20.vercel.app"
+const API_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://v0-frontend-ui-brief.vercel.app"
 
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
@@ -136,7 +136,7 @@ export class ApiClient {
   // Order APIs
   static orders = {
     getAll: (token: string) => this.request("/orders", { token, cache: true, cacheTime: 30000 }),
-    getById: (id: string, token: string) => this.request(`/orders/${id}`, { token, cache: true, cacheTime: 30000 }),
+    getById: (id: string, token: string) => this.request(`/orders/${id}`, { token, cache: true }),
     create: (data: any, token: string) => this.request("/orders", { method: "POST", body: data, token }),
     update: (id: string, data: any, token: string) =>
       this.request(`/orders/${id}`, { method: "PUT", body: data, token }),
