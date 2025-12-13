@@ -745,7 +745,185 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-          {/* Banking Setup Status section */}
+          {/* Company Information Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Company Details Card */}
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg shadow-red-500/20">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Company Information</h2>
+                  <p className="text-sm text-slate-600">Your business details</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Order ID</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-mono font-semibold text-slate-900">{orderId}</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handleCopy(orderId, setCopied)}
+                    >
+                      {copied ? (
+                        <Check className="w-3 h-3 text-green-600" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-slate-400" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Entity Type</p>
+                  <p className="text-sm font-semibold text-slate-900">{entityType}</p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">State</p>
+                  <p className="text-sm font-semibold text-slate-900">{stateName}</p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Status</p>
+                  <Badge className="bg-green-100 text-green-700 border-green-200 capitalize font-semibold">
+                    {company?.status || "Processing"}
+                  </Badge>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Documents</p>
+                  <p className="text-sm font-semibold text-slate-900">{documents.length} files</p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Mail Items</p>
+                  <p className="text-sm font-semibold text-slate-900">{mailItems.length} items</p>
+                </div>
+              </div>
+            </div>
+
+            {hasRegisteredAgent && (
+              <div className="bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 rounded-2xl p-6 shadow-lg shadow-red-500/20 text-white">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <MapPin className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">Registered Agent</h2>
+                    <p className="text-sm text-white/80">Agent address</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <p className="text-xs text-white/70 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <MapPin className="w-3 h-3" />
+                      Address
+                    </p>
+                    <p className="text-sm leading-relaxed text-white">
+                      {registeredAgent.address}
+                      <br />
+                      {registeredAgent.city}, {registeredAgent.state} {registeredAgent.zip}
+                      <br />
+                      USA
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mailing Address Card */}
+            {company?.mailingAddress && (
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
+                    <Home className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Mailing Address</h2>
+                    <p className="text-xs text-slate-600">Business mailing address</p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <Home className="w-3 h-3" />
+                    Address
+                  </p>
+                  <p className="text-sm leading-relaxed text-slate-900">
+                    {company.mailingAddress.street}
+                    <br />
+                    {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
+                    <br />
+                    USA
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Recent Activity</h2>
+                <p className="text-xs text-slate-600">Latest updates on your formation</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity) => {
+                  const Icon = activity.icon
+                  return (
+                    <div
+                      key={activity.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all hover:shadow-md ${
+                        activity.type === "milestone"
+                          ? "bg-green-50/50 border-green-100 hover:bg-green-50"
+                          : "bg-red-50/50 border-red-100 hover:bg-red-50"
+                      }`}
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
+                          activity.type === "milestone"
+                            ? "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
+                            : "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900 leading-tight break-words">
+                          {activity.title}
+                        </p>
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed break-words">
+                          {activity.description}
+                        </p>
+                      </div>
+                      <CheckCircle2
+                        className={`w-5 h-5 flex-shrink-0 ${
+                          activity.type === "milestone" ? "text-green-600" : "text-[#ff0d13]"
+                        }`}
+                      />
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="text-center py-8 text-slate-500">
+                  <Clock className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                  <p className="text-sm">No recent activity yet</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Banking Setup Status section - Moved to last section */}
           <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
@@ -979,184 +1157,6 @@ export default function ClientDashboard() {
                   </div>
                 )
               })}
-            </div>
-          </div>
-
-          {/* Company Information Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Company Details Card */}
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg shadow-red-500/20">
-                  <Building2 className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Company Information</h2>
-                  <p className="text-sm text-slate-600">Your business details</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Order ID</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-mono font-semibold text-slate-900">{orderId}</p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => handleCopy(orderId, setCopied)}
-                    >
-                      {copied ? (
-                        <Check className="w-3 h-3 text-green-600" />
-                      ) : (
-                        <Copy className="w-3 h-3 text-slate-400" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Entity Type</p>
-                  <p className="text-sm font-semibold text-slate-900">{entityType}</p>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">State</p>
-                  <p className="text-sm font-semibold text-slate-900">{stateName}</p>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Status</p>
-                  <Badge className="bg-green-100 text-green-700 border-green-200 capitalize font-semibold">
-                    {company?.status || "Processing"}
-                  </Badge>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Documents</p>
-                  <p className="text-sm font-semibold text-slate-900">{documents.length} files</p>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Mail Items</p>
-                  <p className="text-sm font-semibold text-slate-900">{mailItems.length} items</p>
-                </div>
-              </div>
-            </div>
-
-            {hasRegisteredAgent && (
-              <div className="bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 rounded-2xl p-6 shadow-lg shadow-red-500/20 text-white">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-white">Registered Agent</h2>
-                    <p className="text-sm text-white/80">Agent address</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <p className="text-xs text-white/70 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <MapPin className="w-3 h-3" />
-                      Address
-                    </p>
-                    <p className="text-sm leading-relaxed text-white">
-                      {registeredAgent.address}
-                      <br />
-                      {registeredAgent.city}, {registeredAgent.state} {registeredAgent.zip}
-                      <br />
-                      USA
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Mailing Address Card */}
-            {company?.mailingAddress && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
-                    <Home className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-900">Mailing Address</h2>
-                    <p className="text-xs text-slate-600">Business mailing address</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <Home className="w-3 h-3" />
-                    Address
-                  </p>
-                  <p className="text-sm leading-relaxed text-slate-900">
-                    {company.mailingAddress.street}
-                    <br />
-                    {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
-                    <br />
-                    USA
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Recent Activity</h2>
-                <p className="text-xs text-slate-600">Latest updates on your formation</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {recentActivities.length > 0 ? (
-                recentActivities.map((activity) => {
-                  const Icon = activity.icon
-                  return (
-                    <div
-                      key={activity.id}
-                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all hover:shadow-md ${
-                        activity.type === "milestone"
-                          ? "bg-green-50/50 border-green-100 hover:bg-green-50"
-                          : "bg-red-50/50 border-red-100 hover:bg-red-50"
-                      }`}
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
-                          activity.type === "milestone"
-                            ? "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
-                            : "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
-                        }`}
-                      >
-                        <Icon className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-900 leading-tight break-words">
-                          {activity.title}
-                        </p>
-                        <p className="text-xs text-slate-600 mt-1 leading-relaxed break-words">
-                          {activity.description}
-                        </p>
-                      </div>
-                      <CheckCircle2
-                        className={`w-5 h-5 flex-shrink-0 ${
-                          activity.type === "milestone" ? "text-green-600" : "text-[#ff0d13]"
-                        }`}
-                      />
-                    </div>
-                  )
-                })
-              ) : (
-                <div className="text-center py-8 text-slate-500">
-                  <Clock className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                  <p className="text-sm">No recent activity yet</p>
-                </div>
-              )}
             </div>
           </div>
         </div>
