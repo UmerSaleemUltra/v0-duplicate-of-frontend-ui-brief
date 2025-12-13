@@ -73,12 +73,12 @@ export async function POST(request: NextRequest) {
       process.env.NEXT_PUBLIC_APP_URL ||
       (process.env.VERCEL_URL ? `https://${process.env.PUBLIC_APP_URL}` : null) ||
       request.headers.get("origin") ||
-      "https://v0-frontend-ui-brief.vercel.app"
+      "https://v0-frontend-ui-brief-20.vercel.app/"
 
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}&userId=${user._id.toString()}`
 
     // Send email
-    const resetEmail = emailTemplates.passwordReset(user.name, resetLink)
+    const resetEmail = emailTemplates.resetPassword(user.name, resetLink)
     await sendEmail({
       to: email,
       subject: resetEmail.subject,
