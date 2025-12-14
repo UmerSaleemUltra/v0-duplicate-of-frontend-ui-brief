@@ -611,10 +611,11 @@ export default function ClientDashboard() {
       <TooltipProvider>
         <OrderCelebration show={showCelebration} onClose={handleCloseCelebration} companyName={company?.name} />
 
-        <div className="space-y-6 pb-16 sm:pb-24 lg:pb-8">
-          <div className="flex items-center justify-between">
+        <div className="space-y-8 pb-16 sm:pb-24 lg:pb-8">
+          {/* Header Section with gradient background */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-[#880000]/5 to-[#ff0d13]/5 p-6 rounded-2xl border border-red-100">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-slate-900">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
                 {isFirstVisit ? `Welcome, ${responsibleMemberName}!` : `Welcome back, ${responsibleMemberName}!`}
               </h1>
               <p className="text-sm sm:text-base text-slate-600">
@@ -626,29 +627,29 @@ export default function ClientDashboard() {
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="h-10 gap-2 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+              className="h-10 gap-2 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 shadow-sm"
             >
               <LogOut className="w-4 h-4" />
               Logout
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {/* Business Name Card */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
+            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:border-red-200 transition-all duration-300 hover:-translate-y-1">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
                   <Image src="/images/design-mode/us.png" alt="US Flag" width={24} height={16} className="rounded" />
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2">
+                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <MoreVertical className="w-4 h-4 text-slate-400" />
-                </Button>
+                </div>
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-slate-500 font-medium">Business Name</p>
+              <div className="space-y-2">
+                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Business Name</p>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <h3 className="text-2xl font-bold text-slate-900 truncate cursor-help hover:opacity-80 transition-opacity">
+                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 truncate cursor-help hover:text-[#880000] transition-colors">
                       {businessName}
                     </h3>
                   </TooltipTrigger>
@@ -661,17 +662,17 @@ export default function ClientDashboard() {
               </div>
             </div>
 
-            {/* EIN Card - Shows "Not Yet Assigned" if not assigned by admin */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
+            {/* EIN Card */}
+            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:border-red-200 transition-all duration-300 hover:-translate-y-1">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                  <Hash className="w-6 h-6 text-slate-600" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                  <Hash className="w-6 h-6 text-blue-600" />
                 </div>
                 {ein && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 -mr-2 -mt-2"
+                    className="h-8 w-8 hover:bg-green-50 transition-colors"
                     onClick={() => handleCopy(company.ein, setCopiedEIN)}
                   >
                     {copiedEIN ? (
@@ -682,27 +683,27 @@ export default function ClientDashboard() {
                   </Button>
                 )}
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-slate-500 font-medium">EIN</p>
+              <div className="space-y-2">
+                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">EIN</p>
                 <h3
-                  className={`text-2xl font-bold truncate ${ein ? "text-slate-900 cursor-help hover:opacity-80 transition-opacity" : "text-slate-400 opacity-50 blur-[0.5px]"}`}
+                  className={`text-xl sm:text-2xl font-bold truncate ${ein ? "text-slate-900" : "text-slate-400 opacity-50"}`}
                 >
                   {displayEIN}
                 </h3>
               </div>
             </div>
 
-            {/* Business ID Card - Shows "Not Yet Assigned" if not assigned by admin */}
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
+            {/* Business ID Card */}
+            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:border-red-200 transition-all duration-300 hover:-translate-y-1">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                  <Building2 className="w-6 h-6 text-slate-600" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                  <Building2 className="w-6 h-6 text-purple-600" />
                 </div>
                 {businessId && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 -mr-2 -mt-2"
+                    className="h-8 w-8 hover:bg-green-50 transition-colors"
                     onClick={() => handleCopy(businessId, setCopiedBusinessId)}
                   >
                     {copiedBusinessId ? (
@@ -713,10 +714,10 @@ export default function ClientDashboard() {
                   </Button>
                 )}
               </div>
-              <div className="space-y-1">
-                <p className="text-xs text-slate-500 font-medium">Business ID</p>
+              <div className="space-y-2">
+                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Business ID</p>
                 <h3
-                  className={`text-2xl font-bold ${businessId ? "text-slate-900" : "text-slate-400 opacity-50 blur-[0.5px]"}`}
+                  className={`text-xl sm:text-2xl font-bold ${businessId ? "text-slate-900" : "text-slate-400 opacity-50"}`}
                 >
                   {displayBusinessId}
                 </h3>
@@ -724,22 +725,18 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-          {/* Second row for Service Status and Invoice Download */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:border-green-200 transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
-                  <Bell className="w-6 h-6 text-slate-600" />
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                  <Bell className="w-6 h-6 text-green-600" />
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2">
-                  <MoreVertical className="w-4 h-4 text-slate-400" />
-                </Button>
               </div>
-              <div className="space-y-2">
-                <p className="text-xs text-slate-500 font-medium">Service Status</p>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <h3 className="text-2xl font-bold text-slate-900">Active</h3>
+              <div className="space-y-3">
+                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Service Status</p>
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/50" />
+                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900">Active</h3>
                 </div>
               </div>
             </div>
