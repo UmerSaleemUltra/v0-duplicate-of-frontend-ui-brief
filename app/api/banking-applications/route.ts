@@ -32,9 +32,12 @@ export async function POST(request: NextRequest) {
 
     const db = await getDatabase()
 
+    const company = await db.collection("companies").findOne({ _id: new ObjectId(companyId) })
+
     const application = {
       bankName,
       companyId: new ObjectId(companyId),
+      companyName: company?.name || businessName,
       userId: new ObjectId(decoded.userId),
       fullName,
       email,
@@ -112,7 +115,9 @@ export async function GET(request: NextRequest) {
         {
           $addFields: {
             id: { $toString: "$_id" },
-            company_name: "$company.name",
+            company_name: { $ifNull: ["$companyName", "$company.name"] },
+            company_state: "$company.state",
+            company_package: "$company.packageType",
             user_name: "$user.name",
             bank_name: "$bankName",
             full_name: "$fullName",

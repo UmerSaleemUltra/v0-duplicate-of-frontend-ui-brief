@@ -996,7 +996,6 @@ export default function ClientDashboard() {
                 </div>
               </div>
 
-              {/* Bank Recommendations */}
               <div className="space-y-4">
                 <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
                   <Landmark className="w-4 h-4 text-[#880000]" />
@@ -1005,32 +1004,28 @@ export default function ClientDashboard() {
                 <div className="space-y-3">
                   {[
                     {
-                      name: "Mercury",
-                      features: "No fees • Fast approval • Ideal for startups",
-                      logo: "/mercury-bank-logo.jpg",
+                      name: "Airwallex",
+                      features: "Global payments • Multi-currency • Low fees",
+                      logo: "/airwallex-logo.png",
                     },
                     {
-                      name: "Relay",
-                      features: "Multiple accounts • No minimums • Great support",
-                      logo: "/relay-bank-logo.jpg",
+                      name: "Sunrate",
+                      features: "Fast transfers • Excellent rates • 24/7 support",
+                      logo: "/sunrate-logo.png",
                     },
                     {
-                      name: "Novo",
-                      features: "Easy setup • Invoicing tools • Free transfers",
-                      logo: "/novo-bank-logo.jpg",
+                      name: "Aspire",
+                      features: "Business accounts • Credit cards • Expense management",
+                      logo: "/aspire-logo.png",
                     },
                   ].map((bank, index) => (
                     <div
                       key={index}
                       className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 hover:border-[#880000] hover:shadow-md transition-all cursor-pointer"
                     >
-                      <Image
-                        src={bank.logo || "/placeholder.svg"}
-                        alt={bank.name}
-                        width={40}
-                        height={40}
-                        className="rounded-lg border border-slate-200"
-                      />
+                      <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
+                        <Landmark className="w-5 h-5 text-[#880000]" />
+                      </div>
                       <div className="flex-1">
                         <p className="text-sm font-semibold text-slate-900">{bank.name}</p>
                         <p className="text-xs text-slate-600 mt-1">{bank.features}</p>
