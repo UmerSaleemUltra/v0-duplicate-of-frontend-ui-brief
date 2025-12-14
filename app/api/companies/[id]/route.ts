@@ -153,7 +153,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
       for (const [key, title] of Object.entries(milestoneMap)) {
         if (!oldMilestones[key] && newMilestones[key]) {
-          console.log("[v0] Milestone completed:", key, "-", title)
+          console.log("[v0] System milestone completed:", key, "-", title)
           try {
             await db.collection("notifications").insertOne({
               userId: company.userId,
@@ -167,6 +167,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 companyName: company.name,
                 milestoneName: key,
                 milestoneTitle: title,
+                milestoneType: "system",
               },
               createdAt: new Date().toISOString(),
             })
@@ -176,16 +177,69 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             console.log("[v0] Error creating milestone notification:", notifError)
           }
         } else if (oldMilestones[key] && !newMilestones[key]) {
-          console.log("[v0] Milestone uncompleted:", key, "-", title)
+          console.log("[v0] System milestone uncompleted:", key, "-", title)
           try {
             await db.collection("notifications").deleteMany({
               userId: company.userId,
               type: "milestone",
               "metadata.companyId": company._id.toString(),
               "metadata.milestoneName": key,
+              "metadata.milestoneType": "system",
             })
           } catch (deleteError) {
             console.log("[v0] Error deleting milestone notification:", deleteError)
+          }
+        }
+      }
+    }
+
+    if (body.customMilestones && Array.isArray(body.customMilestones)) {
+      const oldCustomMilestones = company.customMilestones || []
+      const newCustomMilestones = body.customMilestones
+
+      // Check each custom milestone for completion status changes
+      for (const newMilestone of newCustomMilestones) {
+        const oldMilestone = oldCustomMilestones.find((m: any) => m.id === newMilestone.id)
+
+        // If milestone was just completed
+        if (!oldMilestone?.completed && newMilestone.completed) {
+          console.log("[v0] Custom milestone completed:", newMilestone.title)
+          try {
+            await db.collection("notifications").insertOne({
+              userId: company.userId,
+              type: "milestone",
+              title: "Custom Milestone Completed",
+              message: `${newMilestone.title} completed for ${company.name}`,
+              read: false,
+              actionUrl: "/client/dashboard",
+              metadata: {
+                companyId: company._id.toString(),
+                companyName: company.name,
+                milestoneId: newMilestone.id,
+                milestoneTitle: newMilestone.title,
+                milestoneType: "custom",
+              },
+              createdAt: new Date().toISOString(),
+            })
+
+            broadcastUpdate("notifications", "created", { userId: company.userId })
+          } catch (notifError) {
+            console.log("[v0] Error creating custom milestone notification:", notifError)
+          }
+        }
+        // If milestone was uncompleted
+        else if (oldMilestone?.completed && !newMilestone.completed) {
+          console.log("[v0] Custom milestone uncompleted:", newMilestone.title)
+          try {
+            await db.collection("notifications").deleteMany({
+              userId: company.userId,
+              type: "milestone",
+              "metadata.companyId": company._id.toString(),
+              "metadata.milestoneId": newMilestone.id,
+              "metadata.milestoneType": "custom",
+            })
+          } catch (deleteError) {
+            console.log("[v0] Error deleting custom milestone notification:", deleteError)
           }
         }
       }
@@ -201,6 +255,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (body.milestones) {
       console.log("[v0] Milestone update completed successfully. Updated milestones:", result.milestones)
+    }
+
+    if (body.customMilestones) {
+      console.log("[v0] Custom milestones update completed successfully.")
     }
 
     const updatedCompany = { id: result._id.toString(), ...result }
