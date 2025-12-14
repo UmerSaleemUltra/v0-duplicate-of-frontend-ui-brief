@@ -32,6 +32,7 @@ import { useRouter } from "next/navigation"
 import { NoCompanyState } from "@/components/client/no-company-state"
 import { toast } from "@/components/ui/use-toast"
 import { OrderCelebration } from "@/components/celebration/order-celebration"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 export default function ClientDashboard() {
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
@@ -52,6 +53,7 @@ export default function ClientDashboard() {
   const [showCelebration, setShowCelebration] = useState(false)
   const [notifications, setNotifications] = useState<any[]>([])
   const [celebrationShown, setCelebrationShown] = useState(false)
+  const [showNotifications, setShowNotifications] = useState(false)
 
   useEffect(() => {
     const checkAuth = () => {
@@ -312,6 +314,51 @@ export default function ClientDashboard() {
       .slice(0, 6)
   }, [company, notifications])
 
+  const fetchNotifications = async () => {
+    try {
+      const token = authService.getToken()
+      if (token && selectedCompanyId) {
+        const response = await ApiClient.notifications.getAll(token, selectedCompanyId)
+        setNotifications(response.data || [])
+      }
+    } catch (error) {
+      console.log("[v0] Error fetching notifications:", error)
+    }
+  }
+
+  useEffect(() => {
+    if (selectedCompanyId) {
+      fetchNotifications()
+      const interval = setInterval(fetchNotifications, 30000) // Poll every 30 seconds
+      return () => clearInterval(interval)
+    }
+  }, [selectedCompanyId])
+
+  const markAllAsRead = async () => {
+    try {
+      const token = authService.getToken()
+      if (token) {
+        const unreadNotifications = notifications.filter((n) => !n.read)
+        await Promise.all(unreadNotifications.map((n) => ApiClient.notifications.markAsRead(n._id || n.id, token)))
+        await fetchNotifications()
+        toast({
+          title: "Success",
+          description: "All notifications marked as read",
+        })
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to mark notifications as read",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const unreadCount = useMemo(() => {
+    return notifications.filter((n) => !n.read).length
+  }, [notifications])
+
   if (isAuthenticating) {
     return (
       <ClientShell>
@@ -546,14 +593,97 @@ export default function ClientDashboard() {
                   : `You're managing ${businessName} today. Here's your current formation status.`}
               </p>
             </div>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="h-10 gap-2 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+            <div className="flex items-center gap-2">
+              <Popover open={showNotifications} onOpenChange={setShowNotifications}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    className="relative h-10 w-10 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                  >
+                    <Bell className="w-4 h-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-red-600 text-white text-xs flex items-center justify-center font-semibold">
+                        {unreadCount > 9 ? "9+" : unreadCount}
+                      </span>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-96 p-0" align="end">
+                  <div className="border-b border-slate-200 p-4 flex items-center justify-between">
+                    <h3 className="font-semibold text-slate-900">Notifications</h3>
+                    {unreadCount > 0 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={markAllAsRead}
+                        className="text-xs h-7 text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        Mark all read
+                      </Button>
+                    )}
+                  </div>
+                  <div className="max-h-96 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-8 text-center text-slate-500">
+                        <Bell className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                        <p className="text-sm">No notifications yet</p>
+                      </div>
+                    ) : (
+                      <div className="divide-y divide-slate-100">
+                        {notifications.map((notif) => (
+                          <div
+                            key={notif._id || notif.id}
+                            className={`p-4 hover:bg-slate-50 transition-colors ${!notif.read ? "bg-red-50/30" : ""}`}
+                          >
+                            <div className="flex items-start gap-3">
+                              <div
+                                className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                                  notif.type === "milestone"
+                                    ? "bg-gradient-to-br from-green-500 to-green-600"
+                                    : "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
+                                }`}
+                              >
+                                <Bell className="w-4 h-4 text-white" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="flex items-start justify-between gap-2">
+                                  <p className="font-semibold text-sm text-slate-900 leading-tight">{notif.title}</p>
+                                  {!notif.read && (
+                                    <div className="w-2 h-2 rounded-full bg-red-600 flex-shrink-0 mt-1" />
+                                  )}
+                                </div>
+                                <p className="text-xs text-slate-600 mt-1 leading-relaxed break-words">
+                                  {notif.message}
+                                </p>
+                                {notif.createdAt && (
+                                  <p className="text-xs text-slate-400 mt-2">
+                                    {new Date(notif.createdAt).toLocaleDateString("en-US", {
+                                      month: "short",
+                                      day: "numeric",
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })}
+                                  </p>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
+              <Button
+                variant="outline"
+                onClick={handleLogout}
+                className="h-10 gap-2 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+              >
+                <LogOut className="w-4 h-4" />
+                Logout
+              </Button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
