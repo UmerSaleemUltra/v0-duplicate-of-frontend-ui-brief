@@ -218,6 +218,11 @@ export class ApiClient {
         method: "PUT",
         token,
       }),
+    markAllAsRead: (token: string) =>
+      this.request("/notifications/mark-all-read", {
+        method: "PUT",
+        token,
+      }),
     delete: (id: string, token: string) =>
       this.request(`/notifications/${id}`, {
         method: "DELETE",
