@@ -1,7 +1,5 @@
 "use client"
 
-import type React from "react"
-
 import { ClientShell } from "@/components/client/client-shell"
 import {
   Building2,
@@ -20,7 +18,6 @@ import {
   HashIcon,
   FileBarChart,
   LogOut,
-  Landmark,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -35,11 +32,6 @@ import { useRouter } from "next/navigation"
 import { NoCompanyState } from "@/components/client/no-company-state"
 import { toast } from "@/components/ui/use-toast"
 import { OrderCelebration } from "@/components/celebration/order-celebration"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 export default function ClientDashboard() {
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
@@ -60,21 +52,6 @@ export default function ClientDashboard() {
   const [showCelebration, setShowCelebration] = useState(false)
   const [notifications, setNotifications] = useState<any[]>([])
   const [celebrationShown, setCelebrationShown] = useState(false)
-
-  const [isBankingModalOpen, setIsBankingModalOpen] = useState(false)
-  const [selectedBank, setSelectedBank] = useState("")
-  const [bankingFormData, setBankingFormData] = useState({
-    fullName: "",
-    email: "",
-    phone: "",
-    businessName: "",
-    ein: "",
-    expectedMonthlyRevenue: "",
-    businessDescription: "",
-    fundingSource: "",
-    additionalNotes: "",
-  })
-  const [isSubmittingBanking, setIsSubmittingBanking] = useState(false)
 
   useEffect(() => {
     const checkAuth = () => {
@@ -283,60 +260,6 @@ export default function ClientDashboard() {
   const handleCloseCelebration = () => {
     console.log("[v0] Closing celebration modal")
     setShowCelebration(false)
-  }
-
-  const handleBankingSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmittingBanking(true)
-
-    try {
-      const token = authService.getToken()
-      if (!token) throw new Error("Not authenticated")
-
-      const response = await fetch("/api/banking-applications", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          ...bankingFormData,
-          bankName: selectedBank,
-          companyId: company?.id,
-        }),
-      })
-
-      if (!response.ok) throw new Error("Failed to submit application")
-
-      toast({
-        title: "Success",
-        description: "Banking application submitted successfully!",
-      })
-      setIsBankingModalOpen(false)
-      setBankingFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        businessName: "",
-        ein: "",
-        expectedMonthlyRevenue: "",
-        businessDescription: "",
-        fundingSource: "",
-        additionalNotes: "",
-      })
-
-      // Refresh company data
-      const companyResponse = await ApiClient.companies.getById(company.id, token)
-      setCompany(companyResponse.data)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to submit banking application",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSubmittingBanking(false)
-    }
   }
 
   const recentActivities = useMemo(() => {
@@ -611,11 +534,10 @@ export default function ClientDashboard() {
       <TooltipProvider>
         <OrderCelebration show={showCelebration} onClose={handleCloseCelebration} companyName={company?.name} />
 
-        <div className="space-y-8 pb-16 sm:pb-24 lg:pb-8">
-          {/* Header Section with gradient background */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-gradient-to-r from-[#880000]/5 to-[#ff0d13]/5 p-6 rounded-2xl border border-red-100">
+        <div className="space-y-6 pb-16 sm:pb-24 lg:pb-8">
+          <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-slate-900">
                 {isFirstVisit ? `Welcome, ${responsibleMemberName}!` : `Welcome back, ${responsibleMemberName}!`}
               </h1>
               <p className="text-sm sm:text-base text-slate-600">
@@ -627,29 +549,29 @@ export default function ClientDashboard() {
             <Button
               variant="outline"
               onClick={handleLogout}
-              className="h-10 gap-2 bg-white hover:bg-red-50 hover:text-red-600 hover:border-red-200 shadow-sm"
+              className="h-10 gap-2 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
             >
               <LogOut className="w-4 h-4" />
               Logout
             </Button>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {/* Business Name Card */}
-            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:border-red-200 transition-all duration-300 hover:-translate-y-1">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
                   <Image src="/images/design-mode/us.png" alt="US Flag" width={24} height={16} className="rounded" />
                 </div>
-                <div className="w-8 h-8 rounded-lg bg-slate-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2">
                   <MoreVertical className="w-4 h-4 text-slate-400" />
-                </div>
+                </Button>
               </div>
-              <div className="space-y-2">
-                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Business Name</p>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-500 font-medium">Business Name</p>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <h3 className="text-xl sm:text-2xl font-bold text-slate-900 truncate cursor-help hover:text-[#880000] transition-colors">
+                    <h3 className="text-2xl font-bold text-slate-900 truncate cursor-help hover:opacity-80 transition-opacity">
                       {businessName}
                     </h3>
                   </TooltipTrigger>
@@ -662,17 +584,17 @@ export default function ClientDashboard() {
               </div>
             </div>
 
-            {/* EIN Card */}
-            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:border-red-200 transition-all duration-300 hover:-translate-y-1">
+            {/* EIN Card - Shows "Not Yet Assigned" if not assigned by admin */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <Hash className="w-6 h-6 text-blue-600" />
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                  <Hash className="w-6 h-6 text-slate-600" />
                 </div>
                 {ein && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 hover:bg-green-50 transition-colors"
+                    className="h-8 w-8 -mr-2 -mt-2"
                     onClick={() => handleCopy(company.ein, setCopiedEIN)}
                   >
                     {copiedEIN ? (
@@ -683,27 +605,27 @@ export default function ClientDashboard() {
                   </Button>
                 )}
               </div>
-              <div className="space-y-2">
-                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">EIN</p>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-500 font-medium">EIN</p>
                 <h3
-                  className={`text-xl sm:text-2xl font-bold truncate ${ein ? "text-slate-900" : "text-slate-400 opacity-50"}`}
+                  className={`text-2xl font-bold truncate ${ein ? "text-slate-900 cursor-help hover:opacity-80 transition-opacity" : "text-slate-400 opacity-50 blur-[0.5px]"}`}
                 >
                   {displayEIN}
                 </h3>
               </div>
             </div>
 
-            {/* Business ID Card */}
-            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:border-red-200 transition-all duration-300 hover:-translate-y-1">
+            {/* Business ID Card - Shows "Not Yet Assigned" if not assigned by admin */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-50 to-pink-50 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <Building2 className="w-6 h-6 text-purple-600" />
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                  <Building2 className="w-6 h-6 text-slate-600" />
                 </div>
                 {businessId && (
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 hover:bg-green-50 transition-colors"
+                    className="h-8 w-8 -mr-2 -mt-2"
                     onClick={() => handleCopy(businessId, setCopiedBusinessId)}
                   >
                     {copiedBusinessId ? (
@@ -714,10 +636,10 @@ export default function ClientDashboard() {
                   </Button>
                 )}
               </div>
-              <div className="space-y-2">
-                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Business ID</p>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-500 font-medium">Business ID</p>
                 <h3
-                  className={`text-xl sm:text-2xl font-bold ${businessId ? "text-slate-900" : "text-slate-400 opacity-50"}`}
+                  className={`text-2xl font-bold ${businessId ? "text-slate-900" : "text-slate-400 opacity-50 blur-[0.5px]"}`}
                 >
                   {displayBusinessId}
                 </h3>
@@ -725,349 +647,26 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div className="group bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-xl hover:border-green-200 transition-all duration-300">
+          {/* Second row for Service Status and Invoice Download */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center shadow-sm group-hover:shadow-md transition-shadow">
-                  <Bell className="w-6 h-6 text-green-600" />
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                  <Bell className="w-6 h-6 text-slate-600" />
                 </div>
+                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2">
+                  <MoreVertical className="w-4 h-4 text-slate-400" />
+                </Button>
               </div>
-              <div className="space-y-3">
-                <p className="text-xs text-slate-500 font-semibold uppercase tracking-wider">Service Status</p>
-                <div className="flex items-center gap-3">
-                  <div className="w-3 h-3 rounded-full bg-green-500 animate-pulse shadow-lg shadow-green-500/50" />
-                  <h3 className="text-xl sm:text-2xl font-bold text-slate-900">Active</h3>
+              <div className="space-y-2">
+                <p className="text-xs text-slate-500 font-medium">Service Status</p>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-green-500" />
+                  <h3 className="text-2xl font-bold text-slate-900">Active</h3>
                 </div>
               </div>
             </div>
           </div>
-
-          {/* Company Information Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Company Details Card */}
-            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg shadow-red-500/20">
-                  <Building2 className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Company Information</h2>
-                  <p className="text-sm text-slate-600">Your business details</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Order ID</p>
-                  <div className="flex items-center gap-2">
-                    <p className="text-sm font-mono font-semibold text-slate-900">{orderId}</p>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-6 w-6"
-                      onClick={() => handleCopy(orderId, setCopied)}
-                    >
-                      {copied ? (
-                        <Check className="w-3 h-3 text-green-600" />
-                      ) : (
-                        <Copy className="w-3 h-3 text-slate-400" />
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Entity Type</p>
-                  <p className="text-sm font-semibold text-slate-900">{entityType}</p>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">State</p>
-                  <p className="text-sm font-semibold text-slate-900">{stateName}</p>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Status</p>
-                  <Badge className="bg-green-100 text-green-700 border-green-200 capitalize font-semibold">
-                    {company?.status || "Processing"}
-                  </Badge>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Documents</p>
-                  <p className="text-sm font-semibold text-slate-900">{documents.length} files</p>
-                </div>
-
-                <div className="space-y-1">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Mail Items</p>
-                  <p className="text-sm font-semibold text-slate-900">{mailItems.length} items</p>
-                </div>
-              </div>
-            </div>
-
-            {hasRegisteredAgent && (
-              <div className="bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 rounded-2xl p-6 shadow-lg shadow-red-500/20 text-white">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-white">Registered Agent</h2>
-                    <p className="text-sm text-white/80">Agent address</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <p className="text-xs text-white/70 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <MapPin className="w-3 h-3" />
-                      Address
-                    </p>
-                    <p className="text-sm leading-relaxed text-white">
-                      {registeredAgent.address}
-                      <br />
-                      {registeredAgent.city}, {registeredAgent.state} {registeredAgent.zip}
-                      <br />
-                      USA
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Mailing Address Card */}
-            {company?.mailingAddress && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
-                    <Home className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-900">Mailing Address</h2>
-                    <p className="text-xs text-slate-600">Business mailing address</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <Home className="w-3 h-3" />
-                    Address
-                  </p>
-                  <p className="text-sm leading-relaxed text-slate-900">
-                    {company.mailingAddress.street}
-                    <br />
-                    {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
-                    <br />
-                    USA
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Recent Activity</h2>
-                <p className="text-xs text-slate-600">Latest updates on your formation</p>
-              </div>
-            </div>
-
-            <div className="space-y-3">
-              {recentActivities.length > 0 ? (
-                recentActivities.map((activity) => {
-                  const Icon = activity.icon
-                  return (
-                    <div
-                      key={activity.id}
-                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all hover:shadow-md ${
-                        activity.type === "milestone"
-                          ? "bg-green-50/50 border-green-100 hover:bg-green-50"
-                          : "bg-red-50/50 border-red-100 hover:bg-red-50"
-                      }`}
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
-                          activity.type === "milestone"
-                            ? "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
-                            : "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
-                        }`}
-                      >
-                        <Icon className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-900 leading-tight break-words">
-                          {activity.title}
-                        </p>
-                        <p className="text-xs text-slate-600 mt-1 leading-relaxed break-words">
-                          {activity.description}
-                        </p>
-                      </div>
-                      <CheckCircle2
-                        className={`w-5 h-5 flex-shrink-0 ${
-                          activity.type === "milestone" ? "text-green-600" : "text-[#ff0d13]"
-                        }`}
-                      />
-                    </div>
-                  )
-                })
-              ) : (
-                <div className="text-center py-8 text-slate-500">
-                  <Clock className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                  <p className="text-sm">No recent activity yet</p>
-                </div>
-              )}
-            </div>
-          </div>
-
-          {/* Banking Setup Status section - Moved to last section */}
-          <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg shadow-red-500/20">
-                  <Landmark className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Banking Setup Status</h2>
-                  <p className="text-sm text-slate-600">Track your business bank account setup</p>
-                </div>
-              </div>
-              <Badge
-                className={
-                  company?.bankingStatus === "completed"
-                    ? "bg-green-100 text-green-700 border-green-200"
-                    : company?.bankingStatus === "in_progress"
-                      ? "bg-amber-100 text-amber-700 border-amber-200"
-                      : "bg-slate-100 text-slate-700 border-slate-200"
-                }
-              >
-                {company?.bankingStatus === "completed"
-                  ? "Completed"
-                  : company?.bankingStatus === "in_progress"
-                    ? "In Progress"
-                    : "Not Started"}
-              </Badge>
-            </div>
-
-            {/* Banking Progress */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-              {/* Required Documents Checklist */}
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                  <FileCheck className="w-4 h-4 text-[#880000]" />
-                  Required Documents
-                </h3>
-                <div className="space-y-3">
-                  {[
-                    { name: "EIN Confirmation Letter", completed: !!ein },
-                    { name: "Articles of Organization", completed: milestones.formationCompleted },
-                    {
-                      name: "Operating Agreement",
-                      completed: documents.some((d: any) => d.type?.toLowerCase().includes("operating")),
-                    },
-                    { name: "Business License", completed: !!businessId },
-                  ].map((doc, index) => (
-                    <div
-                      key={index}
-                      className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100"
-                    >
-                      <div className="flex items-center gap-3">
-                        <div
-                          className={`w-5 h-5 rounded-full flex items-center justify-center ${
-                            doc.completed ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : "bg-slate-200"
-                          }`}
-                        >
-                          {doc.completed && <Check className="w-3 h-3 text-white" />}
-                        </div>
-                        <span className={`text-sm ${doc.completed ? "text-slate-900 font-medium" : "text-slate-500"}`}>
-                          {doc.name}
-                        </span>
-                      </div>
-                      <span
-                        className={`text-xs px-2 py-1 rounded-full ${doc.completed ? "bg-green-100 text-green-700" : "bg-slate-200 text-slate-600"}`}
-                      >
-                        {doc.completed ? "Ready" : "Pending"}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-slate-900 flex items-center gap-2">
-                  <Landmark className="w-4 h-4 text-[#880000]" />
-                  Recommended Banks
-                </h3>
-                <div className="space-y-3">
-                  {[
-                    {
-                      name: "Airwallex",
-                      features: "Global payments • Multi-currency • Low fees",
-                      logo: "/airwallex-logo.png",
-                    },
-                    {
-                      name: "Sunrate",
-                      features: "Fast transfers • Excellent rates • 24/7 support",
-                      logo: "/sunrate-logo.png",
-                    },
-                    {
-                      name: "Aspire",
-                      features: "Business accounts • Credit cards • Expense management",
-                      logo: "/aspire-logo.png",
-                    },
-                  ].map((bank, index) => (
-                    <div
-                      key={index}
-                      className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 hover:border-[#880000] hover:shadow-md transition-all cursor-pointer"
-                    >
-                      <div className="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center flex-shrink-0">
-                        <Landmark className="w-5 h-5 text-[#880000]" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-900">{bank.name}</p>
-                        <p className="text-xs text-slate-600 mt-1">{bank.features}</p>
-                      </div>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-[#880000] hover:bg-red-50 hover:text-[#ff0d13]"
-                        onClick={() => {
-                          setSelectedBank(bank.name)
-                          setIsBankingModalOpen(true)
-                        }}
-                      >
-                        Apply
-                      </Button>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-
-            {/* Application Status */}
-            {company?.bankingApplication && (
-              <div className="mt-6 p-4 rounded-lg bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 border border-[#880000]/20">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-start gap-3">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                      <Landmark className="w-5 h-5 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-900">Banking Application Submitted</p>
-                      <p className="text-xs text-slate-600 mt-1">
-                        Your application with {company.bankingApplication.bankName} is being processed
-                      </p>
-                      <p className="text-xs text-slate-500 mt-2">
-                        Submitted on {new Date(company.bankingApplication.submittedAt).toLocaleDateString()}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge className="bg-amber-100 text-amber-700 border-amber-200">Processing</Badge>
-                </div>
-              </div>
-            )}
-          </div>
-
           <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -1076,10 +675,12 @@ export default function ClientDashboard() {
                   {completedDefaultCount} of {formationMilestones.length} core milestones completed
                 </p>
               </div>
-
-              <Badge className="bg-green-100 text-green-700 border-green-200 capitalize font-semibold">
-                {company?.status || "Processing"}
-              </Badge>
+              <div className="text-right">
+                <div className="text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
+                  {Math.round(progressPercentage)}%
+                </div>
+                <p className="text-xs text-slate-500 mt-1">Complete</p>
+              </div>
             </div>
 
             {/* Progress Bar */}
@@ -1151,162 +752,189 @@ export default function ClientDashboard() {
               })}
             </div>
           </div>
+
+          {/* Company Information Grid */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Company Details Card */}
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg shadow-red-500/20">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Company Information</h2>
+                  <p className="text-sm text-slate-600">Your business details</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Order ID</p>
+                  <div className="flex items-center gap-2">
+                    <p className="text-sm font-mono font-semibold text-slate-900">{orderId}</p>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => handleCopy(orderId, setCopied)}
+                    >
+                      {copied ? (
+                        <Check className="w-3 h-3 text-green-600" />
+                      ) : (
+                        <Copy className="w-3 h-3 text-slate-400" />
+                      )}
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Entity Type</p>
+                  <p className="text-sm font-semibold text-slate-900">{entityType}</p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">State</p>
+                  <p className="text-sm font-semibold text-slate-900">{stateName}</p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Status</p>
+                  <Badge className="bg-green-100 text-green-700 border-green-200 capitalize font-semibold">
+                    {company?.status || "Processing"}
+                  </Badge>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Documents</p>
+                  <p className="text-sm font-semibold text-slate-900">{documents.length} files</p>
+                </div>
+
+                <div className="space-y-1">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Mail Items</p>
+                  <p className="text-sm font-semibold text-slate-900">{mailItems.length} items</p>
+                </div>
+              </div>
+            </div>
+
+            {hasRegisteredAgent && (
+              <div className="bg-gradient-to-br from-[#880000] to-[#ff0d13] rounded-2xl p-6 shadow-lg shadow-red-500/20 text-white">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
+                    <MapPin className="w-6 h-6 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-white">Registered Agent</h2>
+                    <p className="text-sm text-white/80">Agent address</p>
+                  </div>
+                </div>
+
+                <div className="space-y-4">
+                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
+                    <p className="text-xs text-white/70 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
+                      <MapPin className="w-3 h-3" />
+                      Address
+                    </p>
+                    <p className="text-sm leading-relaxed text-white">
+                      {registeredAgent.address}
+                      <br />
+                      {registeredAgent.city}, {registeredAgent.state} {registeredAgent.zip}
+                      <br />
+                      USA
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Mailing Address Card */}
+            {company?.mailingAddress && (
+              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
+                    <Home className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Mailing Address</h2>
+                    <p className="text-xs text-slate-600">Business mailing address</p>
+                  </div>
+                </div>
+
+                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
+                    <Home className="w-3 h-3" />
+                    Address
+                  </p>
+                  <p className="text-sm leading-relaxed text-slate-900">
+                    {company.mailingAddress.street}
+                    <br />
+                    {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
+                    <br />
+                    USA
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
+                <Clock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h2 className="text-lg font-semibold text-slate-900">Recent Activity</h2>
+                <p className="text-xs text-slate-600">Latest updates on your formation</p>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              {recentActivities.length > 0 ? (
+                recentActivities.map((activity) => {
+                  const Icon = activity.icon
+                  return (
+                    <div
+                      key={activity.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all hover:shadow-md ${
+                        activity.type === "milestone"
+                          ? "bg-green-50/50 border-green-100 hover:bg-green-50"
+                          : "bg-red-50/50 border-red-100 hover:bg-red-50"
+                      }`}
+                    >
+                      <div
+                        className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
+                          activity.type === "milestone"
+                            ? "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
+                            : "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
+                        }`}
+                      >
+                        <Icon className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-sm font-semibold text-slate-900 leading-tight break-words">
+                          {activity.title}
+                        </p>
+                        <p className="text-xs text-slate-600 mt-1 leading-relaxed break-words">
+                          {activity.description}
+                        </p>
+                      </div>
+                      <CheckCircle2
+                        className={`w-5 h-5 flex-shrink-0 ${
+                          activity.type === "milestone" ? "text-green-600" : "text-[#ff0d13]"
+                        }`}
+                      />
+                    </div>
+                  )
+                })
+              ) : (
+                <div className="text-center py-8 text-slate-500">
+                  <Clock className="w-12 h-12 mx-auto mb-3 text-slate-300" />
+                  <p className="text-sm">No recent activity yet</p>
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </TooltipProvider>
-
-      {/* Banking Application Modal */}
-      <Dialog open={isBankingModalOpen} onOpenChange={setIsBankingModalOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-semibold text-slate-900">
-              Apply for Business Banking - {selectedBank}
-            </DialogTitle>
-            <p className="text-sm text-slate-600 mt-2">
-              Fill out the form below and we'll help you get your business bank account set up with {selectedBank}.
-            </p>
-          </DialogHeader>
-
-          <form onSubmit={handleBankingSubmit} className="space-y-6 mt-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label htmlFor="fullName">Full Name *</Label>
-                <Input
-                  id="fullName"
-                  value={bankingFormData.fullName}
-                  onChange={(e) => setBankingFormData({ ...bankingFormData, fullName: e.target.value })}
-                  required
-                  placeholder="John Doe"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="email">Email Address *</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  value={bankingFormData.email}
-                  onChange={(e) => setBankingFormData({ ...bankingFormData, email: e.target.value })}
-                  required
-                  placeholder="john@example.com"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="phone">Phone Number *</Label>
-                <Input
-                  id="phone"
-                  type="tel"
-                  value={bankingFormData.phone}
-                  onChange={(e) => setBankingFormData({ ...bankingFormData, phone: e.target.value })}
-                  required
-                  placeholder="+1 (555) 000-0000"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="businessName">Business Name *</Label>
-                <Input
-                  id="businessName"
-                  value={bankingFormData.businessName}
-                  onChange={(e) => setBankingFormData({ ...bankingFormData, businessName: e.target.value })}
-                  required
-                  placeholder="Your LLC Name"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="ein">EIN (Employer Identification Number) *</Label>
-                <Input
-                  id="ein"
-                  value={bankingFormData.ein}
-                  onChange={(e) => setBankingFormData({ ...bankingFormData, ein: e.target.value })}
-                  required
-                  placeholder="XX-XXXXXXX"
-                />
-              </div>
-
-              <div>
-                <Label htmlFor="expectedMonthlyRevenue">Expected Monthly Revenue *</Label>
-                <Select
-                  value={bankingFormData.expectedMonthlyRevenue}
-                  onValueChange={(value) => setBankingFormData({ ...bankingFormData, expectedMonthlyRevenue: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select range" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="0-5000">$0 - $5,000</SelectItem>
-                    <SelectItem value="5000-25000">$5,000 - $25,000</SelectItem>
-                    <SelectItem value="25000-100000">$25,000 - $100,000</SelectItem>
-                    <SelectItem value="100000+">$100,000+</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-
-            <div>
-              <Label htmlFor="businessDescription">Business Description *</Label>
-              <Textarea
-                id="businessDescription"
-                value={bankingFormData.businessDescription}
-                onChange={(e) => setBankingFormData({ ...bankingFormData, businessDescription: e.target.value })}
-                required
-                placeholder="Briefly describe what your business does..."
-                rows={3}
-              />
-            </div>
-
-            <div>
-              <Label htmlFor="fundingSource">Source of Funds *</Label>
-              <Select
-                value={bankingFormData.fundingSource}
-                onValueChange={(value) => setBankingFormData({ ...bankingFormData, fundingSource: value })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select funding source" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="personal-savings">Personal Savings</SelectItem>
-                  <SelectItem value="business-revenue">Business Revenue</SelectItem>
-                  <SelectItem value="investor">Investor Funding</SelectItem>
-                  <SelectItem value="loan">Business Loan</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="additionalNotes">Additional Notes (Optional)</Label>
-              <Textarea
-                id="additionalNotes"
-                value={bankingFormData.additionalNotes}
-                onChange={(e) => setBankingFormData({ ...bankingFormData, additionalNotes: e.target.value })}
-                placeholder="Any additional information you'd like to share..."
-                rows={3}
-              />
-            </div>
-
-            <div className="flex gap-3 pt-4">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => setIsBankingModalOpen(false)}
-                className="flex-1"
-                disabled={isSubmittingBanking}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#660000] hover:to-[#cc0a10]"
-                disabled={isSubmittingBanking}
-              >
-                {isSubmittingBanking ? "Submitting..." : "Submit Application"}
-              </Button>
-            </div>
-          </form>
-        </DialogContent>
-      </Dialog>
     </ClientShell>
   )
 }

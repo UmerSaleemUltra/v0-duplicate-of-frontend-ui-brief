@@ -6,19 +6,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  Users,
-  FileText,
-  Mail,
-  Menu,
-  Bell,
-  Search,
-  Package,
-  LogOut,
-  Landmark,
-} from "lucide-react"
+import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Bell, Search, Package, LogOut } from "lucide-react"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import Image from "next/image"
@@ -34,7 +22,6 @@ const navigation = [
   { name: "Mailroom", href: "/admin/mailroom", icon: Mail },
   { name: "Addons", href: "/admin/addons", icon: Package },
   { name: "Blog", href: "/admin/blog", icon: FileText },
-  { name: "Banking", href: "/admin/banking", icon: Landmark },
 ]
 
 export function AdminShell({ children }: { children: React.ReactNode }) {
