@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Search, Mail, Phone, Eye, Trash2, MoreVertical, Building2 } from "lucide-react"
+import { Search, Mail, Phone, Eye, Trash2, MoreVertical, Building2, UserCircle } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ApiClient } from "@/lib/api-client"
@@ -121,24 +121,6 @@ export default function CustomersPage() {
       setFilteredCustomers(customers)
     }
   }, [searchQuery, customers])
-
-  useEffect(() => {
-    if (searchQuery) {
-      const filtered = customers.filter(
-        (customer) =>
-          customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          customer.company.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-      setFilteredCustomers(filtered)
-    } else {
-      setFilteredCustomers(customers)
-    }
-  }, [searchQuery, customers])
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery])
 
   const handleDeleteCustomer = async (customerId: string) => {
     if (typeof window === "undefined") return
@@ -346,6 +328,10 @@ export default function CustomersPage() {
                           <DropdownMenuItem onClick={() => router.push(`/admin/customers/${customer.id}`)}>
                             <Eye className="h-4 w-4 mr-2" />
                             View Profile
+                          </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => router.push(`/admin/customers/${customer.id}/access`)}>
+                            <UserCircle className="h-4 w-4 mr-2" />
+                            Access User Account
                           </DropdownMenuItem>
                           {customer.companies && customer.companies.length > 0 && (
                             <DropdownMenuItem onClick={() => handleViewCompany(customer, customer.companies[0])}>
