@@ -8,7 +8,6 @@ import HowItWorks from "@/components/sections/how-it-works"
 import GlobalFounders from "@/components/sections/global-founders"
 import PricingSection from "@/components/sections/pricing"
 import ServicesSection from "@/components/sections/services"
-import WhyBuzzFilling from "@/components/sections/why-buzzfiling"
 import VideoTestimonials from "@/components/sections/VideoTestimonials"
 import TestimonialMarquee2Rows from "@/components/sections/testimonials"
 import StateFeesCalculator from "@/components/sections/calculator"
@@ -77,18 +76,17 @@ export default function LandingPage() {
       <Navbar />
       <HeroSection />
       <Brands />
-      <LLCFormationSection />
-      <HowItWorks />
       <PricingSection />
       <ServicesSection />
-      <WhyBuzzFilling />
-      <WhyChooseUs />
+      <HowItWorks />
       <ClientDashboardSection />
-      <GlobalFounders />
       <ComplianceSection />
-      <VideoTestimonials />
+      <WhyChooseUs />
+      <GlobalFounders />
       <TestimonialsEnhanced />
+      <VideoTestimonials />
       <TestimonialMarquee2Rows />
+      <LLCFormationSection />
       <StateFeesCalculator />
       <MarqueeBanner />
       <ContactForm />
