@@ -16,6 +16,9 @@ import ContactForm from "@/components/sections/contact"
 import MarqueeBanner from "@/components/sections/marquee-banner"
 import Footer from "@/components/sections/footer"
 import { useEffect } from "react"
+import WhyChooseUs from "@/components/sections/why-choose-us"
+import TestimonialsEnhanced from "@/components/sections/testimonials-enhanced"
+import ComplianceSection from "@/components/sections/compliance"
 
 export default function LandingPage() {
   useEffect(() => {
@@ -78,8 +81,11 @@ export default function LandingPage() {
       <PricingSection />
       <ServicesSection />
       <WhyBuzzFilling />
+      <WhyChooseUs />
       <GlobalFounders />
+      <ComplianceSection />
       <VideoTestimonials />
+      <TestimonialsEnhanced />
       <TestimonialMarquee2Rows />
       <StateFeesCalculator />
       <MarqueeBanner />
