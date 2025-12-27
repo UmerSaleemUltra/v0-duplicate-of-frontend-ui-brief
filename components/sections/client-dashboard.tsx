@@ -199,13 +199,7 @@ const ClientDashboardSection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
         >
-          <Button
-            size="lg"
-            className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#aa0000] hover:to-[#ff2020] text-white px-8 py-6 text-lg rounded-full shadow-lg"
-          >
-            <CheckCircle className="w-5 h-5 mr-2" />
-            Start Your Business Today
-          </Button>
+        
         </motion.div>
       </div>
     </section>
