@@ -1,0 +1,126 @@
+"use client"
+
+import { motion } from "framer-motion"
+import { MapPin } from "lucide-react"
+
+const regions = [
+  { name: "Pakistan", flag: "🇵🇰" },
+  { name: "UAE", flag: "🇦🇪" },
+  { name: "United Kingdom", flag: "🇬🇧" },
+  { name: "India", flag: "🇮🇳" },
+  { name: "Europe", flag: "🇪🇺" },
+  { name: "Asia Pacific", flag: "🌏" },
+  { name: "Middle East", flag: "🌍" },
+  { name: "Africa", flag: "🌍" },
+]
+
+const GlobalFounders = () => {
+  return (
+    <section className="py-24 relative overflow-hidden">
+      {/* Red Gradient Background */}
+      <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-primary" />
+
+      {/* Pattern Overlay */}
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+            backgroundSize: "30px 30px",
+          }}
+        />
+      </div>
+
+      {/* Decorative Globe Pattern */}
+      <div className="absolute inset-0 flex items-center justify-center opacity-10">
+        <div className="w-[600px] h-[600px] rounded-full border border-primary-foreground/40" />
+        <div className="absolute w-[800px] h-[800px] rounded-full border border-primary-foreground/30" />
+        <div className="absolute w-[1000px] h-[1000px] rounded-full border border-primary-foreground/20" />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-16"
+        >
+          <span className="text-primary-foreground/80 font-medium text-sm uppercase tracking-wider">Global Reach</span>
+          <h2 className="font-display text-4xl md:text-5xl font-bold text-primary-foreground mt-4 mb-6">
+            Founders We Help Worldwide
+          </h2>
+          <p className="text-primary-foreground/70 text-lg max-w-2xl mx-auto">
+            Trusted by entrepreneurs across the globe to start and scale their U.S. businesses.
+          </p>
+        </motion.div>
+
+        {/* Region Badges */}
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="flex flex-wrap justify-center gap-4 mb-16"
+        >
+          {regions.map((region, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, scale: 0.9 }}
+              whileInView={{ opacity: 1, scale: 1 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.3, delay: index * 0.05 }}
+              whileHover={{ scale: 1.05 }}
+              className="flex items-center gap-3 px-6 py-3 rounded-full bg-primary-foreground/10 border border-primary-foreground/20 backdrop-blur-sm hover:bg-primary-foreground/20 transition-all duration-300"
+            >
+              <span className="text-2xl">{region.flag}</span>
+              <span className="font-medium text-primary-foreground">{region.name}</span>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Stats */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+          {[
+            { value: "30+", label: "Countries Served" },
+            { value: "500+", label: "Happy Founders" },
+            { value: "50", label: "U.S. States" },
+            { value: "4 Weeks", label: "Average Setup Time" },
+          ].map((stat, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.4, delay: index * 0.1 }}
+              className="text-center p-6 rounded-2xl bg-primary-foreground/10 border border-primary-foreground/20 backdrop-blur-sm"
+            >
+              <div className="font-display text-4xl md:text-5xl font-bold text-primary-foreground mb-2">
+                {stat.value}
+              </div>
+              <div className="text-primary-foreground/70">{stat.label}</div>
+            </motion.div>
+          ))}
+        </div>
+
+        {/* CTA */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.4 }}
+          className="mt-12 text-center"
+        >
+          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-primary-foreground/10 border border-primary-foreground/30 backdrop-blur-sm">
+            <MapPin className="w-5 h-5 text-primary-foreground" />
+            <span className="text-primary-foreground">
+              Helping founders from <span className="font-semibold">30+ countries</span> start U.S. businesses
+            </span>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  )
+}
+
+export default GlobalFounders

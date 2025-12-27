@@ -18,6 +18,8 @@ import {
   HashIcon,
   FileBarChart,
   LogOut,
+  Landmark,
+  CreditCard,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -529,6 +531,130 @@ export default function ClientDashboard() {
     }
   }
 
+  const renderProgressSection = () => {
+    const statusCards = [
+      {
+        icon: FileCheck,
+        title: "Company Formation",
+        status: milestones.formationCompleted ? "Complete" : "In Progress",
+        statusColor: milestones.formationCompleted ? "text-green-600" : "text-amber-600",
+        bgColor: milestones.formationCompleted ? "bg-green-50" : "bg-amber-50",
+      },
+      {
+        icon: Landmark,
+        title: "EIN Registration",
+        status: milestones.einProcessed ? "Complete" : "In Progress",
+        statusColor: milestones.einProcessed ? "text-green-600" : "text-amber-600",
+        bgColor: milestones.einProcessed ? "bg-green-50" : "bg-amber-50",
+      },
+      {
+        icon: CreditCard,
+        title: "Bank Account",
+        status: "Pending",
+        statusColor: "text-blue-600",
+        bgColor: "bg-blue-50",
+      },
+      {
+        icon: FileBarChart,
+        title: "BOI Report",
+        status: milestones.boiReportFiled ? "Complete" : "Pending",
+        statusColor: milestones.boiReportFiled ? "text-green-600" : "text-blue-600",
+        bgColor: milestones.boiReportFiled ? "bg-green-50" : "bg-blue-50",
+      },
+    ]
+
+    return (
+      <div className="mt-8 space-y-6">
+        {/* Status Cards Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {statusCards.map((card, index) => (
+            <div
+              key={index}
+              className="bg-white rounded-xl p-5 border border-slate-200 shadow-sm hover:shadow-md transition-shadow"
+            >
+              <div className={`w-11 h-11 rounded-lg ${card.bgColor} flex items-center justify-center mb-3`}>
+                <card.icon className={`w-5 h-5 ${card.statusColor}`} />
+              </div>
+              <p className="text-slate-900 font-semibold text-sm mb-1">{card.title}</p>
+              <p className={`text-xs font-medium ${card.statusColor}`}>{card.status}</p>
+            </div>
+          ))}
+        </div>
+
+        {/* Progress Bar Card */}
+        <div className="bg-gradient-to-br from-[#880000] to-[#ff0d13] rounded-2xl p-6 text-white">
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h4 className="font-bold text-lg">Formation Progress</h4>
+              <p className="text-sm text-white/80">
+                {completedDefaultCount} of {formationMilestones.length} steps completed
+              </p>
+            </div>
+            <span className="text-4xl font-bold">{Math.round(progressPercentage)}%</span>
+          </div>
+          <div className="h-3 bg-white/20 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-white rounded-full transition-all duration-500"
+              style={{ width: `${progressPercentage}%` }}
+            />
+          </div>
+          <div className="mt-4 pt-4 border-t border-white/20">
+            <p className="text-sm text-white/90">
+              {progressPercentage === 100
+                ? "🎉 Your formation is complete! All milestones achieved."
+                : "Keep going! Your U.S. business is taking shape."}
+            </p>
+          </div>
+        </div>
+
+        {/* Global Reach Section */}
+        <div className="bg-gradient-to-br from-slate-50 to-slate-100 rounded-2xl p-6 border border-slate-200">
+          <div className="text-center mb-6">
+            <h3 className="text-xl font-bold text-slate-900 mb-2">Join Founders from Around the World 🌍</h3>
+            <p className="text-sm text-slate-600">
+              BuzzFiling has helped entrepreneurs from 30+ countries start their U.S. businesses
+            </p>
+          </div>
+
+          <div className="flex flex-wrap justify-center gap-3">
+            {[
+              { name: "Pakistan", flag: "🇵🇰", code: "PK" },
+              { name: "UAE", flag: "🇦🇪", code: "AE" },
+              { name: "United Kingdom", flag: "🇬🇧", code: "GB" },
+              { name: "India", flag: "🇮🇳", code: "IN" },
+              { name: "Canada", flag: "🇨🇦", code: "CA" },
+              { name: "Singapore", flag: "🇸🇬", code: "SG" },
+              { name: "Australia", flag: "🇦🇺", code: "AU" },
+              { name: "Germany", flag: "🇩🇪", code: "DE" },
+            ].map((country, index) => (
+              <div
+                key={index}
+                className="flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-slate-200 hover:border-[#880000] hover:shadow-md transition-all"
+              >
+                <span className="text-xl">{country.flag}</span>
+                <span className="font-medium text-slate-700 text-sm">{country.name}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-6 pt-6 border-t border-slate-200">
+            {[
+              { value: "30+", label: "Countries" },
+              { value: "500+", label: "Founders" },
+              { value: "50", label: "U.S. States" },
+              { value: "4 Weeks", label: "Avg Setup" },
+            ].map((stat, index) => (
+              <div key={index} className="text-center">
+                <div className="text-2xl md:text-3xl font-bold text-[#880000]">{stat.value}</div>
+                <div className="text-sm text-slate-600 mt-1">{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <ClientShell>
       <TooltipProvider>
@@ -875,6 +1001,8 @@ export default function ClientDashboard() {
               </div>
             )}
           </div>
+
+          {renderProgressSection()}
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
             <div className="flex items-center gap-3 mb-6">
