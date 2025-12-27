@@ -397,15 +397,11 @@ const TrustSocialProof = () => {
                         </div>
                         {/* Verification Badge Overlay */}
                         <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#7d1215] flex items-center justify-center border-2 border-[#2B2D31]">
-                          <svg
-                            className="w-2.5 h-2.5 text-white"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="3"
-                          >
-                            <polyline points="20 6 9 17 4 12" />
-                          </svg>
+                          <img
+                            src="/images/buzzfiling-logo.png"
+                            alt="Verified"
+                            className="w-2.5 h-2.5 object-contain"
+                          />
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
