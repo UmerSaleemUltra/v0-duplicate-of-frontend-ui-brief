@@ -8,17 +8,15 @@ import HowItWorks from "@/components/sections/how-it-works"
 import GlobalFounders from "@/components/sections/global-founders"
 import PricingSection from "@/components/sections/pricing"
 import ServicesSection from "@/components/sections/services"
-import VideoTestimonials from "@/components/sections/VideoTestimonials"
-import TestimonialMarquee2Rows from "@/components/sections/testimonials"
 import StateFeesCalculator from "@/components/sections/calculator"
 import ContactForm from "@/components/sections/contact"
 import MarqueeBanner from "@/components/sections/marquee-banner"
 import Footer from "@/components/sections/footer"
 import { useEffect } from "react"
 import WhyChooseUs from "@/components/sections/why-choose-us"
-import TestimonialsEnhanced from "@/components/sections/testimonials-enhanced"
 import ComplianceSection from "@/components/sections/compliance"
 import ClientDashboardSection from "@/components/sections/client-dashboard"
+import TrustSocialProof from "@/components/sections/trust-social-proof"
 
 export default function LandingPage() {
   useEffect(() => {
@@ -83,9 +81,7 @@ export default function LandingPage() {
       <ComplianceSection />
       <WhyChooseUs />
       <GlobalFounders />
-      <TestimonialsEnhanced />
-      <VideoTestimonials />
-      <TestimonialMarquee2Rows />
+      <TrustSocialProof />
       <LLCFormationSection />
       <StateFeesCalculator />
       <MarqueeBanner />
