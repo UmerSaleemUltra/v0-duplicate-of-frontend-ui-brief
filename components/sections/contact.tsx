@@ -1,129 +1,168 @@
 "use client"
 
 import type React from "react"
-
-import { useState } from "react"
-import { Send } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
+import { useState, useEffect } from "react"
+import Image from "next/image"
+import { motion, AnimatePresence } from "framer-motion"
 
 export default function ContactSection() {
-  const [submitting, setSubmitting] = useState(false)
-  const [status, setStatus] = useState<null | "ok" | "err">(null)
+  const [formData, setFormData] = useState({
+    fullName: "",
+    email: "",
+    message: "",
+  })
+  const [windowWidth, setWindowWidth] = useState(0)
+  const [isMounted, setIsMounted] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
 
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setSubmitting(true)
-    setStatus(null)
+  useEffect(() => {
+    setIsMounted(true)
 
-    try {
-      // Simulate API call
-      await new Promise((r) => setTimeout(r, 1000))
-      setStatus("ok")
-      ;(e.target as HTMLFormElement).reset()
-    } catch {
-      setStatus("err")
-    } finally {
-      setSubmitting(false)
+    const handleResize = () => {
+      setWindowWidth(window.innerWidth)
     }
+
+    handleResize()
+    window.addEventListener("resize", handleResize)
+
+    return () => {
+      window.removeEventListener("resize", handleResize)
+    }
+  }, [])
+
+  const isMobile = windowWidth < 768
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }))
+  }
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log("Form submitted:", formData)
+
+    setFormData({
+      fullName: "",
+      email: "",
+      message: "",
+    })
+
+    setIsSubmitted(true)
+    setTimeout(() => setIsSubmitted(false), 4000)
   }
 
   return (
-    <section className="py-16 md:py-24 bg-gradient-to-br from-[#ff0d13] via-[#e60c12] to-[#cc0a10] relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
-            backgroundSize: "30px 30px",
-          }}
-        />
-      </div>
-
-      <div className="container mx-auto px-4 relative z-10">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">Reach Out, We're Here to Help!</h2>
-          <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
+    <section
+      id="contact"
+      className="w-full py-10 xs:py-12 sm:py-14 md:py-16 bg-gradient-to-br from-[#880000] via-[#cc0000] to-[#ff0d13]"
+    >
+      <div className="container mx-auto px-4 max-w-6xl">
+        <div className="text-center mb-6 xs:mb-8 sm:mb-10">
+          <h2 className="text-2xl xs:text-3xl md:text-4xl font-bold text-white mb-2">Reach Out, We're Here to Help!</h2>
+          <p className="text-white/80 text-xs xs:text-sm sm:text-base max-w-2xl mx-auto">
             Complete the form, and our team will promptly respond to your inquiry within our working hours!
           </p>
         </div>
 
-        <div className="max-w-2xl mx-auto">
-          <div className="bg-[#1a0d0e] rounded-3xl p-8 md:p-10">
-            <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">Send us a message</h3>
+        <div className="bg-gradient-to-b from-[#8a0000] to-[#cc0000] rounded-lg overflow-hidden flex flex-col md:flex-row">
+          {/* Form Section */}
+          <div className="w-full md:w-1/2 p-8 md:p-10">
+            <h3 className="text-xl font-semibold text-white mb-6">Send us a message</h3>
 
-            <form onSubmit={onSubmit} className="space-y-6">
-              {/* Full Name */}
-              <div className="space-y-2">
-                <label htmlFor="fullName" className="text-white font-medium block">
+            <AnimatePresence>
+              {isSubmitted && (
+                <motion.div
+                  initial={{ opacity: 0, y: -20, scale: 0.8 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: -20, scale: 0.8 }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  className="mb-6 rounded-lg bg-green-500/90 p-4 text-center text-white font-medium shadow-md"
+                >
+                  Thank you! Your message has been sent successfully.
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {/* Form */}
+            <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-5">
+              <div>
+                <label htmlFor="fullName" className="block text-white mb-1.5 xs:mb-2 text-xs xs:text-sm">
                   Full Name
                 </label>
-                <Input
+                <input
+                  type="text"
                   id="fullName"
                   name="fullName"
-                  type="text"
-                  required
+                  value={formData.fullName}
+                  onChange={handleChange}
                   placeholder="Full Name"
-                  className="bg-white border-0 text-gray-900 placeholder:text-gray-500 h-12 rounded-xl"
+                  className="w-full px-3 xs:px-4 py-2.5 xs:py-3 rounded bg-[#6a0000]/70 border border-[#8a0000] text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#ff0d13] text-sm"
+                  required
                 />
               </div>
 
-              {/* Email */}
-              <div className="space-y-2">
-                <label htmlFor="email" className="text-white font-medium block">
+              <div>
+                <label htmlFor="email" className="block text-white mb-2 text-sm">
                   Email
                 </label>
-                <Input
+                <input
+                  type="email"
                   id="email"
                   name="email"
-                  type="email"
-                  required
+                  value={formData.email}
+                  onChange={handleChange}
                   placeholder="your.email@example.com"
-                  className="bg-white border-0 text-gray-900 placeholder:text-gray-500 h-12 rounded-xl"
+                  className="w-full px-4 py-3 rounded bg-[#6a0000]/70 border border-[#8a0000] text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]"
+                  required
                 />
               </div>
 
-              {/* Message */}
-              <div className="space-y-2">
-                <label htmlFor="message" className="text-white font-medium block">
+              <div>
+                <label htmlFor="message" className="block text-white mb-2 text-sm">
                   Message
                 </label>
-                <Textarea
+                <textarea
                   id="message"
                   name="message"
-                  required
-                  rows={5}
+                  value={formData.message}
+                  onChange={handleChange}
                   placeholder="Your Message"
-                  className="bg-white border-0 text-gray-900 placeholder:text-gray-500 rounded-xl resize-none"
+                  rows={4}
+                  className="w-full px-4 py-3 rounded bg-[#6a0000]/70 border border-[#8a0000] text-white placeholder-white/50 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]"
+                  required
                 />
               </div>
 
-              {/* Submit Button */}
-              <Button
+              <button
                 type="submit"
-                disabled={submitting}
-                className="w-full bg-[#ff0d13] hover:bg-[#e60c12] text-white font-bold h-12 rounded-xl text-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+                className="flex items-center justify-center gap-2 
+                  text-sm sm:text-base font-medium
+                  text-[#880000] capitalize bg-white
+                  rounded-full px-6 py-3
+                  transition-all duration-300 hover:bg-gray-100 hover:shadow-lg"
               >
-                {submitting ? (
-                  "Sending..."
-                ) : (
-                  <>
-                    <Send className="w-5 h-5 mr-2" />
-                    Send Message
-                  </>
-                )}
-              </Button>
-
-              {/* Status Messages */}
-              {status === "ok" && <p className="text-green-400 text-center font-medium">Message sent successfully!</p>}
-              {status === "err" && (
-                <p className="text-red-400 text-center font-medium">Something went wrong. Please try again.</p>
-              )}
+                <span>Send Message</span>
+              </button>
             </form>
           </div>
+
+          {!isMobile && (
+            <div className="w-full md:w-1/2 bg-gradient-to-b from-[#cc0000] to-[#880000] flex items-center justify-center p-6">
+              <div className="relative w-full h-[300px] md:h-full">
+                <Image
+                  src="/images/image.png"
+                  alt="Support team"
+                  fill
+                  className="object-contain"
+                  sizes="(max-width: 768px) 100vw, 50vw"
+                  priority
+                />
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </section>
