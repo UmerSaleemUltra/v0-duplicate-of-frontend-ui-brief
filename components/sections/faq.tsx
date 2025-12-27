@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Plus, Minus } from "lucide-react"
+import { cn } from "@/lib/utils"
 
 interface FAQItem {
   question: string
@@ -114,11 +115,12 @@ export default function FAQSection() {
                 setActiveCategory(index)
                 setOpenItem(null)
               }}
-              className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
+              className={cn(
+                "px-6 py-3 rounded-full font-medium transition-all duration-300",
                 activeCategory === index
                   ? "bg-[#ff0d13] text-white shadow-lg shadow-red-500/30"
-                  : "bg-white text-gray-700 hover:bg-gray-100"
-              }`}
+                  : "bg-white text-gray-700 hover:bg-gray-100",
+              )}
             >
               {category.name}
             </button>
@@ -133,25 +135,31 @@ export default function FAQSection() {
             return (
               <div
                 key={index}
-                className="bg-white rounded-2xl border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md"
+                className="bg-white rounded-2xl border border-gray-200 overflow-hidden transition-shadow duration-300 hover:shadow-md"
               >
                 <button
                   onClick={() => toggleItem(index)}
                   className="w-full flex items-center justify-between p-6 text-left"
+                  aria-expanded={isOpen}
+                  aria-controls={`faq-answer-${index}`}
                 >
                   <span className="text-lg md:text-xl font-semibold text-gray-900 pr-4">{item.question}</span>
-                  <div className="flex-shrink-0">
+                  <div className="flex-shrink-0 transition-transform duration-500">
                     {isOpen ? <Minus className="w-6 h-6 text-[#ff0d13]" /> : <Plus className="w-6 h-6 text-gray-400" />}
                   </div>
                 </button>
 
                 <div
-                  className={`transition-all duration-300 ease-in-out ${
-                    isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
-                  }`}
+                  id={`faq-answer-${index}`}
+                  className={cn(
+                    "grid transition-all duration-500 ease-in-out",
+                    isOpen ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+                  )}
                 >
-                  <div className="px-6 pb-6">
-                    <p className="text-gray-600 leading-relaxed">{item.answer}</p>
+                  <div className="overflow-hidden">
+                    <div className="px-6 pb-6">
+                      <p className="text-gray-600 leading-relaxed">{item.answer}</p>
+                    </div>
                   </div>
                 </div>
               </div>
