@@ -3,62 +3,10 @@
 import { MapPin } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useState, useEffect } from "react"
 
 export default function Footer() {
-  const [isMounted, setIsMounted] = useState(false)
-  const [windowWidth, setWindowWidth] = useState(0)
-
-  // Handle window resize and initial mount
-  useEffect(() => {
-    setIsMounted(true)
-
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth)
-    }
-
-    // Set initial width
-    handleResize()
-
-    // Add event listener
-    window.addEventListener("resize", handleResize)
-
-    // Cleanup
-    return () => {
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [])
-
-  // Determine image style based on screen width
-  const getImageStyle = () => {
-    // Default position for large screens
-    const defaultStyle = {
-      width: "349px",
-      height: "466px",
-      top: "60.6px",
-      right: "0",
-      marginTop: "-100px",
-    }
-
-    // Adjust for laptop screens (between 1024px and 1440px)
-    if (windowWidth >= 1024 && windowWidth < 1440) {
-      return {
-        ...defaultStyle,
-        width: "300px",
-        height: "400px",
-        top: "40px",
-        marginTop: "-100px",
-      }
-    }
-
-    return defaultStyle
-  }
-
-  // Check if device is laptop or larger (1024px+)
-  const isLaptopOrLarger = windowWidth >= 1024
-
   return (
-    <footer className="text-white py-8 sm:py-10 md:py-12 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 overflow-hidden relative bg-gradient-to-b from-[#880000] to-[#ff0d13]">
+    <footer className="text-white py-8 sm:py-10 md:py-12 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 overflow-hidden relative bg-gradient-to-b from-[#cc0000] to-[#ff0d13]">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
           {/* Left section - Logo and contact info */}
@@ -195,9 +143,7 @@ export default function Footer() {
           </div>
 
           {/* Middle section - Links (two columns) */}
-          <div
-            className={`md:col-span-5 ${isLaptopOrLarger ? "lg:col-span-5" : "lg:col-span-9"} grid grid-cols-2 gap-4 sm:gap-6 md:gap-8`}
-          >
+          <div className="md:col-span-5 lg:col-span-5 grid grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <div>
               <ul className="space-y-1.5 xs:space-y-2 sm:space-y-3">
                 <li>
@@ -258,26 +204,19 @@ export default function Footer() {
             </div>
           </div>
 
-          {/* Right section - Person image - ONLY on laptop/desktop */}
-          {isLaptopOrLarger && (
-            <div className="lg:col-span-4 relative">
-              {isMounted && (
-                <div className="relative">
-                  {/* Desktop/Laptop version - dynamically positioned based on screen size */}
-                  <div className="absolute" style={getImageStyle()}>
-                    <Image
-                      src="/images/image.png"
-                      alt="Person working on tablet"
-                      fill
-                      className="object-contain"
-                      sizes="(min-width: 1440px) 349px, (min-width: 1024px) 300px, 0px"
-                      priority
-                    />
-                  </div>
-                </div>
-              )}
+          {/* Right section - Person image - shows on laptop/desktop */}
+          <div className="hidden lg:block lg:col-span-4 relative">
+            <div className="absolute w-[300px] xl:w-[349px] h-[400px] xl:h-[466px] top-[40px] xl:top-[60.6px] right-0 -mt-[100px]">
+              <Image
+                src="/images/image.png"
+                alt="Person working on tablet"
+                fill
+                className="object-contain"
+                sizes="(min-width: 1440px) 349px, (min-width: 1024px) 300px, 0px"
+                priority
+              />
             </div>
-          )}
+          </div>
         </div>
 
         {/* Footer Text - Mobile version at bottom */}

@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
 
@@ -11,26 +11,7 @@ export default function ContactSection() {
     email: "",
     message: "",
   })
-  const [windowWidth, setWindowWidth] = useState(0)
-  const [isMounted, setIsMounted] = useState(false)
   const [isSubmitted, setIsSubmitted] = useState(false)
-
-  useEffect(() => {
-    setIsMounted(true)
-
-    const handleResize = () => {
-      setWindowWidth(window.innerWidth)
-    }
-
-    handleResize()
-    window.addEventListener("resize", handleResize)
-
-    return () => {
-      window.removeEventListener("resize", handleResize)
-    }
-  }, [])
-
-  const isMobile = windowWidth < 768
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -57,7 +38,7 @@ export default function ContactSection() {
   return (
     <section
       id="contact"
-      className="w-full py-10 xs:py-12 sm:py-14 md:py-16 bg-gradient-to-br from-[#880000] via-[#cc0000] to-[#ff0d13]"
+      className="w-full py-10 xs:py-12 sm:py-14 md:py-16 bg-gradient-to-b from-[#880000] to-[#cc0000]"
     >
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-6 xs:mb-8 sm:mb-10">
@@ -67,7 +48,7 @@ export default function ContactSection() {
           </p>
         </div>
 
-        <div className="bg-gradient-to-b from-[#8a0000] to-[#cc0000] rounded-lg overflow-hidden flex flex-col md:flex-row">
+        <div className="bg-gradient-to-b from-[#8a0000] to-[#aa0000] rounded-lg overflow-hidden flex flex-col md:flex-row">
           {/* Form Section */}
           <div className="w-full md:w-1/2 p-8 md:p-10">
             <h3 className="text-xl font-semibold text-white mb-6">Send us a message</h3>
@@ -149,20 +130,18 @@ export default function ContactSection() {
             </form>
           </div>
 
-          {!isMobile && (
-            <div className="w-full md:w-1/2 bg-gradient-to-b from-[#cc0000] to-[#880000] flex items-center justify-center p-6">
-              <div className="relative w-full h-[300px] md:h-full">
-                <Image
-                  src="/images/image.png"
-                  alt="Support team"
-                  fill
-                  className="object-contain"
-                  sizes="(max-width: 768px) 100vw, 50vw"
-                  priority
-                />
-              </div>
+          <div className="w-full md:w-1/2 bg-gradient-to-b from-[#aa0000] to-[#880000] flex items-center justify-center p-6">
+            <div className="relative w-full h-[300px] md:h-full">
+              <Image
+                src="/images/image.png"
+                alt="Support team"
+                fill
+                className="object-contain"
+                sizes="(max-width: 768px) 100vw, 50vw"
+                priority
+              />
             </div>
-          )}
+          </div>
         </div>
       </div>
     </section>

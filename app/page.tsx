@@ -80,7 +80,6 @@ export default function LandingPage() {
       <WhyChooseUs />
       <GlobalFounders />
       <TrustSocialProof />
-      <ContactSection />
       <FAQSection />
       <ContactSection />
       <Footer />
