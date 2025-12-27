@@ -3,14 +3,10 @@
 import Navbar from "@/components/sections/navbar"
 import HeroSection from "@/components/sections/hero"
 import Brands from "@/components/sections/brands"
-import LLCFormationSection from "@/components/sections/llc-formation"
 import HowItWorks from "@/components/sections/how-it-works"
 import GlobalFounders from "@/components/sections/global-founders"
 import PricingSection from "@/components/sections/pricing"
 import ServicesSection from "@/components/sections/services"
-import StateFeesCalculator from "@/components/sections/calculator"
-import ContactForm from "@/components/sections/contact"
-import MarqueeBanner from "@/components/sections/marquee-banner"
 import Footer from "@/components/sections/footer"
 import { useEffect } from "react"
 import WhyChooseUs from "@/components/sections/why-choose-us"
@@ -82,10 +78,6 @@ export default function LandingPage() {
       <WhyChooseUs />
       <GlobalFounders />
       <TrustSocialProof />
-      <LLCFormationSection />
-      <StateFeesCalculator />
-      <MarqueeBanner />
-      <ContactForm />
       <Footer />
     </div>
   )
