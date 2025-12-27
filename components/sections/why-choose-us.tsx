@@ -39,7 +39,7 @@ const WhyChooseUs = () => {
         <div
           className="absolute inset-0"
           style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, hsl(0 85% 50%) 1px, transparent 0)`,
+            backgroundImage: `radial-gradient(circle at 2px 2px, #ffebec 1px, transparent 0)`,
             backgroundSize: "40px 40px",
           }}
         />
@@ -54,7 +54,9 @@ const WhyChooseUs = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <span className="text-secondary font-medium text-sm uppercase tracking-wider">Why Buzz Filing</span>
+            <span className="font-medium text-sm uppercase tracking-wider" style={{ color: "#ff0d13" }}>
+              Why Buzz Filing
+            </span>
             <h2 className="font-display text-4xl sm:text-5xl lg:text-5xl font-bold text-buzz-dark mt-4 mb-6">
               Built for Global Founders
             </h2>
@@ -73,8 +75,11 @@ const WhyChooseUs = () => {
                   transition={{ duration: 0.4, delay: index * 0.1 }}
                   className="flex items-center gap-3"
                 >
-                  <div className="w-6 h-6 rounded-full bg-secondary flex items-center justify-center flex-shrink-0">
-                    <Check className="w-4 h-4 text-secondary-foreground" />
+                  <div
+                    className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                    style={{ backgroundColor: "#ff0d13" }}
+                  >
+                    <Check className="w-4 h-4 text-white" />
                   </div>
                   <span className="text-buzz-dark font-medium text-base">{item}</span>
                 </motion.div>
@@ -97,10 +102,24 @@ const WhyChooseUs = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
-                className="group flex gap-4 p-5 rounded-xl bg-buzz-off-white border border-buzz-dark/10 hover:border-secondary/40 hover:shadow-lg transition-all duration-300"
+                className="group flex gap-4 p-5 rounded-xl bg-buzz-off-white border border-buzz-dark/10 hover:shadow-lg transition-all duration-300"
+                style={{
+                  borderColor: "rgb(0 0 0 / 0.1)",
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.borderColor = "#ffcdd2"
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.borderColor = "rgb(0 0 0 / 0.1)"
+                }}
               >
-                <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-secondary/10 flex items-center justify-center group-hover:bg-secondary group-hover:text-secondary-foreground transition-colors">
-                  <feature.icon className="w-6 h-6 text-secondary group-hover:text-secondary-foreground transition-colors" />
+                <div
+                  className="flex-shrink-0 w-12 h-12 rounded-lg flex items-center justify-center transition-colors"
+                  style={{
+                    backgroundColor: "#ffebec",
+                  }}
+                >
+                  <feature.icon className="w-6 h-6" style={{ color: "#ff0d13" }} />
                 </div>
                 <div className="flex-1">
                   <h3 className="font-display font-semibold text-buzz-dark mb-1.5 text-base">{feature.title}</h3>
