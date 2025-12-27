@@ -95,9 +95,7 @@ export default function PricingSection () {
           <div className="flex flex-col">
             {/* Card with curved cutout */}
             <div className="relative bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-2xl sm:rounded-3xl p-6 sm:p-7 md:p-8 lg:p-10 mb-6 overflow-hidden">
-              {/* Curved cutout on top right */}
-              <div className="absolute top-0 right-0 w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 bg-[#ffffff] rounded-bl-[100px]" />
-
+       
               {/* Asterisk Icon */}
               <div className="mb-4 sm:mb-5 md:mb-6 relative z-10">
                 <svg
