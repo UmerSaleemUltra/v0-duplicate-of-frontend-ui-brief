@@ -1,7 +1,5 @@
-"use client"
-
-import { motion } from "framer-motion"
-import { Globe, DollarSign, HeadphonesIcon, Building, Users, Check } from "lucide-react"
+import { motion } from "framer-motion";
+import { Globe, DollarSign, HeadphonesIcon, Building, Users, Check } from "lucide-react";
 
 const features = [
   {
@@ -29,20 +27,17 @@ const features = [
     title: "Personal Guidance",
     description: "Not automated bots — real specialists who understand your unique business needs.",
   },
-]
+];
 
 const WhyChooseUs = () => {
   return (
     <section className="py-24 bg-buzz-white relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, hsl(0 85% 50%) 1px, transparent 0)`,
-            backgroundSize: "40px 40px",
-          }}
-        />
+        <div className="absolute inset-0" style={{
+          backgroundImage: `radial-gradient(circle at 2px 2px, hsl(0 85% 50%) 1px, transparent 0)`,
+          backgroundSize: '40px 40px'
+        }} />
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
@@ -54,13 +49,15 @@ const WhyChooseUs = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <span className="text-primary font-medium text-sm uppercase tracking-wider">Why Buzz Filing</span>
+            <span className="text-primary font-medium text-sm uppercase tracking-wider">
+              Why Buzz Filing
+            </span>
             <h2 className="font-display text-4xl md:text-5xl font-bold text-buzz-dark mt-4 mb-6">
               Built for Global Founders
             </h2>
             <p className="text-buzz-dark/70 text-lg mb-8">
-              We understand the unique challenges international entrepreneurs face when starting a U.S. business. That's
-              why we've built a service specifically designed to make it simple, transparent, and stress-free.
+              We understand the unique challenges international entrepreneurs face when starting a U.S. business. 
+              That's why we've built a service specifically designed to make it simple, transparent, and stress-free.
             </p>
 
             <div className="space-y-4">
@@ -103,8 +100,12 @@ const WhyChooseUs = () => {
                   <feature.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
                 <div>
-                  <h3 className="font-display font-semibold text-buzz-dark mb-1">{feature.title}</h3>
-                  <p className="text-buzz-dark/60 text-sm leading-relaxed">{feature.description}</p>
+                  <h3 className="font-display font-semibold text-buzz-dark mb-1">
+                    {feature.title}
+                  </h3>
+                  <p className="text-buzz-dark/60 text-sm leading-relaxed">
+                    {feature.description}
+                  </p>
                 </div>
               </motion.div>
             ))}
@@ -112,7 +113,7 @@ const WhyChooseUs = () => {
         </div>
       </div>
     </section>
-  )
-}
+  );
+};
 
-export default WhyChooseUs
+export default WhyChooseUs;
