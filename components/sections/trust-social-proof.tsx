@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Star, CheckCircle2, Play, MessageCircle } from "lucide-react"
+import { Star, CheckCircle2, Play, MessageCircle, Check } from "lucide-react"
 
 const reviews = [
   {
@@ -397,11 +397,7 @@ const TrustSocialProof = () => {
                         </div>
                         {/* Verification Badge Overlay */}
                         <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#7d1215] flex items-center justify-center border-2 border-[#2B2D31]">
-                          <img
-                            src="/images/buzzfiling-logo.png"
-                            alt="Verified"
-                            className="w-2.5 h-2.5 object-contain"
-                          />
+                          <Check className="w-2.5 h-2.5 text-white" strokeWidth={3} />
                         </div>
                       </div>
                       <div className="flex-1 min-w-0">
