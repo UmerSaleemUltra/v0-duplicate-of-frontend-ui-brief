@@ -19,6 +19,7 @@ import { useEffect } from "react"
 import WhyChooseUs from "@/components/sections/why-choose-us"
 import TestimonialsEnhanced from "@/components/sections/testimonials-enhanced"
 import ComplianceSection from "@/components/sections/compliance"
+import ClientDashboardSection from "@/components/sections/client-dashboard"
 
 export default function LandingPage() {
   useEffect(() => {
@@ -82,6 +83,7 @@ export default function LandingPage() {
       <ServicesSection />
       <WhyBuzzFilling />
       <WhyChooseUs />
+      <ClientDashboardSection />
       <GlobalFounders />
       <ComplianceSection />
       <VideoTestimonials />
