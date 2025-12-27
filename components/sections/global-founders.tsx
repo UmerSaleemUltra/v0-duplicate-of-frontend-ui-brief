@@ -2,16 +2,17 @@
 
 import { motion } from "framer-motion"
 import { MapPin } from "lucide-react"
+import Image from "next/image"
 
 const regions = [
-  { name: "Pakistan", flag: "🇵🇰" },
-  { name: "UAE", flag: "🇦🇪" },
-  { name: "United Kingdom", flag: "🇬🇧" },
-  { name: "India", flag: "🇮🇳" },
-  { name: "Europe", flag: "🇪🇺" },
-  { name: "Asia Pacific", flag: "🌏" },
-  { name: "Middle East", flag: "🌍" },
-  { name: "Africa", flag: "🌍" },
+  { name: "Pakistan", code: "pk", flagUrl: "https://flagcdn.com/w40/pk.png" },
+  { name: "UAE", code: "ae", flagUrl: "https://flagcdn.com/w40/ae.png" },
+  { name: "United Kingdom", code: "gb", flagUrl: "https://flagcdn.com/w40/gb.png" },
+  { name: "India", code: "in", flagUrl: "https://flagcdn.com/w40/in.png" },
+  { name: "Europe", code: "eu", flagUrl: "https://flagcdn.com/w40/eu.png" },
+  { name: "Asia Pacific", code: "", icon: "🌏" },
+  { name: "Middle East", code: "", icon: "🌍" },
+  { name: "Africa", code: "", icon: "🌍" },
 ]
 
 const GlobalFounders = () => {
@@ -72,7 +73,22 @@ const GlobalFounders = () => {
               whileHover={{ scale: 1.05 }}
               className="flex items-center gap-3 px-6 py-3 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm hover:bg-white/20 transition-all duration-300"
             >
-              <span className="text-2xl">{region.flag}</span>
+              {region.code ? (
+                <>
+                  <span className="text-white/60 font-mono text-xs uppercase">{region.code}</span>
+                  <div className="relative w-6 h-6 rounded-sm overflow-hidden">
+                    <Image
+                      src={region.flagUrl! || "/placeholder.svg"}
+                      alt={`${region.name} flag`}
+                      width={24}
+                      height={24}
+                      className="object-cover"
+                    />
+                  </div>
+                </>
+              ) : (
+                <span className="text-2xl">{region.icon}</span>
+              )}
               <span className="font-medium text-white">{region.name}</span>
             </motion.div>
           ))}
