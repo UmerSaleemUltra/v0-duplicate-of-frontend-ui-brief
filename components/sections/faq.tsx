@@ -110,7 +110,6 @@ export default function FAQSection() {
   return (
     <section className="px-4 md:px-8 py-12 md:py-20 bg-white" id="faq">
       <div className="max-w-4xl mx-auto">
-        {/* Header */}
         <h2 className="text-3xl md:text-4xl font-semibold text-center text-gray-900 mb-4 md:mb-6">
           Frequently Asked Questions
         </h2>
@@ -125,8 +124,10 @@ export default function FAQSection() {
                 key={index}
                 onClick={() => handleTabChange(index)}
                 className={cn(
-                  "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500",
-                  selectedTab === index ? "bg-[#ff0d13] text-white shadow-md" : "text-gray-700 hover:bg-gray-100",
+                  "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out",
+                  selectedTab === index
+                    ? "bg-[#ff0d13] text-white shadow-md scale-105"
+                    : "text-gray-700 hover:bg-gray-100",
                 )}
               >
                 {tab.title}
@@ -145,7 +146,7 @@ export default function FAQSection() {
               >
                 <span
                   className={cn(
-                    "text-sm md:text-lg font-medium transition-colors duration-500 pr-4",
+                    "text-sm md:text-lg font-medium transition-colors duration-500 ease-in-out pr-4",
                     openFaq === index ? "text-[#ff0d13]" : "text-gray-900 group-hover:text-[#ff0d13]",
                   )}
                 >
@@ -153,19 +154,26 @@ export default function FAQSection() {
                 </span>
                 <span
                   className={cn(
-                    "text-xl md:text-2xl font-light flex-shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-500",
-                    openFaq === index ? "text-[#ff0d13] rotate-180" : "text-gray-900",
+                    "text-xl md:text-2xl font-light flex-shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-500 ease-in-out",
+                    openFaq === index ? "text-[#ff0d13] rotate-45" : "text-gray-900 rotate-0",
                   )}
                 >
-                  {openFaq === index ? "−" : "+"}
+                  +
                 </span>
               </button>
 
-              {openFaq === index && (
-                <div className="pb-4 transition-all duration-500 ease-in-out">
-                  <p className="text-sm md:text-base text-gray-600 font-light leading-relaxed">{faq.answer}</p>
+              <div
+                className={cn(
+                  "grid transition-all duration-500 ease-in-out",
+                  openFaq === index ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+                )}
+              >
+                <div className="overflow-hidden">
+                  <div className="pb-4">
+                    <p className="text-sm md:text-base text-gray-600 font-light leading-relaxed">{faq.answer}</p>
+                  </div>
                 </div>
-              )}
+              </div>
 
               <Separator className="bg-gray-200" />
             </div>
