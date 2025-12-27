@@ -88,16 +88,10 @@ const faqData: FAQCategory[] = [
 
 export default function FAQSection() {
   const [activeCategory, setActiveCategory] = useState(0)
-  const [openItems, setOpenItems] = useState<Set<number>>(new Set())
+  const [openItem, setOpenItem] = useState<number | null>(null)
 
   const toggleItem = (index: number) => {
-    const newOpenItems = new Set(openItems)
-    if (newOpenItems.has(index)) {
-      newOpenItems.delete(index)
-    } else {
-      newOpenItems.add(index)
-    }
-    setOpenItems(newOpenItems)
+    setOpenItem(openItem === index ? null : index)
   }
 
   return (
@@ -118,7 +112,7 @@ export default function FAQSection() {
               key={index}
               onClick={() => {
                 setActiveCategory(index)
-                setOpenItems(new Set()) // Reset open items when switching categories
+                setOpenItem(null)
               }}
               className={`px-6 py-3 rounded-full font-medium transition-all duration-300 ${
                 activeCategory === index
@@ -133,32 +127,36 @@ export default function FAQSection() {
 
         {/* FAQ Items */}
         <div className="max-w-4xl mx-auto space-y-4">
-          {faqData[activeCategory].items.map((item, index) => (
-            <div
-              key={index}
-              className="bg-white rounded-2xl border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md"
-            >
-              <button
-                onClick={() => toggleItem(index)}
-                className="w-full flex items-center justify-between p-6 text-left"
-              >
-                <span className="text-lg md:text-xl font-semibold text-gray-900 pr-4">{item.question}</span>
-                <div className="flex-shrink-0">
-                  {openItems.has(index) ? (
-                    <Minus className="w-6 h-6 text-[#ff0d13]" />
-                  ) : (
-                    <Plus className="w-6 h-6 text-gray-400" />
-                  )}
-                </div>
-              </button>
+          {faqData[activeCategory].items.map((item, index) => {
+            const isOpen = openItem === index
 
-              {openItems.has(index) && (
-                <div className="px-6 pb-6">
-                  <p className="text-gray-600 leading-relaxed">{item.answer}</p>
+            return (
+              <div
+                key={index}
+                className="bg-white rounded-2xl border border-gray-200 overflow-hidden transition-all duration-300 hover:shadow-md"
+              >
+                <button
+                  onClick={() => toggleItem(index)}
+                  className="w-full flex items-center justify-between p-6 text-left"
+                >
+                  <span className="text-lg md:text-xl font-semibold text-gray-900 pr-4">{item.question}</span>
+                  <div className="flex-shrink-0">
+                    {isOpen ? <Minus className="w-6 h-6 text-[#ff0d13]" /> : <Plus className="w-6 h-6 text-gray-400" />}
+                  </div>
+                </button>
+
+                <div
+                  className={`transition-all duration-300 ease-in-out ${
+                    isOpen ? "max-h-96 opacity-100" : "max-h-0 opacity-0"
+                  }`}
+                >
+                  <div className="px-6 pb-6">
+                    <p className="text-gray-600 leading-relaxed">{item.answer}</p>
+                  </div>
                 </div>
-              )}
-            </div>
-          ))}
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

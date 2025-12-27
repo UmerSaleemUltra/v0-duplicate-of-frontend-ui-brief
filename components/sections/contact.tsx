@@ -4,7 +4,6 @@ import type React from "react"
 
 import { useState } from "react"
 import { Send } from "lucide-react"
-import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -52,9 +51,7 @@ export default function ContactSection() {
           </p>
         </div>
 
-        {/* Content Grid */}
-        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
-          {/* Left: Form */}
+        <div className="max-w-2xl mx-auto">
           <div className="bg-[#1a0d0e] rounded-3xl p-8 md:p-10">
             <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">Send us a message</h3>
 
@@ -126,19 +123,6 @@ export default function ContactSection() {
                 <p className="text-red-400 text-center font-medium">Something went wrong. Please try again.</p>
               )}
             </form>
-          </div>
-
-          {/* Right: Image */}
-          <div className="relative hidden lg:block">
-            <div className="bg-[#1a0d0e] rounded-3xl p-8 overflow-hidden">
-              <Image
-                src="/images/image.png"
-                alt="Team collaboration"
-                width={600}
-                height={400}
-                className="w-full h-auto rounded-2xl"
-              />
-            </div>
           </div>
         </div>
       </div>
