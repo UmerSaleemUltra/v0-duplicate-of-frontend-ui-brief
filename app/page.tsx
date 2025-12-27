@@ -82,6 +82,7 @@ export default function LandingPage() {
       <TrustSocialProof />
       <ContactSection />
       <FAQSection />
+      <ContactSection />
       <Footer />
     </div>
   )

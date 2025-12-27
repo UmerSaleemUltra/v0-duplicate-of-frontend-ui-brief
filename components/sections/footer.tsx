@@ -266,7 +266,7 @@ export default function Footer() {
                   {/* Desktop/Laptop version - dynamically positioned based on screen size */}
                   <div className="absolute" style={getImageStyle()}>
                     <Image
-                      src="/images/design-mode/image.png"
+                      src="/images/image.png"
                       alt="Person working on tablet"
                       fill
                       className="object-contain"
