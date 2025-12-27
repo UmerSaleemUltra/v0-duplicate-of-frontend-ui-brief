@@ -30,6 +30,18 @@ export default function PricingSection() {
   return (
     <section className="w-full min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
       <div className="container mx-auto max-w-6xl">
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+          <p className="text-[#ff0d13] text-sm sm:text-base font-semibold tracking-wide uppercase mb-4">
+            Pricing Plans
+          </p>
+          <h2 className="text-[#1A1A1A] text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold mb-4 sm:mb-6">
+            Everything You Need, One Place
+          </h2>
+          <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto">
+            Complete business solutions with straightforward, fair pricing.
+          </p>
+        </div>
+
         <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 lg:gap-12">
           {/* Starter Package */}
           <div className="flex flex-col">
@@ -150,9 +162,7 @@ export default function PricingSection() {
                       />
                     </svg>
                   </div>
-                  <span className="text-[#1A1A1A] text-sm sm:text-base md:text-lg leading-relaxed font-semibold">
-                    {feature}
-                  </span>
+                  <span className="text-[#1A1A1A] text-sm sm:text-base md:text-lg leading-relaxed">{feature}</span>
                 </div>
               ))}
 
