@@ -133,7 +133,7 @@ export default function ContactSection() {
           <div className="w-full md:w-1/2 bg-gradient-to-b from-[#aa0000] to-[#880000] flex items-center justify-center p-6">
             <div className="relative w-full h-[300px] md:h-full">
               <Image
-                src="/images/image.png"
+                src="/images/contact-team.png"
                 alt="Support team"
                 fill
                 className="object-contain"
