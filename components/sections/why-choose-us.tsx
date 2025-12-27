@@ -45,21 +45,20 @@ const WhyChooseUs = () => {
         />
       </div>
 
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16 items-start lg:items-center">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Content */}
           <motion.div
             initial={{ opacity: 0, x: -30 }}
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="lg:pr-8"
           >
             <span className="text-primary font-medium text-sm uppercase tracking-wider">Why Buzz Filing</span>
-            <h2 className="font-display text-3xl sm:text-4xl lg:text-5xl font-bold text-buzz-dark mt-4 mb-6">
+            <h2 className="font-display text-4xl sm:text-5xl lg:text-5xl font-bold text-buzz-dark mt-4 mb-6">
               Built for Global Founders
             </h2>
-            <p className="text-buzz-dark/70 text-base sm:text-lg mb-8 leading-relaxed">
+            <p className="text-buzz-dark/70 text-lg mb-8 leading-relaxed">
               We understand the unique challenges international entrepreneurs face when starting a U.S. business. That's
               why we've built a service specifically designed to make it simple, transparent, and stress-free.
             </p>
@@ -77,7 +76,7 @@ const WhyChooseUs = () => {
                   <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
                     <Check className="w-4 h-4 text-primary-foreground" />
                   </div>
-                  <span className="text-buzz-dark font-medium text-sm sm:text-base">{item}</span>
+                  <span className="text-buzz-dark font-medium text-base">{item}</span>
                 </motion.div>
               ))}
             </div>
@@ -89,7 +88,7 @@ const WhyChooseUs = () => {
             whileInView={{ opacity: 1, x: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="space-y-3 lg:space-y-4"
+            className="space-y-4"
           >
             {features.map((feature, index) => (
               <motion.div
@@ -98,16 +97,14 @@ const WhyChooseUs = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.08 }}
-                className="group flex gap-3 sm:gap-4 p-4 sm:p-5 rounded-xl bg-buzz-off-white border border-buzz-dark/10 hover:border-primary/40 hover:shadow-lg transition-all duration-300"
+                className="group flex gap-4 p-5 rounded-xl bg-buzz-off-white border border-buzz-dark/10 hover:border-primary/40 hover:shadow-lg transition-all duration-300"
               >
-                <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <feature.icon className="w-5 h-5 sm:w-6 sm:h-6 text-primary group-hover:text-primary-foreground transition-colors" />
+                <div className="flex-shrink-0 w-12 h-12 rounded-lg bg-primary/10 flex items-center justify-center group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
+                  <feature.icon className="w-6 h-6 text-primary group-hover:text-primary-foreground transition-colors" />
                 </div>
-                <div className="flex-1 min-w-0">
-                  <h3 className="font-display font-semibold text-buzz-dark mb-1 text-sm sm:text-base">
-                    {feature.title}
-                  </h3>
-                  <p className="text-buzz-dark/60 text-xs sm:text-sm leading-relaxed">{feature.description}</p>
+                <div className="flex-1">
+                  <h3 className="font-display font-semibold text-buzz-dark mb-1.5 text-base">{feature.title}</h3>
+                  <p className="text-buzz-dark/60 text-sm leading-relaxed">{feature.description}</p>
                 </div>
               </motion.div>
             ))}
