@@ -58,7 +58,7 @@ export default function Footer() {
   const isLaptopOrLarger = windowWidth >= 1024
 
   return (
-    <footer className="text-white py-8 sm:py-10 md:py-12 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 overflow-hidden relative bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+    <footer className="text-white py-8 sm:py-10 md:py-12 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 overflow-hidden relative bg-gradient-to-b from-[#880000] to-[#ff0d13]">
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
           {/* Left section - Logo and contact info */}
@@ -67,8 +67,8 @@ export default function Footer() {
               <div className="flex items-center">
                 <img
                   src="/images/buzz-filing-logo-white.png"
-                  alt="logo"
-                  className="shrink-0 max-w-full w-[240px] 2xs:w-auto ml-[-30px] sm:ml-[-40px]"
+                  alt="BuzzFiling Logo"
+                  className="shrink-0 max-w-full w-[240px] 2xs:w-auto ml-[-25px] sm:ml-[-50px]"
                 />
               </div>
               <p className="text-xs xs:text-sm mt-2 xs:mt-3">
@@ -95,7 +95,7 @@ export default function Footer() {
                   <rect width="20" height="16" x="2" y="4" rx="2" />
                   <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                 </svg>
-                <p className="text-sm">hello@BuzzFiling.com</p>
+                <p className="text-sm">hello@buzzfiling.com</p>
               </div>
               <div className="flex items-center gap-2 group">
                 <svg
@@ -112,7 +112,7 @@ export default function Footer() {
                 >
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                 </svg>
-                <p className="text-sm">+1 (786) 574 9305</p>
+                <p className="text-sm">+1 (786) 574-9305</p>
               </div>
               <div className="flex items-center gap-2 group">
                 <MapPin />
@@ -123,7 +123,7 @@ export default function Footer() {
             {/* Social Media Icons */}
             <div className="flex gap-3 xs:gap-4">
               <Link
-                href="https://www.facebook.com/BuzzFiling"
+                href="https://www.facebook.com/buzzfiling"
                 aria-label="Facebook"
                 className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-white rounded-sm hover:bg-white hover:text-[#880000] transition-colors duration-300"
               >
@@ -142,7 +142,7 @@ export default function Footer() {
                 </svg>
               </Link>
               <Link
-                href="https://www.linkedin.com/company/BuzzFiling"
+                href="https://www.linkedin.com/company/buzzfiling"
                 aria-label="LinkedIn"
                 className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-white rounded-sm hover:bg-white hover:text-[#880000] transition-colors duration-300"
               >
@@ -163,7 +163,7 @@ export default function Footer() {
                 </svg>
               </Link>
               <Link
-                href="https://www.instagram.com/BuzzFiling/"
+                href="https://www.instagram.com/buzzfiling/"
                 aria-label="Instagram"
                 className="w-6 h-6 xs:w-7 xs:h-7 sm:w-8 sm:h-8 flex items-center justify-center border border-white rounded-sm hover:bg-white hover:text-[#880000] transition-colors duration-300"
               >
