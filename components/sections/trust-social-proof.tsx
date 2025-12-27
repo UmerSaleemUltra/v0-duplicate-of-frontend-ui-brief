@@ -391,18 +391,21 @@ const TrustSocialProof = () => {
                     {/* Header with ticket info */}
                     <div className="bg-[#2B2D31] px-4 py-3 flex items-center gap-3 border-b border-[#3F4147]">
                       <div className="relative w-10 h-10 flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-primary flex items-center justify-center">
-                          <svg className="w-5 h-5 text-primary-foreground" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                          </svg>
+                        <div className="w-10 h-10 rounded-full bg-[#7d1215] flex items-center justify-center">
+                          <Image
+                            src="/images/buzzfiling-logo.png"
+                            alt="BuzzFiling"
+                            width={20}
+                            height={20}
+                            className="object-contain"
+                          />
                         </div>
-                        {/* Verification Badge Overlay */}
-                        <div className="absolute -bottom-0.5 -right-0.5 w-4 h-4 rounded-full bg-[#7d1215] flex items-center justify-center border-2 border-[#2B2D31]">
+                        <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded bg-[#ff0d13] flex items-center justify-center border-2 border-[#2B2D31]">
                           <Image
                             src="/images/buzzfiling-logo.png"
                             alt="Verified"
-                            width={10}
-                            height={10}
+                            width={12}
+                            height={12}
                             className="object-contain"
                           />
                         </div>
