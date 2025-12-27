@@ -1,147 +1,163 @@
 import {
-  Building2,
-  FileCheck,
+  MapPin,
+  Award as IdCard,
+  Lock,
+  Badge,
+  FileText,
+  PenSquare,
+  RefreshCcw,
+  Power,
   Receipt,
   Landmark,
-  ArrowUpCircle,
-  Lock,
-  ShoppingBag,
-  Award,
-  MapPin,
-  FileSignature,
-  FileEdit,
-  FileX,
-  HandCoins,
+  Building2,
+  BadgeDollarSign,
+  Globe,
+  Palette,
+  Store,
+  CreditCard,
 } from "lucide-react"
 
 export default function ServicesSection() {
   const services = [
     {
-      icon: <MapPin className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: MapPin,
       title: "Premium Business Address",
-      price: "$20/year",
-      description: "Professional U.S. business address with unique suite number for all company correspondence.",
+      description: "Prestigious U.S. business address with unique suite number for full compliance.",
+      price: "$99 / Year",
     },
     {
-      icon: <FileCheck className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: IdCard,
       title: "ITIN",
-      price: "$345",
-      description: "Individual taxpayer identification number for non-residents to manage U.S. taxation.",
+      description: "Individual Taxpayer Identification Number enabling non-residents to manage U.S. taxation.",
+      price: "$349",
     },
     {
-      icon: <Lock className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: Lock,
       title: "Trademark",
-      price: "$345 + USTPO Fee",
-      description: "Register your trademark to protect brand identity and ensure exclusive commercial rights.",
+      description: "Register your trademark to protect brand identity and secure exclusive commercial rights.",
+      price: "$349 + USPTO Fee",
     },
     {
-      icon: <Building2 className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: Badge,
       title: "DBA Name",
-      price: "$165 + State Fee",
-      description:
-        "Register a Business-As name to operate under another brand. Business As name to operate under another brand.",
+      description: "File a Doing Business As name to operate under another brand.",
+      price: "$149 + State Fee",
     },
     {
-      icon: <FileSignature className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: FileText,
       title: "Operating Agreement",
-      price: "$25",
-      description: "Custom LLC agreement outlining ownership, duties, and internal operating procedures.",
+      description:
+        "Custom LLC agreement defining ownership, management duties, and internal operating responsibilities.",
+      price: "$79",
     },
     {
-      icon: <FileEdit className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: PenSquare,
       title: "Amendment",
-      price: "$50 + State Fee",
-      description: "Submit amendment filings to update company name, address, or registered agent.",
+      description: "Submit amendment filings to update company name, members, or legal structure.",
+      price: "$199 + State Fee",
     },
     {
-      icon: <ArrowUpCircle className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: RefreshCcw,
       title: "Reinstatement",
-      price: "$50 + State Fee",
-      description: "Reactivate your dissolved company and restore good standing with legal paperwork.",
+      description: "Reactivate your dissolved company and restore compliance through official state filings.",
+      price: "$199 + State Fee",
     },
     {
-      icon: <FileX className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: Power,
       title: "Dissolution",
-      price: "$50 + State Fee",
-      description: "Formally close your company with proper legal paperwork to cancel business operations.",
+      description: "Formally close your company with proper legal paperwork and state compliance.",
+      price: "$199 + State Fee",
     },
     {
-      icon: <HandCoins className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: Receipt,
       title: "State Tax Filing",
-      price: "$50 + State Fee",
-      description: "Annual state level tax return to report all company obligations and maintain compliance.",
+      description: "Prepare and submit accurate state-level business tax reports to maintain compliance.",
+      price: "$99 + State Fee",
     },
     {
-      icon: <Receipt className="w-6 h-6 text-[#ff0d13]" />,
-      title: "Tax Filing",
-      price: "From $345",
-      description: "Comprehensive tax filing obligations with the Internal Revenue Service.",
+      Icon: Landmark,
+      title: "IRS Tax Filing",
+      description: "Complete and file federal tax obligations with the Internal Revenue Service.",
+      price: "From $349",
     },
     {
-      icon: <Landmark className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: Building2,
       title: "Franchise Tax",
-      price: "$50 + State Fee",
-      description: "Franchise tax returns required by jurisdictions for the privilege of doing business.",
+      description: "Prepare and file annual franchise tax reports required by applicable states.",
+      price: "$99 + State Fee",
     },
     {
-      icon: <ShoppingBag className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: BadgeDollarSign,
       title: "Reseller Permit",
-      price: "$185",
-      description: "Obtain official reseller tax ID/license to purchase goods tax free for resale.",
+      description: "Obtain official reseller certificate to purchase goods tax-free for resale.",
+      price: "$149",
     },
     {
-      icon: <Building2 className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: Globe,
       title: "Website",
+      description: "Custom-designed professional website establishing credibility and strong online business presence.",
       price: "$299",
-      description: "Custom designed professional website establishing credibility and strong online presence.",
     },
     {
-      icon: <Award className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: Palette,
       title: "Branding Kit",
-      price: "$25",
-      description: "Complete branding kit with logo design and identity materials for consistent business presence.",
+      description: "Complete branding kit with logo design and identity materials for consistency.",
+      price: "$99",
     },
     {
-      icon: <ShoppingBag className="w-6 h-6 text-[#ff0d13]" />,
-      title: "Ecommerce Store",
-      price: "$385",
-      description: "Launch a fully functioned online store on Walmart, Amazon, or Ebay.",
+      Icon: Store,
+      title: "E-commerce Store",
+      description: "Launch a fully functional online store on Walmart, Amazon, or Etsy.",
+      price: "$149",
     },
     {
-      icon: <Landmark className="w-6 h-6 text-[#ff0d13]" />,
+      Icon: CreditCard,
       title: "Payment Gateway",
-      price: "$150",
       description: "Integrate secure payment gateways like Stripe or PayPal for transactions.",
+      price: "$149",
     },
   ]
 
   return (
-    <div id="services" className="w-full bg-white py-16 px-4 md:px-8">
-      <div className="max-w-7xl mx-auto">
+    <section id="services" className="w-full bg-white py-16 px-3">
+      <div className="max-w-7xl mx-auto w-full">
+        {/* Header */}
         <div className="text-center mb-12">
-          <p className="text-[#ff0d13] font-medium text-sm mb-2 uppercase tracking-wider">Additional Services</p>
-          <h2 className="text-[#4e4747] text-3xl md:text-4xl font-bold mb-4">
-            Explore Our Complete Suite of US Business Services
-          </h2>
-          <p className="text-[#635e5e] text-base max-w-2xl mx-auto">
-            Already incorporated? You can boost your business with our additional services!
+          <p className="text-[#ff0d13] font-medium text-sm md:text-base mb-2">Add-on Services</p>
+          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Everything You Need, One Place</h2>
+          <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+            Complete business solutions with straightforward, fair pricing.
           </p>
         </div>
 
+        {/* Services Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {services.map((service, index) => (
+          {services.map(({ Icon, title, description, price }, idx) => (
             <div
-              key={index}
-              className="flex flex-col p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg hover:border-[#ff0d13]/30 transition-all duration-300"
+              key={idx}
+              className="flex flex-col p-4 bg-white border-b border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200"
             >
-              <div className="mb-4">{service.icon}</div>
-              <h3 className="text-[#4e4747] text-lg font-semibold mb-2">{service.title}</h3>
-              <p className="text-[#ff0d13] font-bold text-sm mb-3">{service.price}</p>
-              <p className="text-[#635e5e] text-sm leading-relaxed">{service.description}</p>
+              {/* Icon */}
+              <div className="mb-3">
+                <Icon className="w-6 h-6 text-[#ff0d13]" />
+              </div>
+
+              {/* Title + Price Pill */}
+              <div className="flex items-center gap-2 flex-wrap mb-2">
+                <h3 className="text-gray-900 text-lg md:text-xl font-semibold leading-tight">{title}</h3>
+                {price && (
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full border border-red-200 bg-red-50 text-[#ff0d13] font-semibold text-xs whitespace-nowrap">
+                    {price}
+                  </span>
+                )}
+              </div>
+
+              {/* Description */}
+              <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
             </div>
           ))}
         </div>
       </div>
-    </div>
+    </section>
   )
 }
