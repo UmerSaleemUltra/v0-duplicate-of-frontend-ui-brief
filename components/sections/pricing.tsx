@@ -158,18 +158,22 @@ export default function PricingSection() {
 
               <button
                 onClick={() => setShowStarterPlans(!showStarterPlans)}
-                className="w-full flex items-center justify-between py-3 px-4 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                className="w-full flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300"
               >
                 <span className="text-[#1A1A1A] text-sm sm:text-base md:text-lg font-medium">
                   Starter Plans Included
                 </span>
                 <ChevronDown
-                  className={`w-5 h-5 text-[#1A1A1A] transition-transform ${showStarterPlans ? "rotate-180" : ""}`}
+                  className={`w-5 h-5 text-[#1A1A1A] transition-transform duration-300 ${showStarterPlans ? "rotate-180" : ""}`}
                 />
               </button>
 
-              {showStarterPlans && (
-                <div className="space-y-3 sm:space-y-3.5 md:space-y-4 pl-4 border-l-2 border-gray-200">
+              <div
+                className={`overflow-hidden transition-all duration-500 ease-in-out ${
+                  showStarterPlans ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0"
+                }`}
+              >
+                <div className="space-y-3 sm:space-y-3.5 md:space-y-4 pt-2">
                   {starterFeatures.map((feature, index) => (
                     <div key={`starter-${index}`} className="flex items-start gap-3">
                       <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#ff0d13] flex items-center justify-center mt-0.5">
@@ -194,7 +198,7 @@ export default function PricingSection() {
                     </div>
                   ))}
                 </div>
-              )}
+              </div>
             </div>
           </div>
         </div>
