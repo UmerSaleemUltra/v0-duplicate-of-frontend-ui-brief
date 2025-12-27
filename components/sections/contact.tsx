@@ -1,30 +1,28 @@
 "use client"
 
-import * as React from "react"
-import { User, Mail, Phone, Building2, Globe, Send, MessageSquareText } from "lucide-react"
+import type React from "react"
 
-// shadcnui
+import { useState } from "react"
+import { Send } from "lucide-react"
+import Image from "next/image"
+import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import { Button } from "@/components/ui/button"
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
-import { Checkbox } from "@/components/ui/checkbox"
 
-export default function ContactForm() {
-  const [submitting, setSubmitting] = React.useState(false)
-  const [status, setStatus] = React.useState<null | "ok" | "err">(null)
+export default function ContactSection() {
+  const [submitting, setSubmitting] = useState(false)
+  const [status, setStatus] = useState<null | "ok" | "err">(null)
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault()
     setSubmitting(true)
     setStatus(null)
-    const formData = Object.fromEntries(new FormData(e.currentTarget).entries())
 
     try {
+      // Simulate API call
       await new Promise((r) => setTimeout(r, 1000))
       setStatus("ok")
-      e.currentTarget.reset()
+      ;(e.target as HTMLFormElement).reset()
     } catch {
       setStatus("err")
     } finally {
@@ -33,162 +31,117 @@ export default function ContactForm() {
   }
 
   return (
-    <section id="contact" className="w-full bg-white py-12 sm:py-16 md:py-20">
-      <div className="mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
-        {/* Heading */}
-        <div className="text-center mb-10 sm:mb-12">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-black">
-            <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#ff8a80] via-[#ff3b30] to-[#ffb199]">
-              Contact Us
-            </span>
-          </h2>
-          <p className="mt-2 text-sm sm:text-base text-black/80">We usually respond within one business day.</p>
+    <section className="py-16 md:py-24 bg-gradient-to-br from-[#ff0d13] via-[#e60c12] to-[#cc0a10] relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: "radial-gradient(circle, white 1px, transparent 1px)",
+            backgroundSize: "30px 30px",
+          }}
+        />
+      </div>
+
+      <div className="container mx-auto px-4 relative z-10">
+        {/* Header */}
+        <div className="text-center mb-12">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">Reach Out, We're Here to Help!</h2>
+          <p className="text-lg md:text-xl text-white/90 max-w-3xl mx-auto">
+            Complete the form, and our team will promptly respond to your inquiry within our working hours!
+          </p>
         </div>
 
-        {/* Form */}
-        <form
-          onSubmit={onSubmit}
-          className="rounded-2xl border border-white/10 bg-white/10 backdrop-blur-lg shadow-lg p-6 sm:p-8 md:p-10 text-black"
-        >
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-black">
-            {/* Full Name */}
-            <Field id="name" label="Full Name" icon={<User className="h-4 w-4" />} required placeholder="Jane Doe" />
-            {/* Email */}
-            <Field
-              id="email"
-              label="Work Email"
-              type="email"
-              icon={<Mail className="h-4 w-4" />}
-              required
-              placeholder="jane@company.com"
-            />
-            {/* Phone */}
-            <Field
-              id="phone"
-              label="Phone"
-              type="tel"
-              icon={<Phone className="h-4 w-4" />}
-              placeholder="+1 555 555 5555"
-            />
-            {/* Company */}
-            <Field id="company" label="Company" icon={<Building2 className="h-4 w-4" />} placeholder="Acme Inc." />
-            {/* Website */}
-            <Field
-              id="website"
-              label="Website"
-              type="url"
-              icon={<Globe className="h-4 w-4" />}
-              placeholder="https://example.com"
-            />
-            {/* Inquiry Type */}
-            <div className="space-y-2">
-              <Label htmlFor="type" className="text-sm font-medium text-black">
-                Inquiry Type <span className="text-red-400">*</span>
-              </Label>
-              <Select name="type" required>
-                <SelectTrigger className="bg-transparent border-white/20 text-black placeholder:text-black/50 focus:ring-[#ff3b30]">
-                  <SelectValue placeholder="Select a type…" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-white/10 text-black">
-                  <SelectItem value="general">General Question</SelectItem>
-                  <SelectItem value="estimate">Project Estimate</SelectItem>
-                  <SelectItem value="partnership">Partnership</SelectItem>
-                  <SelectItem value="support">Support</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+        {/* Content Grid */}
+        <div className="grid lg:grid-cols-2 gap-8 lg:gap-12 items-center max-w-6xl mx-auto">
+          {/* Left: Form */}
+          <div className="bg-[#1a0d0e] rounded-3xl p-8 md:p-10">
+            <h3 className="text-2xl md:text-3xl font-bold text-white mb-6">Send us a message</h3>
 
-            {/* Message */}
-            <div className="md:col-span-2 space-y-2">
-              <Label htmlFor="message" className="text-sm font-medium text-black">
-                Message <span className="text-red-400">*</span>
-              </Label>
-              <div className="relative">
-                <MessageSquareText className="absolute left-3 top-3 h-4 w-4 text-black/60" />
+            <form onSubmit={onSubmit} className="space-y-6">
+              {/* Full Name */}
+              <div className="space-y-2">
+                <label htmlFor="fullName" className="text-white font-medium block">
+                  Full Name
+                </label>
+                <Input
+                  id="fullName"
+                  name="fullName"
+                  type="text"
+                  required
+                  placeholder="Full Name"
+                  className="bg-white border-0 text-gray-900 placeholder:text-gray-500 h-12 rounded-xl"
+                />
+              </div>
+
+              {/* Email */}
+              <div className="space-y-2">
+                <label htmlFor="email" className="text-white font-medium block">
+                  Email
+                </label>
+                <Input
+                  id="email"
+                  name="email"
+                  type="email"
+                  required
+                  placeholder="your.email@example.com"
+                  className="bg-white border-0 text-gray-900 placeholder:text-gray-500 h-12 rounded-xl"
+                />
+              </div>
+
+              {/* Message */}
+              <div className="space-y-2">
+                <label htmlFor="message" className="text-white font-medium block">
+                  Message
+                </label>
                 <Textarea
                   id="message"
                   name="message"
                   required
                   rows={5}
-                  placeholder="Tell us a bit about your project..."
-                  className="pl-9 bg-transparent border-black/20 text-black placeholder:text-black/50 resize-y focus-visible:ring-[#ff3b30]"
+                  placeholder="Your Message"
+                  className="bg-white border-0 text-gray-900 placeholder:text-gray-500 rounded-xl resize-none"
                 />
               </div>
-            </div>
 
-            {/* Consent */}
-            <div className="md:col-span-2 flex items-start gap-3">
-              <Checkbox
-                id="consent"
-                name="consent"
-                required
-                className="border-black/40 data-[state=checked]:bg-[#ff3b30] data-[state=checked]:border-[#ff3b30]"
+              {/* Submit Button */}
+              <Button
+                type="submit"
+                disabled={submitting}
+                className="w-full bg-[#ff0d13] hover:bg-[#e60c12] text-white font-bold h-12 rounded-xl text-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+              >
+                {submitting ? (
+                  "Sending..."
+                ) : (
+                  <>
+                    <Send className="w-5 h-5 mr-2" />
+                    Send Message
+                  </>
+                )}
+              </Button>
+
+              {/* Status Messages */}
+              {status === "ok" && <p className="text-green-400 text-center font-medium">Message sent successfully!</p>}
+              {status === "err" && (
+                <p className="text-red-400 text-center font-medium">Something went wrong. Please try again.</p>
+              )}
+            </form>
+          </div>
+
+          {/* Right: Image */}
+          <div className="relative hidden lg:block">
+            <div className="bg-[#1a0d0e] rounded-3xl p-8 overflow-hidden">
+              <Image
+                src="/images/image.png"
+                alt="Team collaboration"
+                width={600}
+                height={400}
+                className="w-full h-auto rounded-2xl"
               />
-              <span className="text-sm text-black/80">
-                I agree to be contacted and accept the{" "}
-                <a href="#" className="underline underline-offset-2 hover:opacity-80 text-black">
-                  Privacy Policy
-                </a>
-                .
-              </span>
             </div>
           </div>
-
-          {/* Submit */}
-          <div className="mt-8 flex flex-col sm:flex-row sm:items-center gap-3">
-            <Button
-              type="submit"
-              disabled={submitting}
-              className="bg-[#ff3b30] hover:bg-[#ff574d] text-white rounded-xl px-6 py-3 font-semibold"
-            >
-              <Send className={`h-4 w-4 mr-2 ${submitting ? "animate-pulse" : ""}`} />
-              {submitting ? "Sending…" : "Send Message"}
-            </Button>
-
-            {status === "ok" && (
-              <span className="text-sm text-emerald-400">✅ Your message has been sent successfully!</span>
-            )}
-            {status === "err" && <span className="text-sm text-red-400">⚠️ Something went wrong. Try again.</span>}
-          </div>
-        </form>
+        </div>
       </div>
     </section>
-  )
-}
-
-/* ───────── Helper Input Field ───────── */
-function Field({
-  id,
-  label,
-  type = "text",
-  icon,
-  placeholder,
-  required,
-}: {
-  id: string
-  label: string
-  type?: string
-  icon?: React.ReactNode
-  placeholder?: string
-  required?: boolean
-}) {
-  return (
-    <div className="space-y-2">
-      <Label htmlFor={id} className="text-sm font-medium text-black">
-        {label} {required && <span className="text-red-400">*</span>}
-      </Label>
-      <div className="relative">
-        {icon && <div className="absolute left-3 top-1/2 -translate-y-1/2 text-black">{icon}</div>}
-        <Input
-          id={id}
-          name={id}
-          type={type}
-          required={required}
-          placeholder={placeholder}
-          className="pl-9 bg-transparent border-black/20 text-black placeholder:text-black/50 focus-visible:ring-[#ff3b30]"
-        />
-      </div>
-    </div>
   )
 }

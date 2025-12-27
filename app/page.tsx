@@ -13,6 +13,8 @@ import WhyChooseUs from "@/components/sections/why-choose-us"
 import ComplianceSection from "@/components/sections/compliance"
 import ClientDashboardSection from "@/components/sections/client-dashboard"
 import TrustSocialProof from "@/components/sections/trust-social-proof"
+import ContactSection from "@/components/sections/contact"
+import FAQSection from "@/components/sections/faq"
 
 export default function LandingPage() {
   useEffect(() => {
@@ -78,6 +80,8 @@ export default function LandingPage() {
       <WhyChooseUs />
       <GlobalFounders />
       <TrustSocialProof />
+      <ContactSection />
+      <FAQSection />
       <Footer />
     </div>
   )
