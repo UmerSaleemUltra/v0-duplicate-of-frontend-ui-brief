@@ -75,7 +75,7 @@ const GlobalFounders = () => {
             >
               {region.code ? (
                 <>
-                  <span className="text-white/60 font-mono text-xs uppercase">{region.code}</span>
+                 
                   <div className="relative w-6 h-6 rounded-sm overflow-hidden">
                     <Image
                       src={region.flagUrl! || "/placeholder.svg"}
