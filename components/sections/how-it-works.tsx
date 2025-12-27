@@ -33,8 +33,7 @@ const steps = [
 const HowItWorks = () => {
   return (
     <section className="py-24 relative overflow-hidden">
-      {/* Red Gradient Background */}
-      <div className="absolute inset-0 bg-gradient-to-br from-primary via-secondary to-primary" />
+      <div className="absolute inset-0 bg-gradient-to-br from-[#880000] via-[#cc0000] to-[#ff0d13]" />
 
       {/* Pattern Overlay */}
       <div className="absolute inset-0 opacity-10">
@@ -55,20 +54,16 @@ const HowItWorks = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-primary-foreground/80 font-medium text-sm uppercase tracking-wider">
-            Simple Process
-          </span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-primary-foreground mt-4 mb-6">
-            How It Works
-          </h2>
-          <p className="text-primary-foreground/70 text-lg max-w-2xl mx-auto">
+          <span className="text-white/90 font-medium text-sm uppercase tracking-wider">Simple Process</span>
+          <h2 className="font-display text-4xl md:text-5xl font-bold text-white mt-4 mb-6">How It Works</h2>
+          <p className="text-white/80 text-lg max-w-2xl mx-auto">
             Get your U.S. business up and running in four simple steps.
           </p>
         </motion.div>
 
         <div className="relative">
           {/* Connection Line - Desktop */}
-          <div className="hidden lg:block absolute top-24 left-[12%] right-[12%] h-0.5 bg-primary-foreground/20" />
+          <div className="hidden lg:block absolute top-24 left-[12%] right-[12%] h-0.5 bg-white/20" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
             {steps.map((step, index) => (
@@ -82,17 +77,17 @@ const HowItWorks = () => {
               >
                 {/* Step Number Badge */}
                 <div className="relative inline-flex mb-6">
-                  <div className="w-20 h-20 rounded-full bg-primary-foreground/10 border-2 border-primary-foreground/30 flex items-center justify-center relative z-10 backdrop-blur-sm">
-                    <step.icon className="w-8 h-8 text-primary-foreground" />
+                  <div className="w-20 h-20 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center relative z-10 backdrop-blur-sm">
+                    <step.icon className="w-8 h-8 text-white" />
                   </div>
-                  <span className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-primary-foreground flex items-center justify-center text-primary font-bold text-sm shadow-lg">
+                  <span className="absolute -top-2 -right-2 w-8 h-8 rounded-full bg-white flex items-center justify-center text-[#880000] font-bold text-sm shadow-lg">
                     {step.number}
                   </span>
                 </div>
 
-                <h3 className="font-display text-xl font-semibold text-primary-foreground mb-3">{step.title}</h3>
+                <h3 className="font-display text-xl font-semibold text-white mb-3">{step.title}</h3>
 
-                <p className="text-primary-foreground/70 max-w-xs mx-auto">{step.description}</p>
+                <p className="text-white/80 max-w-xs mx-auto">{step.description}</p>
               </motion.div>
             ))}
           </div>

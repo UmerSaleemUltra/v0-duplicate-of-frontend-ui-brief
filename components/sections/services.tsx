@@ -1,137 +1,143 @@
 import {
   Building2,
-  FileText,
   FileCheck,
   Receipt,
   Landmark,
   ArrowUpCircle,
-  LandmarkIcon as TrademarkIcon,
+  Lock,
   ShoppingBag,
   Award,
-  Phone,
   MapPin,
   FileSignature,
-  Users,
   FileEdit,
   FileX,
   HandCoins,
-  Lock
 } from "lucide-react"
 
 export default function ServicesSection() {
   const services = [
     {
-      icon: <Landmark className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "Bank Account Application",
-      description:
-        "Set up a secure business bank account in 3-5 business days and get a physical debit card to your home address.",
+      icon: <MapPin className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Premium Business Address",
+      price: "$20/year",
+      description: "Professional U.S. business address with unique suite number for all company correspondence.",
     },
     {
-      icon: <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "EIN",
-      description:
-        "Obtain a unique, 9-digit taxpayer identification number to manage taxes, invoices, and bank accounts easily.",
-    },
-    {
-      icon: <FileCheck className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
+      icon: <FileCheck className="w-6 h-6 text-[#ff0d13]" />,
       title: "ITIN",
-      description:
-        "Get your ITIN easily with BuzzFilling, partnered with an IRS-recognized CAA, to open PayPal account and file taxes.",
+      price: "$345",
+      description: "Individual taxpayer identification number for non-residents to manage U.S. taxation.",
     },
     {
-      icon: <Receipt className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "Federal Tax Filing",
-      description:
-        "File your personal and business tax returns easily with BuzzFilling expert guidance and dedicated support team.",
-    },
-    {
-      icon: <HandCoins className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "State Tax Filing",
-      description:
-        "File your annual reports and pay state taxes with BuzzFilling user-friendly interface to remain fully compliant.",
-    },
-    {
-      icon: <ArrowUpCircle className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "Post-Incorporation",
-      description:
-        "Shape your company's governance structure and ensure full compliance for a smooth operational transition.",
-    },
-    {
-      icon: <Lock className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
+      icon: <Lock className="w-6 h-6 text-[#ff0d13]" />,
       title: "Trademark",
+      price: "$345 + USTPO Fee",
+      description: "Register your trademark to protect brand identity and ensure exclusive commercial rights.",
+    },
+    {
+      icon: <Building2 className="w-6 h-6 text-[#ff0d13]" />,
+      title: "DBA Name",
+      price: "$165 + State Fee",
       description:
-        "Protect your brand identity with BuzzFilling trademark services, ensuring a solid foundation for your business.",
+        "Register a Business-As name to operate under another brand. Business As name to operate under another brand.",
     },
     {
-      icon: <ShoppingBag className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "Reseller Certificate",
-      description:
-        "Easily get a reseller certificate to benefit from tax exemptions on wholesale purchases and increase profits.",
-    },
-    {
-      icon: <Award className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "Certificate of Good Standing",
-      description:
-        "Boost your business' reputation by obtaining an official certificate verifying your compliance and legal existence.",
-    },
-    {
-      icon: <Phone className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "US Phone Number",
-      description:
-        "Get a US phone number with an area code to connect with your customers based on a local city, area, or state.",
-    },
-    {
-      icon: <MapPin className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "Address with Unique Suite Number",
-      description: "Enhance your company's professional image and stand out with a unique suite number.",
-    },
-    {
-      icon: <FileSignature className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
+      icon: <FileSignature className="w-6 h-6 text-[#ff0d13]" />,
       title: "Operating Agreement",
-      description: "Get an operating agreement to define your LLC's internal structure and each member's roles.",
+      price: "$25",
+      description: "Custom LLC agreement outlining ownership, duties, and internal operating procedures.",
     },
     {
-      icon: <Users className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "Beneficial Ownership Filing",
-      description:
-        "File your Beneficial Ownership Report, which is legally required for all US companies as of January 1, 2024.",
+      icon: <FileEdit className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Amendment",
+      price: "$50 + State Fee",
+      description: "Submit amendment filings to update company name, address, or registered agent.",
     },
     {
-      icon: <FileEdit className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
-      title: "Amendment to Articles of Organization",
-      description:
-        "Amend your articles of organization to reflect any administrative, operational, or structural change.",
+      icon: <ArrowUpCircle className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Reinstatement",
+      price: "$50 + State Fee",
+      description: "Reactivate your dissolved company and restore good standing with legal paperwork.",
     },
     {
-      icon: <FileX className="w-5 h-5 sm:w-6 sm:h-6 text-[#ff0d13]" />,
+      icon: <FileX className="w-6 h-6 text-[#ff0d13]" />,
       title: "Dissolution",
-      description:
-        "Dissolve your business before all state and federal authorities to formally close your business and stay compliant.",
+      price: "$50 + State Fee",
+      description: "Formally close your company with proper legal paperwork to cancel business operations.",
+    },
+    {
+      icon: <HandCoins className="w-6 h-6 text-[#ff0d13]" />,
+      title: "State Tax Filing",
+      price: "$50 + State Fee",
+      description: "Annual state level tax return to report all company obligations and maintain compliance.",
+    },
+    {
+      icon: <Receipt className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Tax Filing",
+      price: "From $345",
+      description: "Comprehensive tax filing obligations with the Internal Revenue Service.",
+    },
+    {
+      icon: <Landmark className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Franchise Tax",
+      price: "$50 + State Fee",
+      description: "Franchise tax returns required by jurisdictions for the privilege of doing business.",
+    },
+    {
+      icon: <ShoppingBag className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Reseller Permit",
+      price: "$185",
+      description: "Obtain official reseller tax ID/license to purchase goods tax free for resale.",
+    },
+    {
+      icon: <Building2 className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Website",
+      price: "$299",
+      description: "Custom designed professional website establishing credibility and strong online presence.",
+    },
+    {
+      icon: <Award className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Branding Kit",
+      price: "$25",
+      description: "Complete branding kit with logo design and identity materials for consistent business presence.",
+    },
+    {
+      icon: <ShoppingBag className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Ecommerce Store",
+      price: "$385",
+      description: "Launch a fully functioned online store on Walmart, Amazon, or Ebay.",
+    },
+    {
+      icon: <Landmark className="w-6 h-6 text-[#ff0d13]" />,
+      title: "Payment Gateway",
+      price: "$150",
+      description: "Integrate secure payment gateways like Stripe or PayPal for transactions.",
     },
   ]
 
   return (
-    <div id="services" className="w-full bg-white py-8 sm:py-10 md:py-12 lg:py-16 px-3 sm:px-4 md:px-8">
+    <div id="services" className="w-full bg-white py-16 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="text-center mb-8 sm:mb-10 md:mb-12">
-          <p className="text-[#ff0d13] font-medium text-sm sm:text-base mb-1 sm:mb-2">More Services</p>
-          <h1 className="text-[#4e4747] text-2xl sm:text-3xl md:text-4xl font-semibold mb-2 sm:mb-4">
+        <div className="text-center mb-12">
+          <p className="text-[#ff0d13] font-medium text-sm mb-2 uppercase tracking-wider">Additional Services</p>
+          <h2 className="text-[#4e4747] text-3xl md:text-4xl font-bold mb-4">
             Explore Our Complete Suite of US Business Services
-          </h1>
-          <p className="text-[#635e5e] text-xs sm:text-sm md:text-base max-w-2xl mx-auto">
+          </h2>
+          <p className="text-[#635e5e] text-base max-w-2xl mx-auto">
             Already incorporated? You can boost your business with our additional services!
           </p>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map((service, index) => (
             <div
               key={index}
-              className="flex flex-col border-b border-[#e0d5f5] pb-3 sm:pb-4 bg-white hover:bg-gray-50 transition-colors duration-200 p-4 rounded-lg"
+              className="flex flex-col p-6 bg-white border border-gray-200 rounded-lg hover:shadow-lg hover:border-[#ff0d13]/30 transition-all duration-300"
             >
-              <div className="mb-2 sm:mb-3 md:mb-4">{service.icon}</div>
-              <h3 className="text-[#4e4747] text-lg sm:text-xl font-medium mb-1 sm:mb-2">{service.title}</h3>
-              <p className="text-[#635e5e] text-xs sm:text-sm">{service.description}</p>
+              <div className="mb-4">{service.icon}</div>
+              <h3 className="text-[#4e4747] text-lg font-semibold mb-2">{service.title}</h3>
+              <p className="text-[#ff0d13] font-bold text-sm mb-3">{service.price}</p>
+              <p className="text-[#635e5e] text-sm leading-relaxed">{service.description}</p>
             </div>
           ))}
         </div>
