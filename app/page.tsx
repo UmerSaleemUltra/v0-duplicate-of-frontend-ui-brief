@@ -4,6 +4,8 @@ import Navbar from "@/components/sections/navbar"
 import HeroSection from "@/components/sections/hero"
 import Brands from "@/components/sections/brands"
 import LLCFormationSection from "@/components/sections/llc-formation"
+import HowItWorks from "@/components/sections/how-it-works"
+import GlobalFounders from "@/components/sections/global-founders"
 import PricingSection from "@/components/sections/pricing"
 import ServicesSection from "@/components/sections/services"
 import WhyBuzzFilling from "@/components/sections/why-buzzfiling"
@@ -72,9 +74,11 @@ export default function LandingPage() {
       <HeroSection />
       <Brands />
       <LLCFormationSection />
+      <HowItWorks />
       <PricingSection />
       <ServicesSection />
       <WhyBuzzFilling />
+      <GlobalFounders />
       <VideoTestimonials />
       <TestimonialMarquee2Rows />
       <StateFeesCalculator />
