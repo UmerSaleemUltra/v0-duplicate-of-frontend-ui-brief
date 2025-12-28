@@ -513,7 +513,7 @@ const TrustSocialProof = () => {
               >
                 {/* Video Card */}
                 <div className="relative aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl mb-4">
-                  {/* Video Element */}
+                  {/* Video Element with autoplay */}
                   <video
                     src={video.videoUrl}
                     className="absolute inset-0 w-full h-full object-cover"
@@ -523,9 +523,6 @@ const TrustSocialProof = () => {
                     playsInline
                     preload="auto"
                   />
-
-                  {/* Profile Circle */}
-                  
 
                   {/* Top Stats Bar */}
                   <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none z-10">
@@ -544,9 +541,6 @@ const TrustSocialProof = () => {
                       {video.duration}
                     </div>
                   </div>
-
-                  {/* Bottom Quote */}
-                 
                 </div>
               </motion.div>
             ))}
