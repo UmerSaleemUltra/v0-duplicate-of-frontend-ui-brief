@@ -64,8 +64,6 @@ const videoTestimonials = [
     name: "James Wilson",
     company: "Tech Startup",
     color: "from-[#ff0d13] to-[#880000]",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
   },
   {
     id: 2,
@@ -73,8 +71,6 @@ const videoTestimonials = [
     name: "Sarah Chen",
     company: "E-commerce",
     color: "from-purple-500 to-purple-700",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
   },
   {
     id: 3,
@@ -82,8 +78,6 @@ const videoTestimonials = [
     name: "David Martinez",
     company: "Consulting",
     color: "from-emerald-500 to-emerald-700",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
   },
   {
     id: 4,
@@ -91,14 +85,11 @@ const videoTestimonials = [
     name: "Emma Rodriguez",
     company: "Real Estate",
     color: "from-sky-500 to-sky-700",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
   },
 ]
 
 export default function TestimonialsEnhanced() {
   const [hoveredVideo, setHoveredVideo] = useState<number | null>(null)
-  const [playingVideo, setPlayingVideo] = useState<string | null>(null)
 
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-white">
@@ -213,7 +204,6 @@ export default function TestimonialsEnhanced() {
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 onHoverStart={() => setHoveredVideo(video.id)}
                 onHoverEnd={() => setHoveredVideo(null)}
-                onClick={() => setPlayingVideo(video.videoUrl)}
                 className="relative aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer group"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${video.color}`} />
@@ -242,23 +232,6 @@ export default function TestimonialsEnhanced() {
           </div>
         </div>
       </div>
-
-      {playingVideo && (
-        <div
-          className="fixed inset-0 bg-black/90 z-50 flex items-center justify-center p-4"
-          onClick={() => setPlayingVideo(null)}
-        >
-          <div className="relative w-full max-w-4xl aspect-video" onClick={(e) => e.stopPropagation()}>
-            <button
-              onClick={() => setPlayingVideo(null)}
-              className="absolute -top-12 right-0 text-white hover:text-gray-300 text-xl font-bold"
-            >
-              ✕ Close
-            </button>
-            <video src={playingVideo} controls autoPlay className="w-full h-full rounded-lg" />
-          </div>
-        </div>
-      )}
     </section>
   )
 }

@@ -5,8 +5,7 @@ import { Play } from "lucide-react"
 
 interface VideoTestimonial {
   id: string
-  videoUrl?: string
-  videoId?: string
+  videoId: string
   name: string
   role?: string
   thumbnail?: string
@@ -15,51 +14,39 @@ interface VideoTestimonial {
 const testimonials: VideoTestimonial[] = [
   {
     id: "1",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
-    name: "Growing in the U.S.",
-    role: "Client Success Story",
-    thumbnail: "/business-success-testimonial.jpg",
+    videoId: "c-hLXHfIDSs",
+    name: "Abhishek K Agarwal",
+    role: "Product Manager",
   },
   {
     id: "2",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
+    videoId: "c-hLXHfIDSs",
     name: "Krishna Pandey",
     role: "Engineering Lead",
-    thumbnail: "/professional-testimonial.jpg",
   },
   {
     id: "3",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
+    videoId: "c-hLXHfIDSs",
     name: "Shubhankar",
     role: "Design Director",
-    thumbnail: "/professional-testimonial.jpg",
   },
   {
     id: "4",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
+    videoId: "c-hLXHfIDSs",
     name: "Venkatesh",
     role: "CTO",
-    thumbnail: "/professional-testimonial.jpg",
   },
   {
     id: "5",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
+    videoId: "c-hLXHfIDSs",
     name: "Praneet Ghosh",
     role: "Head of Marketing",
-    thumbnail: "/professional-testimonial.jpg",
   },
   {
     id: "6",
-    videoUrl:
-      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
+    videoId: "c-hLXHfIDSs",
     name: "Rahul Sharma",
     role: "CEO",
-    thumbnail: "/professional-testimonial.jpg",
   },
 ]
 
@@ -158,19 +145,10 @@ export default function VideoTestimonials() {
 function VideoCard({ testimonial }: { testimonial: VideoTestimonial }) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [isHovered, setIsHovered] = useState(false)
-  const videoRef = useRef<HTMLVideoElement>(null)
-
-  const thumbnailUrl =
-    testimonial.thumbnail ||
-    (testimonial.videoId
-      ? `https://img.youtube.com/vi/${testimonial.videoId}/hqdefault.jpg`
-      : "/video-testimonial.png")
+  const thumbnailUrl = testimonial.thumbnail || `https://img.youtube.com/vi/${testimonial.videoId}/hqdefault.jpg`
 
   const handlePlay = () => {
     setIsPlaying(true)
-    if (videoRef.current) {
-      videoRef.current.play()
-    }
   }
 
   return (
@@ -189,9 +167,7 @@ function VideoCard({ testimonial }: { testimonial: VideoTestimonial }) {
                 className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105 opacity-90"
                 onError={(e) => {
                   const target = e.target as HTMLImageElement
-                  target.src = testimonial.videoId
-                    ? `https://img.youtube.com/vi/${testimonial.videoId}/default.jpg`
-                    : "/video-production-setup.png"
+                  target.src = `https://img.youtube.com/vi/${testimonial.videoId}/default.jpg`
                 }}
               />
             </div>
@@ -230,10 +206,6 @@ function VideoCard({ testimonial }: { testimonial: VideoTestimonial }) {
 
             <div className="absolute top-3 right-3 sm:top-4 sm:right-4 w-6 h-6 sm:w-8 sm:h-8 border-t-2 border-r-2 border-white/20 rounded-tr-lg" />
           </>
-        ) : testimonial.videoUrl ? (
-          <video ref={videoRef} src={testimonial.videoUrl} controls className="w-full h-full object-cover" playsInline>
-            Your browser does not support the video tag.
-          </video>
         ) : (
           <iframe
             src={`https://www.youtube.com/embed/${testimonial.videoId}?autoplay=1`}
