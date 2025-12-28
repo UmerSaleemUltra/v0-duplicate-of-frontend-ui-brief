@@ -41,7 +41,7 @@ export default function Navbar() {
 
   return (
     <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13] h-[70px] sm:h-[80px] md:h-[90px] lg:h-[100px] xl:h-[130px]">
-      <div className="mx-auto w-[95%] max-w-[1440px] h-full flex items-center">
+      <div className="mx-auto w-full max-w-[1440px] h-full flex items-center px-4 sm:px-6 md:px-8 lg:px-12 pr-0 sm:pr-6">
         <div className="flex items-center justify-between font-medium gap-3 sm:gap-5 w-full">
           {/* Logo */}
           <Link href="/" className="flex-shrink-0">
@@ -79,9 +79,8 @@ export default function Navbar() {
               <ArrowRight className="w-4 h-4" />
             </Link>
 
-            {/* Hamburger */}
             <button
-              className="block xl:hidden text-white"
+              className="block xl:hidden text-white pr-4 sm:pr-0"
               onClick={() => setIsMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={isMenuOpen}

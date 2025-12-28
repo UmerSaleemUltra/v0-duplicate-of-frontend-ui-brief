@@ -3,6 +3,7 @@
 import { motion } from "framer-motion"
 import { Star, CheckCircle2, Play, MessageCircle } from "lucide-react"
 import Image from "next/image"
+import { useState } from "react"
 
 const reviews = [
   {
@@ -161,6 +162,8 @@ const videoTestimonials = [
     views: "2.4K",
     quote: "From India to a US business owner in just 2 weeks!",
     gradient: "from-rose-500 to-orange-400",
+    videoUrl:
+      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
   },
   {
     name: "Sarah Chen",
@@ -170,6 +173,8 @@ const videoTestimonials = [
     views: "1.8K",
     quote: "The bank account setup was seamless. Highly recommend!",
     gradient: "from-violet-500 to-purple-400",
+    videoUrl:
+      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
   },
   {
     name: "David Okonkwo",
@@ -179,6 +184,8 @@ const videoTestimonials = [
     views: "3.1K",
     quote: "Best investment I made for my business journey.",
     gradient: "from-emerald-500 to-teal-400",
+    videoUrl:
+      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
   },
   {
     name: "Elena Rodriguez",
@@ -188,6 +195,8 @@ const videoTestimonials = [
     views: "1.5K",
     quote: "Professional team, amazing results. 10/10 experience!",
     gradient: "from-blue-500 to-cyan-400",
+    videoUrl:
+      "https://4anfv00nfmuj16vd.public.blob.vercel-storage.com/Growing%20in%20the%20U.S.%20with%20Buzz%20Filing.mp4",
   },
 ]
 
@@ -203,6 +212,8 @@ const StarRating = ({ rating }: { rating: number }) => (
 )
 
 const TrustSocialProof = () => {
+  const [selectedVideo, setSelectedVideo] = useState<string | null>(null)
+
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4">
@@ -499,6 +510,7 @@ const TrustSocialProof = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
                 className="group cursor-pointer"
+                onClick={() => setSelectedVideo(video.videoUrl)}
               >
                 {/* Video Card */}
                 <div className="relative aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl mb-4 transform group-hover:scale-[1.02] transition-transform duration-300">
@@ -552,6 +564,28 @@ const TrustSocialProof = () => {
             ))}
           </div>
         </motion.div>
+
+        {/* Video Modal */}
+        {selectedVideo && (
+          <div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
+            onClick={() => setSelectedVideo(null)}
+          >
+            <div className="relative w-full max-w-4xl mx-4" onClick={(e) => e.stopPropagation()}>
+              <button
+                onClick={() => setSelectedVideo(null)}
+                className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
+              >
+                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <video src={selectedVideo} controls autoPlay className="w-full rounded-lg shadow-2xl">
+                Your browser does not support the video tag.
+              </video>
+            </div>
+          </div>
+        )}
       </div>
     </section>
   )
