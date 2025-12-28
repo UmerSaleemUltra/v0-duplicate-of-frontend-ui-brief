@@ -40,7 +40,7 @@ export default function Navbar() {
   const buttonLink = isAuthenticated ? dashboardUrl : "/auth"
 
   return (
-    <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13] h-[130px] sm:h-[140px] md:h-[150px]">
+    <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13] h-[70px] sm:h-[80px] md:h-[90px] lg:h-[100px] xl:h-[130px]">
       <div className="mx-auto w-[95%] max-w-[1440px] h-full flex items-center">
         <div className="flex items-center justify-between font-medium gap-3 sm:gap-5 w-full">
           {/* Logo */}
@@ -48,7 +48,7 @@ export default function Navbar() {
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
-              className="w-[200px] sm:w-[200px] md:w-[220px] lg:w-[260px] h-auto"
+              className="w-[140px] sm:w-[160px] md:w-[180px] lg:w-[200px] xl:w-[260px] h-auto"
             />
           </Link>
 
@@ -81,12 +81,12 @@ export default function Navbar() {
 
             {/* Hamburger */}
             <button
-              className="block xl:hidden text-white p-2"
+              className="block xl:hidden text-white"
               onClick={() => setIsMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={isMenuOpen}
             >
-              <Menu className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10" />
+              <Menu className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9" />
             </button>
           </div>
         </div>
@@ -106,11 +106,11 @@ export default function Navbar() {
                 <img
                   src="/images/buzz-filing-logo-white.png"
                   alt="BuzzFiling Logo"
-                  className="w-[200px] sm:w-[180px] h-auto"
+                  className="w-[140px] sm:w-[160px] h-auto"
                 />
               </Link>
               <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu" className="text-white p-2">
-                <X className="h-8 w-8 sm:h-9 sm:w-9 md:h-10 md:w-10" />
+                <X className="h-7 w-7 sm:h-8 sm:w-8" />
               </button>
             </div>
 
