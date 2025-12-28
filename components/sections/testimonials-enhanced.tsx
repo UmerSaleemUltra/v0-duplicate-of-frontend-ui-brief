@@ -92,7 +92,7 @@ export default function TestimonialsEnhanced() {
   const [hoveredVideo, setHoveredVideo] = useState<number | null>(null)
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-16 md:py-20 lg:py-24 bg-white">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="text-center mb-16">

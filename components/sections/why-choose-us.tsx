@@ -33,7 +33,7 @@ const features = [
 
 const WhyChooseUs = () => {
   return (
-    <section className="py-24 bg-buzz-white relative overflow-hidden">
+    <section className="py-16 md:py-20 lg:py-24 bg-buzz-white relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div

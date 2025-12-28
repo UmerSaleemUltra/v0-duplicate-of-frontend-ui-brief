@@ -71,7 +71,7 @@ const complianceFeatures = [
 
 export default function ComplianceSection() {
   return (
-    <section className="py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13] relative overflow-hidden">
+    <section className="py-16 md:py-20 lg:py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13] relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-10">
         <div

@@ -3,7 +3,7 @@ import Image from "next/image"
 
 export default function WhyBuzzFilling() {
   return (
-    <div id="about" className="w-full bg-white py-16 px-4">
+    <div id="about" className="w-full bg-white py-16 md:py-20 lg:py-24 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row gap-8 items-center">
           {/* Left Column */}

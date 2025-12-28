@@ -67,7 +67,7 @@ export default function StateFeesCalculator() {
   const totalFee = FILING_FEE + stateFee
 
   return (
-    <section className="w-full bg-white py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-10">
+    <section className="w-full bg-white py-16 md:py-20 lg:py-24 px-4 sm:px-6 md:px-10">
       {/* Section Heading */}
       <div className="text-center mb-8 sm:mb-10 md:mb-12">
         <h1 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Instantly know your LLC setup cost.</h1>

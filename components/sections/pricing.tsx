@@ -28,7 +28,7 @@ export default function PricingSection() {
   const advanceFeatures = [...advanceUniqueFeatures, ...starterFeatures]
 
   return (
-    <section className="w-full min-h-screen flex items-center justify-center px-4 sm:px-6 py-8 sm:py-12 lg:py-16">
+    <section className="w-full flex items-center justify-center px-4 sm:px-6 py-16 md:py-20 lg:py-24">
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-12 sm:mb-16 lg:mb-20">
           <p className="text-[#ff0d13] text-sm sm:text-base font-semibold tracking-wide uppercase mb-4">

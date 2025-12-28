@@ -1,20 +1,26 @@
-"use client";
+"use client"
 
-import Image from "next/image";
+import Image from "next/image"
 
 export default function Brands() {
   const brands = [
-    { name: "Wise",       logo: "https://cdn.brandfetch.io/idk6fxo1w1/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
+    { name: "Wise", logo: "https://cdn.brandfetch.io/idk6fxo1w1/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
     { name: "FreshBooks", logo: "https://cdn.brandfetch.io/idMAvNX8Xu/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-    { name: "Cleer",      logo: "https://cdn.brandfetch.io/idxAg10C0L/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-    { name: "Payoneer",   logo: "https://cdn.brandfetch.io/idVmyDyyyZ/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-    { name: "OpenPhone",  logo: "https://cdn.brandfetch.io/id8eCYh_qw/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-  ];
+    { name: "Cleer", logo: "https://cdn.brandfetch.io/idxAg10C0L/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
+    { name: "Payoneer", logo: "https://cdn.brandfetch.io/idVmyDyyyZ/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
+    { name: "OpenPhone", logo: "https://cdn.brandfetch.io/id8eCYh_qw/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
+  ]
 
   return (
-    <section aria-labelledby="partners-heading" className="relative w-full py-8 sm:py-10 md:py-12 lg:py-16 bg-gradient-to-r from-[#880000] to-[#ff0d13] overflow-hidden">
+    <section
+      aria-labelledby="partners-heading"
+      className="relative w-full py-16 md:py-20 lg:py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13] overflow-hidden"
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2 id="partners-heading" className="text-center text-white text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-10">
+        <h2
+          id="partners-heading"
+          className="text-center text-white text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-10"
+        >
           Our business partners and cooperating institutions.
         </h2>
 
@@ -71,5 +77,5 @@ export default function Brands() {
         }
       `}</style>
     </section>
-  );
+  )
 }

@@ -2,7 +2,7 @@ import { FileText, CheckCircle2, Award, LandmarkIcon } from "lucide-react"
 
 export default function LLCFormationSection() {
   return (
-    <section id="process" className="w-full py-8 sm:py-12 md:py-16 bg-white">
+    <section id="process" className="w-full py-16 md:py-20 lg:py-24 bg-white">
       <div className="container mx-auto px-4">
         {/* Subtitle */}
         <p className="text-center text-[#ff0d13] mb-2 text-sm sm:text-base">

@@ -120,7 +120,7 @@ export default function TestimonialMarquee2Rows() {
   const itemsB = React.useMemo(() => loop(rowB, 2), [rowB])
 
   return (
-    <section className="w-full py-12 sm:py-16 md:py-20 bg-white">
+    <section className="w-full py-16 md:py-20 lg:py-24 bg-white">
       {/* Heading */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10 sm:mb-12">
         <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs sm:text-sm bg-white border-black/10 shadow-sm text-black font-medium">

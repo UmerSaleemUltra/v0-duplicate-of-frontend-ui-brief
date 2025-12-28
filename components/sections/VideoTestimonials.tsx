@@ -86,7 +86,7 @@ export default function VideoTestimonials() {
   }, [isPaused])
 
   return (
-    <section className="relative w-full overflow-hidden py-12 sm:py-16 md:py-24 lg:py-32 bg-white">
+    <section className="relative w-full overflow-hidden py-16 md:py-20 lg:py-24 bg-white">
       <div className="absolute inset-y-0 left-0 w-16 sm:w-24 md:w-32 lg:w-64  z-10 pointer-events-none" />
       <div className="absolute inset-y-0 right-0 w-16 sm:w-24 md:w-32 lg:w-64  z-10 pointer-events-none" />
 
