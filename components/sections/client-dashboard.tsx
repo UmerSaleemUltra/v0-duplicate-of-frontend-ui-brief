@@ -8,11 +8,13 @@ import {
   Mail,
   Puzzle,
   Settings,
+  CheckCircle,
   FileCheck,
   Landmark,
   Phone,
   CreditCard,
 } from "lucide-react"
+import { Button } from "@/components/ui/button"
 
 const sidebarItems = [
   { icon: LayoutDashboard, label: "Dashboard", active: true },
@@ -56,7 +58,7 @@ const statusCards = [
 
 const ClientDashboardSection = () => {
   return (
-    <section className="py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13] relative overflow-hidden">
+    <section className="py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
         <motion.div
@@ -66,13 +68,13 @@ const ClientDashboardSection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <span className="inline-block px-4 py-2 bg-white/10 text-white rounded-full text-sm font-semibold mb-4 backdrop-blur-sm border border-white/20">
+          <span className="inline-block px-4 py-2 bg-[#880000]/10 text-[#880000] rounded-full text-sm font-semibold mb-4">
             Client Portal
           </span>
-          <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Your Business, <span className="text-white/90">One Dashboard</span>
+          <h2 className="text-4xl md:text-5xl font-bold text-foreground mb-6">
+            Your Business, <span className="text-[#ff0d13]">One Dashboard</span>
           </h2>
-          <p className="text-lg text-white/90">
+          <p className="text-lg text-muted-foreground">
             Track your formation progress, access documents, and manage your business from our intuitive client
             dashboard.
           </p>
@@ -196,7 +198,9 @@ const ClientDashboardSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.4 }}
-        ></motion.div>
+        >
+        
+        </motion.div>
       </div>
     </section>
   )

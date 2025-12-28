@@ -3,14 +3,14 @@ import Image from "next/image"
 
 export default function WhyBuzzFilling() {
   return (
-    <div id="about" className="w-full bg-gradient-to-r from-[#880000] to-[#ff0d13] py-16 px-4">
+    <div id="about" className="w-full bg-white py-16 px-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex flex-col md:flex-row gap-8 items-center">
           {/* Left Column */}
           <div className="md:w-1/2">
-            <h2 className="text-white text-4xl md:text-5xl font-bold mb-6">Why BuzzFilling?</h2>
+            <h2 className="text-[#4e4747] text-4xl md:text-5xl font-bold mb-6">Why BuzzFilling?</h2>
 
-            <p className="text-white/90 text-lg mb-10 leading-relaxed">
+            <p className="text-[#504e4e] text-lg mb-10 leading-relaxed">
               We understand how to simplify the complexity of forming your company because we've lived it ourselves.
               BuzzFilling was created from our own struggles—navigating a confusing, time-consuming setup process when
               establishing our company abroad. Since then, we've dedicated ourselves to delivering expert guidance,
@@ -21,18 +21,18 @@ export default function WhyBuzzFilling() {
             {/* Benefits */}
             <ul className="space-y-6">
               <li className="flex items-center gap-4">
-                <Award className="text-white h-6 w-6 shrink-0" />
-                <span className="text-white text-lg">Proven Expertise</span>
+                <Award className="text-[#ff0d13] h-6 w-6 shrink-0" />
+                <span className="text-[#4e4747] text-lg">Proven Expertise</span>
               </li>
 
               <li className="flex items-center gap-4">
-                <DollarSign className="text-white h-6 w-6 shrink-0" />
-                <span className="text-white text-lg">Best Value</span>
+                <DollarSign className="text-[#ff0d13] h-6 w-6 shrink-0" />
+                <span className="text-[#4e4747] text-lg">Best Value</span>
               </li>
 
               <li className="flex items-center gap-4">
-                <Zap className="text-white h-6 w-6 shrink-0" />
-                <span className="text-white text-lg">Lightning Speed</span>
+                <Zap className="text-[#ff0d13] h-6 w-6 shrink-0" />
+                <span className="text-[#4e4747] text-lg">Lightning Speed</span>
               </li>
             </ul>
           </div>
@@ -40,7 +40,7 @@ export default function WhyBuzzFilling() {
           {/* Right Column Image */}
           <div className="md:w-1/2 relative">
             <div className="relative z-0">
-              <div className="absolute top-4 right-4 w-[92%] h-[92%] bg-white/10 backdrop-blur-sm rounded-3xl z-0"></div>
+              <div className="absolute top-4 right-4 w-[92%] h-[92%] bg-[#8B0000] rounded-3xl z-0"></div>
 
               <Image
                 src="https://v0.dev/_next/image?url=https%3A%2F%2Fhebbkx1anhila5yf.public.blob.vercel-storage.com%2Fimage-QPd4PbLwdpVwGTFNIjvOXFFr6OUHEy.png&w=1920&q=75"

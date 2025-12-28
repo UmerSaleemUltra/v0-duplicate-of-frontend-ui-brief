@@ -108,12 +108,12 @@ export default function FAQSection() {
   ]
 
   return (
-    <section className="px-4 md:px-8 py-12 md:py-20 bg-gradient-to-r from-[#880000] to-[#ff0d13]" id="faq">
+    <section className="px-4 md:px-8 py-12 md:py-20 bg-white" id="faq">
       <div className="max-w-4xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-semibold text-center text-white mb-4 md:mb-6">
+        <h2 className="text-3xl md:text-4xl font-semibold text-center text-gray-900 mb-4 md:mb-6">
           Frequently Asked Questions
         </h2>
-        <p className="text-sm md:text-base text-white/90 text-center max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed">
+        <p className="text-sm md:text-base text-gray-600 text-center max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed">
           Got a question? Chances are, it's been asked before! Explore our collection of frequently asked questions.
         </p>
 
@@ -126,8 +126,8 @@ export default function FAQSection() {
                 className={cn(
                   "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out",
                   selectedTab === index
-                    ? "bg-white text-[#880000] shadow-md scale-105"
-                    : "text-white hover:bg-white/10",
+                    ? "bg-[#ff0d13] text-white shadow-md scale-105"
+                    : "text-gray-700 hover:bg-gray-100",
                 )}
               >
                 {tab.title}
@@ -147,7 +147,7 @@ export default function FAQSection() {
                 <span
                   className={cn(
                     "text-sm md:text-lg font-medium transition-colors duration-500 ease-in-out pr-4",
-                    openFaq === index ? "text-white" : "text-white/90 group-hover:text-white",
+                    openFaq === index ? "text-[#ff0d13]" : "text-gray-900 group-hover:text-[#ff0d13]",
                   )}
                 >
                   {faq.question}
@@ -155,7 +155,7 @@ export default function FAQSection() {
                 <span
                   className={cn(
                     "text-xl md:text-2xl font-light flex-shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-500 ease-in-out",
-                    openFaq === index ? "text-white rotate-45" : "text-white/90 rotate-0",
+                    openFaq === index ? "text-[#ff0d13] rotate-45" : "text-gray-900 rotate-0",
                   )}
                 >
                   +
@@ -170,12 +170,12 @@ export default function FAQSection() {
               >
                 <div className="overflow-hidden">
                   <div className="pb-4">
-                    <p className="text-sm md:text-base text-white/90 font-light leading-relaxed">{faq.answer}</p>
+                    <p className="text-sm md:text-base text-gray-600 font-light leading-relaxed">{faq.answer}</p>
                   </div>
                 </div>
               </div>
 
-              <Separator className="bg-white/20" />
+              <Separator className="bg-gray-200" />
             </div>
           ))}
         </div>
