@@ -55,7 +55,7 @@ const HowItWorks = () => {
           className="text-center mb-16"
         >
           <span className="text-white/90 font-medium text-sm uppercase tracking-wider">Simple Process</span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-white mt-4 mb-6">How It Works</h2>
+          <h2 className="text-white text-3xl md:text-4xl font-semibold mt-4 mb-4">How It Works</h2>
           <p className="text-white/80 text-lg max-w-2xl mx-auto">
             Get your U.S. business up and running in four simple steps.
           </p>

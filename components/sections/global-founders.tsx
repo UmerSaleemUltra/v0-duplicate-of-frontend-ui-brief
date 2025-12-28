@@ -47,9 +47,7 @@ const GlobalFounders = () => {
           className="text-center mb-16"
         >
           <span className="text-white/80 font-medium text-sm uppercase tracking-wider">Global Reach</span>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-white mt-4 mb-6">
-            Founders We Help Worldwide
-          </h2>
+          <h2 className="text-white text-3xl md:text-4xl font-semibold mt-4 mb-4">Founders We Help Worldwide</h2>
           <p className="text-white/90 text-lg max-w-2xl mx-auto">
             Trusted by entrepreneurs across the globe to start and scale their U.S. businesses.
           </p>
@@ -75,7 +73,6 @@ const GlobalFounders = () => {
             >
               {region.code ? (
                 <>
-                 
                   <div className="relative w-6 h-6 rounded-sm overflow-hidden">
                     <Image
                       src={region.flagUrl! || "/placeholder.svg"}

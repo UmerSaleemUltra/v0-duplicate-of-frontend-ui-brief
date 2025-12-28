@@ -218,7 +218,7 @@ const TrustSocialProof = () => {
             <CheckCircle2 className="w-4 h-4" />
             500+ Happy Founders
           </div>
-          <h2 className="font-display text-4xl md:text-5xl font-bold text-foreground mb-4">What Our Clients Say</h2>
+          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">What Our Clients Say</h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
             Reviews from <span className="font-semibold text-foreground">Google</span> and{" "}
             <span className="font-semibold text-foreground">Trustpilot</span>, verified by our team.

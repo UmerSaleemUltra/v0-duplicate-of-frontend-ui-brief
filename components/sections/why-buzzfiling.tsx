@@ -8,7 +8,7 @@ export default function WhyBuzzFilling() {
         <div className="flex flex-col md:flex-row gap-8 items-center">
           {/* Left Column */}
           <div className="md:w-1/2">
-            <h2 className="text-[#4e4747] text-4xl md:text-5xl font-bold mb-6">Why BuzzFilling?</h2>
+            <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Why BuzzFilling?</h2>
 
             <p className="text-[#504e4e] text-lg mb-10 leading-relaxed">
               We understand how to simplify the complexity of forming your company because we've lived it ourselves.

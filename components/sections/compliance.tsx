@@ -100,7 +100,7 @@ export default function ComplianceSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1 }}
-            className="text-4xl md:text-5xl font-bold text-white mb-4"
+            className="text-white text-3xl md:text-4xl font-semibold mb-4"
           >
             Compliance & Tax
             <br />

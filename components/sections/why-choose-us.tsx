@@ -57,9 +57,7 @@ const WhyChooseUs = () => {
             <span className="font-medium text-sm uppercase tracking-wider" style={{ color: "#ff0d13" }}>
               Why Buzz Filing
             </span>
-            <h2 className="font-display text-4xl sm:text-5xl lg:text-5xl font-bold text-buzz-dark mt-4 mb-6">
-              Built for Global Founders
-            </h2>
+            <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mt-4 mb-4">Built for Global Founders</h2>
             <p className="text-buzz-dark/70 text-lg mb-8 leading-relaxed">
               We understand the unique challenges international entrepreneurs face when starting a U.S. business. That's
               why we've built a service specifically designed to make it simple, transparent, and stress-free.

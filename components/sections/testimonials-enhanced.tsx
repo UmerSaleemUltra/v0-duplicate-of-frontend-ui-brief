@@ -99,7 +99,7 @@ export default function TestimonialsEnhanced() {
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-[#ff0d13]/20 bg-[#ff0d13]/5 mb-4">
             <span className="text-[#ff0d13] font-medium text-sm uppercase tracking-wider">200+ Happy Founders</span>
           </div>
-          <h2 className="text-4xl md:text-5xl font-bold text-gray-900 mb-4">What Our Clients Say</h2>
+          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">What Our Clients Say</h2>
           <p className="text-gray-600 text-lg">
             Reviews from <span className="font-semibold">Google</span> and{" "}
             <span className="font-semibold">Trustpilot</span>, verified by our team.
@@ -152,7 +152,9 @@ export default function TestimonialsEnhanced() {
               <MessageCircle className="w-4 h-4 text-green-600" />
               <span className="text-green-700 font-medium text-sm">Client Feedback</span>
             </div>
-            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">WhatsApp Messages from Happy Clients</h3>
+            <h3 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">
+              WhatsApp Messages from Happy Clients
+            </h3>
             <p className="text-gray-600">Direct feedback from our satisfied customers worldwide</p>
           </div>
 
@@ -188,7 +190,7 @@ export default function TestimonialsEnhanced() {
               <Play className="w-4 h-4 text-[#ff0d13]" />
               <span className="text-[#ff0d13] font-medium text-sm">Video Testimonials</span>
             </div>
-            <h3 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Hear From Our Clients</h3>
+            <h3 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Hear From Our Clients</h3>
             <p className="text-gray-600">See what founders from 30+ countries say on LinkedIn and in person</p>
           </div>
 

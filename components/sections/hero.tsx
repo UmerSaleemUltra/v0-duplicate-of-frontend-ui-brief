@@ -41,9 +41,10 @@ export default function HeroSection() {
     <div className="bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-center py-6 sm:py-10 md:py-14 lg:py-16">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-bold text-white mb-4 sm:mb-6 md:mb-8 leading-tight tracking-tight px-2">
-            Start Your U.S Business Fast & Fully Online
-          </h1>
+          <h1 className="text-3xl md:text-4xl font-semibold mb-4 text-white px-2 leading-tight tracking-tight">
+  Start Your U.S Business Fast & Fully Online
+</h1>
+
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white mb-6 sm:mb-8 md:mb-10 max-w-3xl mx-auto leading-relaxed px-4">
             Form your LLC, get your EIN, open a business bank account & stay compliant – all in one simple package.
