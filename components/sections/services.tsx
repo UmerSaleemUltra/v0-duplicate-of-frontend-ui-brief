@@ -119,13 +119,13 @@ export default function ServicesSection() {
   ]
 
   return (
-    <section id="services" className="w-full bg-white py-16 px-3">
+    <section id="services" className="w-full bg-gradient-to-r from-[#880000] to-[#ff0d13] py-16 px-3">
       <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <div className="text-center mb-12">
-          <p className="text-[#ff0d13] font-medium text-sm md:text-base mb-2">Add-on Services</p>
-          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Everything You Need, One Place</h2>
-          <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
+          <p className="text-white font-medium text-sm md:text-base mb-2">Add-on Services</p>
+          <h2 className="text-white text-3xl md:text-4xl font-semibold mb-4">Everything You Need, One Place</h2>
+          <p className="text-white/90 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
             Complete business solutions with straightforward, fair pricing.
           </p>
         </div>
@@ -135,25 +135,25 @@ export default function ServicesSection() {
           {services.map(({ Icon, title, description, price }, idx) => (
             <div
               key={idx}
-              className="flex flex-col p-4 bg-white border-b border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200"
+              className="flex flex-col p-4 bg-white/10 backdrop-blur-lg border border-white/20 rounded-xl hover:bg-white/15 transition-colors duration-200"
             >
               {/* Icon */}
               <div className="mb-3">
-                <Icon className="w-6 h-6 text-[#ff0d13]" />
+                <Icon className="w-6 h-6 text-white" />
               </div>
 
               {/* Title + Price Pill */}
               <div className="flex items-center gap-2 flex-wrap mb-2">
-                <h3 className="text-gray-900 text-lg md:text-xl font-semibold leading-tight">{title}</h3>
+                <h3 className="text-white text-lg md:text-xl font-semibold leading-tight">{title}</h3>
                 {price && (
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full border border-red-200 bg-red-50 text-[#ff0d13] font-semibold text-xs whitespace-nowrap">
+                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full border border-white/30 bg-white/20 text-white font-semibold text-xs whitespace-nowrap">
                     {price}
                   </span>
                 )}
               </div>
 
               {/* Description */}
-              <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
+              <p className="text-white/90 text-sm leading-relaxed">{description}</p>
             </div>
           ))}
         </div>

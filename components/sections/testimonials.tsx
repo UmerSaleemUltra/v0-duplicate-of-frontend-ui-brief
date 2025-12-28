@@ -120,19 +120,17 @@ export default function TestimonialMarquee2Rows() {
   const itemsB = React.useMemo(() => loop(rowB, 2), [rowB])
 
   return (
-    <section className="w-full py-12 sm:py-16 md:py-20 bg-white">
+    <section className="w-full py-12 sm:py-16 md:py-20 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
       {/* Heading */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mb-10 sm:mb-12">
-        <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs sm:text-sm bg-white border-black/10 shadow-sm text-black font-medium">
+        <div className="inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs sm:text-sm bg-white/10 border-white/20 shadow-sm text-white font-medium backdrop-blur-sm">
           <Sparkles className="h-3.5 w-3.5" />
           500+ Happy Founders
         </div>
-        <h2 className="mt-4 text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#880000] via-[#ff3b30] to-[#ff8a80]">
-            What Our Clients Say
-          </span>
+        <h2 className="mt-4 text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight text-white">
+          What Our Clients Say
         </h2>
-        <p className="mt-2 text-sm sm:text-base text-black/80 max-w-2xl mx-auto">
+        <p className="mt-2 text-sm sm:text-base text-white/90 max-w-2xl mx-auto">
           Reviews from <strong>Google</strong> and <strong>Trustpilot</strong>, verified by our team.
         </p>
       </div>
@@ -140,8 +138,8 @@ export default function TestimonialMarquee2Rows() {
       {/* Two marquee rows */}
       <div className="relative w-full overflow-hidden group">
         {/* edge fades */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-white via-white/80 to-transparent z-10" />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-white via-white/80 to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 bg-gradient-to-r from-[#880000] via-[#aa0000]/80 to-transparent z-10" />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 bg-gradient-to-l from-[#ff0d13] via-[#dd0a10]/80 to-transparent z-10" />
 
         {/* Row 1 (LTR) */}
         <div
@@ -228,7 +226,14 @@ function ReviewCard({ review }: { review: Review }) {
 ────────────────────────────────────────────────────────────────────────────── */
 function Avatar({ name, url }: { name: string; url?: string }) {
   if (url) {
-    return <img src={url} alt={name} className="h-9 w-9 rounded-full object-cover ring-2 ring-white" loading="lazy" />
+    return (
+      <img
+        src={url || "/placeholder.svg"}
+        alt={name}
+        className="h-9 w-9 rounded-full object-cover ring-2 ring-white"
+        loading="lazy"
+      />
+    )
   }
   return (
     <div className="grid h-9 w-9 place-items-center rounded-full bg-gray-100 text-gray-700 text-xs font-semibold ring-2 ring-white">
