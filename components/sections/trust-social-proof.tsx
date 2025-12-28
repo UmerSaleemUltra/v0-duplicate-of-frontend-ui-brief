@@ -517,27 +517,15 @@ const TrustSocialProof = () => {
                   <video
                     src={video.videoUrl}
                     className="absolute inset-0 w-full h-full object-cover"
-                    controls
+                    autoPlay
+                    muted
+                    loop
                     playsInline
-                    preload="metadata"
-                  />
-
-                  {/* Gradient Overlay (shows when video not playing) */}
-                  <div
-                    className={`absolute inset-0 bg-gradient-to-br ${video.gradient} pointer-events-none opacity-0 group-hover:opacity-0`}
+                    preload="auto"
                   />
 
                   {/* Profile Circle */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                    <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-2xl font-bold mb-4 border-2 border-white/30">
-                      {video.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </div>
-                    <p className="text-white/90 text-sm font-medium drop-shadow-lg">{video.name}</p>
-                    <p className="text-white/80 text-xs drop-shadow-lg">{video.country}</p>
-                  </div>
+                  
 
                   {/* Top Stats Bar */}
                   <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none z-10">
@@ -558,10 +546,7 @@ const TrustSocialProof = () => {
                   </div>
 
                   {/* Bottom Quote */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent pointer-events-none z-10">
-                    <p className="text-white text-sm font-medium leading-snug drop-shadow-lg">"{video.quote}"</p>
-                    <p className="text-white/60 text-xs mt-1 drop-shadow-lg">{video.company}</p>
-                  </div>
+                 
                 </div>
               </motion.div>
             ))}
