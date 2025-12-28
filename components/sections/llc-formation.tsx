@@ -10,7 +10,7 @@ export default function LLCFormationSection() {
         </p>
 
         {/* Main heading */}
-        <h2 className="text-center text-gray-700 text-2xl sm:text-3xl font-medium mb-6 sm:mb-10">
+        <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4 text-center">
           LLC with Business Bank Account in <span className="text-[#ff0d13]">4 Weeks</span>
         </h2>
 

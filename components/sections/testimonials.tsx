@@ -127,11 +127,7 @@ export default function TestimonialMarquee2Rows() {
           <Sparkles className="h-3.5 w-3.5" />
           500+ Happy Founders
         </div>
-        <h2 className="mt-4 text-2xl sm:text-3xl md:text-4xl font-extrabold tracking-tight">
-          <span className="bg-clip-text text-transparent bg-gradient-to-r from-[#880000] via-[#ff3b30] to-[#ff8a80]">
-            What Our Clients Say
-          </span>
-        </h2>
+        <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4 mt-4">What Our Clients Say</h2>
         <p className="mt-2 text-sm sm:text-base text-black/80 max-w-2xl mx-auto">
           Reviews from <strong>Google</strong> and <strong>Trustpilot</strong>, verified by our team.
         </p>
@@ -228,7 +224,14 @@ function ReviewCard({ review }: { review: Review }) {
 ────────────────────────────────────────────────────────────────────────────── */
 function Avatar({ name, url }: { name: string; url?: string }) {
   if (url) {
-    return <img src={url} alt={name} className="h-9 w-9 rounded-full object-cover ring-2 ring-white" loading="lazy" />
+    return (
+      <img
+        src={url || "/placeholder.svg"}
+        alt={name}
+        className="h-9 w-9 rounded-full object-cover ring-2 ring-white"
+        loading="lazy"
+      />
+    )
   }
   return (
     <div className="grid h-9 w-9 place-items-center rounded-full bg-gray-100 text-gray-700 text-xs font-semibold ring-2 ring-white">

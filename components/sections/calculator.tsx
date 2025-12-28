@@ -70,11 +70,9 @@ export default function StateFeesCalculator() {
     <section className="w-full bg-white py-12 sm:py-16 md:py-20 px-4 sm:px-6 md:px-10">
       {/* Section Heading */}
       <div className="text-center mb-8 sm:mb-10 md:mb-12">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-neutral-900 mb-3">
-          Instantly know your LLC setup cost.
-        </h1>
+        <h1 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Instantly know your LLC setup cost.</h1>
         <p className="text-neutral-600 text-sm sm:text-base md:text-lg max-w-2xl mx-auto">
-          Transparency meets simplicity — calculate your state’s formation cost in seconds.
+          Transparency meets simplicity — calculate your state's formation cost in seconds.
         </p>
       </div>
 
@@ -100,7 +98,7 @@ export default function StateFeesCalculator() {
         </div>
 
         {/* Title */}
-        <h2 className="mb-6 sm:mb-8 md:mb-10 text-center text-xl sm:text-2xl md:text-3xl font-semibold text-neutral-900">
+        <h2 className="mb-6 sm:mb-8 md:mb-10 text-center text-2xl md:text-3xl font-semibold text-neutral-900">
           {selectedState} One-Stop LLC Formation
         </h2>
 

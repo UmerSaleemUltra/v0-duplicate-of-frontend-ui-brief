@@ -42,7 +42,9 @@ export default function ContactSection() {
     >
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-6 xs:mb-8 sm:mb-10">
-          <h2 className="text-2xl xs:text-3xl md:text-4xl font-bold text-white mb-2">Reach Out, We're Here to Help!</h2>
+          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4 text-white">
+            Reach Out, We're Here to Help!
+          </h2>
           <p className="text-white/80 text-xs xs:text-sm sm:text-base max-w-2xl mx-auto">
             Complete the form, and our team will promptly respond to your inquiry within our working hours!
           </p>

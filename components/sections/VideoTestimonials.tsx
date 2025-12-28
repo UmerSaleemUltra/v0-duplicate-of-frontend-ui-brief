@@ -102,9 +102,7 @@ export default function VideoTestimonials() {
             </span>
           </div>
 
-          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold text-balance tracking-tight leading-[1.1] text-gray-900 px-4">
-            Hear from our clients
-          </h2>
+          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Hear from our clients</h2>
 
           <p className="text-base sm:text-lg md:text-xl text-gray-600 max-w-2xl text-balance px-4">
             Real stories from real people who transformed their business with our platform
