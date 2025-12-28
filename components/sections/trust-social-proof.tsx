@@ -509,35 +509,38 @@ const TrustSocialProof = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="group cursor-pointer"
-                onClick={() => setSelectedVideo(video.videoUrl)}
+                className="group"
               >
                 {/* Video Card */}
-                <div className="relative aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl mb-4 transform group-hover:scale-[1.02] transition-transform duration-300">
-                  {/* Gradient Background */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${video.gradient}`} />
+                <div className="relative aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl mb-4">
+                  {/* Video Element */}
+                  <video
+                    src={video.videoUrl}
+                    className="absolute inset-0 w-full h-full object-cover"
+                    controls
+                    playsInline
+                    preload="metadata"
+                  />
+
+                  {/* Gradient Overlay (shows when video not playing) */}
+                  <div
+                    className={`absolute inset-0 bg-gradient-to-br ${video.gradient} pointer-events-none opacity-0 group-hover:opacity-0`}
+                  />
 
                   {/* Profile Circle */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
                     <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-2xl font-bold mb-4 border-2 border-white/30">
                       {video.name
                         .split(" ")
                         .map((n) => n[0])
                         .join("")}
                     </div>
-                    <p className="text-white/90 text-sm font-medium">{video.name}</p>
-                    <p className="text-white/60 text-xs">{video.country}</p>
-                  </div>
-
-                  {/* Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-                    <div className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform opacity-0 group-hover:opacity-100">
-                      <Play className="w-6 h-6 text-gray-900 ml-1" fill="currentColor" />
-                    </div>
+                    <p className="text-white/90 text-sm font-medium drop-shadow-lg">{video.name}</p>
+                    <p className="text-white/80 text-xs drop-shadow-lg">{video.country}</p>
                   </div>
 
                   {/* Top Stats Bar */}
-                  <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
+                  <div className="absolute top-4 left-4 right-4 flex justify-between items-center pointer-events-none z-10">
                     <div className="px-2 py-1 bg-black/40 backdrop-blur-sm text-white text-xs rounded-full flex items-center gap-1">
                       <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
@@ -555,37 +558,15 @@ const TrustSocialProof = () => {
                   </div>
 
                   {/* Bottom Quote */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                    <p className="text-white text-sm font-medium leading-snug">"{video.quote}"</p>
-                    <p className="text-white/60 text-xs mt-1">{video.company}</p>
+                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent pointer-events-none z-10">
+                    <p className="text-white text-sm font-medium leading-snug drop-shadow-lg">"{video.quote}"</p>
+                    <p className="text-white/60 text-xs mt-1 drop-shadow-lg">{video.company}</p>
                   </div>
                 </div>
               </motion.div>
             ))}
           </div>
         </motion.div>
-
-        {/* Video Modal */}
-        {selectedVideo && (
-          <div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm"
-            onClick={() => setSelectedVideo(null)}
-          >
-            <div className="relative w-full max-w-4xl mx-4" onClick={(e) => e.stopPropagation()}>
-              <button
-                onClick={() => setSelectedVideo(null)}
-                className="absolute -top-12 right-0 text-white hover:text-gray-300 transition-colors"
-              >
-                <svg className="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
-              <video src={selectedVideo} controls autoPlay className="w-full rounded-lg shadow-2xl">
-                Your browser does not support the video tag.
-              </video>
-            </div>
-          </div>
-        )}
       </div>
     </section>
   )
