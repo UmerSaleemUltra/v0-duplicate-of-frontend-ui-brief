@@ -54,24 +54,13 @@ export default function Navbar() {
 
           {/* Desktop Nav */}
           <nav className="hidden xl:flex items-center xl:gap-4 2xl:gap-6 3xl:gap-8">
-            {[
-              { label: "Home", href: "/" },
-              { label: "Pricing", href: "/#pricing" },
-              { label: "Services", href: "/#services" },
-              { label: "Process", href: "/#process" },
-              { label: "Dashboard", href: "/#dashboard" },
-              { label: "Testimonials", href: "/#testimonials" },
-              { label: "FAQ", href: "/#faq" },
-              { label: "Contact", href: "/#contact" },
-            ].map((item, index) => (
+            {["Home", "Process", "Pricing", "Services", "About", "Blog", "Contact"].map((item) => (
               <a
-                key={item.label}
-                href={item.href}
-                className={`text-sm lg:text-base xl:text-lg font-light text-white border-b-2 border-transparent pb-1 hover:border-white/30 transition-all ${
-                  index === 0 ? "font-semibold border-white/60" : ""
-                }`}
+                key={item}
+                href={item === "Blog" ? "/blog" : `/#${item.toLowerCase()}`}
+                className="text-sm lg:text-base xl:text-lg font-light text-white border-b-2 border-transparent pb-1 hover:border-white/30 transition-all first:font-semibold first:border-white/60"
               >
-                {item.label}
+                {item}
               </a>
             ))}
           </nav>
@@ -125,25 +114,15 @@ export default function Navbar() {
               </button>
             </div>
 
-            {/* Mobile Nav */}
             <nav className="flex flex-col p-4 sm:p-5 gap-2">
-              {[
-                { label: "Home", href: "/" },
-                { label: "Pricing", href: "/#pricing" },
-                { label: "Services", href: "/#services" },
-                { label: "Process", href: "/#process" },
-                { label: "Dashboard", href: "/#dashboard" },
-                { label: "Testimonials", href: "/#testimonials" },
-                { label: "FAQ", href: "/#faq" },
-                { label: "Contact", href: "/#contact" },
-              ].map((item) => (
+              {["Home", "Process", "Pricing", "Services", "About", "Blog", "Contact"].map((item) => (
                 <a
-                  key={item.label}
-                  href={item.href}
+                  key={item}
+                  href={item === "Blog" ? "/blog" : `/#${item.toLowerCase()}`}
                   className="block rounded-lg px-4 py-3 text-white text-base font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
-                  {item.label}
+                  {item}
                 </a>
               ))}
 
