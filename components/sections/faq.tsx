@@ -124,10 +124,10 @@ export default function FAQSection() {
                 key={index}
                 onClick={() => handleTabChange(index)}
                 className={cn(
-                  "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out",
+                  "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out cursor-pointer",
                   selectedTab === index
-                    ? "bg-[#ff0d13] text-white shadow-md scale-105"
-                    : "text-gray-700 hover:bg-gray-100",
+                    ? "bg-[#ff0d13] text-white shadow-md scale-105 cursor-pointer"
+                    : "text-gray-700 hover:bg-gray-100 cursor-pointer",
                 )}
               >
                 {tab.title}
@@ -141,7 +141,7 @@ export default function FAQSection() {
             <div key={index}>
               <button
                 onClick={() => toggleFaq(index)}
-                className="w-full py-4 md:py-5 flex items-center justify-between text-left group"
+                className="w-full py-4 md:py-5 flex items-center justify-between text-left group cursor-pointer"
                 aria-expanded={openFaq === index}
               >
                 <span
