@@ -33,7 +33,7 @@ const steps = [
 const HowItWorks = () => {
   return (
     <section className="py-24 relative overflow-hidden">
-      <div className="absolute inset-0 bg-gradient-to-br from-[#880000] via-[#cc0000] to-[#ff0d13]" />
+      <div className="absolute inset-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]" />
 
       {/* Pattern Overlay */}
       <div className="absolute inset-0 opacity-10">

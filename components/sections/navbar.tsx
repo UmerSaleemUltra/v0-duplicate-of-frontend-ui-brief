@@ -99,7 +99,7 @@ export default function Navbar() {
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
 
           {/* Sidebar */}
-          <div className="absolute right-0 top-0 h-full w-[280px] sm:w-[320px] max-w-[85vw] bg-gradient-to-br from-[#F30C12] to-[#690206] shadow-2xl transform transition-transform duration-300 ease-in-out translate-x-0 overflow-y-auto">
+          <div className="absolute right-0 top-0 h-full w-[280px] sm:w-[320px] max-w-[85vw] bg-gradient-to-r from-[#880000] to-[#ff0d13] shadow-2xl transform transition-transform duration-300 ease-in-out translate-x-0 overflow-y-auto">
             <div className="flex justify-between items-center p-4 sm:p-5 border-b border-white/20">
               {/* Logo */}
               <Link href="/" onClick={() => setIsMenuOpen(false)}>
