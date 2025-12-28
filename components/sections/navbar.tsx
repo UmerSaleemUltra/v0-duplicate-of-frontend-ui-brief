@@ -48,7 +48,7 @@ export default function Navbar() {
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
-              className="w-[160px] sm:w-[200px] md:w-[220px] lg:w-[260px] h-auto"
+              className="w-[200px] sm:w-[200px] md:w-[220px] lg:w-[260px] h-auto"
             />
           </Link>
 
@@ -106,7 +106,7 @@ export default function Navbar() {
                 <img
                   src="/images/buzz-filing-logo-white.png"
                   alt="BuzzFiling Logo"
-                  className="w-[160px] sm:w-[180px] h-auto"
+                  className="w-[200px] sm:w-[180px] h-auto"
                 />
               </Link>
               <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu" className="text-white p-2">
