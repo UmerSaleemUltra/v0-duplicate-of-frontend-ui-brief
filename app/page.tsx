@@ -72,16 +72,30 @@ export default function LandingPage() {
       <Navbar />
       <HeroSection />
       <Brands />
-      <PricingSection />
-      <ServicesSection />
-      <HowItWorks />
-      <ClientDashboardSection />
+      <div id="pricing">
+        <PricingSection />
+      </div>
+      <div id="services">
+        <ServicesSection />
+      </div>
+      <div id="process">
+        <HowItWorks />
+      </div>
+      <div id="dashboard">
+        <ClientDashboardSection />
+      </div>
       <ComplianceSection />
       <WhyChooseUs />
       <GlobalFounders />
-      <TrustSocialProof />
-      <FAQSection />
-      <ContactSection />
+      <div id="testimonials">
+        <TrustSocialProof />
+      </div>
+      <div id="faq">
+        <FAQSection />
+      </div>
+      <div id="contact">
+        <ContactSection />
+      </div>
       <Footer />
     </div>
   )
