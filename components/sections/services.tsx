@@ -121,7 +121,7 @@ export default function ServicesSection() {
   ]
 
   return (
-    <section id="services" className="w-full bg-white py-16 md:py-20 lg:py-24 px-3">
+    <section id="services" className="w-full bg-white py-16 md:py-20 lg:py-24 px-3 mt-[-100px]">
       <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
         <motion.div
