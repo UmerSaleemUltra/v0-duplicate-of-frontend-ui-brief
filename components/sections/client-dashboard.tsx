@@ -66,12 +66,12 @@ const ClientDashboardSection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-          <div className="inline-flex items-center gap-2 px-0 py-2">
-            <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">All-In-One</span>
+          <div className="flex justify-center mb-4">
+            <div className="inline-flex items-center gap-2 px-0 py-2">
+              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">All-In-One</span>
+            </div>
           </div>
-          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">
-            Your Business, <span className="text-gray-900">One Dashboard</span>
-          </h2>
+          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Your Business, One Dashboard</h2>
           <p className="text-lg text-muted-foreground">
             Track your formation progress, access documents, and manage your business from our intuitive client
             dashboard.
