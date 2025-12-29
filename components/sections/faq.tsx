@@ -119,7 +119,7 @@ export default function FAQSection() {
         >
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">FAQs</span>
+              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Quick Answers</span>
             </div>
           </div>
 

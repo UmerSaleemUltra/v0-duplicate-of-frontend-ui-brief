@@ -66,9 +66,9 @@ const ClientDashboardSection = () => {
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
-        <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Add-on Services</span>
-            </div>
+          <div className="inline-flex items-center gap-2 px-0 py-2">
+            <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">All-In-One</span>
+          </div>
           <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">
             Your Business, <span className="text-gray-900">One Dashboard</span>
           </h2>
