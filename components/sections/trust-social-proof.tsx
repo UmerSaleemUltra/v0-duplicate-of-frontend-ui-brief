@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Star, CheckCircle2, Play, MessageCircle } from "lucide-react"
+import { Star } from "lucide-react"
 import Image from "next/image"
 
 const reviews = [
@@ -194,9 +194,10 @@ const TrustSocialProof = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-6"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-4">
-            <CheckCircle2 className="w-4 h-4" />
-            500+ Happy Founders
+          <div className="flex justify-center mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#ff0d13] border border-[#ff0d13]">
+              <span className="text-sm font-semibold text-white uppercase tracking-wide">500+ Happy Founders</span>
+            </div>
           </div>
           <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">What Our Clients Say</h2>
           <p className="text-muted-foreground text-lg max-w-xl mx-auto">
@@ -344,9 +345,10 @@ const TrustSocialProof = () => {
           className="mb-24"
         >
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#25D366]/10 text-[#25D366] font-medium text-sm mb-4">
-              <MessageCircle className="w-4 h-4" />
-              Real Client Feedback
+            <div className="flex justify-center mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#25D366] border border-[#25D366]">
+                <span className="text-sm font-semibold text-white uppercase tracking-wide">Real Client Feedback</span>
+              </div>
             </div>
             <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">
               WhatsApp Messages from Happy Clients
@@ -456,15 +458,16 @@ const TrustSocialProof = () => {
 
         {/* Video Testimonials Section */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6 }}
         >
           <div className="text-center mb-12">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 text-primary font-medium text-sm mb-4">
-              <Play className="w-4 h-4" />
-              Video Testimonials
+            <div className="flex justify-center mb-4">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#ff0d13] border border-[#ff0d13]">
+                <span className="text-sm font-semibold text-white uppercase tracking-wide">Video Testimonials</span>
+              </div>
             </div>
             <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">Hear From Our Clients</h3>
             <p className="text-muted-foreground">Real stories from founders who built their US businesses with us</p>

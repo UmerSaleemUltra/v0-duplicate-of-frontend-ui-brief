@@ -89,10 +89,11 @@ export default function ComplianceSection() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 bg-white/10 backdrop-blur-sm mb-4"
+            className="flex justify-center mb-4"
           >
-            <Shield className="w-4 h-4 text-white" />
-            <span className="text-white font-medium text-sm uppercase tracking-wider">STAY COMPLIANT</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-white">
+              <span className="text-sm font-semibold text-[#ff0d13] uppercase tracking-wide">Stay Compliant</span>
+            </div>
           </motion.div>
 
           <motion.h2

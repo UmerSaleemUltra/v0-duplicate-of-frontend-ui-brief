@@ -54,7 +54,11 @@ const HowItWorks = () => {
           transition={{ duration: 0.6 }}
           className="text-center mb-16"
         >
-          <span className="text-white/90 font-medium text-sm uppercase tracking-wider">Simple Process</span>
+          <div className="flex justify-center mb-4">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-white">
+              <span className="text-sm font-semibold text-[#ff0d13] uppercase tracking-wide">Simple Process</span>
+            </div>
+          </div>
           <h2 className="text-white text-3xl md:text-4xl font-semibold mt-4 mb-4">How It Works</h2>
           <p className="text-white/80 text-lg max-w-2xl mx-auto">
             Get your U.S. business up and running in four simple steps.

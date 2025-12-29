@@ -4,7 +4,6 @@ import type React from "react"
 import { useState } from "react"
 import Image from "next/image"
 import { motion, AnimatePresence } from "framer-motion"
-import { MessageCircle } from "lucide-react"
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -41,9 +40,8 @@ export default function ContactSection() {
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-6 xs:mb-8 sm:mb-10">
           <div className="flex justify-center mb-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 border border-white/20 backdrop-blur-sm">
-              <MessageCircle className="w-5 h-5 text-white" />
-              <span className="text-sm font-medium text-white">Real Client Feedback</span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-white">
+              <span className="text-sm font-semibold text-[#ff0d13] uppercase tracking-wide">Get in Touch</span>
             </div>
           </div>
 

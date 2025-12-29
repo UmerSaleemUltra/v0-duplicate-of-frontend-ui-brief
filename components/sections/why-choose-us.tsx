@@ -54,9 +54,9 @@ const WhyChooseUs = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <span className="font-medium text-sm uppercase tracking-wider" style={{ color: "#ff0d13" }}>
-              Why Buzz Filing
-            </span>
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#ff0d13] border border-[#ff0d13] mb-4">
+              <span className="text-sm font-semibold text-white uppercase tracking-wide">Why Buzz Filing</span>
+            </div>
             <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mt-4 mb-4">Built for Global Founders</h2>
             <p className="text-buzz-dark/70 text-lg mb-8 leading-relaxed">
               We understand the unique challenges international entrepreneurs face when starting a U.S. business. That's
