@@ -41,9 +41,9 @@ export default function Navbar() {
 
   return (
     <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
-      <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-[1440px]">
+      <div className="mx-auto w-full lg:px-8 max-w-[1440px]">
         <div className="flex lg:grid lg:grid-cols-3 items-center justify-between h-[70px] lg:h-[80px] xl:h-[85px] gap-4">
-          <Link href="/" className="flex items-center flex-shrink-0">
+          <Link href="/" className="flex items-center flex-shrink-0 pl-4 lg:pl-0">
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
@@ -96,7 +96,7 @@ export default function Navbar() {
             </a>
           </nav>
 
-          <div className="flex items-center justify-end gap-3 xl:gap-4">
+          <div className="flex items-center justify-end gap-3 xl:gap-4 pr-4 lg:pr-0">
             <a
               href="tel:+17865749305"
               className="hidden lg:block whitespace-nowrap text-white text-sm xl:text-base font-normal"
@@ -113,7 +113,7 @@ export default function Navbar() {
             </Link>
 
             <button
-              className="flex lg:hidden items-center justify-center text-white -mr-2"
+              className="flex lg:hidden items-center justify-center text-white"
               onClick={() => setIsMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={isMenuOpen}
