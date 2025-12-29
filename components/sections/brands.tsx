@@ -1,6 +1,7 @@
 "use client"
 
 import Image from "next/image"
+import { motion } from "framer-motion"
 
 export default function Brands() {
   const brands = [
@@ -26,17 +27,34 @@ export default function Brands() {
       className="relative w-full py-16 md:py-20 lg:py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13] overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h2
+        <motion.h2
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
           id="partners-heading"
           className="text-center text-white text-sm sm:text-base md:text-lg lg:text-xl mb-6 sm:mb-8 md:mb-10"
         >
           Our business partners and cooperating institutions.
-        </h2>
+        </motion.h2>
 
         {/* Desktop / Tablet Grid */}
-        <div className="hidden sm:grid gap-4 sm:gap-6 md:gap-8 lg:gap-10 [grid-template-columns:repeat(auto-fit,minmax(120px,1fr))]">
-          {brands.map((b) => (
-            <div key={b.name} className="flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0 }}
+          whileInView={{ opacity: 1 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="hidden sm:grid gap-4 sm:gap-6 md:gap-8 lg:gap-10 [grid-template-columns:repeat(auto-fit,minmax(120px,1fr))]"
+        >
+          {brands.map((b, index) => (
+            <motion.div
+              key={b.name}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              className="flex items-center justify-center"
+            >
               <div
                 className={`relative w-full h-[clamp(28px,6vw,72px)] ${b.name === "Slash" ? "max-w-[120px]" : "max-w-[200px]"}`}
               >
@@ -50,9 +68,9 @@ export default function Brands() {
                   decoding="async"
                 />
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+        </motion.div>
 
         {/* Mobile Marquee */}
         <div className="block sm:hidden relative overflow-hidden mt-4">

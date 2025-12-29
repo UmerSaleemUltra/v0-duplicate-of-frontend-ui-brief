@@ -38,7 +38,13 @@ export default function ContactSection() {
   return (
     <section id="contact" className="w-full py-16 md:py-20 lg:py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
       <div className="container mx-auto px-4 max-w-6xl">
-        <div className="text-center mb-6 xs:mb-8 sm:mb-10">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-6 xs:mb-8 sm:mb-10"
+        >
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
               <span className="text-sm font-bold text-white uppercase tracking-wide">Get in Touch</span>
@@ -51,9 +57,15 @@ export default function ContactSection() {
           <p className="text-white/80 text-xs xs:text-sm sm:text-base max-w-2xl mx-auto">
             Complete the form, and our team will promptly respond to your inquiry within our working hours!
           </p>
-        </div>
+        </motion.div>
 
-        <div className="bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-lg overflow-hidden flex flex-col md:flex-row">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-lg overflow-hidden flex flex-col md:flex-row"
+        >
           {/* Form Section */}
           <div className="w-full md:w-1/2 p-8 md:p-10">
             <h3 className="text-xl font-semibold text-white mb-6">Send us a message</h3>
@@ -147,7 +159,7 @@ export default function ContactSection() {
               />
             </div>
           </div>
-        </div>
+        </motion.div>
       </div>
     </section>
   )

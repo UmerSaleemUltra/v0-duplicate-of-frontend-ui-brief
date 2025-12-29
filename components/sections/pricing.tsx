@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
+import { motion } from "framer-motion"
 
 export default function PricingSection() {
   const [showStarterPlans, setShowStarterPlans] = useState(false)
@@ -30,7 +31,13 @@ export default function PricingSection() {
   return (
     <section className="w-full flex items-center justify-center px-4 sm:px-6 py-16 md:py-20 lg:py-24">
       <div className="container mx-auto max-w-6xl">
-        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12 sm:mb-16 lg:mb-20"
+        >
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Pricing Plans</span>
@@ -40,11 +47,17 @@ export default function PricingSection() {
           <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto">
             Complete business solutions with straightforward, fair pricing.
           </p>
-        </div>
+        </motion.div>
 
         <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 lg:gap-12">
           {/* Starter Package */}
-          <div className="flex flex-col">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex flex-col"
+          >
             {/* Card */}
             <div className="bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-2xl sm:rounded-3xl p-6 sm:p-7 md:p-8 lg:p-10 mb-6">
               {/* Star Icon */}
@@ -77,7 +90,14 @@ export default function PricingSection() {
             {/* Features List */}
             <div className="space-y-3 sm:space-y-3.5 md:space-y-4">
               {starterFeatures.map((feature, index) => (
-                <div key={index} className="flex items-start gap-3">
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, x: -20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.3 + index * 0.05 }}
+                  className="flex items-start gap-3"
+                >
                   <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#ff0d13] flex items-center justify-center mt-0.5">
                     <svg
                       width="12"
@@ -97,13 +117,19 @@ export default function PricingSection() {
                     </svg>
                   </div>
                   <span className="text-[#1A1A1A] text-sm sm:text-base md:text-lg leading-relaxed">{feature}</span>
-                </div>
+                </motion.div>
               ))}
             </div>
-          </div>
+          </motion.div>
 
           {/* Advance Package */}
-          <div className="flex flex-col">
+          <motion.div
+            initial={{ opacity: 0, x: 30 }}
+            whileInView={{ opacity: 1, x: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6, delay: 0.2 }}
+            className="flex flex-col"
+          >
             {/* Card with curved cutout */}
             <div className="relative bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-2xl sm:rounded-3xl p-6 sm:p-7 md:p-8 lg:p-10 mb-6 overflow-hidden">
               {/* Asterisk Icon */}
@@ -143,7 +169,14 @@ export default function PricingSection() {
             {/* Features List */}
             <div className="space-y-3 sm:space-y-3.5 md:space-y-4">
               {advanceUniqueFeatures.map((feature, index) => (
-                <div key={`unique-${index}`} className="flex items-start gap-3">
+                <motion.div
+                  key={`unique-${index}`}
+                  initial={{ opacity: 0, x: 20 }}
+                  whileInView={{ opacity: 1, x: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.4, delay: 0.3 + index * 0.05 }}
+                  className="flex items-start gap-3"
+                >
                   <div className="flex-shrink-0 w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-[#ff0d13] flex items-center justify-center mt-0.5">
                     <svg
                       width="12"
@@ -163,7 +196,7 @@ export default function PricingSection() {
                     </svg>
                   </div>
                   <span className="text-[#1A1A1A] text-sm sm:text-base md:text-lg leading-relaxed">{feature}</span>
-                </div>
+                </motion.div>
               ))}
 
               <button
@@ -210,7 +243,7 @@ export default function PricingSection() {
                 </div>
               </div>
             </div>
-          </div>
+          </motion.div>
         </div>
       </div>
     </section>

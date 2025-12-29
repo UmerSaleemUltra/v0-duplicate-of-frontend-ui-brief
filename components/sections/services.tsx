@@ -16,6 +16,8 @@ import {
   Store,
   CreditCard,
 } from "lucide-react"
+;("use client")
+import { motion } from "framer-motion"
 
 export default function ServicesSection() {
   const services = [
@@ -122,7 +124,13 @@ export default function ServicesSection() {
     <section id="services" className="w-full bg-white py-16 md:py-20 lg:py-24 px-3">
       <div className="max-w-7xl mx-auto w-full">
         {/* Header */}
-        <div className="text-center mb-12">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+          className="text-center mb-12"
+        >
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Add-on Services</span>
@@ -132,13 +140,17 @@ export default function ServicesSection() {
           <p className="text-gray-600 text-sm md:text-base max-w-2xl mx-auto leading-relaxed">
             Complete business solutions with straightforward, fair pricing.
           </p>
-        </div>
+        </motion.div>
 
         {/* Services Grid */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {services.map(({ Icon, title, description, price }, idx) => (
-            <div
+            <motion.div
               key={idx}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: idx * 0.05 }}
               className="flex flex-col p-4 bg-white border-b border-gray-200 rounded-xl hover:bg-gray-50 transition-colors duration-200"
             >
               {/* Icon */}
@@ -158,7 +170,7 @@ export default function ServicesSection() {
 
               {/* Description */}
               <p className="text-gray-600 text-sm leading-relaxed">{description}</p>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>

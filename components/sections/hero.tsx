@@ -2,6 +2,7 @@
 import { ArrowRight } from "lucide-react"
 import Link from "next/link"
 import { useState, useEffect } from "react"
+import { motion } from "framer-motion"
 
 function getCookie(name: string): string | null {
   if (typeof window === "undefined") return null
@@ -40,22 +41,40 @@ export default function HeroSection() {
   return (
     <div className="bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div className="text-center py-6 sm:py-10 md:py-14 lg:py-16">
-         <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl 
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
+          className="text-center py-6 sm:py-10 md:py-14 lg:py-16"
+        >
+          <motion.h1
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.2 }}
+            className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl 
                font-extrabold mb-6 text-white px-2 
-               leading-tight tracking-tight">
-  Start Your U.S. Business <br className="hidden sm:block" />
-  Fast & Fully Online
-</h1>
+               leading-tight tracking-tight"
+          >
+            Start Your U.S. Business <br className="hidden sm:block" />
+            Fast & Fully Online
+          </motion.h1>
 
-
-
-          <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white mb-6 sm:mb-8 md:mb-10 max-w-3xl mx-auto leading-relaxed px-4">
+          <motion.p
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.4 }}
+            className="text-sm sm:text-base md:text-lg lg:text-xl text-white mb-6 sm:mb-8 md:mb-10 max-w-3xl mx-auto leading-relaxed px-4"
+          >
             Form your LLC, get your EIN, open a business bank account & stay compliant – all in one simple package.
             Starting at $249 + state fees.
-          </p>
+          </motion.p>
 
-          <div className="flex justify-center items-center px-4">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6, delay: 0.6 }}
+            className="flex justify-center items-center px-4"
+          >
             <Link
               href={buttonLink}
               className="flex items-center justify-center gap-2 text-sm sm:text-base md:text-lg 
@@ -65,10 +84,15 @@ export default function HeroSection() {
               <span>{buttonText}</span>
               <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
             </Link>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
 
-        <div className="pb-6 sm:pb-10 md:pb-14 lg:pb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 40 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.8 }}
+          className="pb-6 sm:pb-10 md:pb-14 lg:pb-16"
+        >
           <div className="max-w-6xl mx-auto">
             <div className="flex justify-center px-2 sm:px-4">
               <div className="w-full max-w-[900px] aspect-video">
@@ -84,7 +108,7 @@ export default function HeroSection() {
               </div>
             </div>
           </div>
-        </div>
+        </motion.div>
       </main>
     </div>
   )
