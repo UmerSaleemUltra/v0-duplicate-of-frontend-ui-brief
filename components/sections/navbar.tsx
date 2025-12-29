@@ -43,7 +43,7 @@ export default function Navbar() {
     <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
       <div className="mx-auto w-full lg:px-8 max-w-[1440px]">
         <div className="flex lg:grid lg:grid-cols-3 items-center justify-between h-[70px] lg:h-[80px] xl:h-[85px]">
-          <Link href="/" className="flex items-center flex-shrink-0 left-0 pl-4 lg:pl-0">
+          <Link href="/" className="flex items-center flex-shrink-0 left-5 pl-4 lg:pl-0">
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
