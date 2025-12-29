@@ -42,9 +42,8 @@ export default function Navbar() {
   return (
     <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
       <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-[1440px]">
-        <div className="flex items-center justify-between h-[80px] sm:h-[90px] md:h-[100px] lg:h-[110px]">
-          {/* Logo - Increased sizes across all breakpoints */}
-          <Link href="/" className="flex-shrink-0">
+        <div className="flex items-center justify-between h-[70px] sm:h-[80px] md:h-[90px] lg:h-[100px]">
+          <Link href="/" className="flex items-center flex-shrink-0">
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
@@ -65,7 +64,6 @@ export default function Navbar() {
             ))}
           </nav>
 
-          {/* Right side actions */}
           <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
             <a href="tel:+17865749305" className="hidden lg:block whitespace-nowrap text-white text-base xl:text-lg">
               +1 (786) 574-9305
@@ -79,9 +77,8 @@ export default function Navbar() {
               <ArrowRight className="w-4 h-4" />
             </Link>
 
-            {/* Hamburger - Flush to right edge on mobile */}
             <button
-              className="block xl:hidden text-white p-2 -mr-2 sm:-mr-1"
+              className="flex xl:hidden items-center justify-center text-white -mr-2"
               onClick={() => setIsMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={isMenuOpen}
