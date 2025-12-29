@@ -37,7 +37,9 @@ export default function Brands() {
         <div className="hidden sm:grid gap-4 sm:gap-6 md:gap-8 lg:gap-10 [grid-template-columns:repeat(auto-fit,minmax(120px,1fr))]">
           {brands.map((b) => (
             <div key={b.name} className="flex items-center justify-center">
-              <div className="relative w-full max-w-[200px] h-[clamp(28px,6vw,72px)]">
+              <div
+                className={`relative w-full h-[clamp(28px,6vw,72px)] ${b.name === "Slash" ? "max-w-[120px]" : "max-w-[200px]"}`}
+              >
                 <Image
                   src={b.logo || "/placeholder.svg"}
                   alt={`${b.name} logo`}
@@ -57,7 +59,7 @@ export default function Brands() {
           <div className="flex gap-8 animate-marquee whitespace-nowrap">
             {brands.concat(brands).map((b, i) => (
               <div key={`${b.name}-${i}`} className="flex-shrink-0 flex items-center justify-center">
-                <div className="relative w-[100px] h-[40px]">
+                <div className={`relative h-[40px] ${b.name === "Slash" ? "w-[70px]" : "w-[100px]"}`}>
                   <Image
                     src={b.logo || "/placeholder.svg"}
                     alt={`${b.name} logo`}
