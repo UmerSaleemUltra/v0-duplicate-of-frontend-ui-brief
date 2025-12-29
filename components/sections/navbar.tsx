@@ -42,7 +42,7 @@ export default function Navbar() {
   return (
     <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
       <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-[1440px]">
-        <div className="flex items-center justify-between h-[70px] lg:h-[80px] xl:h-[85px]">
+        <div className="flex lg:grid lg:grid-cols-3 items-center justify-between h-[70px] lg:h-[80px] xl:h-[85px] gap-4">
           <Link href="/" className="flex items-center flex-shrink-0">
             <img
               src="/images/buzz-filing-logo-white.png"
@@ -51,7 +51,7 @@ export default function Navbar() {
             />
           </Link>
 
-          <nav className="hidden lg:flex items-center gap-6 xl:gap-8 absolute left-1/2 transform -translate-x-1/2">
+          <nav className="hidden lg:flex items-center justify-center gap-4 xl:gap-6">
             <a
               href="/#home"
               className="text-white text-sm xl:text-base font-semibold border-b-2 border-white pb-1 hover:border-white/80 transition-all whitespace-nowrap"
@@ -96,7 +96,7 @@ export default function Navbar() {
             </a>
           </nav>
 
-          <div className="flex items-center gap-3 xl:gap-4">
+          <div className="flex items-center justify-end gap-3 xl:gap-4">
             <a
               href="tel:+17865749305"
               className="hidden lg:block whitespace-nowrap text-white text-sm xl:text-base font-normal"
