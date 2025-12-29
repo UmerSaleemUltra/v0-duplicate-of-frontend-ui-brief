@@ -60,37 +60,37 @@ export default function Navbar() {
             </a>
             <a
               href="/#process"
-              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal  transition-colors whitespace-nowrap"
             >
               Process
             </a>
             <a
               href="/#pricing"
-              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal  transition-colors whitespace-nowrap"
             >
               Pricing
             </a>
             <a
               href="/#services"
-              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal  transition-colors whitespace-nowrap"
             >
               Services
             </a>
             <a
               href="/#about"
-              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal  transition-colors whitespace-nowrap"
             >
               About
             </a>
             <a
               href="/blog"
-              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal  transition-colors whitespace-nowrap"
             >
               Blog
             </a>
             <a
               href="/#contact"
-              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal  transition-colors whitespace-nowrap"
             >
               Contact
             </a>
