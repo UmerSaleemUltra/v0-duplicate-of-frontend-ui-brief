@@ -40,8 +40,8 @@ export default function ContactSection() {
       <div className="container mx-auto px-4 max-w-6xl">
         <div className="text-center mb-6 xs:mb-8 sm:mb-10">
           <div className="flex justify-center mb-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-white">
-              <span className="text-sm font-semibold text-[#ff0d13] uppercase tracking-wide">Get in Touch</span>
+            <div className="inline-flex items-center gap-2 px-0 py-2">
+              <span className="text-sm font-bold text-white uppercase tracking-wide">Get in Touch</span>
             </div>
           </div>
 

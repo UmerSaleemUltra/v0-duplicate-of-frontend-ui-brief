@@ -47,8 +47,8 @@ const GlobalFounders = () => {
           className="text-center mb-16"
         >
           <div className="flex justify-center mb-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-white">
-              <span className="text-sm font-semibold text-[#ff0d13] uppercase tracking-wide">Global Reach</span>
+            <div className="inline-flex items-center gap-2 px-0 py-2">
+              <span className="text-sm font-bold text-white uppercase tracking-wide">Global Reach</span>
             </div>
           </div>
           <h2 className="text-white text-3xl md:text-4xl font-semibold mt-4 mb-4">Founders We Help Worldwide</h2>

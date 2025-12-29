@@ -111,8 +111,8 @@ export default function FAQSection() {
     <section className="px-4 md:px-8 py-16 md:py-20 lg:py-24 bg-white" id="faq">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-center mb-4">
-          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#ff0d13] border border-[#ff0d13]">
-            <span className="text-sm font-semibold text-white uppercase tracking-wide">FAQs</span>
+          <div className="inline-flex items-center gap-2 px-0 py-2">
+            <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">FAQs</span>
           </div>
         </div>
 

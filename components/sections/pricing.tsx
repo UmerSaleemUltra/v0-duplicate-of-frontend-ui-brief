@@ -32,8 +32,8 @@ export default function PricingSection() {
       <div className="container mx-auto max-w-6xl">
         <div className="text-center mb-12 sm:mb-16 lg:mb-20">
           <div className="flex justify-center mb-4">
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#ff0d13] border border-[#ff0d13]">
-              <span className="text-sm font-semibold text-white uppercase tracking-wide">Pricing Plans</span>
+            <div className="inline-flex items-center gap-2 px-0 py-2">
+              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Pricing Plans</span>
             </div>
           </div>
           <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Everything You Need, One Place</h2>

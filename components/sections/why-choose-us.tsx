@@ -54,8 +54,8 @@ const WhyChooseUs = () => {
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#ff0d13] border border-[#ff0d13] mb-4">
-              <span className="text-sm font-semibold text-white uppercase tracking-wide">Why Buzz Filing</span>
+            <div className="inline-flex items-center gap-2 px-0 py-2 mb-4">
+              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Why Buzz Filing</span>
             </div>
             <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mt-4 mb-4">Built for Global Founders</h2>
             <p className="text-buzz-dark/70 text-lg mb-8 leading-relaxed">

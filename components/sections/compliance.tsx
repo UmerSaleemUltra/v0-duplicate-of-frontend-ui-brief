@@ -91,8 +91,8 @@ export default function ComplianceSection() {
             viewport={{ once: true }}
             className="flex justify-center mb-4"
           >
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white border border-white">
-              <span className="text-sm font-semibold text-[#ff0d13] uppercase tracking-wide">Stay Compliant</span>
+            <div className="inline-flex items-center gap-2 px-0 py-2">
+              <span className="text-sm font-bold text-white uppercase tracking-wide">Stay Compliant</span>
             </div>
           </motion.div>
 
