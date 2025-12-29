@@ -12,7 +12,7 @@ export default function Brands() {
     { name: "Sunrate", logo: "https://cdn.brandfetch.io/idY4rzp0Gt/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
     {
       name: "Slash",
-      logo: "https://cdn.brandfetch.io/idM3oZiMMG/w/512/h/512/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
+      logo: "https://www.slash.com/_next/static/media/fd0c0324b9d9b1f5d86eb79b641ecb95.svg",
     },
     {
       name: "Openphone",
