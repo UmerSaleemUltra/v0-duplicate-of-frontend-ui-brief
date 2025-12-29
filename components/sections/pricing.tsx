@@ -8,20 +8,19 @@ export default function PricingSection() {
   const [showStarterPlans, setShowStarterPlans] = useState(false)
 
   const starterFeatures = [
-    "Company Formation",
-    "Registered Agent (Annually)",
-    "All Fees Included",
-    "EIN (Employer Identification Number)",
+    "Name Check & Clearance",
+    "Business Address - 1 Year",
+    "Registered Agent - 1 Year",
+    "Govt / State Filing Fee",
+    "Articles of Incorporation",
+    "Business Tax ID (EIN)",
     "U.S. Phone Number",
     "Business Bank Account Setup",
-    "Payment Gateway Setup Guidance",
-    "Business Tax Updates",
-    "FinCEN BOI Report",
-    "Digital Document Access",
+    "Digital Dashboard Access",
   ]
 
   const advanceUniqueFeatures = [
-    "Unique Business Address",
+    "Business Address with Unique Suite",
     "Reseller Certificate / Seller Permit",
     "Dedicated IP VPS - 1 Month",
   ]
