@@ -154,39 +154,19 @@ const whatsappFeedback = [
 
 const videoTestimonials = [
   {
-    name: "James Wilson",
-    company: "TechStart LLC",
-    country: "🇮🇳 India",
-    duration: "1:24",
-    views: "2.4K",
-    quote: "From India to a US business owner in just 2 weeks!",
+    videoId: "dQw4w9WgXcQ", // Replace with actual BuzzFiling YouTube video IDs
     gradient: "from-rose-500 to-orange-400",
   },
   {
-    name: "Sarah Chen",
-    company: "GlobalTrade Co",
-    country: "🇸🇬 Singapore",
-    duration: "2:15",
-    views: "1.8K",
-    quote: "The bank account setup was seamless. Highly recommend!",
+    videoId: "dQw4w9WgXcQ", // Replace with actual BuzzFiling YouTube video IDs
     gradient: "from-violet-500 to-purple-400",
   },
   {
-    name: "David Okonkwo",
-    company: "Afrotech Solutions",
-    country: "🇳🇬 Nigeria",
-    duration: "1:45",
-    views: "3.1K",
-    quote: "Best investment I made for my business journey.",
+    videoId: "dQw4w9WgXcQ", // Replace with actual BuzzFiling YouTube video IDs
     gradient: "from-emerald-500 to-teal-400",
   },
   {
-    name: "Elena Rodriguez",
-    company: "LatinTech Inc",
-    country: "🇲🇽 Mexico",
-    duration: "2:30",
-    views: "1.5K",
-    quote: "Professional team, amazing results. 10/10 experience!",
+    videoId: "dQw4w9WgXcQ", // Replace with actual BuzzFiling YouTube video IDs
     gradient: "from-blue-500 to-cyan-400",
   },
 ]
@@ -498,55 +478,17 @@ const TrustSocialProof = () => {
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
                 transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="group cursor-pointer"
+                className="group"
               >
-                {/* Video Card */}
-                <div className="relative aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl mb-4 transform group-hover:scale-[1.02] transition-transform duration-300">
-                  {/* Gradient Background */}
-                  <div className={`absolute inset-0 bg-gradient-to-br ${video.gradient}`} />
-
-                  {/* Profile Circle */}
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                    <div className="w-20 h-20 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center text-white text-2xl font-bold mb-4 border-2 border-white/30">
-                      {video.name
-                        .split(" ")
-                        .map((n) => n[0])
-                        .join("")}
-                    </div>
-                    <p className="text-white/90 text-sm font-medium">{video.name}</p>
-                    <p className="text-white/60 text-xs">{video.country}</p>
-                  </div>
-
-                  {/* Play Button Overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center bg-black/0 group-hover:bg-black/20 transition-colors">
-                    <div className="w-14 h-14 rounded-full bg-white/90 backdrop-blur-sm flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform opacity-0 group-hover:opacity-100">
-                      <Play className="w-6 h-6 text-gray-900 ml-1" fill="currentColor" />
-                    </div>
-                  </div>
-
-                  {/* Top Stats Bar */}
-                  <div className="absolute top-4 left-4 right-4 flex justify-between items-center">
-                    <div className="px-2 py-1 bg-black/40 backdrop-blur-sm text-white text-xs rounded-full flex items-center gap-1">
-                      <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
-                        <path d="M10 12a2 2 0 100-4 2 2 0 000 4z" />
-                        <path
-                          fillRule="evenodd"
-                          d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                      {video.views}
-                    </div>
-                    <div className="px-2 py-1 bg-black/40 backdrop-blur-sm text-white text-xs rounded-full">
-                      {video.duration}
-                    </div>
-                  </div>
-
-                  {/* Bottom Quote */}
-                  <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
-                    <p className="text-white text-sm font-medium leading-snug">"{video.quote}"</p>
-                    <p className="text-white/60 text-xs mt-1">{video.company}</p>
-                  </div>
+                {/* YouTube Video Embed */}
+                <div className="relative aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl">
+                  <iframe
+                    src={`https://www.youtube.com/embed/${video.videoId}`}
+                    title={`Client Testimonial ${index + 1}`}
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    className="absolute inset-0 w-full h-full"
+                  />
                 </div>
               </motion.div>
             ))}
