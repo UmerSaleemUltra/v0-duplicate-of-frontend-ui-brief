@@ -40,25 +40,25 @@ export default function Navbar() {
   const buttonLink = isAuthenticated ? dashboardUrl : "/auth"
 
   return (
-    <header className=" inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13] h-[100px] sm:h-[110px] md:h-[120px] ">
-      <div className="mx-auto w-[95%] max-w-[1440px] h-full flex items-center">
-        <div className="flex items-center justify-between font-medium gap-3 sm:gap-5 w-full">
-          {/* Logo */}
+    <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+      <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-[1440px]">
+        <div className="flex items-center justify-between h-[80px] sm:h-[90px] md:h-[100px] lg:h-[110px]">
+          {/* Logo - Increased sizes across all breakpoints */}
           <Link href="/" className="flex-shrink-0">
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
-              className="w-[140px] sm:w-[180px] md:w-[200px] lg:w-[240px] h-auto"
+              className="h-auto w-[180px] sm:w-[200px] md:w-[220px] lg:w-[240px] xl:w-[260px] 2xl:w-[280px]"
             />
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden xl:flex items-center xl:gap-4 2xl:gap-6 3xl:gap-8">
+          <nav className="hidden xl:flex items-center gap-6 2xl:gap-8">
             {["Home", "Process", "Pricing", "Services", "About", "Blog", "Contact"].map((item) => (
               <a
                 key={item}
                 href={item === "Blog" ? "/blog" : `/#${item.toLowerCase()}`}
-                className="text-sm lg:text-base xl:text-lg font-light text-white border-b-2 border-transparent pb-1 hover:border-white/30 transition-all first:font-semibold first:border-white/60"
+                className="text-base xl:text-lg font-light text-white border-b-2 border-transparent pb-1 hover:border-white/30 transition-all first:font-semibold first:border-white/60"
               >
                 {item}
               </a>
@@ -66,27 +66,27 @@ export default function Navbar() {
           </nav>
 
           {/* Right side actions */}
-          <div className="flex items-center gap-x-3 sm:gap-x-4 md:gap-x-5 lg:gap-x-6">
-            <a href="tel:+17865749305" className="hidden lg:block whitespace-nowrap text-white text-sm xl:text-base">
+          <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
+            <a href="tel:+17865749305" className="hidden lg:block whitespace-nowrap text-white text-base xl:text-lg">
               +1 (786) 574-9305
             </a>
 
             <Link
               href={buttonLink}
-              className="hidden xl:flex items-center justify-center gap-2 text-sm xl:text-base text-[#F30C12] bg-white rounded-full px-5 py-2.5 xl:px-6 xl:py-3 hover:bg-white/90 transition-colors font-medium"
+              className="hidden xl:flex items-center justify-center gap-2 text-base text-[#F30C12] bg-white rounded-full px-6 py-3 hover:bg-white/90 transition-colors font-medium shadow-lg"
             >
               <span>{buttonText}</span>
               <ArrowRight className="w-4 h-4" />
             </Link>
 
-            {/* Hamburger */}
+            {/* Hamburger - Flush to right edge on mobile */}
             <button
-              className="block xl:hidden text-white p-1"
+              className="block xl:hidden text-white p-2 -mr-2 sm:-mr-1"
               onClick={() => setIsMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={isMenuOpen}
             >
-              <Menu className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9" />
+              <Menu className="h-8 w-8 sm:h-9 sm:w-9" />
             </button>
           </div>
         </div>
@@ -99,27 +99,27 @@ export default function Navbar() {
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
 
           {/* Sidebar */}
-          <div className="absolute right-0 top-0 h-full w-[280px] sm:w-[320px] max-w-[85vw] bg-gradient-to-r from-[#880000] to-[#ff0d13] shadow-2xl transform transition-transform duration-300 ease-in-out translate-x-0 overflow-y-auto">
-            <div className="flex justify-between items-center p-4 sm:p-5 border-b border-white/20">
+          <div className="absolute right-0 top-0 h-full w-[300px] sm:w-[340px] max-w-[85vw] bg-gradient-to-r from-[#880000] to-[#ff0d13] shadow-2xl transform transition-transform duration-300 ease-in-out translate-x-0 overflow-y-auto">
+            <div className="flex justify-between items-center p-5 sm:p-6 border-b border-white/20">
               {/* Logo */}
               <Link href="/" onClick={() => setIsMenuOpen(false)}>
                 <img
                   src="/images/buzz-filing-logo-white.png"
                   alt="BuzzFiling Logo"
-                  className="w-[140px] sm:w-[160px] h-auto"
+                  className="h-auto w-[160px] sm:w-[180px]"
                 />
               </Link>
               <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu" className="text-white p-1">
-                <X className="h-7 w-7 sm:h-8 sm:w-8" />
+                <X className="h-8 w-8 sm:h-9 sm:w-9" />
               </button>
             </div>
 
-            <nav className="flex flex-col p-4 sm:p-5 gap-2">
+            <nav className="flex flex-col p-5 sm:p-6 gap-2">
               {["Home", "Process", "Pricing", "Services", "About", "Blog", "Contact"].map((item) => (
                 <a
                   key={item}
                   href={item === "Blog" ? "/blog" : `/#${item.toLowerCase()}`}
-                  className="block rounded-lg px-4 py-3 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   {item}
@@ -128,7 +128,7 @@ export default function Navbar() {
 
               <a
                 href="tel:+17865749305"
-                className="block rounded-lg px-4 py-3 text-white/90 text-sm hover:bg-white/10 transition-colors mt-2 border-t border-white/20"
+                className="block rounded-lg px-4 py-3.5 text-white/90 text-sm hover:bg-white/10 transition-colors mt-2 border-t border-white/20 pt-4"
                 onClick={() => setIsMenuOpen(false)}
               >
                 +1 (786) 574-9305
@@ -136,7 +136,7 @@ export default function Navbar() {
 
               <Link
                 href={buttonLink}
-                className="flex items-center justify-center gap-2 mt-4 text-sm font-medium text-[#F30C12] bg-white rounded-full px-6 py-3 hover:bg-white/90 transition-colors"
+                className="flex items-center justify-center gap-2 mt-4 text-base font-medium text-[#F30C12] bg-white rounded-full px-6 py-3.5 hover:bg-white/90 transition-colors shadow-lg"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <span>{buttonText}</span>
