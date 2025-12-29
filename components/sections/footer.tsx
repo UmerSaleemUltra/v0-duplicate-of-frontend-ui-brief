@@ -11,15 +11,15 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
           {/* Left section - Logo and contact info */}
           <div className="md:col-span-3 lg:col-span-3 space-y-4 xs:space-y-5 sm:space-y-6">
-            <div>
+            <div className="flex flex-col items-start">
               <div className="flex items-center">
                 <img
                   src="/images/buzz-filing-logo-white.png"
                   alt="BuzzFiling Logo"
-                  className="shrink-0 max-w-full w-[240px] 2xs:w-auto ml-[-25px] sm:ml-[-50px]"
+                  className="shrink-0 max-w-full w-[200px] sm:w-[240px]"
                 />
               </div>
-              <p className="text-xs xs:text-sm mt-2 xs:mt-3">
+              <p className="text-sm sm:text-base mt-2 xs:mt-3">
                 Start and Run Your U.S. Business
                 <br />
                 Hassle-Free With Us
@@ -43,7 +43,7 @@ export default function Footer() {
                   <rect width="20" height="16" x="2" y="4" rx="2" />
                   <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
                 </svg>
-                <p className="text-sm">hello@buzzfiling.com</p>
+                <p className="text-sm sm:text-base">hello@buzzfiling.com</p>
               </div>
               <div className="flex items-center gap-2 group">
                 <svg
@@ -60,11 +60,11 @@ export default function Footer() {
                 >
                   <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
                 </svg>
-                <p className="text-sm">+92 339 4882800</p>
+                <p className="text-sm sm:text-base">+92 339 4882800</p>
               </div>
               <div className="flex items-start gap-2 group">
                 <MapPin className="w-5 h-5 group-hover:text-white/80 transition-colors shrink-0" />
-                <p className="text-sm">
+                <p className="text-sm sm:text-base">
                   Office No. 503, Plot 67/3, Zulekha Trade Centre, Alamgir Rd, CP & Berar Society, Karachi, 75300
                 </p>
               </div>
@@ -138,11 +138,9 @@ export default function Footer() {
               </Link>
             </div>
 
-            {/* Copyright */}
-            <div className="text-xs">2024 - 2025. All right reserved.</div>
+            <div className="text-sm sm:text-base">2024 - 2025. All right reserved.</div>
 
-            {/* Footer Text - Only show on larger screens or at bottom on mobile */}
-            <div className="text-[10px] xs:text-xs max-w-xs opacity-80 hidden sm:block">
+            <div className="text-sm sm:text-base max-w-xs opacity-80 hidden sm:block">
               BuzzFiling is a technology company. We are not a law firm, nor can we offer official legal advice.
             </div>
           </div>
@@ -150,7 +148,7 @@ export default function Footer() {
           {/* Middle section - Links (two columns) */}
           <div className="md:col-span-5 lg:col-span-5 grid grid-cols-2 gap-4 sm:gap-6 md:gap-8">
             <div>
-              <ul className="space-y-1.5 xs:space-y-2 sm:space-y-3">
+              <ul className="space-y-1.5 xs:space-y-2 sm:space-y-3 text-sm sm:text-base">
                 <li>
                   <a href="#process" className="hover:underline transition-all inline-block">
                     Process
@@ -184,7 +182,7 @@ export default function Footer() {
               </ul>
             </div>
             <div>
-              <ul className="space-y-2 sm:space-y-3">
+              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base">
                 <li>
                   <Link href="/privacy" className="hover:underline transition-all inline-block">
                     Privacy Policy
@@ -224,8 +222,7 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Footer Text - Mobile version at bottom */}
-        <div className="text-[10px] xs:text-xs max-w-xs opacity-80 mt-6 xs:mt-8 sm:hidden">
+        <div className="text-sm sm:text-base max-w-xs opacity-80 mt-6 xs:mt-8 sm:hidden">
           BuzzFiling is a technology company. We are not a law firm, nor can we offer official legal advice.
         </div>
       </div>
