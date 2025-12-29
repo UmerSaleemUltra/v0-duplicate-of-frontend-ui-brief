@@ -42,7 +42,7 @@ export default function Brands() {
                   src={b.logo || "/placeholder.svg"}
                   alt={`${b.name} logo`}
                   fill
-                  className="object-contain opacity-90 hover:opacity-100 transition-opacity brightness-0 invert"
+                  className="object-contain transition-opacity brightness-0 invert"
                   sizes="(max-width: 640px) 140px, (max-width: 1024px) 180px, 200px"
                   loading="lazy"
                   decoding="async"
