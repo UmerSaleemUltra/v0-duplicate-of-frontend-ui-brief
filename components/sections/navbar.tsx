@@ -47,7 +47,7 @@ export default function Navbar() {
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
-              className="h-auto w-[180px] sm:w-[200px] lg:w-[200px] xl:w-[220px]"
+              className="h-auto w-[180px] sm:w-[200px] lg:w-[200px] xl:w-[220px] ml-[-10px]"
             />
           </Link>
 
