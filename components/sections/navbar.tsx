@@ -42,43 +42,78 @@ export default function Navbar() {
   return (
     <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
       <div className="mx-auto w-full px-4 sm:px-6 lg:px-8 max-w-[1440px]">
-        <div className="flex items-center justify-between h-[70px] sm:h-[80px] md:h-[90px] lg:h-[100px]">
+        <div className="flex items-center justify-between h-[70px] lg:h-[90px]">
           <Link href="/" className="flex items-center flex-shrink-0">
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
-              className="h-auto w-[180px] sm:w-[200px] md:w-[220px] lg:w-[240px] xl:w-[260px] 2xl:w-[280px]"
+              className="h-auto w-[180px] sm:w-[200px] lg:w-[220px] xl:w-[240px]"
             />
           </Link>
 
-          {/* Desktop Nav */}
-          <nav className="hidden xl:flex items-center gap-6 2xl:gap-8">
-            {["Home", "Process", "Pricing", "Services", "About", "Blog", "Contact"].map((item) => (
-              <a
-                key={item}
-                href={item === "Blog" ? "/blog" : `/#${item.toLowerCase()}`}
-                className="text-base xl:text-lg font-light text-white border-b-2 border-transparent pb-1 hover:border-white/30 transition-all first:font-semibold first:border-white/60"
-              >
-                {item}
-              </a>
-            ))}
+          <nav className="hidden lg:flex items-center gap-8 xl:gap-10">
+            <a
+              href="/#home"
+              className="text-white text-base xl:text-lg font-semibold border-b-2 border-white/60 pb-1 hover:border-white transition-all"
+            >
+              Home
+            </a>
+            <a
+              href="/#process"
+              className="text-white text-base xl:text-lg font-light hover:text-white/80 transition-colors"
+            >
+              Process
+            </a>
+            <a
+              href="/#pricing"
+              className="text-white text-base xl:text-lg font-light hover:text-white/80 transition-colors"
+            >
+              Pricing
+            </a>
+            <a
+              href="/#services"
+              className="text-white text-base xl:text-lg font-light hover:text-white/80 transition-colors"
+            >
+              Services
+            </a>
+            <a
+              href="/#about"
+              className="text-white text-base xl:text-lg font-light hover:text-white/80 transition-colors"
+            >
+              About
+            </a>
+            <a
+              href="/blog"
+              className="text-white text-base xl:text-lg font-light hover:text-white/80 transition-colors"
+            >
+              Blog
+            </a>
+            <a
+              href="/#contact"
+              className="text-white text-base xl:text-lg font-light hover:text-white/80 transition-colors"
+            >
+              Contact
+            </a>
           </nav>
 
-          <div className="flex items-center gap-3 sm:gap-4 lg:gap-6">
-            <a href="tel:+17865749305" className="hidden lg:block whitespace-nowrap text-white text-base xl:text-lg">
+          <div className="flex items-center gap-4 xl:gap-6">
+            <a
+              href="tel:+17865749305"
+              className="hidden lg:block whitespace-nowrap text-white text-base xl:text-lg font-light"
+            >
               +1 (786) 574-9305
             </a>
 
             <Link
               href={buttonLink}
-              className="hidden xl:flex items-center justify-center gap-2 text-base text-[#F30C12] bg-white rounded-full px-6 py-3 hover:bg-white/90 transition-colors font-medium shadow-lg"
+              className="hidden lg:flex items-center justify-center gap-2 text-base xl:text-lg text-[#880000] bg-white rounded-full px-6 xl:px-8 py-3 hover:bg-white/90 transition-colors font-medium shadow-lg whitespace-nowrap"
             >
               <span>{buttonText}</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 xl:w-5 xl:h-5" />
             </Link>
 
             <button
-              className="flex xl:hidden items-center justify-center text-white -mr-2"
+              className="flex lg:hidden items-center justify-center text-white -mr-2"
               onClick={() => setIsMenuOpen(true)}
               aria-label="Open menu"
               aria-expanded={isMenuOpen}
@@ -112,16 +147,55 @@ export default function Navbar() {
             </div>
 
             <nav className="flex flex-col p-5 sm:p-6 gap-2">
-              {["Home", "Process", "Pricing", "Services", "About", "Blog", "Contact"].map((item) => (
-                <a
-                  key={item}
-                  href={item === "Blog" ? "/blog" : `/#${item.toLowerCase()}`}
-                  className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
-                  onClick={() => setIsMenuOpen(false)}
-                >
-                  {item}
-                </a>
-              ))}
+              <a
+                href="/#home"
+                className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Home
+              </a>
+              <a
+                href="/#process"
+                className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Process
+              </a>
+              <a
+                href="/#pricing"
+                className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Pricing
+              </a>
+              <a
+                href="/#services"
+                className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Services
+              </a>
+              <a
+                href="/#about"
+                className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                About
+              </a>
+              <a
+                href="/blog"
+                className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Blog
+              </a>
+              <a
+                href="/#contact"
+                className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                onClick={() => setIsMenuOpen(false)}
+              >
+                Contact
+              </a>
 
               <a
                 href="tel:+17865749305"
