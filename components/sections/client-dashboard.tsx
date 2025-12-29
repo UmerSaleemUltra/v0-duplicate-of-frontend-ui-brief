@@ -70,7 +70,7 @@ const ClientDashboardSection = () => {
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Add-on Services</span>
             </div>
           <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">
-            Your Business, <span className="text-[#ff0d13]">One Dashboard</span>
+            Your Business, <span className="text-gray-900">One Dashboard</span>
           </h2>
           <p className="text-lg text-muted-foreground">
             Track your formation progress, access documents, and manage your business from our intuitive client
