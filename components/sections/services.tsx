@@ -1,3 +1,4 @@
+"use client"
 import {
   MapPin,
   Award as IdCard,
@@ -16,7 +17,6 @@ import {
   Store,
   CreditCard,
 } from "lucide-react"
-;("use client")
 import { motion } from "framer-motion"
 
 export default function ServicesSection() {
