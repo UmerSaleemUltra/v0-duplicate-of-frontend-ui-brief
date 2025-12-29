@@ -41,13 +41,13 @@ export default function Navbar() {
 
   return (
     <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
-      <div className="mx-auto w-full px-4 lg:px-8 max-w-[1600px]">
-        <div className="flex lg:grid lg:grid-cols-[auto_1fr_auto] items-center justify-between gap-4 lg:gap-8 h-[70px] lg:h-[80px] xl:h-[90px]">
-          <Link href="/" className="flex items-center flex-shrink-0">
+      <div className="mx-auto w-full lg:px-8 max-w-[1600px]">
+        <div className="flex lg:grid lg:grid-cols-[auto_1fr_auto] items-center justify-between gap-4 lg:gap-8 h-[75px] sm:h-[80px] lg:h-[85px] xl:h-[90px]">
+          <Link href="/" className="flex items-center flex-shrink-0 pl-0 lg:pl-0">
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
-              className="h-auto w-[180px] sm:w-[200px] lg:w-[220px] xl:w-[240px]"
+              className="h-auto w-[220px] sm:w-[240px] md:w-[260px] lg:w-[220px] xl:w-[240px]"
             />
           </Link>
 
@@ -96,7 +96,7 @@ export default function Navbar() {
             </a>
           </nav>
 
-          <div className="flex items-center justify-end gap-4 xl:gap-6">
+          <div className="flex items-center justify-end gap-4 xl:gap-6 pr-4 lg:pr-0">
             <a
               href="tel:+17865749305"
               className="hidden lg:block whitespace-nowrap text-white text-base xl:text-lg font-medium"
