@@ -346,13 +346,11 @@ const TrustSocialProof = () => {
         >
           <div className="text-center mb-12">
             <div className="flex justify-center mb-4">
-             <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Add-on Services</span>
+              <div className="inline-flex items-center gap-2 px-0 py-2">
+                <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">WhatsApp Reviews</span>
+              </div>
             </div>
-            </div>
-            <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">
-              WhatsApp Messages from Happy Clients
-            </h3>
+            <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">WhatsApp Reviews</h3>
             <p className="text-muted-foreground">Direct messages from our satisfied customers worldwide</p>
           </div>
 
@@ -465,7 +463,7 @@ const TrustSocialProof = () => {
         >
           <div className="text-center mb-12">
             <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Add-on Services</span>
+              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Client Stories</span>
             </div>
             <h3 className="font-display text-2xl md:text-3xl font-bold text-foreground mb-3">Hear From Our Clients</h3>
             <p className="text-muted-foreground">Real stories from founders who built their US businesses with us</p>
