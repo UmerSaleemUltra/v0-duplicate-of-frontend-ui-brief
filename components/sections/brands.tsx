@@ -4,11 +4,20 @@ import Image from "next/image"
 
 export default function Brands() {
   const brands = [
-    { name: "Wise", logo: "https://cdn.brandfetch.io/idk6fxo1w1/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-    { name: "FreshBooks", logo: "https://cdn.brandfetch.io/idMAvNX8Xu/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-    { name: "Cleer", logo: "https://cdn.brandfetch.io/idxAg10C0L/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-    { name: "Payoneer", logo: "https://cdn.brandfetch.io/idVmyDyyyZ/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-    { name: "OpenPhone", logo: "https://cdn.brandfetch.io/id8eCYh_qw/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
+    {
+      name: "Airwallex",
+      logo: "https://cdn.brandfetch.io/idXCtf-53F/theme/light/idFqBtrNJv.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+    },
+    { name: "Payoneer", logo: "https://cdn.brandfetch.io/idVmyDyyyZ/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
+    { name: "Sunrate", logo: "https://cdn.brandfetch.io/idY4rzp0Gt/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
+    {
+      name: "Slash",
+      logo: "https://cdn.brandfetch.io/idM3oZiMMG/w/512/h/512/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
+    },
+    {
+      name: "Openphone",
+      logo: "https://cdn.brandfetch.io/id8eCYh_qw/theme/light/iddDfghnAG.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+    },
   ]
 
   return (
