@@ -39,13 +39,13 @@ export default function HeroSection() {
   const buttonLink = isAuthenticated ? dashboardUrl : "/auth"
 
   return (
-    <div className="bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center">
+    <div className="bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center py-16 md:py-20 lg:py-24">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, ease: [0.25, 0.1, 0.25, 1] }}
-          className="text-center py-6 sm:py-10 md:py-14 lg:py-16"
+          className="text-center"
         >
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
@@ -91,7 +91,7 @@ export default function HeroSection() {
           initial={{ opacity: 0, y: 40 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.8, delay: 0.8 }}
-          className="pb-6 sm:pb-10 md:pb-14 lg:pb-16"
+          className="mt-8"
         >
           <div className="max-w-6xl mx-auto">
             <div className="flex justify-center px-2 sm:px-4">
