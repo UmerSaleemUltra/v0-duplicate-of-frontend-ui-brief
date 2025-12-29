@@ -41,75 +41,75 @@ export default function Navbar() {
 
   return (
     <header className="inset-x-0 top-0 z-50 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
-      <div className="mx-auto w-full lg:px-8 max-w-[1440px]">
-        <div className="flex lg:grid lg:grid-cols-3 items-center justify-between h-[70px] lg:h-[80px] xl:h-[85px]">
-          <Link href="/" className="flex items-center flex-shrink-0 left-5 pl-4 lg:pl-0">
+      <div className="mx-auto w-full px-4 lg:px-8 max-w-[1600px]">
+        <div className="flex lg:grid lg:grid-cols-[auto_1fr_auto] items-center justify-between gap-4 lg:gap-8 h-[70px] lg:h-[80px] xl:h-[90px]">
+          <Link href="/" className="flex items-center flex-shrink-0">
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
-              className="h-auto w-[180px] sm:w-[200px] lg:w-[200px] xl:w-[220px] ml-[-10px]"
+              className="h-auto w-[180px] sm:w-[200px] lg:w-[220px] xl:w-[240px]"
             />
           </Link>
 
-          <nav className="hidden lg:flex items-center justify-center gap-4 xl:gap-6">
+          <nav className="hidden lg:flex items-center justify-center gap-6 xl:gap-8">
             <a
               href="/#home"
-              className="text-white text-sm xl:text-base font-semibold border-b-2 border-white pb-1 hover:border-white/80 transition-all whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-semibold border-b-2 border-white pb-1 hover:border-white/80 transition-all whitespace-nowrap"
             >
               Home
             </a>
             <a
               href="/#process"
-              className="text-white text-sm xl:text-base font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
             >
               Process
             </a>
             <a
               href="/#pricing"
-              className="text-white text-sm xl:text-base font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
             >
               Pricing
             </a>
             <a
               href="/#services"
-              className="text-white text-sm xl:text-base font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
             >
               Services
             </a>
             <a
               href="/#about"
-              className="text-white text-sm xl:text-base font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
             >
               About
             </a>
             <a
               href="/blog"
-              className="text-white text-sm xl:text-base font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
             >
               Blog
             </a>
             <a
               href="/#contact"
-              className="text-white text-sm xl:text-base font-normal hover:text-white/80 transition-colors whitespace-nowrap"
+              className="text-white text-base xl:text-lg font-normal hover:text-white/80 transition-colors whitespace-nowrap"
             >
               Contact
             </a>
           </nav>
 
-          <div className="flex items-center justify-end gap-3 xl:gap-4 pr-4 lg:pr-0">
+          <div className="flex items-center justify-end gap-4 xl:gap-6">
             <a
               href="tel:+17865749305"
-              className="hidden lg:block whitespace-nowrap text-white text-sm xl:text-base font-normal"
+              className="hidden lg:block whitespace-nowrap text-white text-base xl:text-lg font-medium"
             >
               +1 (786) 574-9305
             </a>
 
             <Link
               href={buttonLink}
-              className="hidden lg:flex items-center justify-center gap-2 text-sm xl:text-base text-[#880000] bg-white rounded-full px-5 xl:px-6 py-2.5 xl:py-3 hover:bg-white/90 transition-colors font-semibold shadow-lg whitespace-nowrap"
+              className="hidden lg:flex items-center justify-center gap-2 text-base xl:text-lg text-[#880000] bg-white rounded-full px-6 xl:px-8 py-2.5 xl:py-3 hover:bg-white/90 transition-colors font-semibold shadow-lg whitespace-nowrap"
             >
               <span>{buttonText}</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-5 h-5" />
             </Link>
 
             <button
