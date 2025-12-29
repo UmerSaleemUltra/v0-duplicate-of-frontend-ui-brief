@@ -47,7 +47,7 @@ export default function Navbar() {
             <img
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling Logo"
-              className="h-auto w-[200px] sm:w-[200px] md:w-[260px] lg:w-[220px] xl:w-[240px]"
+              className="h-auto w-[180px] sm:w-[200px] md:w-[220px] lg:w-[240px]"
             />
           </Link>
 
@@ -57,12 +57,6 @@ export default function Navbar() {
               className="text-white text-base xl:text-lg font-semibold border-b-2 border-white pb-1 hover:border-white/80 transition-all whitespace-nowrap"
             >
               Home
-            </a>
-            <a
-              href="/#process"
-              className="text-white text-base xl:text-lg font-normal  transition-colors whitespace-nowrap"
-            >
-              Process
             </a>
             <a
               href="/#pricing"
@@ -81,12 +75,6 @@ export default function Navbar() {
               className="text-white text-base xl:text-lg font-normal  transition-colors whitespace-nowrap"
             >
               About
-            </a>
-            <a
-              href="/blog"
-              className="text-white text-base xl:text-lg font-normal  transition-colors whitespace-nowrap"
-            >
-              Blog
             </a>
             <a
               href="/#contact"
@@ -127,13 +115,10 @@ export default function Navbar() {
       {/* Sidebar Overlay */}
       {isMenuOpen && (
         <div className="fixed inset-0 z-50">
-          {/* Backdrop */}
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
 
-          {/* Sidebar */}
           <div className="absolute right-0 top-0 h-full w-[300px] sm:w-[340px] max-w-[85vw] bg-gradient-to-r from-[#880000] to-[#ff0d13] shadow-2xl transform transition-transform duration-300 ease-in-out translate-x-0 overflow-y-auto">
             <div className="flex justify-between items-center p-5 sm:p-6 border-b border-white/20">
-              {/* Logo */}
               <Link href="/" onClick={() => setIsMenuOpen(false)}>
                 <img
                   src="/images/buzz-filing-logo-white.png"
@@ -153,13 +138,6 @@ export default function Navbar() {
                 onClick={() => setIsMenuOpen(false)}
               >
                 Home
-              </a>
-              <a
-                href="/#process"
-                className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Process
               </a>
               <a
                 href="/#pricing"
@@ -183,36 +161,12 @@ export default function Navbar() {
                 About
               </a>
               <a
-                href="/blog"
-                className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                Blog
-              </a>
-              <a
                 href="/#contact"
                 className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
                 onClick={() => setIsMenuOpen(false)}
               >
                 Contact
               </a>
-
-              <a
-                href="tel:+923394882800"
-                className="block rounded-lg px-4 py-3.5 text-white/90 text-sm hover:bg-white/10 transition-colors mt-2 border-t border-white/20 pt-4"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                +92 339 4882800
-              </a>
-
-              <Link
-                href={buttonLink}
-                className="flex items-center justify-center gap-2 mt-4 text-base font-medium text-[#F30C12] bg-white rounded-full px-6 py-3.5 hover:bg-white/90 transition-colors shadow-lg"
-                onClick={() => setIsMenuOpen(false)}
-              >
-                <span>{buttonText}</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
             </nav>
           </div>
         </div>
