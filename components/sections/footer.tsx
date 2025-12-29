@@ -1,229 +1,183 @@
 "use client"
 
-import { MapPin } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+import { motion } from "framer-motion"
+import { ArrowRight, Mail, Phone, MapPin } from "lucide-react"
+import { Button } from "@/components/ui/button"
+
+const footerLinks = {
+  services: [
+    { name: "LLC Formation", href: "#services" },
+    { name: "EIN Registration", href: "#services" },
+    { name: "Bank Account", href: "#services" },
+    { name: "Registered Agent", href: "#services" },
+    { name: "Business Address", href: "#services" },
+  ],
+  company: [
+    { name: "About Us", href: "#about" },
+    { name: "Pricing", href: "#pricing" },
+    { name: "Process", href: "#process" },
+    { name: "Contact", href: "#contact" },
+  ],
+  legal: [
+    { name: "Privacy Policy", href: "/privacy" },
+    { name: "Terms & Conditions", href: "/terms" },
+    { name: "Refund Policy", href: "/refund" },
+  ],
+}
 
 export default function Footer() {
   return (
-    <footer className="text-white py-16 md:py-20 lg:py-24 px-4 sm:px-6 md:px-8 lg:px-12 xl:px-16 overflow-hidden relative bg-gradient-to-r from-[#880000] to-[#ff0d13]">
-      <div className="max-w-7xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-6 md:gap-8">
-          {/* Left section - Logo and contact info */}
-          <div className="md:col-span-3 lg:col-span-3 space-y-4 xs:space-y-5 sm:space-y-6">
-            <div className="flex flex-col items-start">
-              <div className="flex items-center">
-                <img
-                  src="/images/buzz-filing-logo-white.png"
-                  alt="BuzzFiling Logo"
-                  className="shrink-0 max-w-full w-[200px] sm:w-[240px]"
-                />
-              </div>
-              <p className="text-sm sm:text-base mt-2 xs:mt-3">
-                Start and Run Your U.S. Business
-                <br />
-                Hassle-Free With Us
-              </p>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 group">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="group-hover:text-white/80 transition-colors shrink-0"
-                >
-                  <rect width="20" height="16" x="2" y="4" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
-                <p className="text-sm sm:text-base">hello@buzzfiling.com</p>
-              </div>
-              <div className="flex items-center gap-2 group">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="group-hover:text-white/80 transition-colors shrink-0"
-                >
-                  <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
-                </svg>
-                <p className="text-sm sm:text-base">+92 339 4882800</p>
-              </div>
-              <div className="flex items-start gap-2 group">
-                <MapPin className="w-5 h-5 group-hover:text-white/80 transition-colors shrink-0" />
-                <p className="text-sm sm:text-base">
-                  Office No. 503, Plot 67/3, Zulekha Trade Centre, Alamgir Rd, CP & Berar Society, Karachi, 75300
-                </p>
-              </div>
-            </div>
-
-            {/* Social Media Icons */}
-            <div className="flex gap-3 xs:gap-4">
-              <Link
-                href="https://www.facebook.com/buzzfiling"
-                aria-label="Facebook"
-                className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center border border-white rounded-sm hover:bg-white hover:text-[#880000] transition-colors duration-300"
+    <footer id="contact" className="relative pt-24 pb-8 bg-white">
+      <div className="container mx-auto px-4 lg:px-8 mb-16">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="relative"
+        >
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#880000] via-[#ff0d13] to-[#880000] rounded-3xl blur-lg opacity-40" />
+          <div className="relative glass rounded-3xl p-8 md:p-12 text-center border border-[#ff0d13]/30 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+            <h2 className="text-2xl md:text-4xl font-bold mb-4 text-white">
+              Ready to Start Your <span className="text-white">US Business</span>?
+            </h2>
+            <p className="text-white/90 mb-8 max-w-2xl mx-auto">
+              Join thousands of entrepreneurs who have successfully launched their US companies with BuzzFiling. Get
+              started today and take your business global.
+            </p>
+            <Button size="lg" className="group text-lg px-8 py-6 bg-white text-[#880000] hover:bg-white/90" asChild>
+              <a
+                href="https://wa.me/923394882800?text=Hi%2C%20I%27m%20interested%20in%20starting%20my%20US%20business"
+                target="_blank"
+                rel="noopener noreferrer"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="sm:w-5 sm:h-5"
-                >
+                Start Your Business Now
+                <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition-transform" />
+              </a>
+            </Button>
+          </div>
+        </motion.div>
+      </div>
+
+      <div className="container mx-auto px-4 lg:px-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
+          {/* Brand */}
+          <div className="lg:col-span-2">
+            <a href="#" className="flex items-center mb-6">
+              <img src="/images/buzz-filing-logo.png" alt="BuzzFiling" className="h-14 w-auto" />
+            </a>
+            <p className="text-gray-600 mb-6 max-w-sm">
+              Simplifying US business formation for entrepreneurs worldwide. Your trusted partner in building global
+              businesses.
+            </p>
+            <div className="space-y-3">
+              <a
+                href="mailto:hello@buzzfiling.com"
+                className="flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <Mail className="w-5 h-5 text-[#ff0d13]" />
+                hello@buzzfiling.com
+              </a>
+              <a
+                href="tel:+923394882800"
+                className="flex items-center gap-3 text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <Phone className="w-5 h-5 text-[#ff0d13]" />
+                +92 339 4882800
+              </a>
+              <div className="flex items-start gap-3 text-gray-600">
+                <MapPin className="w-5 h-5 text-[#ff0d13] shrink-0" />
+                <span>
+                  Office No. 503, Plot 67/3, Zulekha Trade Centre, Alamgir Rd, CP & Berar Society, Karachi, 75300
+                </span>
+              </div>
+            </div>
+          </div>
+
+          {/* Services */}
+          <div>
+            <h4 className="font-bold mb-4 text-gray-900">Services</h4>
+            <ul className="space-y-3">
+              {footerLinks.services.map((link) => (
+                <li key={link.name}>
+                  <a href={link.href} className="text-gray-600 hover:text-gray-900 transition-colors">
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Company */}
+          <div>
+            <h4 className="font-bold mb-4 text-gray-900">Company</h4>
+            <ul className="space-y-3">
+              {footerLinks.company.map((link) => (
+                <li key={link.name}>
+                  <a href={link.href} className="text-gray-600 hover:text-gray-900 transition-colors">
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Legal */}
+          <div>
+            <h4 className="font-bold mb-4 text-gray-900">Legal</h4>
+            <ul className="space-y-3">
+              {footerLinks.legal.map((link) => (
+                <li key={link.name}>
+                  <a href={link.href} className="text-gray-600 hover:text-gray-900 transition-colors">
+                    {link.name}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+
+        {/* Bottom Bar */}
+        <div className="border-t border-gray-200 pt-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-gray-600 text-sm">© {new Date().getFullYear()} BuzzFiling. All rights reserved.</p>
+            <div className="flex items-center gap-6">
+              <a
+                href="https://www.facebook.com/buzzfiling"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
                 </svg>
-              </Link>
-              <Link
-                href="https://www.linkedin.com/company/buzzfiling"
-                aria-label="LinkedIn"
-                className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center border border-white rounded-sm hover:bg-white hover:text-[#880000] transition-colors duration-300"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="sm:w-5 sm:h-5"
-                >
-                  <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                  <rect x="2" y="9" width="4" height="12" />
-                  <circle cx="4" cy="4" r="2" />
-                </svg>
-              </Link>
-              <Link
+              </a>
+              <a
                 href="https://www.instagram.com/buzzfiling/"
-                aria-label="Instagram"
-                className="w-9 h-9 sm:w-10 sm:h-10 flex items-center justify-center border border-white rounded-sm hover:bg-white hover:text-[#880000] transition-colors duration-300"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-900 transition-colors"
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="18"
-                  height="18"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="sm:w-5 sm:h-5"
-                >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
                   <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
                   <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
                   <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
                 </svg>
-              </Link>
-            </div>
-
-            <div className="text-sm sm:text-base">2024 - 2025. All right reserved.</div>
-
-            <div className="text-sm sm:text-base max-w-xs opacity-80 hidden sm:block">
-              BuzzFiling is a technology company. We are not a law firm, nor can we offer official legal advice.
-            </div>
-          </div>
-
-          {/* Middle section - Links (two columns) */}
-          <div className="md:col-span-5 lg:col-span-5 grid grid-cols-2 gap-4 sm:gap-6 md:gap-8">
-            <div>
-              <ul className="space-y-1.5 xs:space-y-2 sm:space-y-3 text-sm sm:text-base">
-                <li>
-                  <a href="#process" className="hover:underline transition-all inline-block">
-                    Process
-                  </a>
-                </li>
-                <li>
-                  <a href="#pricing" className="hover:underline transition-all inline-block">
-                    Pricing
-                  </a>
-                </li>
-                <li>
-                  <a href="#services" className="hover:underline transition-all inline-block">
-                    Services
-                  </a>
-                </li>
-                <li>
-                  <a href="#about" className="hover:underline transition-all inline-block">
-                    About
-                  </a>
-                </li>
-                <li>
-                  <a href="#contact" className="hover:underline transition-all inline-block">
-                    Contact
-                  </a>
-                </li>
-                <li>
-                  <Link href="/blog" className="hover:underline transition-all inline-block">
-                    Blog
-                  </Link>
-                </li>
-              </ul>
-            </div>
-            <div>
-              <ul className="space-y-2 sm:space-y-3 text-sm sm:text-base">
-                <li>
-                  <Link href="/privacy" className="hover:underline transition-all inline-block">
-                    Privacy Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/refprivacyund" className="hover:underline transition-all inline-block">
-                    Refund Policy
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:underline transition-all inline-block">
-                    Terms & Conditions
-                  </Link>
-                </li>
-                <li>
-                  <Link href="/terms" className="hover:underline transition-all inline-block">
-                    Copyrights
-                  </Link>
-                </li>
-              </ul>
+              </a>
+              <a
+                href="https://www.linkedin.com/company/buzzfiling"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-gray-600 hover:text-gray-900 transition-colors"
+              >
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
+                </svg>
+              </a>
             </div>
           </div>
-
-          {/* Right section - Person image - shows on laptop/desktop */}
-          <div className="hidden lg:block lg:col-span-4 relative">
-            <div className="absolute w-[300px] xl:w-[349px] h-[400px] xl:h-[466px] top-[40px] xl:top-[60.6px] right-0 -mt-[100px]">
-              <Image
-                src="/images/image.png"
-                alt="Person working on tablet"
-                fill
-                className="object-contain"
-                sizes="(min-width: 1440px) 349px, (min-width: 1024px) 300px, 0px"
-                priority
-              />
-            </div>
-          </div>
-        </div>
-
-        <div className="text-sm sm:text-base max-w-xs opacity-80 mt-6 xs:mt-8 sm:hidden">
-          BuzzFiling is a technology company. We are not a law firm, nor can we offer official legal advice.
+          <p className="text-gray-500 text-sm mt-4 text-center md:text-left">
+            BuzzFiling is a technology company. We are not a law firm, nor can we offer official legal advice.
+          </p>
         </div>
       </div>
     </footer>
