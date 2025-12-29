@@ -98,10 +98,10 @@ export default function Navbar() {
 
           <div className="flex items-center justify-end gap-4 xl:gap-6 pr-4 lg:pr-0">
             <a
-              href="tel:+17865749305"
+              href="tel:+923394882800"
               className="hidden lg:block whitespace-nowrap text-white text-base xl:text-lg font-medium"
             >
-              +1 (786) 574-9305
+              +92 339 4882800
             </a>
 
             <Link
@@ -198,11 +198,11 @@ export default function Navbar() {
               </a>
 
               <a
-                href="tel:+17865749305"
+                href="tel:+923394882800"
                 className="block rounded-lg px-4 py-3.5 text-white/90 text-sm hover:bg-white/10 transition-colors mt-2 border-t border-white/20 pt-4"
                 onClick={() => setIsMenuOpen(false)}
               >
-                +1 (786) 574-9305
+                +92 339 4882800
               </a>
 
               <Link
