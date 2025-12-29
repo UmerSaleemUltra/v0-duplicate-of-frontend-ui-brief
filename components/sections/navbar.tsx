@@ -94,7 +94,7 @@ export default function Navbar() {
 
             <Link
               href={buttonLink}
-              className="hidden lg:flex items-center justify-center gap-2 text-base xl:text-lg text-[#880000] bg-white rounded-full px-6 xl:px-8 py-2.5 xl:py-3 hover:bg-white/90 transition-colors font-semibold shadow-lg whitespace-nowrap"
+              className="hidden lg:flex items-center justify-center gap-2 text-base xl:text-lg text-[#ff0d13] bg-white rounded-full px-6 xl:px-8 py-2.5 xl:py-3 hover:bg-white/90 transition-colors font-semibold shadow-lg whitespace-nowrap"
             >
               <span>{buttonText}</span>
               <ArrowRight className="w-5 h-5" />
