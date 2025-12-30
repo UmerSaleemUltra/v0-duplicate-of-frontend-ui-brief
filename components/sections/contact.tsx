@@ -138,7 +138,7 @@ export default function ContactSection() {
                 type="submit"
                 className="flex items-center justify-center gap-2 
                   text-sm sm:text-base font-medium
-                  text-[#880000] capitalize bg-white
+                  text-[#ff0d13] capitalize bg-white
                   rounded-full px-6 py-3
                   transition-all duration-300 hover:bg-gray-100 hover:shadow-lg"
               >
