@@ -15,13 +15,13 @@ const whitelistedIPs = new Set<string>([
 
 // Configuration
 const DDOS_CONFIG = {
-  MONITORING_ONLY: true, // Set to false to enable blocking
-  // Requests per second threshold (increased to be more lenient)
-  MAX_REQUESTS_PER_SECOND: 100,
-  // Requests per minute threshold (increased to be more lenient)
-  MAX_REQUESTS_PER_MINUTE: 1000,
+  MONITORING_ONLY: false, // Set to false to enable blocking
+  // Requests per second threshold (reasonable limit)
+  MAX_REQUESTS_PER_SECOND: 20,
+  // Requests per minute threshold (reasonable limit)
+  MAX_REQUESTS_PER_MINUTE: 200,
   // Aggressive threshold for immediate blocking
-  AGGRESSIVE_BLOCK_THRESHOLD: 5000, // Much higher threshold
+  AGGRESSIVE_BLOCK_THRESHOLD: 500, // Lower threshold to catch DDoS attacks
   // Window for tracking requests (1 minute)
   TRACKING_WINDOW: 60000,
   // Auto-block duration (30 minutes)
