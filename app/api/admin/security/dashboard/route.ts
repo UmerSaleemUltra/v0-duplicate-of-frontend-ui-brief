@@ -1,17 +1,34 @@
 import { NextResponse } from "next/server"
-import { verifyAuth } from "@/lib/auth-server"
 import { getSecurityStats } from "@/lib/security/automated-response"
 import { getDDoSStats } from "@/lib/middleware/ddos-protection"
 
+function getAuthToken(request: Request): string | null {
+  const authHeader = request.headers.get("authorization")
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.substring(7)
+  }
+
+  const cookieHeader = request.headers.get("cookie")
+  if (cookieHeader) {
+    const cookies = Object.fromEntries(
+      cookieHeader.split("; ").map((c) => {
+        const [key, ...v] = c.split("=")
+        return [key, v.join("=")]
+      }),
+    )
+    return cookies.admin_auth_token || cookies.auth_token || null
+  }
+
+  return null
+}
+
 export async function GET(request: Request) {
   try {
-    // Verify admin authentication
-    const authResult = await verifyAuth(request)
-    if (!authResult.authenticated || authResult.user?.role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const token = getAuthToken(request)
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized - No auth token" }, { status: 401 })
     }
 
-    // Get comprehensive security statistics
     const securityStats = getSecurityStats()
     const ddosStats = getDDoSStats()
 

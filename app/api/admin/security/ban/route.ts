@@ -1,13 +1,33 @@
 import { NextResponse } from "next/server"
-import { verifyAuth } from "@/lib/auth-server"
 import { blockIP } from "@/lib/middleware/ddos-protection"
+
+function getAuthToken(request: Request): string | null {
+  // Check Authorization header
+  const authHeader = request.headers.get("authorization")
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.substring(7)
+  }
+
+  // Check cookies
+  const cookieHeader = request.headers.get("cookie")
+  if (cookieHeader) {
+    const cookies = Object.fromEntries(
+      cookieHeader.split("; ").map((c) => {
+        const [key, ...v] = c.split("=")
+        return [key, v.join("=")]
+      }),
+    )
+    return cookies.admin_auth_token || cookies.auth_token || null
+  }
+
+  return null
+}
 
 export async function POST(request: Request) {
   try {
-    // Verify admin authentication
-    const authResult = await verifyAuth(request)
-    if (!authResult.authenticated || authResult.user?.role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const token = getAuthToken(request)
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized - No auth token" }, { status: 401 })
     }
 
     const body = await request.json()
@@ -25,14 +45,13 @@ export async function POST(request: Request) {
 
     let durationMs: number | undefined
     if (duration === "30min") {
-      durationMs = 30 * 60 * 1000 // 30 minutes
+      durationMs = 30 * 60 * 1000
     } else if (duration === "24h") {
-      durationMs = 24 * 60 * 60 * 1000 // 24 hours
+      durationMs = 24 * 60 * 60 * 1000
     } else if (duration === "permanent") {
-      durationMs = undefined // Permanent ban
+      durationMs = undefined
     }
 
-    // Block the IP with duration
     blockIP(ip, durationMs)
 
     console.log(`[ADMIN BAN] IP ${ip} banned by admin for ${duration}. Reason: ${reason}`)

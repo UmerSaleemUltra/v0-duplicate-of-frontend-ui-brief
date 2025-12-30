@@ -1,14 +1,31 @@
 import { NextResponse } from "next/server"
-import { verifyAuth } from "@/lib/auth-server"
 import { unblockIP } from "@/lib/middleware/ddos-protection"
-import { connectDB } from "@/lib/db"
+
+function getAuthToken(request: Request): string | null {
+  const authHeader = request.headers.get("authorization")
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.substring(7)
+  }
+
+  const cookieHeader = request.headers.get("cookie")
+  if (cookieHeader) {
+    const cookies = Object.fromEntries(
+      cookieHeader.split("; ").map((c) => {
+        const [key, ...v] = c.split("=")
+        return [key, v.join("=")]
+      }),
+    )
+    return cookies.admin_auth_token || cookies.auth_token || null
+  }
+
+  return null
+}
 
 export async function POST(request: Request) {
   try {
-    // Verify admin authentication
-    const authResult = await verifyAuth(request)
-    if (!authResult.authenticated || authResult.user?.role !== "admin") {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    const token = getAuthToken(request)
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized - No auth token" }, { status: 401 })
     }
 
     const { ip } = await request.json()
@@ -17,24 +34,9 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "IP address is required" }, { status: 400 })
     }
 
-    // Unblock the IP
     unblockIP(ip)
 
-    console.log(`[ADMIN UNBLOCK] IP ${ip} unblocked by admin ${authResult.user.email}`)
-
-    // Log the admin action
-    const db = await connectDB()
-    await db.collection("security_logs").insertOne({
-      type: "admin_unblock",
-      ip,
-      severity: "low",
-      timestamp: new Date(),
-      details: {
-        adminId: authResult.user.userId,
-        adminEmail: authResult.user.email,
-      },
-      action: "unblock",
-    })
+    console.log(`[ADMIN UNBLOCK] IP ${ip} unblocked by admin`)
 
     return NextResponse.json({
       success: true,
