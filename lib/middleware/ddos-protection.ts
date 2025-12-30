@@ -317,14 +317,13 @@ setInterval(() => {
 
 export async function checkDDoS(
   req: NextRequest,
-): Promise<{ allowed: boolean; reason?: string; blockedUntil?: number }> {
+): Promise<{ allowed: boolean; reason?: string; blockedUntil?: number; permanent?: boolean }> {
   const result = await ddosProtection(req)
 
   if (result === null) {
     return { allowed: true }
   }
 
-  // Extract information from the response
   const jsonResponse = await result.json()
   const retryAfter = result.headers.get("Retry-After")
 
@@ -332,6 +331,7 @@ export async function checkDDoS(
     allowed: false,
     reason: jsonResponse.error,
     blockedUntil: retryAfter ? Date.now() + Number.parseInt(retryAfter) * 1000 : undefined,
+    permanent: jsonResponse.permanent || false,
   }
 }
 

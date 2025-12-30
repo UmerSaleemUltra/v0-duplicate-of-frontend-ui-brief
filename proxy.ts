@@ -25,25 +25,44 @@ export async function proxy(request: NextRequest) {
         }
         console.error(`═══════════════════════════════════════════════════════════`)
 
-        return NextResponse.json(
-          {
-            error: ddosResult.reason || "Access denied",
-            blocked: true,
-            details: {
-              ip: ip,
-              timestamp: new Date().toISOString(),
-              url: request.url,
-              method: request.method,
+        const acceptHeader = request.headers.get("accept") || ""
+        const isApiRequest = request.url.includes("/api/")
+
+        // For API requests or non-browser clients, return JSON
+        if (isApiRequest || !acceptHeader.includes("text/html")) {
+          return NextResponse.json(
+            {
+              error: ddosResult.reason || "Access denied",
+              blocked: true,
+              details: {
+                ip: ip,
+                timestamp: new Date().toISOString(),
+                url: request.url,
+                method: request.method,
+              },
             },
-          },
-          {
-            status: 403,
-            headers: {
-              "X-Security-Block": "true",
-              "X-Blocked-IP": ip,
+            {
+              status: 403,
+              headers: {
+                "X-Security-Block": "true",
+                "X-Blocked-IP": ip,
+              },
             },
-          },
-        )
+          )
+        }
+
+        // For browser requests, redirect to blocked page with details
+        const url = new URL("/blocked", request.url)
+        url.searchParams.set("reason", ddosResult.reason || "Security policy violation")
+        url.searchParams.set("ip", ip)
+        if (ddosResult.blockedUntil) {
+          url.searchParams.set("until", new Date(ddosResult.blockedUntil).toISOString())
+        }
+        if (ddosResult.permanent) {
+          url.searchParams.set("permanent", "true")
+        }
+
+        return NextResponse.redirect(url)
       }
     } catch (ddosError) {
       console.error("[SECURITY] DDoS check failed, allowing request:", ddosError)
