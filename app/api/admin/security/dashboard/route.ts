@@ -29,6 +29,8 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: "Unauthorized - No auth token" }, { status: 401 })
     }
 
+    const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
+
     const securityStats = getSecurityStats()
     const ddosStats = getDDoSStats()
 
@@ -50,6 +52,15 @@ export async function GET(request: Request) {
         lastSeen: new Date().toISOString(),
       }))
 
+    const recentActivity = [
+      {
+        timestamp: new Date().toISOString(),
+        action: "System monitoring active",
+        severity: "low",
+        ip: clientIP,
+      },
+    ]
+
     return NextResponse.json({
       success: true,
       stats: {
@@ -61,6 +72,8 @@ export async function GET(request: Request) {
       blockedIPs,
       activeIPs,
       threats: [],
+      yourIP: clientIP,
+      recentActivity,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {

@@ -6,7 +6,6 @@ import { checkDDoS } from "@/lib/middleware/ddos-protection"
 
 export async function proxy(request: NextRequest) {
   try {
-    // Get client IP
     const ip = request.ip || request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
 
     try {
@@ -34,46 +33,45 @@ export async function proxy(request: NextRequest) {
         const isApiRequest = request.url.includes("/api/")
 
         const url = new URL(request.url)
-        if (url.pathname === "/blocked") {
-          // Allow blocked page to load
+
+        if (url.pathname === "/blocked" || url.pathname.startsWith("/admin/security")) {
           const response = NextResponse.next()
           return addSecurityHeaders(response)
         }
 
-        // For API requests or non-browser clients, return JSON
-        if (isApiRequest || !acceptHeader.includes("text/html")) {
-          return NextResponse.json(
-            {
-              error: ddosResult.reason || "Access denied",
-              blocked: true,
-              details: {
-                ip: ip,
-                timestamp: new Date().toISOString(),
-                url: request.url,
-                method: request.method,
-              },
-            },
-            {
-              status: 403,
-              headers: {
-                "X-Security-Block": "true",
-                "X-Blocked-IP": ip,
-              },
-            },
-          )
+        if (!isApiRequest && acceptHeader.includes("text/html")) {
+          const blockedUrl = new URL("/blocked", request.url)
+          blockedUrl.searchParams.set("reason", ddosResult.reason || "Security policy violation")
+          blockedUrl.searchParams.set("ip", ip)
+          if (ddosResult.blockedUntil) {
+            blockedUrl.searchParams.set("until", new Date(ddosResult.blockedUntil).toISOString())
+          }
+          if (ddosResult.permanent) {
+            blockedUrl.searchParams.set("permanent", "true")
+          }
+
+          return NextResponse.redirect(blockedUrl, 307)
         }
 
-        const blockedUrl = new URL("/blocked", request.url)
-        blockedUrl.searchParams.set("reason", ddosResult.reason || "Security policy violation")
-        blockedUrl.searchParams.set("ip", ip)
-        if (ddosResult.blockedUntil) {
-          blockedUrl.searchParams.set("until", new Date(ddosResult.blockedUntil).toISOString())
-        }
-        if (ddosResult.permanent) {
-          blockedUrl.searchParams.set("permanent", "true")
-        }
-
-        return NextResponse.redirect(blockedUrl, 307)
+        return NextResponse.json(
+          {
+            error: ddosResult.reason || "Access denied",
+            blocked: true,
+            details: {
+              ip: ip,
+              timestamp: new Date().toISOString(),
+              url: request.url,
+              method: request.method,
+            },
+          },
+          {
+            status: 403,
+            headers: {
+              "X-Security-Block": "true",
+              "X-Blocked-IP": ip,
+            },
+          },
+        )
       }
     } catch (ddosError) {
       console.error("[SECURITY] DDoS check failed, allowing request:", ddosError)

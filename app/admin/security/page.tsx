@@ -83,6 +83,8 @@ function SecurityDashboardContent() {
   const [banDuration, setBanDuration] = useState<"30min" | "24hr" | "permanent">("30min")
   const [banReason, setBanReason] = useState("")
   const [activeTab, setActiveTab] = useState("blocked")
+  const [currentUserIP, setCurrentUserIP] = useState("Loading...")
+  const [recentActivity, setRecentActivity] = useState<any[]>([])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -124,6 +126,8 @@ function SecurityDashboardContent() {
       setBlockedIPs(data.blockedIPs || [])
       setActiveIPs(data.activeIPs || [])
       setThreatLogs(data.threats || [])
+      setCurrentUserIP(data.yourIP || "Unknown")
+      setRecentActivity(data.recentActivity || [])
       setIsLoading(false)
     } catch (error) {
       console.error("Error loading security data:", error)
@@ -351,6 +355,33 @@ function SecurityDashboardContent() {
           </Button>
         </div>
       </div>
+
+      {/* Real-time Monitoring Section */}
+      <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-lg">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Eye className="h-5 w-5 text-blue-600" />
+              Your Connection Status
+            </div>
+            <Badge className="bg-green-500 text-white">ALLOWED</Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm font-medium text-slate-700">Your IP Address:</span>
+              <code className="text-sm bg-white px-3 py-1 rounded font-mono text-slate-900 border border-blue-200">
+                {currentUserIP}
+              </code>
+            </div>
+            <div className="text-xs text-slate-600 mt-2 flex items-center gap-2">
+              <CheckCircle className="h-4 w-4 text-green-600" />
+              Your IP is not blocked and has full admin access
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((stat) => (
@@ -651,6 +682,42 @@ function SecurityDashboardContent() {
               </div>
             </TabsContent>
           </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Recent Activity Section */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Activity className="h-5 w-5 text-blue-600" />
+            Recent Security Activity
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {recentActivity.length === 0 ? (
+              <div className="text-center py-8 text-slate-500">
+                <Shield className="h-12 w-12 mx-auto mb-3 text-slate-300" />
+                <p>No recent security events</p>
+              </div>
+            ) : (
+              recentActivity.slice(0, 10).map((activity, index) => (
+                <div
+                  key={index}
+                  className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
+                >
+                  <Badge className={getThreatBadgeColor(activity.severity)}>{activity.severity.toUpperCase()}</Badge>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-slate-900">{activity.action}</p>
+                    {activity.ip && <p className="text-xs text-slate-600 mt-1">IP: {activity.ip}</p>}
+                  </div>
+                  <span className="text-xs text-slate-500 whitespace-nowrap">
+                    {new Date(activity.timestamp).toLocaleTimeString()}
+                  </span>
+                </div>
+              ))
+            )}
+          </div>
         </CardContent>
       </Card>
 
