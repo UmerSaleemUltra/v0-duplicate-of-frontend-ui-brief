@@ -33,6 +33,13 @@ export async function proxy(request: NextRequest) {
         const acceptHeader = request.headers.get("accept") || ""
         const isApiRequest = request.url.includes("/api/")
 
+        const url = new URL(request.url)
+        if (url.pathname === "/blocked") {
+          // Allow blocked page to load
+          const response = NextResponse.next()
+          return addSecurityHeaders(response)
+        }
+
         // For API requests or non-browser clients, return JSON
         if (isApiRequest || !acceptHeader.includes("text/html")) {
           return NextResponse.json(
@@ -56,18 +63,17 @@ export async function proxy(request: NextRequest) {
           )
         }
 
-        // For browser requests, redirect to blocked page with details
-        const url = new URL("/blocked", request.url)
-        url.searchParams.set("reason", ddosResult.reason || "Security policy violation")
-        url.searchParams.set("ip", ip)
+        const blockedUrl = new URL("/blocked", request.url)
+        blockedUrl.searchParams.set("reason", ddosResult.reason || "Security policy violation")
+        blockedUrl.searchParams.set("ip", ip)
         if (ddosResult.blockedUntil) {
-          url.searchParams.set("until", new Date(ddosResult.blockedUntil).toISOString())
+          blockedUrl.searchParams.set("until", new Date(ddosResult.blockedUntil).toISOString())
         }
         if (ddosResult.permanent) {
-          url.searchParams.set("permanent", "true")
+          blockedUrl.searchParams.set("permanent", "true")
         }
 
-        return NextResponse.redirect(url)
+        return NextResponse.redirect(blockedUrl, 307)
       }
     } catch (ddosError) {
       console.error("[SECURITY] DDoS check failed, allowing request:", ddosError)
