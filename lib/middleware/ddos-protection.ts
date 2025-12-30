@@ -45,9 +45,15 @@ export async function ddosProtection(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
 
   if (blacklistedIPs.has(ip)) {
-    console.error(`[DDOS BLOCK] Blacklisted IP attempted access: ${ip}`)
-    console.error(`[DDOS BLOCK] Timestamp: ${new Date().toISOString()}`)
-    console.error(`[DDOS BLOCK] Request URL: ${req.url}`)
+    console.log("\n")
+    console.log("╔════════════════════════════════════════════════════════════╗")
+    console.log("║         🛑 BLACKLISTED IP BLOCKED                          ║")
+    console.log("╚════════════════════════════════════════════════════════════╝")
+    console.log(`IP Address: ${ip}`)
+    console.log(`Timestamp: ${new Date().toISOString()}`)
+    console.log(`URL Attempted: ${req.url}`)
+    console.log(`Method: ${req.method}`)
+    console.log("════════════════════════════════════════════════════════════\n")
 
     return {
       blocked: true,
@@ -130,16 +136,18 @@ export async function ddosProtection(req: NextRequest) {
     tracker.blockedUntil = now + DDOS_CONFIG.BLOCK_DURATION
     blacklistedIPs.add(ip)
 
-    console.error(`╔═══════════════════════════════════════════════════════════╗`)
-    console.error(`║         🚨 CRITICAL SECURITY ALERT 🚨                    ║`)
-    console.error(`╚═══════════════════════════════════════════════════════════╝`)
-    console.error(`[DDOS ATTACK] IP: ${ip}`)
-    console.error(`[DDOS ATTACK] Request Count: ${tracker.requests.length} requests`)
-    console.error(`[DDOS ATTACK] Time Window: Last 60 seconds`)
-    console.error(`[DDOS ATTACK] Action: PERMANENTLY BLACKLISTED + 30min temp block`)
-    console.error(`[DDOS ATTACK] Timestamp: ${new Date().toISOString()}`)
-    console.error(`[DDOS ATTACK] Request URL: ${req.url}`)
-    console.error(`═══════════════════════════════════════════════════════════`)
+    console.log("\n")
+    console.log("╔════════════════════════════════════════════════════════════╗")
+    console.log("║         🚨 DDOS ATTACK DETECTED - IP BLOCKED 🚨           ║")
+    console.log("╚════════════════════════════════════════════════════════════╝")
+    console.log(`IP Address: ${ip}`)
+    console.log(`Total Requests: ${tracker.requests.length} in 60 seconds`)
+    console.log(`Threshold: ${DDOS_CONFIG.AGGRESSIVE_BLOCK_THRESHOLD} requests`)
+    console.log(`Action: PERMANENTLY BLACKLISTED + 30min temporary block`)
+    console.log(`Timestamp: ${new Date().toISOString()}`)
+    console.log(`URL: ${req.url}`)
+    console.log(`Method: ${req.method}`)
+    console.log("════════════════════════════════════════════════════════════\n")
 
     return {
       blocked: true,
@@ -154,14 +162,24 @@ export async function ddosProtection(req: NextRequest) {
   if (recentRequests.length > DDOS_CONFIG.MAX_REQUESTS_PER_SECOND) {
     tracker.suspiciousActivity++
 
+    console.log(
+      `⚠️  [DDOS WARNING] IP ${ip} - High rate: ${recentRequests.length} req/sec (Suspicious: ${tracker.suspiciousActivity}/${DDOS_CONFIG.SUSPICIOUS_THRESHOLD})`,
+    )
+
     if (tracker.suspiciousActivity >= DDOS_CONFIG.SUSPICIOUS_THRESHOLD) {
       tracker.blocked = true
       tracker.blockedUntil = now + DDOS_CONFIG.BLOCK_DURATION
 
-      console.error(`[DDOS BLOCK] IP ${ip} TEMPORARILY BLOCKED`)
-      console.error(`[DDOS BLOCK] Reason: Sustained high request rate`)
-      console.error(`[DDOS BLOCK] Rate: ${recentRequests.length} req/sec`)
-      console.error(`[DDOS BLOCK] Duration: 30 minutes`)
+      console.log("\n")
+      console.log("╔════════════════════════════════════════════════════════════╗")
+      console.log("║         ⏱️  TEMPORARY BLOCK ACTIVATED                      ║")
+      console.log("╚════════════════════════════════════════════════════════════╝")
+      console.log(`IP Address: ${ip}`)
+      console.log(`Reason: Sustained high request rate`)
+      console.log(`Rate: ${recentRequests.length} requests/second`)
+      console.log(`Block Duration: 30 minutes`)
+      console.log(`Unblock Time: ${new Date(tracker.blockedUntil).toISOString()}`)
+      console.log("════════════════════════════════════════════════════════════\n")
 
       return {
         blocked: true,
@@ -172,7 +190,6 @@ export async function ddosProtection(req: NextRequest) {
       }
     }
 
-    console.warn(`[DDOS WARNING] IP ${ip} - High request rate: ${recentRequests.length} req/sec`)
     return {
       blocked: true,
       warning: true,
@@ -184,7 +201,7 @@ export async function ddosProtection(req: NextRequest) {
 
   if (tracker.requests.length > DDOS_CONFIG.MAX_REQUESTS_PER_MINUTE) {
     tracker.suspiciousActivity++
-    console.warn(`[SECURITY] IP ${ip} exceeded rate limit: ${tracker.requests.length} requests in last minute`)
+    console.log(`⚠️  [RATE LIMIT] IP ${ip} - ${tracker.requests.length} requests in last minute`)
     return {
       blocked: true,
       warning: true,

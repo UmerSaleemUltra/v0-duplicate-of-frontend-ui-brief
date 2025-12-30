@@ -12,18 +12,23 @@ export async function proxy(request: NextRequest) {
     try {
       const ddosResult = await checkDDoS(request)
       if (!ddosResult.allowed) {
-        console.error(`╔═══════════════════════════════════════════════════════════╗`)
-        console.error(`║         REQUEST BLOCKED BY SECURITY SYSTEM               ║`)
-        console.error(`╚═══════════════════════════════════════════════════════════╝`)
-        console.error(`[PROXY BLOCK] IP: ${ip}`)
-        console.error(`[PROXY BLOCK] Reason: ${ddosResult.reason}`)
-        console.error(`[PROXY BLOCK] URL: ${request.url}`)
-        console.error(`[PROXY BLOCK] Method: ${request.method}`)
-        console.error(`[PROXY BLOCK] Timestamp: ${new Date().toISOString()}`)
+        console.log("\n")
+        console.log("╔════════════════════════════════════════════════════════════╗")
+        console.log("║         🔒 ACCESS DENIED BY SECURITY SYSTEM               ║")
+        console.log("╚════════════════════════════════════════════════════════════╝")
+        console.log(`IP: ${ip}`)
+        console.log(`Reason: ${ddosResult.reason}`)
+        console.log(`URL: ${request.url}`)
+        console.log(`Method: ${request.method}`)
+        console.log(`Time: ${new Date().toISOString()}`)
         if (ddosResult.blockedUntil) {
-          console.error(`[PROXY BLOCK] Unblock Time: ${new Date(ddosResult.blockedUntil).toISOString()}`)
+          const remaining = Math.ceil((ddosResult.blockedUntil - Date.now()) / 1000 / 60)
+          console.log(`Unblock in: ${remaining} minutes`)
         }
-        console.error(`═══════════════════════════════════════════════════════════`)
+        if (ddosResult.permanent) {
+          console.log(`Status: PERMANENTLY BLOCKED`)
+        }
+        console.log("════════════════════════════════════════════════════════════\n")
 
         const acceptHeader = request.headers.get("accept") || ""
         const isApiRequest = request.url.includes("/api/")
