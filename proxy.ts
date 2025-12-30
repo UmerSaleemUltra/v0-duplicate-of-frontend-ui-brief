@@ -7,6 +7,12 @@ import { checkDDoS } from "@/lib/middleware/ddos-protection"
 export async function proxy(request: NextRequest) {
   try {
     const ip = request.ip || request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
+    const url = new URL(request.url)
+
+    if (url.pathname === "/blocked" || url.pathname.startsWith("/admin/security")) {
+      const response = NextResponse.next()
+      return addSecurityHeaders(response)
+    }
 
     try {
       const ddosResult = await checkDDoS(request)
@@ -30,14 +36,7 @@ export async function proxy(request: NextRequest) {
         console.log("════════════════════════════════════════════════════════════\n")
 
         const acceptHeader = request.headers.get("accept") || ""
-        const isApiRequest = request.url.includes("/api/")
-
-        const url = new URL(request.url)
-
-        if (url.pathname === "/blocked" || url.pathname.startsWith("/admin/security")) {
-          const response = NextResponse.next()
-          return addSecurityHeaders(response)
-        }
+        const isApiRequest = url.pathname.startsWith("/api/")
 
         if (!isApiRequest && acceptHeader.includes("text/html")) {
           const blockedUrl = new URL("/blocked", request.url)
@@ -62,6 +61,8 @@ export async function proxy(request: NextRequest) {
               timestamp: new Date().toISOString(),
               url: request.url,
               method: request.method,
+              ...(ddosResult.blockedUntil && { blockedUntil: new Date(ddosResult.blockedUntil).toISOString() }),
+              ...(ddosResult.permanent && { permanent: true }),
             },
           },
           {

@@ -11,7 +11,7 @@ export default function BlockedPage({
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-950 via-red-900 to-black flex items-center justify-center p-4">
       <div className="max-w-2xl w-full">
-        <div className="text-center mb-8 animate-fade-in">
+        <div className="text-center mb-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
           <div className="inline-flex items-center justify-center w-24 h-24 bg-red-600/20 rounded-full mb-6 relative">
             <div className="absolute inset-0 bg-red-500/20 rounded-full animate-ping" />
             <svg className="w-14 h-14 text-red-500 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -27,7 +27,7 @@ export default function BlockedPage({
           <p className="text-2xl text-red-300 font-medium">Security System Activated</p>
         </div>
 
-        <div className="bg-black/60 backdrop-blur-xl border-2 border-red-500/50 rounded-2xl p-8 shadow-2xl">
+        <div className="bg-black/60 backdrop-blur-xl border-2 border-red-500/50 rounded-2xl p-8 shadow-2xl animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
           <div className="bg-red-950/50 border border-red-500/30 rounded-xl p-6 mb-6">
             <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
               <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
@@ -101,7 +101,7 @@ export default function BlockedPage({
           </div>
         </div>
 
-        <p className="text-center text-gray-400 text-sm mt-6">
+        <p className="text-center text-gray-400 text-sm mt-6 animate-in fade-in duration-1000 delay-500">
           Security powered by BuzzFiling Advanced Protection System
         </p>
       </div>
