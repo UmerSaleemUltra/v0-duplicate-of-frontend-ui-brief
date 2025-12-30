@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server"
+import type { NextRequest } from "next/server"
 
 interface RequestTracker {
   requests: number[]
@@ -49,23 +49,12 @@ export async function ddosProtection(req: NextRequest) {
     console.error(`[DDOS BLOCK] Timestamp: ${new Date().toISOString()}`)
     console.error(`[DDOS BLOCK] Request URL: ${req.url}`)
 
-    return NextResponse.json(
-      {
-        error: "Access denied. Your IP has been permanently blocked.",
-        reason: "Blacklisted IP - DDoS protection",
-        blocked: true,
-        permanent: true,
-        timestamp: new Date().toISOString(),
-        ip: ip,
-      },
-      {
-        status: 403,
-        headers: {
-          "X-Block-Reason": "blacklist",
-          "X-Blocked-IP": ip,
-        },
-      },
-    )
+    return {
+      blocked: true,
+      permanent: true,
+      reason: "Your IP has been permanently blocked due to security violations",
+      ip: ip,
+    }
   }
 
   if (isWhitelisted(ip)) {
@@ -108,34 +97,20 @@ export async function ddosProtection(req: NextRequest) {
     requestTrackers.set(ip, tracker)
   }
 
-  // Check if IP is temporarily blocked
   if (tracker.blocked && tracker.blockedUntil) {
     if (now < tracker.blockedUntil) {
       const remainingTime = Math.ceil((tracker.blockedUntil - now) / 1000 / 60)
       console.error(`[DDOS BLOCK] Temporarily blocked IP attempted access: ${ip}`)
       console.error(`[DDOS BLOCK] Remaining time: ${remainingTime} minutes`)
 
-      return NextResponse.json(
-        {
-          error: `DDoS protection activated. Your IP is temporarily blocked.`,
-          reason: "Too many requests detected",
-          blocked: true,
-          temporary: true,
-          remainingMinutes: remainingTime,
-          unblockTime: new Date(tracker.blockedUntil).toISOString(),
-          timestamp: new Date().toISOString(),
-          ip: ip,
-        },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(Math.ceil((tracker.blockedUntil - now) / 1000)),
-            "X-Block-Reason": "rate-limit",
-            "X-Blocked-IP": ip,
-            "X-Unblock-Time": new Date(tracker.blockedUntil).toISOString(),
-          },
-        },
-      )
+      return {
+        blocked: true,
+        temporary: true,
+        reason: "Too many requests detected - DDoS protection activated",
+        blockedUntil: tracker.blockedUntil,
+        remainingMinutes: remainingTime,
+        ip: ip,
+      }
     } else {
       // Unblock after duration expires
       tracker.blocked = false
@@ -166,27 +141,13 @@ export async function ddosProtection(req: NextRequest) {
     console.error(`[DDOS ATTACK] Request URL: ${req.url}`)
     console.error(`═══════════════════════════════════════════════════════════`)
 
-    return NextResponse.json(
-      {
-        error: "🚨 DDoS Attack Detected - IP Permanently Blocked",
-        reason: "Aggressive request pattern (500+ requests/min)",
-        blocked: true,
-        permanent: true,
-        requestCount: tracker.requests.length,
-        threshold: DDOS_CONFIG.AGGRESSIVE_BLOCK_THRESHOLD,
-        timestamp: new Date().toISOString(),
-        ip: ip,
-        message: "Your IP has been flagged for automated attack behavior and permanently blacklisted.",
-      },
-      {
-        status: 403,
-        headers: {
-          "X-Block-Reason": "ddos-attack",
-          "X-Blocked-IP": ip,
-          "X-Request-Count": String(tracker.requests.length),
-        },
-      },
-    )
+    return {
+      blocked: true,
+      permanent: true,
+      reason: `Aggressive request pattern detected (${tracker.requests.length} requests in 60 seconds)`,
+      requestCount: tracker.requests.length,
+      ip: ip,
+    }
   }
 
   const recentRequests = tracker.requests.filter((timestamp) => now - timestamp < 1000)
@@ -202,63 +163,45 @@ export async function ddosProtection(req: NextRequest) {
       console.error(`[DDOS BLOCK] Rate: ${recentRequests.length} req/sec`)
       console.error(`[DDOS BLOCK] Duration: 30 minutes`)
 
-      return NextResponse.json(
-        {
-          error: "⚠️ DDoS Protection Triggered - Temporary Block",
-          reason: "Sustained high request rate",
-          blocked: true,
-          temporary: true,
-          requestsPerSecond: recentRequests.length,
-          threshold: DDOS_CONFIG.MAX_REQUESTS_PER_SECOND,
-          blockDuration: "30 minutes",
-          timestamp: new Date().toISOString(),
-          ip: ip,
-        },
-        {
-          status: 429,
-          headers: {
-            "X-Block-Reason": "rate-limit-sustained",
-            "X-Blocked-IP": ip,
-          },
-        },
-      )
+      return {
+        blocked: true,
+        temporary: true,
+        reason: `Sustained high request rate (${recentRequests.length} requests per second)`,
+        blockedUntil: tracker.blockedUntil,
+        ip: ip,
+      }
     }
 
     console.warn(`[DDOS WARNING] IP ${ip} - High request rate: ${recentRequests.length} req/sec`)
-    return NextResponse.json(
-      {
-        error: "⚠️ Rate Limit Warning",
-        reason: "Request rate too high",
-        warning: true,
-        requestsPerSecond: recentRequests.length,
-        limit: DDOS_CONFIG.MAX_REQUESTS_PER_SECOND,
-        message: "Please slow down your requests to avoid being blocked.",
-        timestamp: new Date().toISOString(),
-      },
-      {
-        status: 429,
-        headers: {
-          "X-Rate-Limit-Warning": "true",
-        },
-      },
-    )
+    return {
+      blocked: true,
+      warning: true,
+      reason: "Request rate too high - please slow down",
+      requestsPerSecond: recentRequests.length,
+      ip: ip,
+    }
   }
 
-  // Check requests per minute
   if (tracker.requests.length > DDOS_CONFIG.MAX_REQUESTS_PER_MINUTE) {
     tracker.suspiciousActivity++
     console.warn(`[SECURITY] IP ${ip} exceeded rate limit: ${tracker.requests.length} requests in last minute`)
-    return NextResponse.json(
-      { error: "Too many requests in the last minute. Please wait before trying again." },
-      { status: 429 },
-    )
+    return {
+      blocked: true,
+      warning: true,
+      reason: "Too many requests in the last minute",
+      requestCount: tracker.requests.length,
+      ip: ip,
+    }
   }
 
   // Check payload size
   const contentLength = req.headers.get("content-length")
   if (contentLength && Number.parseInt(contentLength) > DDOS_CONFIG.MAX_PAYLOAD_SIZE) {
     tracker.suspiciousActivity++
-    return NextResponse.json({ error: "Request payload too large." }, { status: 413 })
+    return {
+      error: "Request payload too large.",
+      status: 413,
+    }
   }
 
   return null
@@ -324,6 +267,17 @@ export async function checkDDoS(
     return { allowed: true }
   }
 
+  // Handle structured response from ddosProtection
+  if (typeof result === "object" && "blocked" in result) {
+    return {
+      allowed: false,
+      reason: result.reason || "Security policy violation",
+      blockedUntil: result.blockedUntil,
+      permanent: result.permanent || false,
+    }
+  }
+
+  // Legacy handling for JSON responses (shouldn't reach here anymore)
   const jsonResponse = await result.json()
   const retryAfter = result.headers.get("Retry-After")
 
