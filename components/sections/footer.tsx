@@ -36,27 +36,27 @@ export default function Footer() {
                 className="h-auto w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px]"
               />
             </a>
-            <p className="text-white text-sm md:text-base mb-6 max-w-sm leading-relaxed">
+            <p className="text-white text-base mb-6 max-w-md leading-relaxed">
               Simplifying US business formation for entrepreneurs worldwide. Your trusted partner in building global
               businesses.
             </p>
-            <div className="space-y-3 text-sm md:text-base">
+            <div className="space-y-4 text-base">
               <a
                 href="mailto:hello@buzzfiling.com"
                 className="flex items-center gap-3 text-white hover:text-white/80 transition-colors"
               >
-                <Mail className="w-5 h-5 text-white shrink-0" />
+                <Mail className="w-5 h-5 shrink-0" />
                 <span>hello@buzzfiling.com</span>
               </a>
               <a
                 href="tel:+923394882800"
                 className="flex items-center gap-3 text-white hover:text-white/80 transition-colors"
               >
-                <Phone className="w-5 h-5 text-white shrink-0" />
+                <Phone className="w-5 h-5 shrink-0" />
                 <span>+92 339 4882800</span>
               </a>
               <div className="flex items-start gap-3 text-white">
-                <MapPin className="w-5 h-5 text-white shrink-0 mt-0.5" />
+                <MapPin className="w-5 h-5 shrink-0 mt-1" />
                 <span className="leading-relaxed">
                   Office No. 503, Plot 67/3, Zulekha Trade Centre, Alamgir Rd, CP & Berar Society, Karachi, 75300
                 </span>
