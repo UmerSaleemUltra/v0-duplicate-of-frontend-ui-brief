@@ -12,9 +12,38 @@ export async function proxy(request: NextRequest) {
     try {
       const ddosResult = await checkDDoS(request)
       if (!ddosResult.allowed) {
-        console.log(`[SECURITY] Request blocked for IP ${ip}: ${ddosResult.reason}`)
-        // Return the block response
-        return NextResponse.json({ error: ddosResult.reason || "Access denied" }, { status: 403 })
+        console.error(`╔═══════════════════════════════════════════════════════════╗`)
+        console.error(`║         REQUEST BLOCKED BY SECURITY SYSTEM               ║`)
+        console.error(`╚═══════════════════════════════════════════════════════════╝`)
+        console.error(`[PROXY BLOCK] IP: ${ip}`)
+        console.error(`[PROXY BLOCK] Reason: ${ddosResult.reason}`)
+        console.error(`[PROXY BLOCK] URL: ${request.url}`)
+        console.error(`[PROXY BLOCK] Method: ${request.method}`)
+        console.error(`[PROXY BLOCK] Timestamp: ${new Date().toISOString()}`)
+        if (ddosResult.blockedUntil) {
+          console.error(`[PROXY BLOCK] Unblock Time: ${new Date(ddosResult.blockedUntil).toISOString()}`)
+        }
+        console.error(`═══════════════════════════════════════════════════════════`)
+
+        return NextResponse.json(
+          {
+            error: ddosResult.reason || "Access denied",
+            blocked: true,
+            details: {
+              ip: ip,
+              timestamp: new Date().toISOString(),
+              url: request.url,
+              method: request.method,
+            },
+          },
+          {
+            status: 403,
+            headers: {
+              "X-Security-Block": "true",
+              "X-Blocked-IP": ip,
+            },
+          },
+        )
       }
     } catch (ddosError) {
       console.error("[SECURITY] DDoS check failed, allowing request:", ddosError)
