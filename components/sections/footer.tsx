@@ -1,13 +1,13 @@
-"use client"
-import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from "lucide-react"
+import { motion } from "framer-motion";
+import {  Mail, Phone, MapPin } from "lucide-react";
 
 const footerLinks = {
   services: [
     { name: "LLC Formation", href: "#services" },
     { name: "EIN Registration", href: "#services" },
     { name: "Bank Account", href: "#services" },
-    { name: "Registered Agent", href: "#services" },
-    { name: "Business Address", href: "#services" },
+    { name: "ITIN", href: "#services" },
+    { name: "Trademark", href: "#services" },
   ],
   company: [
     { name: "About Us", href: "#about" },
@@ -16,61 +16,54 @@ const footerLinks = {
     { name: "Contact", href: "#contact" },
   ],
   legal: [
-    { name: "Privacy Policy", href: "/privacy" },
-    { name: "Terms & Conditions", href: "/terms" },
-    { name: "Refund Policy", href: "/refund" },
+    { name: "Privacy Policy", href: "#" },
+    { name: "Terms of Service", href: "#" },
+    { name: "Refund Policy", href: "#" },
   ],
-}
+};
 
-export default function Footer() {
+export function Footer() {
   return (
-    <footer id="contact" className="relative py-16 md:py-20 lg:py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
-          {/* Brand - spans 2 columns on larger screens */}
-          <div className="lg:col-span-2 flex flex-col max-w-[400px]">
-            <a href="#" className="inline-block mb-6">
-              <img
-                src="/images/buzz-filing-logo-white.png"
-                alt="BuzzFiling"
-                className="h-auto w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px]"
-              />
+    <footer className="relative pt-16 md:pt-24 pb-8">
+      {/* CTA Section */}
+      
+
+      {/* Footer Content */}
+      <div className="container mx-auto px-4 lg:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
+          {/* Brand */}
+          <div className="lg:col-span-2">
+            <a href="#" className="flex items-center mb-6">
+              <img src="/images/buzz-filing-logo-white.png" alt="IncoFiling"
+              className="h-auto w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px] ml-[-10px]"
+/>
             </a>
-            <p className="text-white text-base leading-relaxed mb-6">
-              Simplifying US business formation for entrepreneurs worldwide. Your trusted partner in building global
-              businesses.
+            <p className="text-white mb-6 max-w-sm">
+              Simplifying US business formation for entrepreneurs worldwide. Your trusted partner in building global businesses.
             </p>
-            <div className="flex flex-col gap-4">
-              <a
-                href="mailto:hello@buzzfiling.com"
-                className="flex items-center gap-3 text-white hover:text-white/80 transition-colors text-base"
-              >
-                <Mail className="w-5 h-5 shrink-0" />
-                <span className="whitespace-nowrap">hello@buzzfiling.com</span>
+            <div className="space-y-3">
+              <a href="mailto:support@incofiling.com" className="flex items-center gap-3 text-white hover:text-foreground transition-colors">
+                <Mail className="w-5 h-5 text-accent" />
+                support@incofiling.com
               </a>
-              <a
-                href="tel:+923394882800"
-                className="flex items-center gap-3 text-white hover:text-white/80 transition-colors text-base"
-              >
-                <Phone className="w-5 h-5 shrink-0" />
-                <span className="whitespace-nowrap">+92 339 4882800</span>
+              <a href="tel:+923092935757" className="flex items-center gap-3 text-white hover:text-foreground transition-colors">
+                <Phone className="w-5 h-5 text-accent" />
+                +92 309 293 5757
               </a>
-              <div className="flex items-start gap-3 text-white text-base">
-                <MapPin className="w-5 h-5 shrink-0 mt-0.5" />
-                <span className="leading-relaxed">
-                  Office No. 503, Plot 67/3, Zulekha Trade Centre, Alamgir Rd, CP & Berar Society, Karachi, 75300
-                </span>
+              <div className="flex items-start gap-3 text-white">
+                <MapPin className="w-5 h-5 text-accent flex-shrink-0 mt-0.5" />
+                <span>Office No. 503, Plot 67/3, Zulekha Trade Centre, Alamgir Rd, CP & Berar Society, Karachi, 75300</span>
               </div>
             </div>
           </div>
 
-          {/* Services Column */}
-          <div className="flex flex-col">
-            <h4 className="font-bold text-lg text-white mb-4">Services</h4>
-            <ul className="space-y-3 text-base">
+          {/* Services */}
+          <div>
+            <h4 className="font-heading font-bold mb-4 text-white">Services</h4>
+            <ul className="space-y-3">
               {footerLinks.services.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href} className="text-white hover:text-white/80 transition-colors inline-block">
+                  <a href={link.href} className="text-white hover:text-foreground transition-colors">
                     {link.name}
                   </a>
                 </li>
@@ -78,13 +71,13 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Company Column */}
-          <div className="flex flex-col">
-            <h4 className="font-bold text-lg text-white mb-4">Company</h4>
-            <ul className="space-y-3 text-base">
+          {/* Company */}
+          <div>
+            <h4 className="font-heading font-bold mb-4 text-white">Company</h4>
+            <ul className="space-y-3">
               {footerLinks.company.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href} className="text-white hover:text-white/80 transition-colors inline-block">
+                  <a href={link.href} className="text-white hover:text-foreground transition-colors">
                     {link.name}
                   </a>
                 </li>
@@ -92,13 +85,13 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Legal Column */}
-          <div className="flex flex-col">
-            <h4 className="font-bold text-lg text-white mb-4">Legal</h4>
-            <ul className="space-y-3 text-base">
+          {/* Legal */}
+          <div>
+            <h4 className="font-heading font-bold mb-4 text-white">Legal</h4>
+            <ul className="space-y-3">
               {footerLinks.legal.map((link) => (
                 <li key={link.name}>
-                  <a href={link.href} className="text-white hover:text-white/80 transition-colors inline-block">
+                  <a href={link.href} className="text-white hover:text-foreground transition-colors">
                     {link.name}
                   </a>
                 </li>
@@ -108,44 +101,28 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-white/20 pt-8">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
-            <p className="text-white text-sm">© {new Date().getFullYear()} BuzzFiling. All rights reserved.</p>
+        <div className="border-t border-border pt-8">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            <p className="text-white text-sm">
+              © {new Date().getFullYear()} Inco Filing. All rights reserved.
+            </p>
             <div className="flex items-center gap-6">
-              <a
-                href="https://www.facebook.com/buzzfiling"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-white/80 transition-colors"
-                aria-label="Facebook"
-              >
-                <Facebook className="w-6 h-6" />
+              <a href="#" className="text-white hover:text-foreground transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/></svg>
               </a>
-              <a
-                href="https://www.instagram.com/buzzfiling/"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-white/80 transition-colors"
-                aria-label="Instagram"
-              >
-                <Instagram className="w-6 h-6" />
+              <a href="#" className="text-white hover:text-foreground transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
               </a>
-              <a
-                href="https://www.linkedin.com/company/buzzfiling"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-white/80 transition-colors"
-                aria-label="LinkedIn"
-              >
-                <Linkedin className="w-6 h-6" />
+              <a href="#" className="text-white hover:text-foreground transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/></svg>
+              </a>
+              <a href="#" className="text-white hover:text-foreground transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/></svg>
               </a>
             </div>
           </div>
-          <p className="text-white/90 text-sm text-center md:text-left leading-relaxed">
-            BuzzFiling is a technology company. We are not a law firm, nor can we offer official legal advice.
-          </p>
         </div>
       </div>
     </footer>
-  )
+  );
 }
