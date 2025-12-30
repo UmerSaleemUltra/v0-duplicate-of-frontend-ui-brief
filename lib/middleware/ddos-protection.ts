@@ -7,11 +7,29 @@ interface RequestTracker {
   blockedUntil?: number
 }
 
+interface ThreatLog {
+  ip: string
+  timestamp: number
+  requestCount: number
+  reason: string
+  action: string
+}
+
 const requestTrackers = new Map<string, RequestTracker>()
 const blacklistedIPs = new Set<string>()
 const whitelistedIPs = new Set<string>([
   // Add your IPs here to whitelist them
 ])
+
+const threatLogs: ThreatLog[] = []
+const MAX_THREAT_LOGS = 100
+
+function logThreat(threat: ThreatLog) {
+  threatLogs.unshift(threat)
+  if (threatLogs.length > MAX_THREAT_LOGS) {
+    threatLogs.pop()
+  }
+}
 
 // Configuration
 const DDOS_CONFIG = {
@@ -54,6 +72,14 @@ export async function ddosProtection(req: NextRequest) {
     console.log(`URL Attempted: ${req.url}`)
     console.log(`Method: ${req.method}`)
     console.log("════════════════════════════════════════════════════════════\n")
+
+    logThreat({
+      ip,
+      timestamp: Date.now(),
+      requestCount: 0,
+      reason: "Blacklisted IP attempted access",
+      action: "BLOCKED",
+    })
 
     return {
       blocked: true,
@@ -149,6 +175,14 @@ export async function ddosProtection(req: NextRequest) {
     console.log(`Method: ${req.method}`)
     console.log("════════════════════════════════════════════════════════════\n")
 
+    logThreat({
+      ip,
+      timestamp: now,
+      requestCount: tracker.requests.length,
+      reason: `DDoS attack detected - ${tracker.requests.length} requests in 60 seconds`,
+      action: "BLACKLISTED + BLOCKED",
+    })
+
     return {
       blocked: true,
       permanent: true,
@@ -166,6 +200,14 @@ export async function ddosProtection(req: NextRequest) {
       `⚠️  [DDOS WARNING] IP ${ip} - High rate: ${recentRequests.length} req/sec (Suspicious: ${tracker.suspiciousActivity}/${DDOS_CONFIG.SUSPICIOUS_THRESHOLD})`,
     )
 
+    logThreat({
+      ip,
+      timestamp: now,
+      requestCount: recentRequests.length,
+      reason: `High request rate - ${recentRequests.length} req/sec`,
+      action: "WARNING",
+    })
+
     if (tracker.suspiciousActivity >= DDOS_CONFIG.SUSPICIOUS_THRESHOLD) {
       tracker.blocked = true
       tracker.blockedUntil = now + DDOS_CONFIG.BLOCK_DURATION
@@ -180,6 +222,14 @@ export async function ddosProtection(req: NextRequest) {
       console.log(`Block Duration: 30 minutes`)
       console.log(`Unblock Time: ${new Date(tracker.blockedUntil).toISOString()}`)
       console.log("════════════════════════════════════════════════════════════\n")
+
+      logThreat({
+        ip,
+        timestamp: now,
+        requestCount: recentRequests.length,
+        reason: "Sustained high request rate",
+        action: "TEMP BLOCKED (30min)",
+      })
 
       return {
         blocked: true,
@@ -318,5 +368,10 @@ export function getDDoSStats() {
       blocked: tracker.blocked,
       blockedUntil: tracker.blockedUntil,
     })),
+    threatLogs: threatLogs,
   }
+}
+
+export function getThreatLogs() {
+  return threatLogs.slice(0, 50) // Return last 50 threats
 }

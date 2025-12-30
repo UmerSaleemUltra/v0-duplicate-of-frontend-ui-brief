@@ -34,9 +34,11 @@ export async function GET(request: Request) {
     const securityStats = getSecurityStats()
     const ddosStats = getDDoSStats()
 
+    const recentThreats = ddosStats.threatLogs.filter((log: any) => Date.now() - log.timestamp < 86400000) // Last 24 hours
+
     const blockedIPs = ddosStats.blacklistedIPs.map((ip: string) => ({
       ip,
-      reason: "Manual ban or automatic detection",
+      reason: "DDoS attack or security violation",
       threatLevel: "high",
       blockedAt: new Date().toISOString(),
       requestCount: 0,
@@ -52,28 +54,17 @@ export async function GET(request: Request) {
         lastSeen: new Date().toISOString(),
       }))
 
-    const recentActivity = [
-      {
-        timestamp: new Date().toISOString(),
-        action: "System monitoring active",
-        severity: "low",
-        ip: clientIP,
-      },
-    ]
-
     return NextResponse.json({
       success: true,
       stats: {
         blockedIPs: ddosStats.blacklistedIPs.length,
-        totalThreats: securityStats.totalThreats || 0,
+        totalThreats: recentThreats.length, // Use actual threat count
         requestsToday: ddosStats.totalTracked,
-        activeThreats: securityStats.activeThreats || 0,
+        activeThreats: activeIPs.filter((ip: any) => ip.suspiciousActivity > 0).length,
       },
       blockedIPs,
       activeIPs,
-      threats: [],
       yourIP: clientIP,
-      recentActivity,
       timestamp: new Date().toISOString(),
     })
   } catch (error) {

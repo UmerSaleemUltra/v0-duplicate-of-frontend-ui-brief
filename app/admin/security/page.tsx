@@ -12,11 +12,8 @@ import {
   AlertTriangle,
   Ban,
   Activity,
-  Globe,
   Clock,
-  TrendingUp,
   CheckCircle,
-  XCircle,
   Search,
   RefreshCw,
   Plus,
@@ -51,16 +48,6 @@ interface ActiveIP {
   suspiciousActivity: number
 }
 
-interface ThreatLog {
-  id: string
-  ip: string
-  type: string
-  severity: "low" | "medium" | "high" | "critical"
-  timestamp: string
-  details: string
-  blocked: boolean
-}
-
 function SecurityDashboardContent() {
   const router = useRouter()
   const [isAuthenticating, setIsAuthenticating] = useState(true)
@@ -72,7 +59,6 @@ function SecurityDashboardContent() {
     activeThreats: 0,
   })
   const [blockedIPs, setBlockedIPs] = useState<BlockedIP[]>([])
-  const [threatLogs, setThreatLogs] = useState<ThreatLog[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [autoRefresh, setAutoRefresh] = useState(true)
   const [whitelistIP, setWhitelistIP] = useState("")
@@ -84,7 +70,6 @@ function SecurityDashboardContent() {
   const [banReason, setBanReason] = useState("")
   const [activeTab, setActiveTab] = useState("blocked")
   const [currentUserIP, setCurrentUserIP] = useState("Loading...")
-  const [recentActivity, setRecentActivity] = useState<any[]>([])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -125,9 +110,7 @@ function SecurityDashboardContent() {
       setStats(data.stats || stats)
       setBlockedIPs(data.blockedIPs || [])
       setActiveIPs(data.activeIPs || [])
-      setThreatLogs(data.threats || [])
       setCurrentUserIP(data.yourIP || "Unknown")
-      setRecentActivity(data.recentActivity || [])
       setIsLoading(false)
     } catch (error) {
       console.error("Error loading security data:", error)
@@ -146,7 +129,7 @@ function SecurityDashboardContent() {
 
     const interval = setInterval(() => {
       loadSecurityData()
-    }, 30000) // Refresh every 30 seconds
+    }, 30000)
 
     return () => clearInterval(interval)
   }, [autoRefresh, isAuthenticating])
@@ -162,7 +145,7 @@ function SecurityDashboardContent() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ ip }),
+        body: JSON.JSON.stringify({ ip }),
       })
 
       if (!response.ok) {
@@ -201,7 +184,7 @@ function SecurityDashboardContent() {
         throw new Error("Failed to whitelist IP")
       }
 
-      toast.success(`IP ${whitelistIP} has been whitelisted and will never be blocked`)
+      toast.success(`IP ${whitelistIP} has been whitelisted`)
       setWhitelistIP("")
       loadSecurityData()
     } catch (error) {
@@ -268,21 +251,6 @@ function SecurityDashboardContent() {
       ip.reason.toLowerCase().includes(searchQuery.toLowerCase()),
   )
 
-  const getThreatBadgeColor = (level: string) => {
-    switch (level) {
-      case "critical":
-        return "bg-red-500 text-white"
-      case "high":
-        return "bg-orange-500 text-white"
-      case "medium":
-        return "bg-yellow-500 text-white"
-      case "low":
-        return "bg-blue-500 text-white"
-      default:
-        return "bg-gray-500 text-white"
-    }
-  }
-
   const statsCards = [
     {
       name: "Blocked IPs",
@@ -303,20 +271,28 @@ function SecurityDashboardContent() {
     {
       name: "Requests Today",
       value: stats.requestsToday.toLocaleString(),
-      subtitle: "Total requests",
+      subtitle: "Total tracked",
       icon: Activity,
       color: "from-blue-500 to-blue-600",
       trend: "stable",
     },
     {
-      name: "Active Threats",
-      value: stats.activeThreats.toString(),
-      subtitle: "Ongoing attacks",
-      icon: Shield,
+      name: "Active IPs",
+      value: activeIPs.length.toString(),
+      subtitle: "Currently connected",
+      icon: Eye,
       color: "from-purple-500 to-purple-600",
-      trend: stats.activeThreats > 0 ? "critical" : "stable",
+      trend: "stable",
     },
   ]
+
+  if (isAuthenticating) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600" />
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-6">
@@ -356,7 +332,7 @@ function SecurityDashboardContent() {
         </div>
       </div>
 
-      {/* Real-time Monitoring Section */}
+      {/* Your Connection Status card */}
       <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-2 border-blue-200 shadow-lg">
         <CardHeader>
           <CardTitle className="flex items-center justify-between">
@@ -377,7 +353,7 @@ function SecurityDashboardContent() {
             </div>
             <div className="text-xs text-slate-600 mt-2 flex items-center gap-2">
               <CheckCircle className="h-4 w-4 text-green-600" />
-              Your IP is not blocked and has full admin access
+              Your IP has full admin access and is not blocked
             </div>
           </div>
         </CardContent>
@@ -404,7 +380,6 @@ function SecurityDashboardContent() {
             <CardContent>
               <div className="flex items-end justify-between">
                 <div className="text-2xl font-semibold text-slate-900">{stat.value}</div>
-                {stat.trend === "critical" && <Badge className="bg-red-500 text-white text-xs">Critical</Badge>}
                 {stat.trend === "up" && <Badge className="bg-orange-500 text-white text-xs">Active</Badge>}
               </div>
             </CardContent>
@@ -412,7 +387,6 @@ function SecurityDashboardContent() {
         ))}
       </div>
 
-      {/* Whitelist IP Section */}
       <Card className="bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 border-2 border-blue-300 shadow-lg">
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -450,18 +424,12 @@ function SecurityDashboardContent() {
           <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
             <p className="text-xs text-blue-900 font-medium flex items-center gap-2">
               <Unlock className="h-4 w-4" />
-              Whitelisted IPs bypass:
+              Whitelisted IPs bypass all security checks
             </p>
-            <ul className="text-xs text-blue-800 space-y-1 ml-6 mt-1 list-disc">
-              <li>DDoS protection and rate limiting</li>
-              <li>Suspicious activity detection</li>
-              <li>All automated blocking mechanisms</li>
-            </ul>
           </div>
         </CardContent>
       </Card>
 
-      {/* Manual Ban Section */}
       <Card className="bg-gradient-to-br from-red-50 via-orange-50 to-red-50 border-2 border-red-300 shadow-lg">
         <CardHeader>
           <div className="flex items-center gap-2">
@@ -471,7 +439,7 @@ function SecurityDashboardContent() {
             <div>
               <CardTitle className="text-lg font-semibold text-slate-900">Manual IP Ban Control</CardTitle>
               <CardDescription className="text-slate-600">
-                Ban specific IP addresses with custom duration and reason
+                Ban specific IP addresses with custom duration
               </CardDescription>
             </div>
           </div>
@@ -481,10 +449,10 @@ function SecurityDashboardContent() {
             <div>
               <label className="text-sm font-medium text-slate-700 mb-2 block">IP Address</label>
               <Input
-                placeholder="Enter IP address (e.g., 192.168.1.1)"
+                placeholder="Enter IP address"
                 value={ipToBan}
                 onChange={(e) => setIpToBan(e.target.value)}
-                className="bg-white border-red-200 focus:border-red-400 focus:ring-red-400"
+                className="bg-white border-red-200"
               />
             </div>
             <div>
@@ -492,67 +460,38 @@ function SecurityDashboardContent() {
               <select
                 value={banDuration}
                 onChange={(e) => setBanDuration(e.target.value as "30min" | "24hr" | "permanent")}
-                className="w-full h-10 px-3 rounded-md border border-red-200 bg-white text-sm focus:border-red-400 focus:ring-red-400"
+                className="w-full h-10 px-3 rounded-md border border-red-200 bg-white text-sm"
               >
-                <option value="30min">30 Minutes - Temporary</option>
-                <option value="24hr">24 Hours - Medium Term</option>
-                <option value="permanent">Permanent - Blacklist</option>
+                <option value="30min">30 Minutes</option>
+                <option value="24hr">24 Hours</option>
+                <option value="permanent">Permanent</option>
               </select>
             </div>
           </div>
           <div>
             <label className="text-sm font-medium text-slate-700 mb-2 block">Reason for Ban</label>
             <Input
-              placeholder="Enter detailed reason (e.g., DDoS attack detected, Brute force login attempts)"
+              placeholder="Enter reason (e.g., DDoS attack detected)"
               value={banReason}
               onChange={(e) => setBanReason(e.target.value)}
-              className="bg-white border-red-200 focus:border-red-400 focus:ring-red-400"
+              className="bg-white border-red-200"
             />
           </div>
-          <div className="flex gap-2">
-            <Button
-              onClick={handleBanIP}
-              disabled={isBanning || !ipToBan.trim() || !banReason.trim()}
-              className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 gap-2 shadow-lg"
-            >
-              <Ban className="h-4 w-4" />
-              {isBanning ? "Banning..." : "Ban IP Address"}
-            </Button>
-          </div>
-          <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
-            <p className="text-xs text-amber-900 font-semibold mb-2 flex items-center gap-2">
-              <AlertTriangle className="h-4 w-4" />
-              Ban Duration Guide:
-            </p>
-            <ul className="text-xs text-amber-800 space-y-1.5 ml-4">
-              <li className="flex items-start gap-2">
-                <Clock className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong>30 Minutes:</strong> For suspicious patterns, minor violations, or testing purposes
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <Clock className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong>24 Hours:</strong> For repeated violations, brute force attempts, or moderate threats
-                </div>
-              </li>
-              <li className="flex items-start gap-2">
-                <Lock className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                <div>
-                  <strong>Permanent:</strong> For DDoS attacks, severe threats, or confirmed malicious actors
-                </div>
-              </li>
-            </ul>
-          </div>
+          <Button
+            onClick={handleBanIP}
+            disabled={isBanning || !ipToBan.trim() || !banReason.trim()}
+            className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 gap-2"
+          >
+            <Ban className="h-4 w-4" />
+            {isBanning ? "Banning..." : "Ban IP Address"}
+          </Button>
         </CardContent>
       </Card>
 
-      {/* IP Management with Tabs */}
       <Card className="bg-white border-slate-200">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-slate-900">IP Management</CardTitle>
-          <CardDescription>View active IPs and manage banned addresses</CardDescription>
+          <CardDescription>View and manage IP addresses</CardDescription>
         </CardHeader>
         <CardContent>
           <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -567,278 +506,111 @@ function SecurityDashboardContent() {
               </TabsTrigger>
             </TabsList>
 
-            <div className="relative mb-4">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search by IP or reason..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-
-            <TabsContent value="blocked">
-              <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                {isLoading ? (
-                  <p className="text-center text-slate-500 py-8">Loading...</p>
-                ) : filteredIPs.length === 0 ? (
-                  <p className="text-center text-slate-500 py-8">
-                    {searchQuery ? "No matching IPs found" : "No banned IPs"}
-                  </p>
-                ) : (
-                  filteredIPs.map((ip) => (
-                    <div
-                      key={ip.ip}
-                      className="p-4 rounded-lg border border-slate-200 hover:border-red-200 hover:shadow-md transition-all duration-200"
-                    >
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-2 mb-1">
-                            <Globe className="h-4 w-4 text-slate-500" />
-                            <p className="text-sm font-mono font-semibold text-slate-900">{ip.ip}</p>
-                            <Badge className={getThreatBadgeColor(ip.threatLevel)}>{ip.threatLevel}</Badge>
-                          </div>
-                          <p className="text-xs text-slate-600 mb-2">{ip.reason}</p>
-                          <div className="flex items-center gap-4 text-xs text-slate-500">
-                            <span className="flex items-center gap-1">
-                              <TrendingUp className="h-3 w-3" />
-                              {ip.requestCount} attempts
-                            </span>
-                            <span className="flex items-center gap-1">
-                              <Clock className="h-3 w-3" />
-                              {new Date(ip.blockedAt).toLocaleString()}
-                            </span>
-                          </div>
-                        </div>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleUnblockIP(ip.ip)}
-                          className="text-green-600 hover:text-green-700 hover:bg-green-50"
-                        >
-                          Unblock
-                        </Button>
-                      </div>
-                    </div>
-                  ))
-                )}
+            <TabsContent value="blocked" className="space-y-4">
+              <div className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                  <Input
+                    placeholder="Search blocked IPs..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
               </div>
+
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600 mx-auto" />
+                </div>
+              ) : filteredIPs.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <Ban className="h-12 w-12 mx-auto mb-2 text-slate-300" />
+                  <p>No banned IPs found</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {filteredIPs.map((blockedIP) => (
+                    <div
+                      key={blockedIP.ip}
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:bg-slate-100 transition-colors"
+                    >
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-1">
+                          <code className="text-sm font-mono font-semibold text-slate-900">{blockedIP.ip}</code>
+                          <Badge className="bg-red-500 text-white text-xs">{blockedIP.threatLevel}</Badge>
+                        </div>
+                        <p className="text-xs text-slate-600 mb-1">{blockedIP.reason}</p>
+                        <div className="flex items-center gap-3 text-xs text-slate-500">
+                          <span className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {new Date(blockedIP.blockedAt).toLocaleString()}
+                          </span>
+                        </div>
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleUnblockIP(blockedIP.ip)}
+                        className="gap-2 bg-white"
+                      >
+                        <Unlock className="h-4 w-4" />
+                        Unblock
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
 
-            <TabsContent value="active">
-              <div className="space-y-3 max-h-[400px] overflow-y-auto">
-                {isLoading ? (
-                  <p className="text-center text-slate-500 py-8">Loading...</p>
-                ) : activeIPs.length === 0 ? (
-                  <p className="text-center text-slate-500 py-8">No active connections</p>
-                ) : (
-                  activeIPs
-                    .filter((ip) => ip.ip.toLowerCase().includes(searchQuery.toLowerCase()))
-                    .map((ip) => (
-                      <div
-                        key={ip.ip}
-                        className="p-4 rounded-lg border border-slate-200 hover:border-blue-200 hover:shadow-md transition-all duration-200"
-                      >
-                        <div className="flex items-start justify-between gap-2">
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-center gap-2 mb-1">
-                              <Activity className="h-4 w-4 text-green-500" />
-                              <p className="text-sm font-mono font-semibold text-slate-900">{ip.ip}</p>
-                              <Badge className="bg-green-500 text-white">Active</Badge>
-                            </div>
-                            <div className="flex items-center gap-4 text-xs text-slate-500 mb-2">
-                              <span className="flex items-center gap-1">
-                                <TrendingUp className="h-3 w-3" />
-                                {ip.requestCount} requests
-                              </span>
-                              <span className="flex items-center gap-1">
-                                <Clock className="h-3 w-3" />
-                                Last seen: {new Date(ip.lastSeen).toLocaleTimeString()}
-                              </span>
-                            </div>
-                            {ip.suspiciousActivity > 0 && (
-                              <div className="flex items-center gap-1 text-xs text-orange-600">
-                                <AlertTriangle className="h-3 w-3" />
-                                {ip.suspiciousActivity} suspicious actions detected
-                              </div>
-                            )}
-                          </div>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => {
-                              setIpToBan(ip.ip)
-                              setBanReason("Suspicious activity detected")
-                              window.scrollTo({ top: 0, behavior: "smooth" })
-                            }}
-                            className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Ban className="h-4 w-4" />
-                          </Button>
+            <TabsContent value="active" className="space-y-4">
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto" />
+                </div>
+              ) : activeIPs.length === 0 ? (
+                <div className="text-center py-8 text-slate-500">
+                  <Eye className="h-12 w-12 mx-auto mb-2 text-slate-300" />
+                  <p>No active IPs tracked</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {activeIPs.map((activeIP) => (
+                    <div
+                      key={activeIP.ip}
+                      className="flex items-center justify-between p-4 bg-slate-50 rounded-lg border border-slate-200"
+                    >
+                      <div className="flex-1">
+                        <code className="text-sm font-mono font-semibold text-slate-900">{activeIP.ip}</code>
+                        <div className="flex items-center gap-3 text-xs text-slate-500 mt-1">
+                          <span>{activeIP.requestCount} requests</span>
+                          {activeIP.suspiciousActivity > 0 && (
+                            <Badge className="bg-yellow-500 text-white text-xs">
+                              Suspicious: {activeIP.suspiciousActivity}
+                            </Badge>
+                          )}
                         </div>
                       </div>
-                    ))
-                )}
-              </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setIpToBan(activeIP.ip)
+                          setBanReason("Suspicious activity detected from active monitoring")
+                          setActiveTab("blocked")
+                          window.scrollTo({ top: 0, behavior: "smooth" })
+                        }}
+                        className="gap-2"
+                      >
+                        <Lock className="h-4 w-4" />
+                        Ban
+                      </Button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </TabsContent>
           </Tabs>
-        </CardContent>
-      </Card>
-
-      {/* Recent Activity Section */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Activity className="h-5 w-5 text-blue-600" />
-            Recent Security Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {recentActivity.length === 0 ? (
-              <div className="text-center py-8 text-slate-500">
-                <Shield className="h-12 w-12 mx-auto mb-3 text-slate-300" />
-                <p>No recent security events</p>
-              </div>
-            ) : (
-              recentActivity.slice(0, 10).map((activity, index) => (
-                <div
-                  key={index}
-                  className="flex items-start gap-3 p-3 bg-slate-50 rounded-lg hover:bg-slate-100 transition-colors"
-                >
-                  <Badge className={getThreatBadgeColor(activity.severity)}>{activity.severity.toUpperCase()}</Badge>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-900">{activity.action}</p>
-                    {activity.ip && <p className="text-xs text-slate-600 mt-1">IP: {activity.ip}</p>}
-                  </div>
-                  <span className="text-xs text-slate-500 whitespace-nowrap">
-                    {new Date(activity.timestamp).toLocaleTimeString()}
-                  </span>
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Threat Logs */}
-      <Card className="bg-white border-slate-200">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-slate-900">Recent Threats</CardTitle>
-          <CardDescription>Real-time threat detection logs</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3 max-h-[400px] overflow-y-auto">
-            {isLoading ? (
-              <p className="text-center text-slate-500 py-8">Loading...</p>
-            ) : threatLogs.length === 0 ? (
-              <div className="text-center py-8">
-                <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-2" />
-                <p className="text-slate-600 font-medium">All Clear</p>
-                <p className="text-sm text-slate-500">No threats detected</p>
-              </div>
-            ) : (
-              threatLogs.map((log) => (
-                <div
-                  key={log.id}
-                  className="p-4 rounded-lg border border-slate-200 hover:shadow-md transition-all duration-200"
-                >
-                  <div className="flex items-start justify-between gap-2 mb-2">
-                    <div className="flex items-center gap-2">
-                      {log.blocked ? (
-                        <Ban className="h-4 w-4 text-red-500" />
-                      ) : (
-                        <AlertTriangle className="h-4 w-4 text-orange-500" />
-                      )}
-                      <span className="text-sm font-semibold text-slate-900">{log.type}</span>
-                    </div>
-                    <Badge className={getThreatBadgeColor(log.severity)}>{log.severity}</Badge>
-                  </div>
-                  <p className="text-xs text-slate-600 mb-2">{log.details}</p>
-                  <div className="flex items-center justify-between text-xs text-slate-500">
-                    <span className="flex items-center gap-1 font-mono">
-                      <Globe className="h-3 w-3" />
-                      {log.ip}
-                    </span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
-                      {new Date(log.timestamp).toLocaleTimeString()}
-                    </span>
-                  </div>
-                  {log.blocked && (
-                    <div className="mt-2 flex items-center gap-1 text-xs text-red-600">
-                      <XCircle className="h-3 w-3" />
-                      Blocked automatically
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
-
-      <Card className="bg-white border-slate-200 shadow-lg">
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-lg font-semibold text-slate-900">Security Protection Status</CardTitle>
-              <CardDescription>Current protection levels and system health</CardDescription>
-            </div>
-            <Badge className="bg-green-500 text-white">All Systems Active</Badge>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                  <Shield className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <span className="text-sm font-semibold text-green-900 block">DDoS Protection</span>
-                  <span className="text-xs text-green-700">20 req/sec, 200 req/min</span>
-                </div>
-              </div>
-              <Badge className="bg-green-600 text-white">Active</Badge>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                  <Lock className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <span className="text-sm font-semibold text-green-900 block">XSS Protection</span>
-                  <span className="text-xs text-green-700">Content Security Policy</span>
-                </div>
-              </div>
-              <Badge className="bg-green-600 text-white">Active</Badge>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                  <Activity className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <span className="text-sm font-semibold text-green-900 block">Rate Limiting</span>
-                  <span className="text-xs text-green-700">Per IP tracking</span>
-                </div>
-              </div>
-              <Badge className="bg-green-600 text-white">Active</Badge>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                  <CheckCircle className="h-5 w-5 text-white" />
-                </div>
-                <div>
-                  <span className="text-sm font-semibold text-green-900 block">Security Headers</span>
-                  <span className="text-xs text-green-700">Full protection enabled</span>
-                </div>
-              </div>
-              <Badge className="bg-green-600 text-white">Active</Badge>
-            </div>
-          </div>
         </CardContent>
       </Card>
     </div>
@@ -847,7 +619,13 @@ function SecurityDashboardContent() {
 
 export default function SecurityDashboard() {
   return (
-    <Suspense fallback={null}>
+    <Suspense
+      fallback={
+        <div className="flex items-center justify-center min-h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-red-600" />
+        </div>
+      }
+    >
       <SecurityDashboardContent />
     </Suspense>
   )
