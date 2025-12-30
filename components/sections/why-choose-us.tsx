@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { Globe, DollarSign, HeadphonesIcon, Building, Users, Check } from "lucide-react"
 
 const features = [
@@ -48,12 +47,7 @@ const WhyChooseUs = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 max-w-7xl relative z-10">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-16 items-center">
           {/* Left Content */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-          >
+          <div>
             <div className="inline-flex items-center gap-2 px-0 py-2 mb-4">
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Why Buzz Filing</span>
             </div>
@@ -65,14 +59,7 @@ const WhyChooseUs = () => {
 
             <div className="space-y-4">
               {["500+ founders served", "98% success rate", "24/7 dedicated support"].map((item, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.1 }}
-                  className="flex items-center gap-3"
-                >
+                <div key={index} className="flex items-center gap-3">
                   <div
                     className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
                     style={{ backgroundColor: "#ff0d13" }}
@@ -80,26 +67,16 @@ const WhyChooseUs = () => {
                     <Check className="w-4 h-4 text-white" />
                   </div>
                   <span className="text-buzz-dark font-medium text-base">{item}</span>
-                </motion.div>
+                </div>
               ))}
             </div>
-          </motion.div>
+          </div>
 
           {/* Right Content - Feature Cards */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="space-y-4"
-          >
+          <div className="space-y-4">
             {features.map((feature, index) => (
-              <motion.div
+              <div
                 key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.08 }}
                 className="group flex gap-4 p-5 rounded-xl bg-buzz-off-white border border-buzz-dark/10 hover:shadow-lg transition-all duration-300"
                 style={{
                   borderColor: "rgb(0 0 0 / 0.1)",
@@ -123,9 +100,9 @@ const WhyChooseUs = () => {
                   <h3 className="font-display font-semibold text-buzz-dark mb-1.5 text-base">{feature.title}</h3>
                   <p className="text-buzz-dark/60 text-sm leading-relaxed">{feature.description}</p>
                 </div>
-              </motion.div>
+              </div>
             ))}
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

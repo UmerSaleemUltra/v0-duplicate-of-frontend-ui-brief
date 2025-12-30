@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import {
   LayoutDashboard,
   Building2,
@@ -59,13 +58,7 @@ const ClientDashboardSection = () => {
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4 relative z-10">
         {/* Section Header */}
-        <motion.div
-          className="text-center max-w-3xl mx-auto mb-16"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
+        <div className="text-center max-w-3xl mx-auto mb-16">
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">All-In-One</span>
@@ -76,16 +69,10 @@ const ClientDashboardSection = () => {
             Track your formation progress, access documents, and manage your business from our intuitive client
             dashboard.
           </p>
-        </motion.div>
+        </div>
 
         {/* Dashboard Preview - Clean Browser Mockup */}
-        <motion.div
-          className="max-w-5xl mx-auto"
-          initial={{ opacity: 0, y: 40 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-        >
+        <div className="max-w-5xl mx-auto">
           {/* Browser Window */}
           <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
             {/* Browser Header */}
@@ -148,20 +135,13 @@ const ClientDashboardSection = () => {
                 {/* Status Cards Grid */}
                 <div className="grid grid-cols-2 gap-3 mb-6">
                   {statusCards.map((card, index) => (
-                    <motion.div
-                      key={index}
-                      className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm"
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      whileInView={{ opacity: 1, scale: 1 }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 0.3, delay: 0.3 + index * 0.1 }}
-                    >
+                    <div key={index} className="bg-white rounded-xl p-4 border border-gray-100 shadow-sm">
                       <div className={`w-9 h-9 rounded-lg ${card.bgColor} flex items-center justify-center mb-2.5`}>
                         <card.icon className={`w-4 h-4 ${card.statusColor}`} />
                       </div>
                       <p className="text-gray-900 font-medium text-sm mb-0.5">{card.title}</p>
                       <p className={`text-xs font-medium ${card.statusColor}`}>{card.status}</p>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
 
@@ -175,28 +155,19 @@ const ClientDashboardSection = () => {
                     <span className="text-2xl font-bold text-[#ff0d13]">75%</span>
                   </div>
                   <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <motion.div
+                    <div
                       className="h-full bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full"
-                      initial={{ width: 0 }}
-                      whileInView={{ width: "75%" }}
-                      viewport={{ once: true }}
-                      transition={{ duration: 1, delay: 0.5 }}
+                      style={{ width: "75%" }}
                     />
                   </div>
                 </div>
               </div>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* CTA */}
-        <motion.div
-          className="text-center mt-12"
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-        ></motion.div>
+        <div className="text-center mt-12"></div>
       </div>
     </section>
   )

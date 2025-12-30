@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { cn } from "@/lib/utils"
 import { Separator } from "@/components/ui/separator"
-import { motion } from "framer-motion"
 
 export default function FAQSection() {
   const [openFaq, setOpenFaq] = useState<number | null>(null)
@@ -111,12 +110,7 @@ export default function FAQSection() {
   return (
     <section className="px-4 md:px-8 py-16 md:py-20 lg:py-24 bg-white mt-[-70px]" id="faq">
       <div className="max-w-4xl mx-auto">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
+        <div>
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Quick Answers</span>
@@ -129,40 +123,26 @@ export default function FAQSection() {
           <p className="text-sm md:text-base text-gray-600 text-center max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed">
             Got a question? Chances are, it's been asked before! Explore our collection of frequently asked questions.
           </p>
-        </motion.div>
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.2 }}
-          className="flex justify-center mb-8 md:mb-12"
-        >
-          <div className="flex flex-wrap justify-center gap-2">
-            {tabContent.map((tab, index) => (
-              <button
-                key={index}
-                onClick={() => handleTabChange(index)}
-                className={cn(
-                  "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out cursor-pointer",
-                  selectedTab === index
-                    ? "bg-[#ff0d13] text-white shadow-md scale-105 cursor-pointer"
-                    : "text-gray-700 hover:bg-gray-100 cursor-pointer",
-                )}
-              >
-                {tab.title}
-              </button>
-            ))}
-          </div>
-        </motion.div>
+        <div className="flex justify-center mb-8 md:mb-12">
+          {tabContent.map((tab, index) => (
+            <button
+              key={index}
+              onClick={() => handleTabChange(index)}
+              className={cn(
+                "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out cursor-pointer",
+                selectedTab === index
+                  ? "bg-[#ff0d13] text-white shadow-md scale-105 cursor-pointer"
+                  : "text-gray-700 hover:bg-gray-100 cursor-pointer",
+              )}
+            >
+              {tab.title}
+            </button>
+          ))}
+        </div>
 
-        <motion.div
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.3 }}
-          className="space-y-0"
-        >
+        <div className="space-y-0">
           {tabContent[selectedTab].questions.map((faq, index) => (
             <div key={index}>
               <button
@@ -204,7 +184,7 @@ export default function FAQSection() {
               <Separator className="bg-gray-200" />
             </div>
           ))}
-        </motion.div>
+        </div>
       </div>
     </section>
   )

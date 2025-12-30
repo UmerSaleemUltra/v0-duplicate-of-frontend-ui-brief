@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { ClipboardList, FileInput, Settings, Rocket } from "lucide-react"
 
 const steps = [
@@ -47,13 +46,7 @@ const HowItWorks = () => {
       </div>
 
       <div className="container mx-auto px-4 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-16"
-        >
+        <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
               <span className="text-sm font-bold text-white uppercase tracking-wide">Simple Process</span>
@@ -63,22 +56,14 @@ const HowItWorks = () => {
           <p className="text-white/80 text-lg max-w-2xl mx-auto">
             Get your U.S. business up and running in four simple steps.
           </p>
-        </motion.div>
+        </div>
 
         <div className="relative">
-          {/* Connection Line - Desktop */}
           <div className="hidden lg:block absolute top-24 left-[12%] right-[12%] h-0.5 bg-white/20" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-6">
             {steps.map((step, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: index * 0.15 }}
-                className="relative text-center"
-              >
+              <div key={index} className="relative text-center">
                 {/* Step Number Badge */}
                 <div className="relative inline-flex mb-6">
                   <div className="w-20 h-20 rounded-full bg-white/10 border-2 border-white/30 flex items-center justify-center relative z-10 backdrop-blur-sm">
@@ -92,7 +77,7 @@ const HowItWorks = () => {
                 <h3 className="font-display text-xl font-semibold text-white mb-3">{step.title}</h3>
 
                 <p className="text-white/80 max-w-xs mx-auto">{step.description}</p>
-              </motion.div>
+              </div>
             ))}
           </div>
         </div>
