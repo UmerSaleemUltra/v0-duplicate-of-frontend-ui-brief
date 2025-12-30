@@ -23,14 +23,23 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Invalid IP address format" }, { status: 400 })
     }
 
-    // Block the IP
-    blockIP(ip)
+    let durationMs: number | undefined
+    if (duration === "30min") {
+      durationMs = 30 * 60 * 1000 // 30 minutes
+    } else if (duration === "24h") {
+      durationMs = 24 * 60 * 60 * 1000 // 24 hours
+    } else if (duration === "permanent") {
+      durationMs = undefined // Permanent ban
+    }
+
+    // Block the IP with duration
+    blockIP(ip, durationMs)
 
     console.log(`[ADMIN BAN] IP ${ip} banned by admin for ${duration}. Reason: ${reason}`)
 
     return NextResponse.json({
       success: true,
-      message: `IP ${ip} has been banned successfully`,
+      message: `IP ${ip} has been banned successfully for ${duration}`,
       bannedIP: ip,
       duration,
       reason,

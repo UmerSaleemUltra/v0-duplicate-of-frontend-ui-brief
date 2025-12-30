@@ -12,8 +12,9 @@ export async function proxy(request: NextRequest) {
     try {
       const ddosResult = await checkDDoS(request)
       if (!ddosResult.allowed) {
-        // Only log, don't actually block in monitoring mode
-        console.log(`[SECURITY] DDoS detected for IP ${ip} - monitoring only`)
+        console.log(`[SECURITY] Request blocked for IP ${ip}: ${ddosResult.reason}`)
+        // Return the block response
+        return NextResponse.json({ error: ddosResult.reason || "Access denied" }, { status: 403 })
       }
     } catch (ddosError) {
       console.error("[SECURITY] DDoS check failed, allowing request:", ddosError)

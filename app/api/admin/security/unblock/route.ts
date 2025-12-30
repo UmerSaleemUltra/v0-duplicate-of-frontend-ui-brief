@@ -1,29 +1,26 @@
-import { NextRequest, NextResponse } from "next/server"
-import { verifyToken } from "@/config/jwt"
-import { unblockIP } from "@/lib/security/automated-response"
+import { NextResponse } from "next/server"
+import { verifyAuth } from "@/lib/auth-server"
+import { unblockIP } from "@/lib/middleware/ddos-protection"
 import { connectDB } from "@/lib/db"
 
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const authHeader = req.headers.get("authorization")
-    if (!authHeader?.startsWith("Bearer ")) {
+    // Verify admin authentication
+    const authResult = await verifyAuth(request)
+    if (!authResult.authenticated || authResult.user?.role !== "admin") {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const token = authHeader.substring(7)
-    const decoded = verifyToken(token)
-
-    if (!decoded || decoded.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
-    }
-
-    const { ip } = await req.json()
+    const { ip } = await request.json()
 
     if (!ip) {
       return NextResponse.json({ error: "IP address is required" }, { status: 400 })
     }
 
+    // Unblock the IP
     unblockIP(ip)
+
+    console.log(`[ADMIN UNBLOCK] IP ${ip} unblocked by admin ${authResult.user.email}`)
 
     // Log the admin action
     const db = await connectDB()
@@ -33,8 +30,8 @@ export async function POST(req: NextRequest) {
       severity: "low",
       timestamp: new Date(),
       details: {
-        adminId: decoded.userId,
-        adminEmail: decoded.email,
+        adminId: authResult.user.userId,
+        adminEmail: authResult.user.email,
       },
       action: "unblock",
     })
@@ -42,8 +39,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       success: true,
       message: `IP ${ip} has been unblocked successfully`,
+      unblockedIP: ip,
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
-    return NextResponse.json({ error: "Failed to unblock IP" }, { status: 500 })
+    console.error("[UNBLOCK IP] Error:", error)
+    return NextResponse.json({ error: "Failed to unblock IP address" }, { status: 500 })
   }
 }

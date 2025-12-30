@@ -44,6 +44,11 @@ export function addToWhitelist(ip: string) {
 export async function ddosProtection(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
 
+  if (blacklistedIPs.has(ip)) {
+    console.log(`[DDOS] Blocked blacklisted IP: ${ip}`)
+    return NextResponse.json({ error: "Access denied. Your IP has been blocked by administrator." }, { status: 403 })
+  }
+
   if (isWhitelisted(ip)) {
     return null
   }
@@ -71,14 +76,6 @@ export async function ddosProtection(req: NextRequest) {
     }
 
     return null // Always allow in monitoring mode
-  }
-
-  // Check if IP is blacklisted
-  if (blacklistedIPs.has(ip)) {
-    return NextResponse.json(
-      { error: "Access denied. Your IP has been blocked due to suspicious activity." },
-      { status: 403 },
-    )
   }
 
   // Get or create tracker for this IP
@@ -177,10 +174,27 @@ export async function ddosProtection(req: NextRequest) {
   return null
 }
 
-// Admin function to manually block an IP
-export function blockIP(ip: string) {
+// Admin function to manually block an IP with duration
+export function blockIP(ip: string, duration?: number) {
   blacklistedIPs.add(ip)
-  console.log(`[SECURITY] IP ${ip} manually blacklisted`)
+  const tracker = requestTrackers.get(ip) || {
+    requests: [],
+    suspiciousActivity: 0,
+    blocked: true,
+  }
+
+  tracker.blocked = true
+  if (duration) {
+    tracker.blockedUntil = Date.now() + duration
+  } else {
+    // Permanent ban - no expiry
+    tracker.blockedUntil = undefined
+  }
+
+  requestTrackers.set(ip, tracker)
+  console.log(
+    `[SECURITY] IP ${ip} manually blacklisted ${duration ? `for ${duration / 1000 / 60} minutes` : "permanently"}`,
+  )
 }
 
 // Admin function to unblock an IP
