@@ -22,7 +22,7 @@ const footerLinks = {
   ],
 };
 
-export function Footer() {
+export default function Footer() {
   return (
     <footer className="relative pt-16 md:pt-24 pb-8">
       {/* CTA Section */}

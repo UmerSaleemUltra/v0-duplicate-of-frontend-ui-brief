@@ -1,5 +1,5 @@
 import Navbar from "@/components/sections/navbar"
-import { Footer } from "@/components/sections/footer"
+import  Footer  from "@/components/sections/footer"
 
 export const metadata = {
   title: "Terms and Conditions - BuzzFiling",
