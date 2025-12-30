@@ -26,33 +26,34 @@ export default function Footer() {
   return (
     <footer id="contact" className="relative py-16 md:py-20 lg:py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 lg:gap-12 mb-12">
-          <div className="flex flex-col">
-            <a href="#" className="inline-block mb-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
+          {/* Brand - spans 2 columns on larger screens */}
+          <div className="lg:col-span-2 flex flex-col max-w-[400px]">
+            <a href="#" className="inline-block mb-6">
               <img
                 src="/images/buzz-filing-logo-white.png"
                 alt="BuzzFiling"
                 className="h-auto w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px]"
               />
             </a>
-            <p className="text-white text-base leading-relaxed mb-4">
+            <p className="text-white text-base leading-relaxed mb-6">
               Simplifying US business formation for entrepreneurs worldwide. Your trusted partner in building global
               businesses.
             </p>
-            <div className="flex flex-col space-y-3">
+            <div className="flex flex-col gap-4">
               <a
                 href="mailto:hello@buzzfiling.com"
                 className="flex items-center gap-3 text-white hover:text-white/80 transition-colors text-base"
               >
                 <Mail className="w-5 h-5 shrink-0" />
-                <span>hello@buzzfiling.com</span>
+                <span className="whitespace-nowrap">hello@buzzfiling.com</span>
               </a>
               <a
                 href="tel:+923394882800"
                 className="flex items-center gap-3 text-white hover:text-white/80 transition-colors text-base"
               >
                 <Phone className="w-5 h-5 shrink-0" />
-                <span>+92 339 4882800</span>
+                <span className="whitespace-nowrap">+92 339 4882800</span>
               </a>
               <div className="flex items-start gap-3 text-white text-base">
                 <MapPin className="w-5 h-5 shrink-0 mt-0.5" />
@@ -63,6 +64,7 @@ export default function Footer() {
             </div>
           </div>
 
+          {/* Services Column */}
           <div className="flex flex-col">
             <h4 className="font-bold text-lg text-white mb-4">Services</h4>
             <ul className="space-y-3 text-base">
@@ -76,6 +78,7 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Company Column */}
           <div className="flex flex-col">
             <h4 className="font-bold text-lg text-white mb-4">Company</h4>
             <ul className="space-y-3 text-base">
@@ -89,6 +92,7 @@ export default function Footer() {
             </ul>
           </div>
 
+          {/* Legal Column */}
           <div className="flex flex-col">
             <h4 className="font-bold text-lg text-white mb-4">Legal</h4>
             <ul className="space-y-3 text-base">
@@ -103,6 +107,7 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Bottom Bar */}
         <div className="border-t border-white/20 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
             <p className="text-white text-sm">© {new Date().getFullYear()} BuzzFiling. All rights reserved.</p>
