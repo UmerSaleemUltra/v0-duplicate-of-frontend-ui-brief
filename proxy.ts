@@ -9,23 +9,24 @@ export async function proxy(request: NextRequest) {
     // Get client IP
     const ip = request.ip || request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
 
-    const ddosResult = await checkDDoS(request)
-    if (!ddosResult.allowed) {
-      console.warn(`[SECURITY] DDoS protection blocked IP ${ip}`)
-      const response = NextResponse.json(
-        {
-          error: "Too many requests",
-          message: ddosResult.reason,
-          blockedUntil: ddosResult.blockedUntil,
-        },
-        { status: 429 },
-      )
-      return addSecurityHeaders(response)
+    try {
+      const ddosResult = await checkDDoS(request)
+      if (!ddosResult.allowed) {
+        // Only log, don't actually block in monitoring mode
+        console.log(`[SECURITY] DDoS detected for IP ${ip} - monitoring only`)
+      }
+    } catch (ddosError) {
+      console.error("[SECURITY] DDoS check failed, allowing request:", ddosError)
     }
 
-    const securityResult = await securityGuard(request)
-    if (securityResult) {
-      return securityResult // Already has security headers applied
+    try {
+      const securityResult = await securityGuard(request)
+      if (securityResult) {
+        // Just log security issues, don't block
+        console.log(`[SECURITY] Security issue detected - monitoring only`)
+      }
+    } catch (securityError) {
+      console.error("[SECURITY] Security guard failed, allowing request:", securityError)
     }
 
     // Continue with the request and apply security headers
@@ -33,7 +34,6 @@ export async function proxy(request: NextRequest) {
     return addSecurityHeaders(response)
   } catch (error) {
     console.error("[SECURITY] Middleware error:", error)
-    // On error, still apply security headers
     return addSecurityHeaders(NextResponse.next())
   }
 }

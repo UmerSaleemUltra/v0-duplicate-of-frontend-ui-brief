@@ -18,6 +18,7 @@ import {
   XCircle,
   Search,
   RefreshCw,
+  Plus,
 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
@@ -62,6 +63,8 @@ function SecurityDashboardContent() {
   const [threatLogs, setThreatLogs] = useState<ThreatLog[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [autoRefresh, setAutoRefresh] = useState(true)
+  const [whitelistIP, setWhitelistIP] = useState("")
+  const [isWhitelisting, setIsWhitelisting] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -151,20 +154,44 @@ function SecurityDashboardContent() {
     }
   }
 
+  const handleWhitelistIP = async () => {
+    if (!whitelistIP.trim()) {
+      toast.error("Please enter an IP address")
+      return
+    }
+
+    setIsWhitelisting(true)
+    try {
+      const token = authService.getToken()
+      if (!token) return
+
+      const response = await fetch("/api/admin/security/whitelist", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ ip: whitelistIP.trim() }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to whitelist IP")
+      }
+
+      toast.success(`IP ${whitelistIP} has been whitelisted and will never be blocked`)
+      setWhitelistIP("")
+      loadSecurityData()
+    } catch (error) {
+      console.error("Error whitelisting IP:", error)
+      toast.error("Failed to whitelist IP")
+    } finally {
+      setIsWhitelisting(false)
+    }
+  }
+
   const handleRefresh = () => {
     setIsLoading(true)
     loadSecurityData()
-  }
-
-  if (isAuthenticating) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-          <p className="text-slate-600">Verifying authentication...</p>
-        </div>
-      </div>
-    )
   }
 
   const filteredIPs = blockedIPs.filter(
@@ -268,6 +295,41 @@ function SecurityDashboardContent() {
           </Card>
         ))}
       </div>
+
+      {/* Whitelist IP Section */}
+      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <Shield className="h-5 w-5 text-blue-600" />
+            Whitelist IP Address
+          </CardTitle>
+          <CardDescription>Add trusted IP addresses that will never be blocked by security measures</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="flex gap-2">
+            <Input
+              placeholder="Enter IP address (e.g., 192.168.1.1)"
+              value={whitelistIP}
+              onChange={(e) => setWhitelistIP(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") handleWhitelistIP()
+              }}
+              className="flex-1 bg-white"
+            />
+            <Button
+              onClick={handleWhitelistIP}
+              disabled={isWhitelisting || !whitelistIP.trim()}
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 gap-2"
+            >
+              <Plus className="h-4 w-4" />
+              {isWhitelisting ? "Adding..." : "Whitelist"}
+            </Button>
+          </div>
+          <p className="text-xs text-slate-600 mt-2">
+            Whitelisted IPs bypass all security checks including DDoS protection and rate limiting
+          </p>
+        </CardContent>
+      </Card>
 
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Blocked IPs */}

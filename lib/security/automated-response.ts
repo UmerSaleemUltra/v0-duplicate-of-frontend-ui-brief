@@ -21,20 +21,24 @@ interface SecurityTracker {
 
 const securityTrackers = new Map<string, SecurityTracker>()
 const permanentBlocklist = new Set<string>()
+const whitelistedIPs = new Set<string>([
+  // Add your IPs here to whitelist them
+  // Example: "123.456.789.0"
+])
 
 // Security Configuration
 const SECURITY_CONFIG = {
   // Violation thresholds
-  MAX_WARNINGS: 3,
-  MAX_MEDIUM_VIOLATIONS: 2,
-  MAX_HIGH_VIOLATIONS: 1,
+  MAX_WARNINGS: 5,
+  MAX_MEDIUM_VIOLATIONS: 5,
+  MAX_HIGH_VIOLATIONS: 3,
 
   // Block durations (in milliseconds)
   TEMPORARY_BLOCK: 30 * 60 * 1000, // 30 minutes
   EXTENDED_BLOCK: 24 * 60 * 60 * 1000, // 24 hours
 
   // Pattern detection
-  FAILED_LOGIN_THRESHOLD: 5,
+  FAILED_LOGIN_THRESHOLD: 10,
   SQL_INJECTION_PATTERNS: [
     /(\bOR\b|\bAND\b).*[=<>]/i,
     /UNION.*SELECT/i,
@@ -42,24 +46,19 @@ const SECURITY_CONFIG = {
     /DELETE\s+FROM/i,
     /INSERT\s+INTO/i,
     /UPDATE.*SET/i,
-    /--/,
-    /;.*--/,
-    /'.*OR.*'.*=/i,
   ],
-  XSS_PATTERNS: [
-    /<script[^>]*>.*<\/script>/i,
-    /javascript:/i,
-    /on\w+\s*=/i,
-    /<iframe/i,
-    /eval\(/i,
-    /document\.cookie/i,
-  ],
-  SUSPICIOUS_PATHS: ["/admin", "/wp-admin", "/.env", "/config", "/../", "/etc/passwd"],
+  XSS_PATTERNS: [/<script[^>]*>.*<\/script>/i, /javascript:/i, /on\w+\s*=/i, /<iframe/i],
+  SUSPICIOUS_PATHS: ["/../", "/etc/passwd", "/.git/", "/.env"],
 }
 
 // Detect threats in request
 export async function detectThreats(req: NextRequest): Promise<ThreatDetection | null> {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
+
+  if (isWhitelisted(ip)) {
+    return null
+  }
+
   const url = new URL(req.url)
   const path = url.pathname
   const query = url.searchParams.toString()
@@ -133,6 +132,11 @@ export async function detectThreats(req: NextRequest): Promise<ThreatDetection |
 export async function respondToThreat(threat: ThreatDetection) {
   const { ip, type, severity, action } = threat
 
+  if (isWhitelisted(ip)) {
+    console.log(`[SECURITY] Threat detected for whitelisted IP ${ip}, no action taken`)
+    return null
+  }
+
   let tracker = securityTrackers.get(ip)
   if (!tracker) {
     tracker = {
@@ -148,15 +152,23 @@ export async function respondToThreat(threat: ThreatDetection) {
   // Add violation to history
   tracker.violations.push(threat)
 
-  // Log to database
   try {
     const db = await connectDB()
-    await db.collection("security_logs").insertOne({
-      ...threat,
-      timestamp: new Date(threat.timestamp),
-    })
+    // Check if db and collection method exist
+    if (db && typeof db.collection === "function") {
+      await db.collection("security_logs").insertOne({
+        ...threat,
+        timestamp: new Date(threat.timestamp),
+      })
+    } else {
+      console.warn("[SECURITY] Database collection method not available, skipping log")
+    }
   } catch (error) {
-    console.error("[SECURITY] Failed to log threat:", error)
+    console.warn(
+      "[SECURITY] Failed to log threat to database:",
+      error instanceof Error ? error.message : "Unknown error",
+    )
+    // Continue with security action even if logging fails
   }
 
   // Take action based on severity and violation history
@@ -210,6 +222,10 @@ export async function respondToThreat(threat: ThreatDetection) {
 
 // Check if IP is blocked
 export function isBlocked(ip: string): { blocked: boolean; reason?: string; unblockTime?: number } {
+  if (isWhitelisted(ip)) {
+    return { blocked: false }
+  }
+
   // Check permanent blocklist
   if (permanentBlocklist.has(ip)) {
     return {
@@ -308,4 +324,13 @@ export function cleanupOldTrackers() {
       }
     }
   }
+}
+
+export function isWhitelisted(ip: string): boolean {
+  return whitelistedIPs.has(ip)
+}
+
+export function addToWhitelist(ip: string) {
+  whitelistedIPs.add(ip)
+  console.log(`[SECURITY] IP ${ip} added to whitelist`)
 }

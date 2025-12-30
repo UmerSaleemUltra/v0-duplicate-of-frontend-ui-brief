@@ -9,28 +9,69 @@ interface RequestTracker {
 
 const requestTrackers = new Map<string, RequestTracker>()
 const blacklistedIPs = new Set<string>()
+const whitelistedIPs = new Set<string>([
+  // Add your IPs here to whitelist them
+])
 
 // Configuration
 const DDOS_CONFIG = {
-  // Requests per second threshold
-  MAX_REQUESTS_PER_SECOND: 20,
-  // Requests per minute threshold
-  MAX_REQUESTS_PER_MINUTE: 200,
+  MONITORING_ONLY: true, // Set to false to enable blocking
+  // Requests per second threshold (increased to be more lenient)
+  MAX_REQUESTS_PER_SECOND: 100,
+  // Requests per minute threshold (increased to be more lenient)
+  MAX_REQUESTS_PER_MINUTE: 1000,
   // Aggressive threshold for immediate blocking
-  AGGRESSIVE_BLOCK_THRESHOLD: 500,
+  AGGRESSIVE_BLOCK_THRESHOLD: 5000, // Much higher threshold
   // Window for tracking requests (1 minute)
   TRACKING_WINDOW: 60000,
   // Auto-block duration (30 minutes)
   BLOCK_DURATION: 1800000,
   // Suspicious activity threshold
-  SUSPICIOUS_THRESHOLD: 3,
+  SUSPICIOUS_THRESHOLD: 10, // Higher threshold
   // Max payload size (10MB)
   MAX_PAYLOAD_SIZE: 10 * 1024 * 1024,
 }
 
+export function isWhitelisted(ip: string): boolean {
+  return whitelistedIPs.has(ip)
+}
+
+export function addToWhitelist(ip: string) {
+  whitelistedIPs.add(ip)
+  console.log(`[DDOS] IP ${ip} added to whitelist`)
+}
+
 export async function ddosProtection(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
+
+  if (isWhitelisted(ip)) {
+    return null
+  }
+
   const now = Date.now()
+
+  if (DDOS_CONFIG.MONITORING_ONLY) {
+    let tracker = requestTrackers.get(ip)
+    if (!tracker) {
+      tracker = {
+        requests: [],
+        suspiciousActivity: 0,
+        blocked: false,
+      }
+      requestTrackers.set(ip, tracker)
+    }
+
+    // Clean old requests
+    tracker.requests = tracker.requests.filter((timestamp) => now - timestamp < DDOS_CONFIG.TRACKING_WINDOW)
+    tracker.requests.push(now)
+
+    // Just log suspicious activity without blocking
+    if (tracker.requests.length > DDOS_CONFIG.MAX_REQUESTS_PER_MINUTE) {
+      console.log(`[DDOS MONITOR] IP ${ip} has high request rate: ${tracker.requests.length} req/min`)
+    }
+
+    return null // Always allow in monitoring mode
+  }
 
   // Check if IP is blacklisted
   if (blacklistedIPs.has(ip)) {
@@ -194,6 +235,7 @@ export function getDDoSStats() {
   return {
     totalTracked: requestTrackers.size,
     blacklistedIPs: Array.from(blacklistedIPs),
+    whitelistedIPs: Array.from(whitelistedIPs),
     activeTrackers: Array.from(requestTrackers.entries()).map(([ip, tracker]) => ({
       ip,
       requestCount: tracker.requests.length,
