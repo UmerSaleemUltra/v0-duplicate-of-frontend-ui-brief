@@ -28,34 +28,34 @@ export default function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
           {/* Brand - spans 2 columns on larger screens */}
-          <div className="lg:col-span-2 flex flex-col space-y-4">
-            <a href="#" className="inline-block mb-2">
+          <div className="lg:col-span-2 flex flex-col max-w-[400px]">
+            <a href="#" className="inline-block mb-6">
               <img
                 src="/images/buzz-filing-logo-white.png"
                 alt="BuzzFiling"
                 className="h-auto w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px]"
               />
             </a>
-            <p className="text-white text-base max-w-md leading-relaxed">
+            <p className="text-white text-base leading-relaxed mb-6">
               Simplifying US business formation for entrepreneurs worldwide. Your trusted partner in building global
               businesses.
             </p>
-            <div className="flex flex-col space-y-3 text-base pt-2">
+            <div className="flex flex-col gap-4">
               <a
                 href="mailto:hello@buzzfiling.com"
-                className="flex items-center gap-3 text-white hover:text-white/80 transition-colors"
+                className="flex items-center gap-3 text-white hover:text-white/80 transition-colors text-base"
               >
                 <Mail className="w-5 h-5 shrink-0" />
-                <span>hello@buzzfiling.com</span>
+                <span className="whitespace-nowrap">hello@buzzfiling.com</span>
               </a>
               <a
                 href="tel:+923394882800"
-                className="flex items-center gap-3 text-white hover:text-white/80 transition-colors"
+                className="flex items-center gap-3 text-white hover:text-white/80 transition-colors text-base"
               >
                 <Phone className="w-5 h-5 shrink-0" />
-                <span>+92 339 4882800</span>
+                <span className="whitespace-nowrap">+92 339 4882800</span>
               </a>
-              <div className="flex items-start gap-3 text-white">
+              <div className="flex items-start gap-3 text-white text-base">
                 <MapPin className="w-5 h-5 shrink-0 mt-0.5" />
                 <span className="leading-relaxed">
                   Office No. 503, Plot 67/3, Zulekha Trade Centre, Alamgir Rd, CP & Berar Society, Karachi, 75300
