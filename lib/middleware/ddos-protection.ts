@@ -277,6 +277,7 @@ export async function ddosProtection(req: NextRequest) {
 // Admin function to manually block an IP with duration
 export function blockIP(ip: string, duration?: number) {
   blacklistedIPs.add(ip)
+
   const tracker = requestTrackers.get(ip) || {
     requests: [],
     suspiciousActivity: 0,
@@ -287,17 +288,29 @@ export function blockIP(ip: string, duration?: number) {
   if (duration) {
     tracker.blockedUntil = Date.now() + duration
   } else {
-    // Permanent ban - no expiry
     tracker.blockedUntil = undefined
   }
 
   requestTrackers.set(ip, tracker)
-  console.log(
-    `[SECURITY] IP ${ip} manually blacklisted ${duration ? `for ${duration / 1000 / 60} minutes` : "permanently"}`,
-  )
+
+  console.log("\n")
+  console.log("╔════════════════════════════════════════════════════════════╗")
+  console.log("║         🔨 MANUAL IP BAN ACTIVATED                        ║")
+  console.log("╚════════════════════════════════════════════════════════════╝")
+  console.log(`IP Address: ${ip}`)
+  console.log(`Duration: ${duration ? `${duration / 1000 / 60} minutes` : "PERMANENT"}`)
+  console.log(`Timestamp: ${new Date().toISOString()}`)
+  console.log("════════════════════════════════════════════════════════════\n")
+
+  logThreat({
+    ip,
+    timestamp: Date.now(),
+    requestCount: 0,
+    reason: `Manually banned by admin`,
+    action: duration ? `TEMP BANNED (${duration / 1000 / 60}min)` : "PERMANENTLY BANNED",
+  })
 }
 
-// Admin function to unblock an IP
 export function unblockIP(ip: string) {
   blacklistedIPs.delete(ip)
   const tracker = requestTrackers.get(ip)
@@ -306,7 +319,22 @@ export function unblockIP(ip: string) {
     tracker.blockedUntil = undefined
     tracker.suspiciousActivity = 0
   }
-  console.log(`[SECURITY] IP ${ip} removed from blacklist`)
+
+  console.log("\n")
+  console.log("╔════════════════════════════════════════════════════════════╗")
+  console.log("║         ✅ IP UNBLOCKED                                     ║")
+  console.log("╚════════════════════════════════════════════════════════════╝")
+  console.log(`IP Address: ${ip}`)
+  console.log(`Timestamp: ${new Date().toISOString()}`)
+  console.log("════════════════════════════════════════════════════════════\n")
+
+  logThreat({
+    ip,
+    timestamp: Date.now(),
+    requestCount: 0,
+    reason: "Unblocked by admin",
+    action: "UNBLOCKED",
+  })
 }
 
 // Clean up old trackers every 5 minutes
