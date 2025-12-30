@@ -28,19 +28,19 @@ export default function Footer() {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 mb-12">
           {/* Brand - spans 2 columns on larger screens */}
-          <div className="lg:col-span-2">
-            <a href="#" className="inline-block mb-6">
+          <div className="lg:col-span-2 flex flex-col">
+            <a href="#" className="inline-block">
               <img
                 src="/images/buzz-filing-logo-white.png"
                 alt="BuzzFiling"
                 className="h-auto w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px]"
               />
             </a>
-            <p className="text-white text-base mb-6 max-w-md leading-relaxed">
+            <p className="text-white text-lg mb-4 mt-6 max-w-md leading-relaxed">
               Simplifying US business formation for entrepreneurs worldwide. Your trusted partner in building global
               businesses.
             </p>
-            <div className="space-y-4 text-base">
+            <div className="space-y-3 text-lg">
               <a
                 href="mailto:hello@buzzfiling.com"
                 className="flex items-center gap-3 text-white hover:text-white/80 transition-colors"
