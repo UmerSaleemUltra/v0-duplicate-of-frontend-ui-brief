@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { blockIP } from "./ddos-protection"
 
 interface RateLimitEntry {
   count: number
@@ -50,12 +51,26 @@ export async function loginRateLimit(req: NextRequest, email: string) {
   ipEntry.requests = ipEntry.requests.filter((time) => now - time < LIMITS.LOGIN.PER_IP.windowMs)
 
   if (ipEntry.requests.length >= LIMITS.LOGIN.PER_IP.max) {
+    console.log("\n")
+    console.log("╔════════════════════════════════════════════════════════════╗")
+    console.log("║         🚨 BRUTE FORCE ATTACK DETECTED                    ║")
+    console.log("╚════════════════════════════════════════════════════════════╝")
+    console.log(`IP: ${ip}`)
+    console.log(`Email Attempted: ${email}`)
+    console.log(`Failed Attempts: ${ipEntry.requests.length}`)
+    console.log(`Action: IP BLOCKED FOR 30 MINUTES`)
+    console.log(`Time: ${new Date().toISOString()}`)
+    console.log("════════════════════════════════════════════════════════════\n")
+
+    blockIP(ip, LIMITS.LOGIN.PER_IP.windowMs)
+
     const retryAfter = Math.ceil((ipEntry.resetTime - now) / 1000)
     return NextResponse.json(
       {
-        error: "Too many login attempts from this IP address. Please try again later.",
+        error: "Too many login attempts from this IP address. Your IP has been temporarily blocked.",
         retryAfter,
         remainingTime: Math.ceil(retryAfter / 60),
+        blocked: true,
       },
       {
         status: 429,
@@ -83,13 +98,27 @@ export async function loginRateLimit(req: NextRequest, email: string) {
   userEntry.requests = userEntry.requests.filter((time) => now - time < LIMITS.LOGIN.PER_USER.windowMs)
 
   if (userEntry.requests.length >= LIMITS.LOGIN.PER_USER.max) {
+    console.log("\n")
+    console.log("╔════════════════════════════════════════════════════════════╗")
+    console.log("║         🎯 ACCOUNT TAKEOVER ATTEMPT DETECTED              ║")
+    console.log("╚════════════════════════════════════════════════════════════╝")
+    console.log(`IP: ${ip}`)
+    console.log(`Target Email: ${email}`)
+    console.log(`Failed Attempts: ${userEntry.requests.length}`)
+    console.log(`Action: IP BLOCKED FOR 30 MINUTES`)
+    console.log(`Time: ${new Date().toISOString()}`)
+    console.log("════════════════════════════════════════════════════════════\n")
+
+    blockIP(ip, LIMITS.LOGIN.PER_USER.windowMs)
+
     const retryAfter = Math.ceil((userEntry.resetTime - now) / 1000)
     return NextResponse.json(
       {
-        error: "Too many login attempts for this account. Please try again later.",
+        error: "Too many login attempts for this account. Your IP has been temporarily blocked.",
         retryAfter,
         remainingTime: Math.ceil(retryAfter / 60),
         remainingAttempts: 0,
+        blocked: true,
       },
       {
         status: 429,
