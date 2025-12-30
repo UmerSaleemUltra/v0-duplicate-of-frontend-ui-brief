@@ -125,21 +125,23 @@ export default function FAQSection() {
           </p>
         </div>
 
-        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-0 mb-8 md:mb-12 px-2">
-          {tabContent.map((tab, index) => (
-            <button
-              key={index}
-              onClick={() => handleTabChange(index)}
-              className={cn(
-                "px-4 sm:px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out cursor-pointer w-full sm:w-auto",
-                selectedTab === index
-                  ? "bg-[#ff0d13] text-white shadow-md scale-105 cursor-pointer"
-                  : "text-gray-700 hover:bg-gray-100 cursor-pointer",
-              )}
-            >
-              {tab.title}
-            </button>
-          ))}
+        <div className="mb-8 md:mb-12 overflow-x-auto scrollbar-hide">
+          <div className="flex gap-3 min-w-max px-2 pb-2">
+            {tabContent.map((tab, index) => (
+              <button
+                key={index}
+                onClick={() => handleTabChange(index)}
+                className={cn(
+                  "px-6 md:px-8 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-300 whitespace-nowrap",
+                  selectedTab === index
+                    ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white shadow-lg"
+                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200",
+                )}
+              >
+                {tab.title}
+              </button>
+            ))}
+          </div>
         </div>
 
         <div className="space-y-0">
