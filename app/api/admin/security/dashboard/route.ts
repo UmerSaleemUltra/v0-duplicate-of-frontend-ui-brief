@@ -15,13 +15,36 @@ export async function GET(request: Request) {
     const securityStats = getSecurityStats()
     const ddosStats = getDDoSStats()
 
+    const blockedIPs = ddosStats.blacklistedIPs.map((ip: string) => ({
+      ip,
+      reason: "Manual ban or automatic detection",
+      threatLevel: "high",
+      blockedAt: new Date().toISOString(),
+      requestCount: 0,
+      lastAttempt: new Date().toISOString(),
+    }))
+
+    const activeIPs = ddosStats.activeTrackers
+      .filter((tracker: any) => !tracker.blocked)
+      .map((tracker: any) => ({
+        ip: tracker.ip,
+        requestCount: tracker.requestCount,
+        suspiciousActivity: tracker.suspiciousActivity,
+        lastSeen: new Date().toISOString(),
+      }))
+
     return NextResponse.json({
       success: true,
-      data: {
-        security: securityStats,
-        ddos: ddosStats,
-        timestamp: new Date().toISOString(),
+      stats: {
+        blockedIPs: ddosStats.blacklistedIPs.length,
+        totalThreats: securityStats.totalThreats || 0,
+        requestsToday: ddosStats.totalTracked,
+        activeThreats: securityStats.activeThreats || 0,
       },
+      blockedIPs,
+      activeIPs,
+      threats: [],
+      timestamp: new Date().toISOString(),
     })
   } catch (error) {
     console.error("[SECURITY DASHBOARD] Error:", error)
