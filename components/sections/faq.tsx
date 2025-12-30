@@ -113,25 +113,25 @@ export default function FAQSection() {
         <div>
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Quick Answers</span>
+              <span className="text-xs sm:text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Quick Answers</span>
             </div>
           </div>
 
-          <h2 className="text-3xl md:text-4xl font-semibold text-center text-gray-900 mb-4 md:mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-center text-gray-900 mb-4 md:mb-6 px-2">
             Frequently Asked Questions
           </h2>
-          <p className="text-sm md:text-base text-gray-600 text-center max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed">
+          <p className="text-xs sm:text-sm md:text-base text-gray-600 text-center max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed px-4">
             Got a question? Chances are, it's been asked before! Explore our collection of frequently asked questions.
           </p>
         </div>
 
-        <div className="flex justify-center mb-8 md:mb-12">
+        <div className="flex flex-col sm:flex-row justify-center gap-2 sm:gap-0 mb-8 md:mb-12 px-2">
           {tabContent.map((tab, index) => (
             <button
               key={index}
               onClick={() => handleTabChange(index)}
               className={cn(
-                "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out cursor-pointer",
+                "px-4 sm:px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out cursor-pointer w-full sm:w-auto",
                 selectedTab === index
                   ? "bg-[#ff0d13] text-white shadow-md scale-105 cursor-pointer"
                   : "text-gray-700 hover:bg-gray-100 cursor-pointer",
@@ -152,7 +152,7 @@ export default function FAQSection() {
               >
                 <span
                   className={cn(
-                    "text-sm md:text-lg font-medium transition-colors duration-500 ease-in-out pr-4",
+                    "text-sm sm:text-base md:text-lg font-medium transition-colors duration-500 ease-in-out pr-4 break-words",
                     openFaq === index ? "text-[#ff0d13]" : "text-gray-900 group-hover:text-[#ff0d13]",
                   )}
                 >
@@ -160,7 +160,7 @@ export default function FAQSection() {
                 </span>
                 <span
                   className={cn(
-                    "text-xl md:text-2xl font-light flex-shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-500 ease-in-out",
+                    "text-xl sm:text-xl md:text-2xl font-light flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center transition-all duration-500 ease-in-out",
                     openFaq === index ? "text-[#ff0d13] rotate-45" : "text-gray-900 rotate-0",
                   )}
                 >
@@ -175,8 +175,10 @@ export default function FAQSection() {
                 )}
               >
                 <div className="overflow-hidden">
-                  <div className="pb-4">
-                    <p className="text-sm md:text-base text-gray-600 font-light leading-relaxed">{faq.answer}</p>
+                  <div className="pb-4 pr-2 sm:pr-4">
+                    <p className="text-xs sm:text-sm md:text-base text-gray-600 font-light leading-relaxed break-words">
+                      {faq.answer}
+                    </p>
                   </div>
                 </div>
               </div>
