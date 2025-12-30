@@ -141,6 +141,10 @@ export default function FAQSection() {
               </button>
             ))}
           </div>
+
+                <br />
+        <br />
+
     
           {tabContent[selectedTab].questions.map((faq, index) => (
             <div key={index}>
