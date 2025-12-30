@@ -1,6 +1,5 @@
 "use client"
 
-import { motion } from "framer-motion"
 import { Star } from "lucide-react"
 import Image from "next/image"
 
@@ -187,13 +186,7 @@ const TrustSocialProof = () => {
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="text-center mb-6"
-        >
+        <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">500+ Happy Founders</span>
@@ -204,16 +197,10 @@ const TrustSocialProof = () => {
             Reviews from <span className="font-semibold text-foreground">Google</span> and{" "}
             <span className="font-semibold text-foreground">Trustpilot</span>, verified by our team.
           </p>
-        </motion.div>
+        </div>
 
         {/* Rating Stats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.1 }}
-          className="flex flex-wrap justify-center gap-8 mb-16"
-        >
+        <div className="flex flex-wrap justify-center gap-8 mb-16">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 rounded-lg bg-[#00b67a] flex items-center justify-center">
               <Star className="w-5 h-5 text-white fill-white" />
@@ -238,25 +225,14 @@ const TrustSocialProof = () => {
               <p className="text-muted-foreground text-xs">Google Reviews</p>
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Reviews Marquee - Row 1 */}
         <div className="relative mb-4 overflow-hidden">
           <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
           <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
 
-          <motion.div
-            className="flex gap-4"
-            animate={{ x: [0, -1920] }}
-            transition={{
-              x: {
-                repeat: Number.POSITIVE_INFINITY,
-                repeatType: "loop",
-                duration: 30,
-                ease: "linear",
-              },
-            }}
-          >
+          <div className="flex gap-4 animate-marquee">
             {[...reviews, ...reviews].map((review, index) => (
               <div
                 key={index}
@@ -284,7 +260,7 @@ const TrustSocialProof = () => {
                 <p className="text-foreground text-sm leading-relaxed mt-3">{review.text}</p>
               </div>
             ))}
-          </motion.div>
+          </div>
         </div>
 
         {/* Reviews Marquee - Row 2 (Reverse) */}
@@ -292,18 +268,7 @@ const TrustSocialProof = () => {
           <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
           <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
 
-          <motion.div
-            className="flex gap-4"
-            animate={{ x: [-1920, 0] }}
-            transition={{
-              x: {
-                repeat: Number.POSITIVE_INFINITY,
-                repeatType: "loop",
-                duration: 30,
-                ease: "linear",
-              },
-            }}
-          >
+          <div className="flex gap-4 animate-marquee-reverse">
             {[...reviews.slice(4), ...reviews.slice(0, 4), ...reviews.slice(4), ...reviews.slice(0, 4)].map(
               (review, index) => (
                 <div
@@ -333,27 +298,19 @@ const TrustSocialProof = () => {
                 </div>
               ),
             )}
-          </motion.div>
+          </div>
         </div>
 
         {/* WhatsApp Feedback Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-          className="mb-24"
-        >
+        <div className="mb-24">
           <div className="text-center mb-12">
             <div className="flex justify-center mb-4">
-             <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">WhatsApp Reviews</span>
+              <div className="inline-flex items-center gap-2 px-0 py-2">
+                <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">WhatsApp Reviews</span>
+              </div>
             </div>
-            </div>
-            
-            <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">WhatsApp Reviews
 
-</h2>
+            <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">WhatsApp Reviews</h2>
             <p className="text-muted-foreground">Direct messages from our satisfied customers worldwide</p>
           </div>
 
@@ -361,14 +318,7 @@ const TrustSocialProof = () => {
           <div className="max-w-7xl mx-auto">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {whatsappFeedback.map((feedback, index) => (
-                <motion.div
-                  key={index}
-                  initial={{ opacity: 0, y: 20 }}
-                  whileInView={{ opacity: 1, y: 0 }}
-                  viewport={{ once: true }}
-                  transition={{ duration: 0.4, delay: index * 0.08 }}
-                  className="relative"
-                >
+                <div key={index} className="relative">
                   {/* Chat Card */}
                   <div className="bg-[#1E1F22] rounded-2xl overflow-hidden shadow-2xl">
                     {/* Header with ticket info */}
@@ -451,40 +401,27 @@ const TrustSocialProof = () => {
                       </div>
                     </div>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
-        </motion.div>
+        </div>
 
         {/* Video Testimonials Section */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6 }}
-        >
+        <div>
           <div className="text-center mb-12">
-          <div className="flex justify-center mb-4">
-             <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Client Stories</span>
+            <div className="flex justify-center mb-4">
+              <div className="inline-flex items-center gap-2 px-0 py-2">
+                <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Client Stories</span>
+              </div>
             </div>
-            </div>
- <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Hear From Our Clients
-
-</h2>            <p className="text-muted-foreground">Real stories from founders who built their US businesses with us</p>
+            <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Hear From Our Clients</h2>
+            <p className="text-muted-foreground">Real stories from founders who built their US businesses with us</p>
           </div>
 
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6 max-w-6xl mx-auto">
             {videoTestimonials.map((video, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.95 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="group"
-              >
+              <div key={index} className="group">
                 {/* YouTube Video Embed */}
                 <div className="relative aspect-[9/16] rounded-3xl overflow-hidden shadow-2xl">
                   <iframe
@@ -495,10 +432,10 @@ const TrustSocialProof = () => {
                     className="absolute inset-0 w-full h-full"
                   />
                 </div>
-              </motion.div>
+              </div>
             ))}
           </div>
-        </motion.div>
+        </div>
       </div>
     </section>
   )
