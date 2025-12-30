@@ -21,6 +21,9 @@ import {
   RefreshCw,
   Plus,
   Eye,
+  Zap,
+  Lock,
+  Unlock,
 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
@@ -283,6 +286,7 @@ function SecurityDashboardContent() {
       subtitle: "Currently blocked",
       icon: Ban,
       color: "from-red-500 to-red-600",
+      trend: stats.blockedIPs > 0 ? "up" : "stable",
     },
     {
       name: "Total Threats",
@@ -290,6 +294,7 @@ function SecurityDashboardContent() {
       subtitle: "Detected today",
       icon: AlertTriangle,
       color: "from-orange-500 to-orange-600",
+      trend: stats.totalThreats > 0 ? "up" : "stable",
     },
     {
       name: "Requests Today",
@@ -297,6 +302,7 @@ function SecurityDashboardContent() {
       subtitle: "Total requests",
       icon: Activity,
       color: "from-blue-500 to-blue-600",
+      trend: "stable",
     },
     {
       name: "Active Threats",
@@ -304,19 +310,28 @@ function SecurityDashboardContent() {
       subtitle: "Ongoing attacks",
       icon: Shield,
       color: "from-purple-500 to-purple-600",
+      trend: stats.activeThreats > 0 ? "critical" : "stable",
     },
   ]
 
   return (
     <div className="space-y-6">
-      {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900 flex items-center gap-2">
-            <Shield className="h-8 w-8 text-red-600" />
-            Security Dashboard
-          </h1>
-          <p className="text-sm sm:text-base text-slate-600 mt-1">
+          <div className="flex items-center gap-3">
+            <div className="relative">
+              <Shield className="h-8 w-8 text-red-600" />
+              <div className="absolute -top-1 -right-1 w-3 h-3 bg-green-500 rounded-full border-2 border-white animate-pulse" />
+            </div>
+            <div>
+              <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900">Security Dashboard</h1>
+              <p className="text-xs text-green-600 font-medium flex items-center gap-1 mt-1">
+                <Zap className="h-3 w-3" />
+                All systems operational
+              </p>
+            </div>
+          </div>
+          <p className="text-sm sm:text-base text-slate-600 mt-2">
             Real-time security monitoring and threat management
           </p>
         </div>
@@ -325,22 +340,27 @@ function SecurityDashboardContent() {
             variant={autoRefresh ? "default" : "outline"}
             size="sm"
             onClick={() => setAutoRefresh(!autoRefresh)}
-            className="gap-2"
+            className="gap-2 bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700"
           >
-            <Activity className="h-4 w-4" />
-            {autoRefresh ? "Auto-refresh ON" : "Auto-refresh OFF"}
+            <Activity className={`h-4 w-4 ${autoRefresh ? "animate-pulse" : ""}`} />
+            {autoRefresh ? "Live" : "Paused"}
           </Button>
-          <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-2 bg-transparent">
+          <Button variant="outline" size="sm" onClick={handleRefresh} className="gap-2 bg-white">
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
         </div>
       </div>
 
-      {/* Stats Cards */}
       <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
         {statsCards.map((stat) => (
-          <Card key={stat.name} className="bg-white border-slate-200 hover:shadow-lg transition-all duration-200">
+          <Card
+            key={stat.name}
+            className="bg-white border-slate-200 hover:shadow-xl transition-all duration-300 hover:scale-105 relative overflow-hidden"
+          >
+            <div
+              className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${stat.color} opacity-10 rounded-full -mr-16 -mt-16`}
+            />
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div>
                 <CardTitle className="text-sm font-medium text-slate-600">{stat.name}</CardTitle>
@@ -351,20 +371,30 @@ function SecurityDashboardContent() {
               </div>
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-semibold text-slate-900">{stat.value}</div>
+              <div className="flex items-end justify-between">
+                <div className="text-2xl font-semibold text-slate-900">{stat.value}</div>
+                {stat.trend === "critical" && <Badge className="bg-red-500 text-white text-xs">Critical</Badge>}
+                {stat.trend === "up" && <Badge className="bg-orange-500 text-white text-xs">Active</Badge>}
+              </div>
             </CardContent>
           </Card>
         ))}
       </div>
 
       {/* Whitelist IP Section */}
-      <Card className="bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200">
+      <Card className="bg-gradient-to-br from-blue-50 via-indigo-50 to-blue-50 border-2 border-blue-300 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <Shield className="h-5 w-5 text-blue-600" />
-            Whitelist IP Address
-          </CardTitle>
-          <CardDescription>Add trusted IP addresses that will never be blocked by security measures</CardDescription>
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center justify-center">
+              <Shield className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-semibold text-slate-900">Whitelist IP Address</CardTitle>
+              <CardDescription className="text-slate-600">
+                Add trusted IP addresses that bypass all security measures
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="flex gap-2">
@@ -375,31 +405,45 @@ function SecurityDashboardContent() {
               onKeyDown={(e) => {
                 if (e.key === "Enter") handleWhitelistIP()
               }}
-              className="flex-1 bg-white"
+              className="flex-1 bg-white border-blue-200 focus:border-blue-400 focus:ring-blue-400"
             />
             <Button
               onClick={handleWhitelistIP}
               disabled={isWhitelisting || !whitelistIP.trim()}
-              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 gap-2"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 gap-2 shadow-lg"
             >
               <Plus className="h-4 w-4" />
               {isWhitelisting ? "Adding..." : "Whitelist"}
             </Button>
           </div>
-          <p className="text-xs text-slate-600 mt-2">
-            Whitelisted IPs bypass all security checks including DDoS protection and rate limiting
-          </p>
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-3">
+            <p className="text-xs text-blue-900 font-medium flex items-center gap-2">
+              <Unlock className="h-4 w-4" />
+              Whitelisted IPs bypass:
+            </p>
+            <ul className="text-xs text-blue-800 space-y-1 ml-6 mt-1 list-disc">
+              <li>DDoS protection and rate limiting</li>
+              <li>Suspicious activity detection</li>
+              <li>All automated blocking mechanisms</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
 
       {/* Manual Ban Section */}
-      <Card className="bg-gradient-to-r from-red-50 to-orange-50 border-red-200">
+      <Card className="bg-gradient-to-br from-red-50 via-orange-50 to-red-50 border-2 border-red-300 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <Ban className="h-5 w-5 text-red-600" />
-            Manual IP Ban
-          </CardTitle>
-          <CardDescription>Ban specific IP addresses with custom duration and reason</CardDescription>
+          <div className="flex items-center gap-2">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-red-600 to-orange-600 flex items-center justify-center">
+              <Ban className="h-5 w-5 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-lg font-semibold text-slate-900">Manual IP Ban Control</CardTitle>
+              <CardDescription className="text-slate-600">
+                Ban specific IP addresses with custom duration and reason
+              </CardDescription>
+            </div>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -409,7 +453,7 @@ function SecurityDashboardContent() {
                 placeholder="Enter IP address (e.g., 192.168.1.1)"
                 value={ipToBan}
                 onChange={(e) => setIpToBan(e.target.value)}
-                className="bg-white"
+                className="bg-white border-red-200 focus:border-red-400 focus:ring-red-400"
               />
             </div>
             <div>
@@ -417,44 +461,56 @@ function SecurityDashboardContent() {
               <select
                 value={banDuration}
                 onChange={(e) => setBanDuration(e.target.value as "30min" | "24hr" | "permanent")}
-                className="w-full h-10 px-3 rounded-md border border-slate-300 bg-white text-sm"
+                className="w-full h-10 px-3 rounded-md border border-red-200 bg-white text-sm focus:border-red-400 focus:ring-red-400"
               >
-                <option value="30min">30 Minutes</option>
-                <option value="24hr">24 Hours</option>
-                <option value="permanent">Permanent</option>
+                <option value="30min">30 Minutes - Temporary</option>
+                <option value="24hr">24 Hours - Medium Term</option>
+                <option value="permanent">Permanent - Blacklist</option>
               </select>
             </div>
           </div>
           <div>
             <label className="text-sm font-medium text-slate-700 mb-2 block">Reason for Ban</label>
             <Input
-              placeholder="Enter reason (e.g., Suspicious activity, DDoS attempt, etc.)"
+              placeholder="Enter detailed reason (e.g., DDoS attack detected, Brute force login attempts)"
               value={banReason}
               onChange={(e) => setBanReason(e.target.value)}
-              className="bg-white"
+              className="bg-white border-red-200 focus:border-red-400 focus:ring-red-400"
             />
           </div>
           <div className="flex gap-2">
             <Button
               onClick={handleBanIP}
               disabled={isBanning || !ipToBan.trim() || !banReason.trim()}
-              className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 gap-2"
+              className="bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 gap-2 shadow-lg"
             >
               <Ban className="h-4 w-4" />
               {isBanning ? "Banning..." : "Ban IP Address"}
             </Button>
           </div>
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3">
-            <p className="text-xs text-yellow-800 font-medium mb-1">Ban Methods Explained:</p>
-            <ul className="text-xs text-yellow-700 space-y-1 ml-4 list-disc">
-              <li>
-                <strong>30 Minutes:</strong> Temporary ban for minor violations or suspicious activity
+          <div className="bg-amber-50 border-2 border-amber-300 rounded-lg p-4">
+            <p className="text-xs text-amber-900 font-semibold mb-2 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4" />
+              Ban Duration Guide:
+            </p>
+            <ul className="text-xs text-amber-800 space-y-1.5 ml-4">
+              <li className="flex items-start gap-2">
+                <Clock className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <strong>30 Minutes:</strong> For suspicious patterns, minor violations, or testing purposes
+                </div>
               </li>
-              <li>
-                <strong>24 Hours:</strong> Medium-term ban for repeated violations or moderate threats
+              <li className="flex items-start gap-2">
+                <Clock className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <strong>24 Hours:</strong> For repeated violations, brute force attempts, or moderate threats
+                </div>
               </li>
-              <li>
-                <strong>Permanent:</strong> Blacklist the IP permanently for severe threats or attacks
+              <li className="flex items-start gap-2">
+                <Lock className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                <div>
+                  <strong>Permanent:</strong> For DDoS attacks, severe threats, or confirmed malicious actors
+                </div>
               </li>
             </ul>
           </div>
@@ -655,41 +711,65 @@ function SecurityDashboardContent() {
         </CardContent>
       </Card>
 
-      {/* Security Recommendations */}
-      <Card className="bg-white border-slate-200">
+      <Card className="bg-white border-slate-200 shadow-lg">
         <CardHeader>
-          <CardTitle className="text-lg font-semibold text-slate-900">Security Status</CardTitle>
-          <CardDescription>Current protection levels and recommendations</CardDescription>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-lg font-semibold text-slate-900">Security Protection Status</CardTitle>
+              <CardDescription>Current protection levels and system health</CardDescription>
+            </div>
+            <Badge className="bg-green-500 text-white">All Systems Active</Badge>
+          </div>
         </CardHeader>
         <CardContent>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-medium text-green-900">DDoS Protection Active</span>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                  <Shield className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-green-900 block">DDoS Protection</span>
+                  <span className="text-xs text-green-700">20 req/sec, 200 req/min</span>
+                </div>
               </div>
-              <Badge className="bg-green-600 text-white">Enabled</Badge>
+              <Badge className="bg-green-600 text-white">Active</Badge>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-medium text-green-900">XSS Protection Active</span>
+            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                  <Lock className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-green-900 block">XSS Protection</span>
+                  <span className="text-xs text-green-700">Content Security Policy</span>
+                </div>
               </div>
-              <Badge className="bg-green-600 text-white">Enabled</Badge>
+              <Badge className="bg-green-600 text-white">Active</Badge>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-medium text-green-900">Rate Limiting Active</span>
+            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                  <Activity className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-green-900 block">Rate Limiting</span>
+                  <span className="text-xs text-green-700">Per IP tracking</span>
+                </div>
               </div>
-              <Badge className="bg-green-600 text-white">Enabled</Badge>
+              <Badge className="bg-green-600 text-white">Active</Badge>
             </div>
-            <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-              <div className="flex items-center gap-2">
-                <CheckCircle className="h-5 w-5 text-green-600" />
-                <span className="text-sm font-medium text-green-900">Security Headers Configured</span>
+            <div className="flex items-center justify-between p-4 rounded-lg bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                  <CheckCircle className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <span className="text-sm font-semibold text-green-900 block">Security Headers</span>
+                  <span className="text-xs text-green-700">Full protection enabled</span>
+                </div>
               </div>
-              <Badge className="bg-green-600 text-white">Enabled</Badge>
+              <Badge className="bg-green-600 text-white">Active</Badge>
             </div>
           </div>
         </CardContent>

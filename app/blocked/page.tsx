@@ -10,10 +10,11 @@ export default function BlockedPage({
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-950 via-red-900 to-black flex items-center justify-center p-4">
-      <div className="max-w-2xl w-full bg-black/50 backdrop-blur-lg border border-red-500/50 rounded-2xl p-8 text-center">
-        <div className="mb-6">
-          <div className="inline-flex items-center justify-center w-20 h-20 bg-red-600/20 rounded-full mb-4 animate-pulse">
-            <svg className="w-12 h-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <div className="max-w-2xl w-full">
+        <div className="text-center mb-8 animate-fade-in">
+          <div className="inline-flex items-center justify-center w-24 h-24 bg-red-600/20 rounded-full mb-6 relative">
+            <div className="absolute inset-0 bg-red-500/20 rounded-full animate-ping" />
+            <svg className="w-14 h-14 text-red-500 relative z-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path
                 strokeLinecap="round"
                 strokeLinejoin="round"
@@ -22,53 +23,87 @@ export default function BlockedPage({
               />
             </svg>
           </div>
-          <h1 className="text-4xl font-bold text-red-500 mb-2">Access Blocked</h1>
-          <p className="text-xl text-red-300">Security System Activated</p>
+          <h1 className="text-5xl font-bold text-red-500 mb-3 animate-pulse">Access Blocked</h1>
+          <p className="text-2xl text-red-300 font-medium">Security System Activated</p>
         </div>
 
-        <div className="bg-red-950/50 border border-red-500/30 rounded-lg p-6 mb-6">
-          <h2 className="text-lg font-semibold text-white mb-3">Block Reason:</h2>
-          <p className="text-red-200 text-left">{reason}</p>
+        <div className="bg-black/60 backdrop-blur-xl border-2 border-red-500/50 rounded-2xl p-8 shadow-2xl">
+          <div className="bg-red-950/50 border border-red-500/30 rounded-xl p-6 mb-6">
+            <h2 className="text-xl font-semibold text-white mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              Block Reason:
+            </h2>
+            <p className="text-red-100 text-lg leading-relaxed">{reason}</p>
 
-          <div className="mt-4 pt-4 border-t border-red-500/20">
-            <div className="flex justify-between items-center text-sm">
-              <span className="text-gray-400">Your IP:</span>
-              <span className="text-white font-mono">{ip}</span>
+            <div className="mt-6 pt-6 border-t border-red-500/20 space-y-3">
+              <div className="flex justify-between items-center p-3 bg-red-900/30 rounded-lg">
+                <span className="text-gray-300 font-medium">Your IP Address:</span>
+                <span className="text-white font-mono font-bold">{ip}</span>
+              </div>
+              {until && !isPermanent && (
+                <div className="flex justify-between items-center p-3 bg-red-900/30 rounded-lg">
+                  <span className="text-gray-300 font-medium">Access Restored At:</span>
+                  <span className="text-white font-semibold">{new Date(until).toLocaleString()}</span>
+                </div>
+              )}
             </div>
-            {until && !isPermanent && (
-              <div className="flex justify-between items-center text-sm mt-2">
-                <span className="text-gray-400">Blocked Until:</span>
-                <span className="text-white">{new Date(until).toLocaleString()}</span>
+          </div>
+
+          <div
+            className={`${isPermanent ? "bg-gradient-to-r from-red-950/60 to-red-900/60 border-red-400/40" : "bg-gradient-to-r from-yellow-950/60 to-orange-900/60 border-yellow-400/40"} border-2 rounded-xl p-6 mb-6`}
+          >
+            {isPermanent ? (
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-red-500/20 rounded-full mb-4">
+                  <svg className="w-8 h-8 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M13.477 14.89A6 6 0 015.11 6.524l8.367 8.368zm1.414-1.414L6.524 5.11a6 6 0 018.367 8.367zM18 10a8 8 0 11-16 0 8 8 0 0116 0z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <p className="text-red-200 font-bold text-lg mb-2">Permanent Block Active</p>
+                <p className="text-red-300 text-sm leading-relaxed">
+                  Your IP has been permanently blocked due to severe security violations. If you believe this is an
+                  error, please contact the system administrator with the request ID below.
+                </p>
+              </div>
+            ) : (
+              <div className="text-center">
+                <div className="inline-flex items-center justify-center w-16 h-16 bg-yellow-500/20 rounded-full mb-4">
+                  <svg className="w-8 h-8 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
+                <p className="text-yellow-200 font-bold text-lg mb-2">Temporary Block</p>
+                <p className="text-yellow-300 text-sm leading-relaxed">
+                  Your access has been temporarily restricted. The block will be automatically lifted after the
+                  specified time. Please wait and try again later.
+                </p>
               </div>
             )}
           </div>
+
+          <div className="text-center space-y-2 pt-4 border-t border-red-500/20">
+            <p className="text-gray-400 text-sm font-mono">Request ID: {Date.now()}</p>
+            <p className="text-gray-500 text-xs">Timestamp: {new Date().toLocaleString()}</p>
+          </div>
         </div>
 
-        <div
-          className={`${isPermanent ? "bg-red-950/30 border-red-500/30" : "bg-yellow-950/30 border-yellow-500/30"} border rounded-lg p-4 mb-6`}
-        >
-          {isPermanent ? (
-            <div className="text-red-200">
-              <p className="font-semibold mb-2">Permanent Block</p>
-              <p className="text-sm">
-                Your IP has been permanently blocked due to severe security violations. Contact the administrator if you
-                believe this is an error.
-              </p>
-            </div>
-          ) : (
-            <div className="text-yellow-200">
-              <p className="font-semibold mb-2">Temporary Block</p>
-              <p className="text-sm">
-                Your IP will be automatically unblocked after the specified time. Please wait and try again later.
-              </p>
-            </div>
-          )}
-        </div>
-
-        <div className="text-sm text-gray-400">
-          <p>Request ID: {Date.now()}</p>
-          <p className="mt-1">Timestamp: {new Date().toLocaleString()}</p>
-        </div>
+        <p className="text-center text-gray-400 text-sm mt-6">
+          Security powered by BuzzFiling Advanced Protection System
+        </p>
       </div>
     </div>
   )
