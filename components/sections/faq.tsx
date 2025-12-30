@@ -108,43 +108,40 @@ export default function FAQSection() {
   ]
 
   return (
-    <section className="px-4 md:px-8 py-16 md:py-20 lg:py-24 bg-white mt-[-70px]" id="faq">
+    <section className="px-4 md:px-8 py-16 md:py-20 lg:py-24 bg-white mt-[-100px]" id="faq">
       <div className="max-w-4xl mx-auto">
-        <div>
+        
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-xs sm:text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Quick Answers</span>
+              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Quick Answers</span>
             </div>
           </div>
 
-          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-semibold text-center text-gray-900 mb-4 md:mb-6 px-2">
+          <h2 className="text-3xl md:text-4xl font-semibold text-center text-gray-900 mb-4 md:mb-6">
             Frequently Asked Questions
           </h2>
-          <p className="text-xs sm:text-sm md:text-base text-gray-600 text-center max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed px-4">
+          <p className="text-sm md:text-base text-gray-600 text-center max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed">
             Got a question? Chances are, it's been asked before! Explore our collection of frequently asked questions.
           </p>
-        </div>
 
-        <div className="mb-8 md:mb-12 overflow-x-auto scrollbar-hide">
-          <div className="flex gap-3 min-w-max px-2 pb-2">
+     
+          <div className="flex flex-wrap justify-center gap-2">
             {tabContent.map((tab, index) => (
               <button
                 key={index}
                 onClick={() => handleTabChange(index)}
                 className={cn(
-                  "px-6 md:px-8 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-300 whitespace-nowrap",
+                  "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out cursor-pointer",
                   selectedTab === index
-                    ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white shadow-lg"
-                    : "bg-white text-gray-700 hover:bg-gray-100 border border-gray-200",
+                    ? "bg-[#ff0d13] text-white shadow-md scale-105 cursor-pointer"
+                    : "text-gray-700 hover:bg-gray-100 cursor-pointer",
                 )}
               >
                 {tab.title}
               </button>
             ))}
           </div>
-        </div>
-
-        <div className="space-y-0">
+    
           {tabContent[selectedTab].questions.map((faq, index) => (
             <div key={index}>
               <button
@@ -154,7 +151,7 @@ export default function FAQSection() {
               >
                 <span
                   className={cn(
-                    "text-sm sm:text-base md:text-lg font-medium transition-colors duration-500 ease-in-out pr-4 break-words",
+                    "text-sm md:text-lg font-medium transition-colors duration-500 ease-in-out pr-4",
                     openFaq === index ? "text-[#ff0d13]" : "text-gray-900 group-hover:text-[#ff0d13]",
                   )}
                 >
@@ -162,7 +159,7 @@ export default function FAQSection() {
                 </span>
                 <span
                   className={cn(
-                    "text-xl sm:text-xl md:text-2xl font-light flex-shrink-0 w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center transition-all duration-500 ease-in-out",
+                    "text-xl md:text-2xl font-light flex-shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-500 ease-in-out",
                     openFaq === index ? "text-[#ff0d13] rotate-45" : "text-gray-900 rotate-0",
                   )}
                 >
@@ -177,10 +174,8 @@ export default function FAQSection() {
                 )}
               >
                 <div className="overflow-hidden">
-                  <div className="pb-4 pr-2 sm:pr-4">
-                    <p className="text-xs sm:text-sm md:text-base text-gray-600 font-light leading-relaxed break-words">
-                      {faq.answer}
-                    </p>
+                  <div className="pb-4">
+                    <p className="text-sm md:text-base text-gray-600 font-light leading-relaxed">{faq.answer}</p>
                   </div>
                 </div>
               </div>
@@ -188,7 +183,6 @@ export default function FAQSection() {
               <Separator className="bg-gray-200" />
             </div>
           ))}
-        </div>
       </div>
     </section>
   )
