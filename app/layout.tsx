@@ -89,17 +89,22 @@ export const metadata = {
   alternates: {
     canonical: "https://buzzfiling.com",
   },
-    generator: 'v0.app'
+  generator: "v0.app",
+  other: {
+    "X-DNS-Prefetch-Control": "on",
+    "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
+  },
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={unbounded.variable}>
       <head>
+        <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
+        <meta httpEquiv="X-Frame-Options" content="SAMEORIGIN" />
+        <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
+        <meta name="referrer" content="strict-origin-when-cross-origin" />
+
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
