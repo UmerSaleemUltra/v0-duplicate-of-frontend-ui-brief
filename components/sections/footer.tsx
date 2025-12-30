@@ -1,5 +1,5 @@
 "use client"
-import { Mail, Phone, MapPin } from "lucide-react"
+import { Mail, Phone, MapPin, Facebook, Instagram, Linkedin } from "lucide-react"
 
 const footerLinks = {
   services: [
@@ -45,18 +45,18 @@ export default function Footer() {
                 href="mailto:hello@buzzfiling.com"
                 className="flex items-center gap-3 text-white/90 hover:text-white transition-colors"
               >
-                <Mail className="w-5 h-5 md:w-5 md:h-5 text-gray-900 shrink-0" />
+                <Mail className="w-5 h-5 md:w-5 md:h-5 text-white shrink-0" />
                 <span>hello@buzzfiling.com</span>
               </a>
               <a
                 href="tel:+923394882800"
                 className="flex items-center gap-3 text-white/90 hover:text-white transition-colors"
               >
-                <Phone className="w-5 h-5 md:w-5 md:h-5 text-gray-900 shrink-0" />
+                <Phone className="w-5 h-5 md:w-5 md:h-5 text-white shrink-0" />
                 <span>+92 339 4882800</span>
               </a>
               <div className="flex items-start gap-3 text-white/90">
-                <MapPin className="w-5 h-5 md:w-5 md:h-5 text-gray-900 shrink-0 mt-0.5" />
+                <MapPin className="w-5 h-5 md:w-5 md:h-5 text-white shrink-0 mt-0.5" />
                 <span className="leading-relaxed">
                   Office No. 503, Plot 67/3, Zulekha Trade Centre, Alamgir Rd, CP & Berar Society, Karachi, 75300
                 </span>
@@ -118,36 +118,28 @@ export default function Footer() {
                 href="https://www.facebook.com/buzzfiling"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-900 hover:text-gray-700 transition-colors"
+                className="text-white hover:text-white/80 transition-colors"
                 aria-label="Facebook"
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                </svg>
+                <Facebook className="w-6 h-6 text-white" />
               </a>
               <a
                 href="https://www.instagram.com/buzzfiling/"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-900 hover:text-gray-700 transition-colors"
+                className="text-white hover:text-white/80 transition-colors"
                 aria-label="Instagram"
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <rect x="2" y="2" width="20" height="20" rx="5" ry="5" />
-                  <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                  <line x1="17.5" y1="6.5" x2="17.51" y2="6.5" />
-                </svg>
+                <Instagram className="w-6 h-6 text-white" />
               </a>
               <a
                 href="https://www.linkedin.com/company/buzzfiling"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-gray-900 hover:text-gray-700 transition-colors"
+                className="text-white hover:text-white/80 transition-colors"
                 aria-label="LinkedIn"
               >
-                <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.764s.784-1.764 1.75-1.764 1.75.79 1.75 1.764-.783 1.764-1.75 1.764zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z" />
-                </svg>
+                <Linkedin className="w-6 h-6 text-white" />
               </a>
             </div>
           </div>
