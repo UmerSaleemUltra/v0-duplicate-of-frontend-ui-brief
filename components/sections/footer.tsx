@@ -35,10 +35,10 @@ export default function Footer() {
           <div className="lg:col-span-2">
             <a href="#" className="flex items-center mb-6">
               <img src="/images/buzz-filing-logo-white.png" alt="IncoFiling"
-              className="h-auto w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px] ml-[-10px]"
+              className="h-auto w-[200px] sm:w-[220px] md:w-[240px] lg:w-[260px] ml-[-10px] mt-[-40px]"
 />
             </a>
-            <p className="text-white mb-6 max-w-sm">
+            <p className="text-white mb-6 max-w-sm mt-[-1px]">
               Simplifying US business formation for entrepreneurs worldwide. Your trusted partner in building global businesses.
             </p>
             <div className="space-y-3">

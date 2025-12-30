@@ -147,7 +147,7 @@ export default function ContactSection() {
             </form>
           </div>
 
-          <div className="w-full md:w-1/2 bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center p-6">
+          <div className="hidden md:flex w-full md:w-1/2 bg-gradient-to-r from-[#880000] to-[#ff0d13] items-center justify-center p-6">
             <div className="relative w-full h-[300px] md:h-full">
               <Image
                 src="/images/contact-team.png"
