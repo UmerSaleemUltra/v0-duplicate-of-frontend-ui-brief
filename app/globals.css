@@ -207,7 +207,7 @@
 
   @media (max-width: 768px) {
     .animate-marquee {
-      animation: marquee 12s linear infinite;
+      animation: marquee 8s linear infinite;
     }
   }
 
@@ -228,7 +228,7 @@
 
   @media (max-width: 768px) {
     .animate-marquee-reverse {
-      animation: marquee-reverse 12s linear infinite;
+      animation: marquee-reverse 8s linear infinite;
     }
   }
 
