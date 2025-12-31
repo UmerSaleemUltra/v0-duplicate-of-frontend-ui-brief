@@ -58,17 +58,19 @@ const WhyChooseUs = () => {
             </p>
 
             <div className="space-y-4">
-              {["800+ founders served", "98% success rate", "24/7 dedicated support"].map((item, index) => (
-                <div key={index} className="flex items-center gap-3">
-                  <div
-                    className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
-                    style={{ backgroundColor: "#ff0d13" }}
-                  >
-                    <Check className="w-4 h-4 text-white" />
+              {["800+ Founders Served", "500+ Companies Formed", "200+ ITINs Processed", "50+ Trademarks Filed"].map(
+                (item, index) => (
+                  <div key={index} className="flex items-center gap-3">
+                    <div
+                      className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
+                      style={{ backgroundColor: "#ff0d13" }}
+                    >
+                      <Check className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-buzz-dark font-medium text-base">{item}</span>
                   </div>
-                  <span className="text-buzz-dark font-medium text-base">{item}</span>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           </div>
 
