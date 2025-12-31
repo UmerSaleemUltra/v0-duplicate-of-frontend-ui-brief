@@ -40,13 +40,13 @@ const complianceFeatures = [
     icon: FileCheck,
     title: "Annual State Filings",
     description:
-      "We file your required annual report or statement of information with your state on time. It's included with each package, so you never have to worry about missing deadlines.",
+      "We file your required annual report or statement of information with your state on time.",
   },
   {
     icon: FileText,
     title: "Federal Tax Returns",
     description:
-      "If required by your business structure (for example, if you have multiple members), we assist with federal income tax return filing or connect you with the right resources.",
+      "If required by your business structure (for example, if you have multiple members), we assist with federal income tax return filing.",
   },
   {
     icon: Shield,

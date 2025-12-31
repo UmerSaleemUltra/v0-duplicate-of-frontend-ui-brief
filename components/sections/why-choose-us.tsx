@@ -58,7 +58,7 @@ const WhyChooseUs = () => {
             </p>
 
             <div className="space-y-4">
-              {["500+ founders served", "98% success rate", "24/7 dedicated support"].map((item, index) => (
+              {["800+ founders served", "98% success rate", "24/7 dedicated support"].map((item, index) => (
                 <div key={index} className="flex items-center gap-3">
                   <div
                     className="w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0"
