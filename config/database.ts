@@ -1,6 +1,7 @@
 import { MongoClient, type Db } from "mongodb"
 
-const MONGODB_URI = "mongodb+srv://umer:171175@cluster0.zbqcm.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+const MONGODB_URI =
+  "mongodb+srv://Buzzfiling:2668@cluster0.ewwkzzw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 const MONGODB_DB = "llc_formation"
 
 let cachedClient: MongoClient | null = null

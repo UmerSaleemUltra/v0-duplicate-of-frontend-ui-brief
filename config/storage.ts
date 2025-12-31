@@ -1,6 +1,6 @@
 import { put, del, list, head } from "@vercel/blob"
 
-process.env.BLOB_READ_WRITE_TOKEN = "vercel_blob_rw_4anFv00nFMUJ16Vd_rQFhixOihcTs5tvtV48ccV19vPGYY2"
+process.env.BLOB_READ_WRITE_TOKEN = "vercel_blob_rw_qzgSC3TMlW6tWgDd_cKLzFHQP4kYvAH9yZ0MqXLJ5v4zJOp"
 
 export interface UploadResult {
   url: string
