@@ -27,7 +27,7 @@ const REVIEWS: Review[] = [
     text: "It was wonderful working with the team. Process was super smooth and team guided us briefly throughout the process. Would surely be recommending it to my friends and family.",
     rating: 5,
     verified: true,
-    source: "google",
+    source: "trustpilot",
   },
   {
     id: "2",
@@ -36,7 +36,7 @@ const REVIEWS: Review[] = [
     text: "Awesome service and I would highly recommend this to everyone! Their communication and guidance is the best and work is according to the timeline committed. What's best is their after sales service, they don't abandon you if you face issues or need guidance after the work is finished. I would rate them 10/10.",
     rating: 5,
     verified: true,
-    source: "google",
+    source: "trustpilot",
   },
   {
     id: "3",
@@ -45,7 +45,7 @@ const REVIEWS: Review[] = [
     text: "My experience was really good regarding LLC Registration in Missouri State. Their communication personnel was really good and overall I'm satisfied with the operations.",
     rating: 5,
     verified: true,
-    source: "google",
+    source: "trustpilot",
   },
   {
     id: "4",
@@ -54,7 +54,7 @@ const REVIEWS: Review[] = [
     text: "The team was accommodating in answering all of my queries regarding C-Corporation. I registered my Corporation through them in Texas, and the process was smooth and fast. I would recommend them to anyone registering their company in the US.",
     rating: 5,
     verified: true,
-    source: "google",
+    source: "trustpilot",
   },
   {
     id: "5",
@@ -63,7 +63,7 @@ const REVIEWS: Review[] = [
     text: "It was a pleasant experience working with Buzz team. They have completed my process professionally and swiftly in Wyoming. I am very satisfied with their services. Highly recommended from my end.",
     rating: 5,
     verified: true,
-    source: "google",
+    source: "trustpilot",
   },
   {
     id: "6",
@@ -72,7 +72,7 @@ const REVIEWS: Review[] = [
     text: "Buzz Filing made everything so easy for me. I got my U.S. company set up without any tension. Their team guided me step by step, and I didn't have to worry about anything. Highly recommend!",
     rating: 5,
     verified: true,
-    source: "google",
+    source: "trustpilot",
   },
   {
     id: "7",
@@ -81,7 +81,7 @@ const REVIEWS: Review[] = [
     text: "Great service, on time delivery, excellent customer service. Buzz Filing helped me get USA LLC Registration, EIN, Business Bank Accounts, and ITIN. Everything was delivered on time, their service is great, they're really good at what they do. Especially, their customer service is great.",
     rating: 5,
     verified: true,
-    source: "google",
+    source: "trustpilot",
   },
   {
     id: "8",
