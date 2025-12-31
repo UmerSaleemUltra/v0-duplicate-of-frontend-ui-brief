@@ -200,8 +200,15 @@
     }
   }
 
+  /* Faster animation on mobile with responsive durations */
   .animate-marquee {
-    animation: marquee 20s linear infinite;
+    animation: marquee 40s linear infinite;
+  }
+
+  @media (max-width: 768px) {
+    .animate-marquee {
+      animation: marquee 15s linear infinite;
+    }
   }
 
   /* Added reverse marquee animation for second row */
@@ -214,8 +221,15 @@
     }
   }
 
+  /* Faster reverse animation on mobile */
   .animate-marquee-reverse {
-    animation: marquee-reverse 20s linear infinite;
+    animation: marquee-reverse 40s linear infinite;
+  }
+
+  @media (max-width: 768px) {
+    .animate-marquee-reverse {
+      animation: marquee-reverse 15s linear infinite;
+    }
   }
 
   /* Added safe area padding for mobile devices */

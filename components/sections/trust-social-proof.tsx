@@ -57,82 +57,28 @@ const reviews = [
 
 const whatsappFeedback = [
   {
-    ticketId: "BCL1597",
-    company: "Toughsteoutdoors LLC",
-    service: "Sunrate Setup",
-    verified: true,
-    members: "Kashtqar, Operations, You",
-    senderName: "Kashtqar",
-    senderColor: "#4FC3F7",
-    message:
-      "Thank you buzz filing team.\n\nIt was a real pleasure working with you guys. You have been very supportive through the whole process and delivered what you promised. Highly recommended 👌",
-    time: "3:34 AM",
-    reaction: "❤️",
+    screenshot: "/images/testimonial1.png",
+    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
   },
   {
-    ticketId: "BCL2341",
-    company: "TechVentures Inc",
-    service: "LLC Formation",
-    verified: true,
-    members: "Rahul, Support, You",
-    senderName: "Rahul",
-    senderColor: "#81C784",
-    message:
-      "Just received my EIN! You guys are amazing 🎉\n\nThe whole process was so smooth. Thank you team for all the support!",
-    time: "2:34 PM",
-    reaction: "🔥",
+    screenshot: "/images/testimonial1.png",
+    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
   },
   {
-    ticketId: "BCL1823",
-    company: "GlobalTrade Solutions",
-    service: "Bank Account Setup",
-    verified: true,
-    members: "Ahmed, Compliance, You",
-    senderName: "Ahmed",
-    senderColor: "#FFB74D",
-    message:
-      "Bank account approved! Thank you so much for guiding me through everything.\n\nYou're the best! Will definitely recommend to my network 💯",
-    time: "11:45 AM",
-    reaction: "👏",
+    screenshot: "/images/testimonial1.png",
+    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
   },
   {
-    ticketId: "BCL2156",
-    company: "StartupHub LLC",
-    service: "EIN + ITIN",
-    verified: true,
-    members: "Priya, Operations, You",
-    senderName: "Priya",
-    senderColor: "#F06292",
-    message:
-      "Got my LLC documents today. Fastest service I've ever experienced!\n\nHighly recommend to everyone looking to start their US business 👍",
-    time: "4:15 PM",
-    reaction: "⭐",
+    screenshot: "/images/testimonial1.png",
+    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
   },
   {
-    ticketId: "BCL1945",
-    company: "InnovateTech Corp",
-    service: "Stripe + PayPal",
-    verified: true,
-    members: "Chen, Support, You",
-    senderName: "Chen",
-    senderColor: "#9575CD",
-    message:
-      "Amazing support! Got my Stripe and PayPal approved within a week.\n\nSo happy with the service! Professional team 🚀",
-    time: "6:30 PM",
-    reaction: "💪",
+    screenshot: "/images/testimonial1.png",
+    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
   },
   {
-    ticketId: "BCL2089",
-    company: "DigitalNomad LLC",
-    service: "Full Package",
-    verified: true,
-    members: "Maria, Compliance, You",
-    senderName: "Maria",
-    senderColor: "#4DD0E1",
-    message:
-      "From application to EIN in just 5 days! You made my US business dream come true.\n\nThank you for everything! 🙏",
-    time: "3:15 PM",
-    reaction: "❤️",
+    screenshot: "/images/testimonial1.png",
+    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
   },
 ]
 
@@ -297,92 +243,18 @@ const TrustSocialProof = () => {
             <p className="text-muted-foreground">Direct messages from our satisfied customers worldwide</p>
           </div>
 
-          {/* Slack/Discord Style Chat Messages */}
           <div className="max-w-7xl mx-auto">
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {whatsappFeedback.map((feedback, index) => (
-                <div key={index} className="relative">
-                  {/* Chat Card */}
-                  <div className="bg-[#1E1F22] rounded-2xl overflow-hidden shadow-2xl">
-                    {/* Header with ticket info */}
-                    <div className="bg-[#2B2D31] px-4 py-3 flex items-center gap-3 border-b border-[#3F4147]">
-                      <div className="relative w-10 h-10 flex-shrink-0">
-                        <div className="w-10 h-10 rounded-full bg-[#7d1215] flex items-center justify-center">
-                          <Image
-                            src="/images/buzzfiling-logo.png"
-                            alt="BuzzFiling"
-                            width={20}
-                            height={20}
-                            className="object-contain"
-                          />
-                        </div>
-                        <div className="absolute -bottom-0.5 -right-0.5 w-5 h-5 rounded bg-[#ff0d13] flex items-center justify-center border-2 border-[#2B2D31]">
-                          <Image
-                            src="/images/buzzfiling-logo.png"
-                            alt="Verified"
-                            width={12}
-                            height={12}
-                            className="object-contain"
-                          />
-                        </div>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2">
-                          <span className="text-white font-semibold text-sm truncate">
-                            {feedback.ticketId} - {feedback.company}
-                          </span>
-                          {feedback.verified && (
-                            <svg
-                              className="w-4 h-4 text-[#5865F2] flex-shrink-0"
-                              viewBox="0 0 24 24"
-                              fill="currentColor"
-                            >
-                              <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                            </svg>
-                          )}
-                        </div>
-                        <p className="text-[#949BA4] text-xs truncate">{feedback.members}</p>
-                      </div>
-                    </div>
-
-                    {/* Message Area */}
-                    <div className="p-4 min-h-[160px] relative overflow-hidden">
-                      {/* Background Pattern */}
-                      <div
-                        className="absolute inset-0 opacity-[0.02]"
-                        style={{
-                          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fillRule='evenodd'%3E%3Cg fill='%23ffffff' fillOpacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-                        }}
-                      />
-
-                      {/* Message */}
-                      <div className="relative flex gap-3">
-                        <div
-                          className="w-10 h-10 rounded-full bg-[#36393F] flex items-center justify-center text-white font-medium text-sm flex-shrink-0"
-                          style={{ backgroundColor: feedback.senderColor + "30" }}
-                        >
-                          <span style={{ color: feedback.senderColor }}>{feedback.senderName.charAt(0)}</span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-baseline gap-2 mb-1">
-                            <span className="font-semibold text-sm" style={{ color: feedback.senderColor }}>
-                              {feedback.senderName}
-                            </span>
-                            <span className="text-[#949BA4] text-xs">{feedback.time}</span>
-                          </div>
-                          <p className="text-[#DBDEE1] text-sm leading-relaxed whitespace-pre-line">
-                            {feedback.message}
-                          </p>
-
-                          {/* Reaction */}
-                          <div className="mt-3">
-                            <span className="inline-flex items-center gap-1 px-2 py-1 bg-[#2B2D31] rounded-full text-sm">
-                              {feedback.reaction}
-                            </span>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
+                <div key={index} className="relative group">
+                  <div className="overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl transition-shadow">
+                    <Image
+                      src={feedback.screenshot || "/placeholder.svg"}
+                      alt={feedback.alt}
+                      width={740}
+                      height={368}
+                      className="w-full h-auto object-cover"
+                    />
                   </div>
                 </div>
               ))}
