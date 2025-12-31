@@ -204,6 +204,20 @@
     animation: marquee 20s linear infinite;
   }
 
+  /* Added reverse marquee animation for second row */
+  @keyframes marquee-reverse {
+    0% {
+      transform: translateX(-50%);
+    }
+    100% {
+      transform: translateX(0);
+    }
+  }
+
+  .animate-marquee-reverse {
+    animation: marquee-reverse 20s linear infinite;
+  }
+
   /* Added safe area padding for mobile devices */
   @supports (padding: env(safe-area-inset-bottom)) {
     .pb-safe {
