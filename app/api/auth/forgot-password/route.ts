@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}&userId=${user._id.toString()}`
 
     // Send email
-    const resetEmail = emailTemplates.resetPassword(user.name, resetLink)
+    const resetEmail = emailTemplates.passwordReset(user.name, resetLink)
     await sendEmail({
       to: email,
       subject: resetEmail.subject,
