@@ -78,10 +78,10 @@ const GlobalFounders = () => {
 
         <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
           {[
-            { value: "30+", label: "Countries Served" },
-            { value: "500+", label: "Happy Founders" },
-            { value: "50", label: "U.S. States" },
-            { value: "4 Weeks", label: "Average Setup Time" },
+            { value: "800+", label: "Founders Served" },
+            { value: "500+", label: "Companies Formed" },
+            { value: "200+", label: "ITINs Processed" },
+            { value: "50+", label: "Trademarks Filed" },
           ].map((stat, index) => (
             <div
               key={index}
