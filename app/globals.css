@@ -200,14 +200,14 @@
     }
   }
 
-  /* Faster animation on mobile with responsive durations */
+  /* Increased marquee speed - faster on both desktop and mobile */
   .animate-marquee {
-    animation: marquee 40s linear infinite;
+    animation: marquee 25s linear infinite;
   }
 
   @media (max-width: 768px) {
     .animate-marquee {
-      animation: marquee 15s linear infinite;
+      animation: marquee 12s linear infinite;
     }
   }
 
@@ -221,14 +221,14 @@
     }
   }
 
-  /* Faster reverse animation on mobile */
+  /* Increased reverse marquee speed - faster on both desktop and mobile */
   .animate-marquee-reverse {
-    animation: marquee-reverse 40s linear infinite;
+    animation: marquee-reverse 25s linear infinite;
   }
 
   @media (max-width: 768px) {
     .animate-marquee-reverse {
-      animation: marquee-reverse 15s linear infinite;
+      animation: marquee-reverse 12s linear infinite;
     }
   }
 
