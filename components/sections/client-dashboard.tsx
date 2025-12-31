@@ -8,10 +8,9 @@ import {
   Puzzle,
   Settings,
   FileCheck,
-  Landmark,
   Phone,
   CreditCard,
-  IdCard
+  Award as IdCard,
 } from "lucide-react"
 
 const sidebarItems = [
@@ -32,7 +31,7 @@ const statusCards = [
     bgColor: "bg-green-50",
   },
   {
-    icon: IdCard ,
+    icon: IdCard,
     title: "EIN Registration",
     status: "Complete",
     statusColor: "text-green-600",
@@ -97,10 +96,7 @@ const ClientDashboardSection = () => {
               <div className="w-56 bg-gradient-to-b from-[#880000] to-[#ff0d13] p-4 hidden md:flex flex-col">
                 {/* Logo */}
                 <div className="flex items-center gap-2 mb-6 px-2">
-                  <div className="w-7 h-7 bg-white rounded flex items-center justify-center">
-                    <span className="text-[#880000] font-bold text-sm">B</span>
-                  </div>
-                  <span className="text-white font-bold">Buzz Filing</span>
+                  <img src="/images/buzz-filing-logo-white.png" alt="BuzzFiling Logo" className="h-8 w-auto" />
                 </div>
 
                 {/* Company Selector */}
