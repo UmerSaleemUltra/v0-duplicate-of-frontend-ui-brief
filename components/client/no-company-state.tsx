@@ -20,7 +20,7 @@ export function NoCompanyState() {
           You haven't registered any companies with us yet. Start your business formation journey today!
         </p>
         
-        <Link href="/">
+        <Link href="/checkout">
           <Button 
             size="lg" 
             className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#aa0000] hover:to-[#ff2d33] text-white gap-2"
