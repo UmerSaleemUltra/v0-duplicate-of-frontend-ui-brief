@@ -9,13 +9,22 @@ import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
-    const { userId, token, newPassword, email } = body
+    const { userId, token, newPassword } = body
 
-    if (!userId || !token || !newPassword || !email) {
-      return apiError("User ID, token, email, and new password are required", 400)
+    if (!userId || !token || !newPassword) {
+      return apiError("User ID, token, and new password are required", 400)
     }
 
-    const rateLimitResult = await passwordUpdateRateLimit(email)
+    const db = await getDatabase()
+    const usersCollection = db.collection("users")
+
+    const user = await usersCollection.findOne({ _id: new ObjectId(userId) })
+
+    if (!user) {
+      return apiError("User not found", 404)
+    }
+
+    const rateLimitResult = await passwordUpdateRateLimit(user.email)
 
     if (!rateLimitResult.allowed) {
       return addSecurityHeaders(
@@ -26,9 +35,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const db = await getDatabase()
     const otpCollection = db.collection("otps")
-    const usersCollection = db.collection("users")
 
     const otpDoc = await otpCollection.findOne({
       userId,
