@@ -423,7 +423,10 @@ export default function CheckoutPage() {
   }
 
   const prevStep = () => {
-    if (currentStep > 0) {
+    const isAuthenticated = authService.isAuthenticated()
+    const minStep = isAuthenticated ? 1 : 0
+
+    if (currentStep > minStep) {
       const newStep = currentStep - 1
       setCurrentStep(newStep)
       saveCheckoutStep(newStep)
