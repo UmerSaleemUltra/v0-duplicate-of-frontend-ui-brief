@@ -4,8 +4,8 @@ import type React from "react"
 import { useState, useEffect, Suspense } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter, useSearchParams } from 'next/navigation'
-import { Lock, ArrowRight, Eye, EyeOff, CheckCircle } from 'lucide-react'
+import { useRouter, useSearchParams } from "next/navigation"
+import { Lock, ArrowRight, Eye, EyeOff, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,17 +26,29 @@ function ResetPasswordForm() {
   useEffect(() => {
     const tokenParam = searchParams.get("token")
     const userIdParam = searchParams.get("userId")
-    if (tokenParam && userIdParam) {
-      setToken(tokenParam)
-      setUserId(userIdParam)
-    } else {
-      setError("Invalid or missing reset token")
+
+    if (!tokenParam || !userIdParam) {
+      setError("Invalid or missing reset link. Please request a new password reset.")
+      return
     }
+
+    if (!/^\d+$/.test(tokenParam)) {
+      setError("Invalid reset token format. Please request a new password reset.")
+      return
+    }
+
+    setToken(tokenParam)
+    setUserId(userIdParam)
   }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
+
+    if (!token || !userId) {
+      setError("Missing required information. Please use the link from your email.")
+      return
+    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match")
@@ -69,10 +81,10 @@ function ResetPasswordForm() {
           router.push("/login")
         }, 2000)
       } else {
-        setError(data.error || "Failed to reset password. Please try again.")
+        setError(data.error || "Failed to reset password. Token may have expired. Please request a new reset link.")
       }
     } catch (err) {
-      console.error("[v0] Reset password error:", err)
+      console.error("Reset password error:", err)
       setError("An error occurred. Please try again.")
     } finally {
       setLoading(false)

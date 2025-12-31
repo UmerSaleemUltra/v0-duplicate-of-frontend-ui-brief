@@ -251,7 +251,7 @@ export const emailTemplates = {
                       <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;">• Your Certificate of Incorporation</p>
                       <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;">• Your Operating Agreement</p>
                       <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;">• Your EIN Confirmation Letter</p>
-                      <p style="margin: 0; font-size: 14px; color: #333333;">• Your Business Formation State Filing</p>
+                      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;">• Your Business Formation State Filing</p>
                     </div>
                     
                     <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
@@ -484,7 +484,7 @@ export const emailTemplates = {
   `,
   }),
 
-  passwordReset: (name: string, resetToken: string) => ({
+  passwordReset: (name: string, resetLink: string) => ({
     subject: "Reset Your Password - BuzzFiling",
     html: `
     <!DOCTYPE html>
@@ -520,7 +520,7 @@ export const emailTemplates = {
                     </p>
                     
                     <div style="text-align: center; margin: 30px 0;">
-                      <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://buzzfiling.com"}/reset-password?token=${resetToken}" style="display: inline-block; padding: 12px 30px; background-color: #8b0000; color: #ffffff; text-decoration: none; border-radius: 25px; font-size: 14px; font-weight: 600;">Reset Password</a>
+                      <a href="${resetLink}" style="display: inline-block; padding: 12px 30px; background-color: #8b0000; color: #ffffff; text-decoration: none; border-radius: 25px; font-size: 14px; font-weight: 600;">Reset Password</a>
                     </div>
                     
                     <div style="background-color: #fff3cd; padding: 15px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #ffc107;">

@@ -64,16 +64,15 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     })
 
-    // Build reset link
     const baseUrl =
       process.env.NEXT_PUBLIC_APP_URL ||
-      (process.env.VERCEL_URL ? `https://${process.env.PUBLIC_APP_URL}` : null) ||
+      (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : null) ||
       request.headers.get("origin") ||
-      "https://v0-frontend-ui-brief.vercel.app/"
+      "https://v0-frontend-ui-brief.vercel.app"
 
-    const resetLink = `${baseUrl}/reset-password?token=${resetToken}&userId=${user._id.toString()}`
+    const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl
+    const resetLink = `${cleanBaseUrl}/reset-password?token=${resetToken}&userId=${user._id.toString()}`
 
-    // Send email
     const resetEmail = emailTemplates.passwordReset(user.name, resetLink)
     await sendEmail({
       to: email,
