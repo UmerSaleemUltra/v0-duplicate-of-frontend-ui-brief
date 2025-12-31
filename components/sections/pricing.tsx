@@ -35,9 +35,9 @@ export default function PricingSection() {
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Pricing Plans</span>
             </div>
           </div>
-          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Everything You Need, One Place</h2>
+          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Simple, Transparent Pricing</h2>
           <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto">
-            Complete business solutions with straightforward, fair pricing.
+            Transparent plans with no hidden fees or surprises.
           </p>
         </div>
 

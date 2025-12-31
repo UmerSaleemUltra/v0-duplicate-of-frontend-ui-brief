@@ -51,7 +51,7 @@ export default function HeroSection() {
           </h1>
 
           <p className="text-sm sm:text-base md:text-lg lg:text-xl text-white mb-6 sm:mb-8 md:mb-10 max-w-3xl mx-auto leading-relaxed px-4">
-            Form your LLC, get your EIN, open a business bank account & stay compliant – all in one simple package.
+            Form your LLC, get your EIN, open a business bank account & stay compliant – all in one simple setup.
             Starting at $149 + state fees.
           </p>
 
