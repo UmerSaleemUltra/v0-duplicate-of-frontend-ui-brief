@@ -168,116 +168,114 @@ const StarRating = ({ rating }: { rating: number }) => (
 
 const TrustSocialProof = () => {
   return (
-    <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
+    <section className="py-16 md:py-20 lg:py-24 bg-gradient-to-b from-background via-gray-50/30 to-background relative overflow-hidden">
       <div className="container mx-auto px-4">
         {/* Section Header */}
-        <div className="text-center mb-6">
+        <div className="text-center mb-8">
           <div className="flex justify-center mb-4">
-            <div className="inline-flex items-center gap-2 px-0 py-2">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-red-50 border border-red-100">
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">800+ Happy Founders</span>
             </div>
           </div>
-          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">What Our Clients Say</h2>
-          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+          <h2 className="text-gray-900 text-3xl md:text-4xl lg:text-5xl font-bold mb-4">What Our Clients Say</h2>
+          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
             Reviews from <span className="font-semibold text-foreground">Google</span> and{" "}
             <span className="font-semibold text-foreground">Trustpilot</span>, verified by our team.
           </p>
         </div>
 
         {/* Rating Stats */}
-        <div className="flex flex-wrap justify-center gap-8 mb-16">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#00b67a] flex items-center justify-center">
-              <Star className="w-5 h-5 text-white fill-white" />
+        <div className="flex flex-wrap justify-center gap-6 md:gap-8 mb-16">
+          <div className="flex items-center gap-3 bg-white rounded-2xl px-6 py-4 shadow-sm border border-gray-100">
+            <div className="w-12 h-12 rounded-xl bg-[#00b67a] flex items-center justify-center shadow-sm">
+              <Star className="w-6 h-6 text-white fill-white" />
             </div>
             <div>
               <div className="flex items-center gap-1">
-                <span className="font-bold text-foreground text-lg">4.9</span>
+                <span className="font-bold text-foreground text-2xl">4.9</span>
                 <span className="text-muted-foreground text-sm">/ 5</span>
               </div>
-              <p className="text-muted-foreground text-xs">Trustpilot</p>
+              <p className="text-muted-foreground text-sm font-medium">Trustpilot</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#4285f4] flex items-center justify-center">
-              <span className="text-white font-bold text-lg">G</span>
+          <div className="flex items-center gap-3 bg-white rounded-2xl px-6 py-4 shadow-sm border border-gray-100">
+            <div className="w-12 h-12 rounded-xl bg-[#4285f4] flex items-center justify-center shadow-sm">
+              <span className="text-white font-bold text-xl">G</span>
             </div>
             <div>
               <div className="flex items-center gap-1">
-                <span className="font-bold text-foreground text-lg">4.8</span>
+                <span className="font-bold text-foreground text-2xl">4.8</span>
                 <span className="text-muted-foreground text-sm">/ 5</span>
               </div>
-              <p className="text-muted-foreground text-xs">Google Reviews</p>
+              <p className="text-muted-foreground text-sm font-medium">Google Reviews</p>
             </div>
           </div>
         </div>
 
-        {/* Reviews Marquee - Row 1 */}
-        <div className="relative mb-4 overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
+        <div className="relative mb-6 overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background via-background/80 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none" />
 
-          <div className="flex gap-4 animate-marquee">
+          <div className="flex gap-6 animate-marquee">
             {[...reviews, ...reviews].map((review, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-[350px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
+                className="flex-shrink-0 w-[380px] bg-white border border-gray-200 rounded-3xl p-6 hover:shadow-xl hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
-                    <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff0d13]/10 to-[#ff0d13]/5 flex items-center justify-center text-[#ff0d13] font-bold text-base border-2 border-[#ff0d13]/10">
                       {review.initials}
                     </div>
                     <div>
-                      <p className="font-semibold text-foreground text-sm">{review.name}</p>
+                      <p className="font-bold text-foreground text-base">{review.name}</p>
+                      <StarRating rating={review.rating} />
                     </div>
                   </div>
                   <div
-                    className={`w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold ${
+                    className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm ${
                       review.platform === "trustpilot" ? "bg-[#00b67a]" : "bg-[#4285f4]"
                     }`}
                   >
                     {review.platform === "trustpilot" ? "★" : "G"}
                   </div>
                 </div>
-                <StarRating rating={review.rating} />
-                <p className="text-foreground text-sm leading-relaxed mt-3">{review.text}</p>
+                <p className="text-gray-700 text-sm leading-relaxed">{review.text}</p>
               </div>
             ))}
           </div>
         </div>
 
-        {/* Reviews Marquee - Row 2 (Reverse) */}
         <div className="relative overflow-hidden mb-20">
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
+          <div className="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-background via-background/80 to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-background via-background/80 to-transparent z-10 pointer-events-none" />
 
-          <div className="flex gap-4 animate-marquee-reverse">
+          <div className="flex gap-6 animate-marquee-reverse">
             {[...reviews.slice(3), ...reviews.slice(0, 3), ...reviews.slice(3), ...reviews.slice(0, 3)].map(
               (review, index) => (
                 <div
                   key={index}
-                  className="flex-shrink-0 w-[350px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
+                  className="flex-shrink-0 w-[380px] bg-white border border-gray-200 rounded-3xl p-6 hover:shadow-xl hover:border-gray-300 transition-all duration-300 hover:-translate-y-1"
                 >
                   <div className="flex items-start justify-between mb-4">
                     <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#ff0d13]/10 to-[#ff0d13]/5 flex items-center justify-center text-[#ff0d13] font-bold text-base border-2 border-[#ff0d13]/10">
                         {review.initials}
                       </div>
                       <div>
-                        <p className="font-semibold text-foreground text-sm">{review.name}</p>
+                        <p className="font-bold text-foreground text-base">{review.name}</p>
+                        <StarRating rating={review.rating} />
                       </div>
                     </div>
                     <div
-                      className={`w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold ${
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center text-white text-sm font-bold shadow-sm ${
                         review.platform === "trustpilot" ? "bg-[#00b67a]" : "bg-[#4285f4]"
                       }`}
                     >
                       {review.platform === "trustpilot" ? "★" : "G"}
                     </div>
                   </div>
-                  <StarRating rating={review.rating} />
-                  <p className="text-foreground text-sm leading-relaxed mt-3">{review.text}</p>
+                  <p className="text-gray-700 text-sm leading-relaxed">{review.text}</p>
                 </div>
               ),
             )}
@@ -398,7 +396,7 @@ const TrustSocialProof = () => {
                 <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Client Stories</span>
               </div>
             </div>
-            <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Hear From Our Clients</h2>
+            <h2 className="text-gray-900 text-3xl md:text-4xl lg:text-5xl font-bold mb-4">Hear From Our Clients</h2>
             <p className="text-muted-foreground">Real stories from founders who built their US businesses with us</p>
           </div>
 
