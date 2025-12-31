@@ -11,6 +11,7 @@ import {
   Landmark,
   Phone,
   CreditCard,
+  IdCard
 } from "lucide-react"
 
 const sidebarItems = [
@@ -31,11 +32,11 @@ const statusCards = [
     bgColor: "bg-green-50",
   },
   {
-    icon: Landmark,
+    icon: IdCard ,
     title: "EIN Registration",
-    status: "In Progress",
-    statusColor: "text-amber-600",
-    bgColor: "bg-amber-50",
+    status: "Complete",
+    statusColor: "text-green-600",
+    bgColor: "bg-green-50",
   },
   {
     icon: CreditCard,
