@@ -199,34 +199,32 @@ const TrustSocialProof = () => {
           <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
 
           <div className="flex gap-4 animate-marquee-reverse">
-            {[...reviews.slice(3), ...reviews.slice(0, 3), ...reviews.slice(3), ...reviews.slice(0, 3)].map(
-              (review, index) => (
-                <div
-                  key={index}
-                  className="flex-shrink-0 w-[350px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
-                >
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-3">
-                      <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
-                        {review.initials}
-                      </div>
-                      <div>
-                        <p className="font-semibold text-foreground text-sm">{review.name}</p>
-                      </div>
+            {[...reviews, ...reviews].map((review, index) => (
+              <div
+                key={index}
+                className="flex-shrink-0 w-[350px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
+              >
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                      {review.initials}
                     </div>
-                    <div
-                      className={`w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold ${
-                        review.platform === "trustpilot" ? "bg-[#00b67a]" : "bg-[#4285f4]"
-                      }`}
-                    >
-                      {review.platform === "trustpilot" ? "★" : "G"}
+                    <div>
+                      <p className="font-semibold text-foreground text-sm">{review.name}</p>
                     </div>
                   </div>
-                  <StarRating rating={review.rating} />
-                  <p className="text-foreground text-sm leading-relaxed mt-3">{review.text}</p>
+                  <div
+                    className={`w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold ${
+                      review.platform === "trustpilot" ? "bg-[#00b67a]" : "bg-[#4285f4]"
+                    }`}
+                  >
+                    {review.platform === "trustpilot" ? "★" : "G"}
+                  </div>
                 </div>
-              ),
-            )}
+                <StarRating rating={review.rating} />
+                <p className="text-foreground text-sm leading-relaxed mt-3">{review.text}</p>
+              </div>
+            ))}
           </div>
         </div>
 
