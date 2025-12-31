@@ -1,5 +1,5 @@
 import type { NextRequest } from "next/server"
-import { logSecurityThreat, saveBannedIP, removeBannedIP } from "@/lib/security/security-db"
+import { logSecurityThreat, saveBannedIP, removeBannedIP, getBannedIPs } from "@/lib/security/security-db"
 
 interface RequestTracker {
   requests: number[]
@@ -80,10 +80,42 @@ export function addToWhitelist(ip: string) {
   console.log(`[DDOS] IP ${ip} added to whitelist`)
 }
 
+let bannedIPsLoaded = false
+async function loadBannedIPsFromDB() {
+  if (bannedIPsLoaded) return
+
+  try {
+    const dbBannedIPs = await getBannedIPs()
+    for (const ban of dbBannedIPs) {
+      blacklistedIPs.add(ban.ip)
+
+      // Also restore to tracker if temporary
+      if (!ban.permanent && ban.expiresAt) {
+        const tracker = requestTrackers.get(ban.ip) || {
+          requests: [],
+          suspiciousActivity: 0,
+          blocked: true,
+        }
+        tracker.blocked = true
+        tracker.blockedUntil = new Date(ban.expiresAt).getTime()
+        requestTrackers.set(ban.ip, tracker)
+      }
+    }
+    bannedIPsLoaded = true
+    console.log(`[DDOS] Loaded ${dbBannedIPs.length} banned IPs from database`)
+  } catch (error) {
+    console.error("[DDOS] Failed to load banned IPs from DB:", error)
+  }
+}
+
 export async function ddosProtection(req: NextRequest) {
+  await loadBannedIPsFromDB()
+
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
 
   if (blacklistedIPs.has(ip)) {
+    const tracker = requestTrackers.get(ip)
+
     console.log("\n")
     console.log("╔════════════════════════════════════════════════════════════╗")
     console.log("║         🛑 BLACKLISTED IP BLOCKED                          ║")
@@ -104,8 +136,9 @@ export async function ddosProtection(req: NextRequest) {
 
     return {
       blocked: true,
-      permanent: true,
-      reason: "Your IP has been permanently blocked due to security violations",
+      permanent: !tracker?.blockedUntil,
+      reason: "Your IP has been blocked due to security violations",
+      blockedUntil: tracker?.blockedUntil,
       ip: ip,
     }
   }
@@ -165,10 +198,12 @@ export async function ddosProtection(req: NextRequest) {
         ip: ip,
       }
     } else {
-      // Unblock after duration expires
       tracker.blocked = false
       tracker.blockedUntil = undefined
       tracker.suspiciousActivity = 0
+      blacklistedIPs.delete(ip)
+
+      removeBannedIP(ip).catch((err) => console.error("[DDOS] Failed to remove expired ban from DB:", err))
     }
   }
 
@@ -190,7 +225,7 @@ export async function ddosProtection(req: NextRequest) {
     console.log(`IP Address: ${ip}`)
     console.log(`Total Requests: ${tracker.requests.length} in 60 seconds`)
     console.log(`Threshold: ${DDOS_CONFIG.AGGRESSIVE_BLOCK_THRESHOLD} requests`)
-    console.log(`Action: PERMANENTLY BLACKLISTED + 30min temporary block`)
+    console.log(`Action: BLACKLISTED + 30min temporary block`)
     console.log(`Timestamp: ${new Date().toISOString()}`)
     console.log(`URL: ${req.url}`)
     console.log(`Method: ${req.method}`)
@@ -204,11 +239,24 @@ export async function ddosProtection(req: NextRequest) {
       action: "BLACKLISTED + BLOCKED",
     })
 
+    saveBannedIP({
+      ip,
+      reason: `DDoS attack detected - ${tracker.requests.length} requests in 60 seconds`,
+      bannedAt: new Date(),
+      bannedBy: "system",
+      duration: DDOS_CONFIG.BLOCK_DURATION,
+      expiresAt: new Date(tracker.blockedUntil),
+      permanent: false,
+      requestCount: tracker.requests.length,
+      type: "ddos",
+    }).catch((err) => console.error("[DDOS] Failed to save ban to DB:", err))
+
     return {
       blocked: true,
-      permanent: true,
+      temporary: true,
       reason: `Aggressive request pattern detected (${tracker.requests.length} requests in 60 seconds)`,
       requestCount: tracker.requests.length,
+      blockedUntil: tracker.blockedUntil,
       ip: ip,
     }
   }
@@ -232,6 +280,7 @@ export async function ddosProtection(req: NextRequest) {
     if (tracker.suspiciousActivity >= DDOS_CONFIG.SUSPICIOUS_THRESHOLD) {
       tracker.blocked = true
       tracker.blockedUntil = now + DDOS_CONFIG.BLOCK_DURATION
+      blacklistedIPs.add(ip)
 
       console.log("\n")
       console.log("╔════════════════════════════════════════════════════════════╗")
@@ -251,6 +300,18 @@ export async function ddosProtection(req: NextRequest) {
         reason: "Sustained high request rate",
         action: "TEMP BLOCKED (30min)",
       })
+
+      saveBannedIP({
+        ip,
+        reason: "Sustained high request rate",
+        bannedAt: new Date(),
+        bannedBy: "system",
+        duration: DDOS_CONFIG.BLOCK_DURATION,
+        expiresAt: new Date(tracker.blockedUntil),
+        permanent: false,
+        requestCount: recentRequests.length,
+        type: "ddos",
+      }).catch((err) => console.error("[DDOS] Failed to save ban to DB:", err))
 
       return {
         blocked: true,
@@ -296,7 +357,7 @@ export async function ddosProtection(req: NextRequest) {
 }
 
 // Admin function to manually block an IP with duration
-export function blockIP(ip: string, duration?: number) {
+export async function blockIP(ip: string, duration?: number, reason?: string) {
   blacklistedIPs.add(ip)
 
   const tracker = requestTrackers.get(ip) || {
@@ -321,31 +382,31 @@ export function blockIP(ip: string, duration?: number) {
   console.log(`IP Address: ${ip}`)
   console.log(`Duration: ${duration ? `${duration / 1000 / 60} minutes` : "PERMANENT"}`)
   console.log(`Timestamp: ${new Date().toISOString()}`)
+  console.log(`Reason: ${reason || "Manually banned by admin"}`)
   console.log("════════════════════════════════════════════════════════════\n")
 
   logThreat({
     ip,
     timestamp: Date.now(),
     requestCount: 0,
-    reason: `Manually banned by admin`,
+    reason: reason || `Manually banned by admin`,
     action: duration ? `TEMP BANNED (${duration / 1000 / 60}min)` : "PERMANENTLY BANNED",
   })
 
-  // Save to MongoDB
-  saveBannedIP({
+  await saveBannedIP({
     ip,
-    reason: "Manually banned by admin",
+    reason: reason || "Manually banned by admin",
     bannedAt: new Date(),
     bannedBy: "admin",
     duration,
     expiresAt: duration ? new Date(Date.now() + duration) : undefined,
     permanent: !duration,
     type: "manual",
-  }).catch((err) => console.error("[DDOS] Failed to save ban to DB:", err))
+  })
 }
 
 // Admin function to unblock an IP
-export function unblockIP(ip: string) {
+export async function unblockIP(ip: string) {
   blacklistedIPs.delete(ip)
   const tracker = requestTrackers.get(ip)
   if (tracker) {
@@ -370,8 +431,27 @@ export function unblockIP(ip: string) {
     action: "UNBLOCKED",
   })
 
-  // Remove from MongoDB
-  removeBannedIP(ip).catch((err) => console.error("[DDOS] Failed to remove ban from DB:", err))
+  await removeBannedIP(ip)
+}
+
+export function getDDoSStats() {
+  return {
+    totalTracked: requestTrackers.size,
+    blacklistedIPs: Array.from(blacklistedIPs),
+    whitelistedIPs: Array.from(whitelistedIPs),
+    activeTrackers: Array.from(requestTrackers.entries()).map(([ip, tracker]) => ({
+      ip,
+      requestCount: tracker.requests.length,
+      suspiciousActivity: tracker.suspiciousActivity,
+      blocked: tracker.blocked,
+      blockedUntil: tracker.blockedUntil,
+    })),
+    threatLogs: threatLogs,
+  }
+}
+
+export function getThreatLogs() {
+  return threatLogs.slice(0, 50) // Return last 50 threats
 }
 
 // Clean up old trackers every 5 minutes
@@ -402,41 +482,16 @@ export async function checkDDoS(
   // Handle structured response from ddosProtection
   if (typeof result === "object" && "blocked" in result) {
     return {
-      allowed: false,
+      allowed: !result.blocked,
       reason: result.reason || "Security policy violation",
       blockedUntil: result.blockedUntil,
       permanent: result.permanent || false,
     }
   }
 
-  // Legacy handling for JSON responses (shouldn't reach here anymore)
-  const jsonResponse = await result.json()
-  const retryAfter = result.headers.get("Retry-After")
-
+  // Fallback
   return {
     allowed: false,
-    reason: jsonResponse.error,
-    blockedUntil: retryAfter ? Date.now() + Number.parseInt(retryAfter) * 1000 : undefined,
-    permanent: jsonResponse.permanent || false,
+    reason: "Security policy violation",
   }
-}
-
-export function getDDoSStats() {
-  return {
-    totalTracked: requestTrackers.size,
-    blacklistedIPs: Array.from(blacklistedIPs),
-    whitelistedIPs: Array.from(whitelistedIPs),
-    activeTrackers: Array.from(requestTrackers.entries()).map(([ip, tracker]) => ({
-      ip,
-      requestCount: tracker.requests.length,
-      suspiciousActivity: tracker.suspiciousActivity,
-      blocked: tracker.blocked,
-      blockedUntil: tracker.blockedUntil,
-    })),
-    threatLogs: threatLogs,
-  }
-}
-
-export function getThreatLogs() {
-  return threatLogs.slice(0, 50) // Return last 50 threats
 }

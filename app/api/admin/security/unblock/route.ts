@@ -34,7 +34,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "IP address is required" }, { status: 400 })
     }
 
-    unblockIP(ip)
+    await unblockIP(ip)
 
     console.log(`[ADMIN UNBLOCK] IP ${ip} unblocked by admin`)
 

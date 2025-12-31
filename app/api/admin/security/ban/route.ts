@@ -52,7 +52,7 @@ export async function POST(request: Request) {
       durationMs = undefined
     }
 
-    blockIP(ip, durationMs)
+    await blockIP(ip, durationMs, reason)
 
     console.log(`[ADMIN BAN] IP ${ip} banned by admin for ${duration}. Reason: ${reason}`)
 
