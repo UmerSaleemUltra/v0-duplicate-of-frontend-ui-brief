@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 import { getDDoSStats } from "@/lib/middleware/ddos-protection"
+import { getBannedIPs, getSecurityStats } from "@/lib/security/security-db"
 
 function getAuthToken(request: Request): string | null {
   const authHeader = request.headers.get("authorization")
@@ -31,20 +32,38 @@ export async function GET(request: Request) {
     const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
 
     const ddosStats = getDDoSStats()
+    const dbBannedIPs = await getBannedIPs()
+    const dbStats = await getSecurityStats()
 
-    const blockedIPs = ddosStats.blacklistedIPs.map((ip) => {
-      const tracker = ddosStats.activeTrackers.find((t) => t.ip === ip)
-      return {
-        ip,
-        reason: tracker?.blocked ? "Automated DDoS detection" : "Manual ban",
-        threatLevel: "high",
-        blockedAt: tracker?.blockedUntil
-          ? new Date(tracker.blockedUntil - 1800000).toISOString()
-          : new Date().toISOString(),
-        requestCount: tracker?.requestCount || 0,
+    // Merge in-memory and database blocked IPs
+    const allBlockedIPs = [
+      ...ddosStats.blacklistedIPs.map((ip) => {
+        const tracker = ddosStats.activeTrackers.find((t) => t.ip === ip)
+        return {
+          ip,
+          reason: tracker?.blocked ? "Automated DDoS detection" : "Manual ban",
+          threatLevel: "high" as const,
+          blockedAt: tracker?.blockedUntil
+            ? new Date(tracker.blockedUntil - 1800000).toISOString()
+            : new Date().toISOString(),
+          requestCount: tracker?.requestCount || 0,
+          lastAttempt: new Date().toISOString(),
+        }
+      }),
+      ...dbBannedIPs.map((ban) => ({
+        ip: ban.ip,
+        reason: ban.reason,
+        threatLevel: (ban.type === "ddos" ? "critical" : ban.type === "brute_force" ? "high" : "medium") as const,
+        blockedAt: ban.bannedAt.toISOString(),
+        requestCount: ban.requestCount || 0,
         lastAttempt: new Date().toISOString(),
-      }
-    })
+        permanent: ban.permanent,
+        expiresAt: ban.expiresAt?.toISOString(),
+      })),
+    ]
+
+    // Remove duplicates by IP
+    const uniqueBlockedIPs = Array.from(new Map(allBlockedIPs.map((item) => [item.ip, item])).values())
 
     const activeIPs = ddosStats.activeTrackers
       .filter((tracker) => !tracker.blocked)
@@ -57,15 +76,18 @@ export async function GET(request: Request) {
 
     const activeThreats = ddosStats.activeTrackers.filter((t) => t.suspiciousActivity > 0).length
 
+    // Combine memory and database stats
+    const combinedStats = {
+      blockedIPs: uniqueBlockedIPs.length,
+      totalThreats: dbStats.totalThreats + ddosStats.threatLogs.length,
+      requestsToday: dbStats.threatsToday + ddosStats.activeTrackers.reduce((sum, t) => sum + t.requestCount, 0),
+      activeThreats: activeThreats + dbStats.criticalThreats,
+    }
+
     return NextResponse.json({
       success: true,
-      stats: {
-        blockedIPs: ddosStats.blacklistedIPs.length,
-        totalThreats: ddosStats.threatLogs.length,
-        requestsToday: ddosStats.activeTrackers.reduce((sum, t) => sum + t.requestCount, 0),
-        activeThreats,
-      },
-      blockedIPs,
+      stats: combinedStats,
+      blockedIPs: uniqueBlockedIPs,
       activeIPs,
       yourIP: clientIP,
       timestamp: new Date().toISOString(),

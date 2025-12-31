@@ -48,6 +48,17 @@ interface ActiveIP {
   suspiciousActivity: number
 }
 
+interface SecurityThreat {
+  ip: string
+  timestamp: string
+  date: string
+  requestCount: number
+  reason: string
+  action: string
+  type: string
+  severity: "low" | "medium" | "high" | "critical"
+}
+
 function SecurityDashboardContent() {
   const router = useRouter()
   const [isAuthenticating, setIsAuthenticating] = useState(true)
@@ -70,6 +81,8 @@ function SecurityDashboardContent() {
   const [banReason, setBanReason] = useState("")
   const [activeTab, setActiveTab] = useState("blocked")
   const [currentUserIP, setCurrentUserIP] = useState("Loading...")
+  const [threats, setThreats] = useState<SecurityThreat[]>([])
+  const [isLoadingThreats, setIsLoadingThreats] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -112,10 +125,37 @@ function SecurityDashboardContent() {
       setActiveIPs(data.activeIPs || [])
       setCurrentUserIP(data.yourIP || "Unknown")
       setIsLoading(false)
+
+      loadThreats()
     } catch (error) {
       console.error("Error loading security data:", error)
       toast.error("Failed to load security data")
       setIsLoading(false)
+    }
+  }
+
+  const loadThreats = async () => {
+    try {
+      setIsLoadingThreats(true)
+      const token = authService.getToken()
+      if (!token) return
+
+      const response = await fetch("/api/admin/security/threats?limit=50", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to fetch threats")
+      }
+
+      const data = await response.json()
+      setThreats(data.threats || [])
+    } catch (error) {
+      console.error("Error loading threats:", error)
+    } finally {
+      setIsLoadingThreats(false)
     }
   }
 
@@ -611,6 +651,69 @@ function SecurityDashboardContent() {
               )}
             </TabsContent>
           </Tabs>
+        </CardContent>
+      </Card>
+
+      {/* Security Threat Logs section */}
+      <Card className="bg-white border-slate-200">
+        <CardHeader>
+          <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+            <AlertTriangle className="h-5 w-5 text-orange-600" />
+            Security Threat Logs
+          </CardTitle>
+          <CardDescription>Recent security events and threats from database</CardDescription>
+        </CardHeader>
+        <CardContent>
+          {isLoadingThreats ? (
+            <div className="text-center py-8">
+              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600 mx-auto" />
+            </div>
+          ) : threats.length === 0 ? (
+            <div className="text-center py-8 text-slate-500">
+              <CheckCircle className="h-12 w-12 mx-auto mb-2 text-slate-300" />
+              <p>No security threats detected</p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-96 overflow-y-auto">
+              {threats.map((threat, index) => (
+                <div
+                  key={index}
+                  className="flex items-start justify-between p-3 bg-slate-50 rounded-lg border border-slate-200"
+                >
+                  <div className="flex-1">
+                    <div className="flex items-center gap-2 mb-1">
+                      <code className="text-sm font-mono font-semibold text-slate-900">{threat.ip}</code>
+                      <Badge
+                        className={
+                          threat.severity === "critical"
+                            ? "bg-red-600 text-white"
+                            : threat.severity === "high"
+                              ? "bg-orange-500 text-white"
+                              : threat.severity === "medium"
+                                ? "bg-yellow-500 text-white"
+                                : "bg-blue-500 text-white"
+                        }
+                      >
+                        {threat.severity}
+                      </Badge>
+                      <Badge variant="outline" className="text-xs">
+                        {threat.type}
+                      </Badge>
+                    </div>
+                    <p className="text-sm text-slate-700 mb-1">{threat.reason}</p>
+                    <div className="flex items-center gap-3 text-xs text-slate-500">
+                      <span className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {new Date(threat.timestamp).toLocaleString()}
+                      </span>
+                      <span>Action: {threat.action}</span>
+                      {threat.requestCount > 0 && <span>Requests: {threat.requestCount}</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

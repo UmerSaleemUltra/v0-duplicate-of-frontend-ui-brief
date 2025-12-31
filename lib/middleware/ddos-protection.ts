@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server"
+import { logSecurityThreat, saveBannedIP, removeBannedIP } from "@/lib/security/security-db"
 
 interface RequestTracker {
   requests: number[]
@@ -29,6 +30,26 @@ function logThreat(threat: ThreatLog) {
   if (threatLogs.length > MAX_THREAT_LOGS) {
     threatLogs.pop()
   }
+
+  // Save to MongoDB
+  const severity =
+    threat.requestCount > 500
+      ? "critical"
+      : threat.requestCount > 200
+        ? "high"
+        : threat.requestCount > 50
+          ? "medium"
+          : "low"
+
+  logSecurityThreat({
+    ip: threat.ip,
+    timestamp: new Date(threat.timestamp),
+    requestCount: threat.requestCount,
+    reason: threat.reason,
+    action: threat.action,
+    type: threat.action.includes("BLACKLIST") || threat.action.includes("BLOCKED") ? "ddos" : "ddos",
+    severity,
+  }).catch((err) => console.error("[DDOS] Failed to log threat to DB:", err))
 }
 
 // Configuration
@@ -309,8 +330,21 @@ export function blockIP(ip: string, duration?: number) {
     reason: `Manually banned by admin`,
     action: duration ? `TEMP BANNED (${duration / 1000 / 60}min)` : "PERMANENTLY BANNED",
   })
+
+  // Save to MongoDB
+  saveBannedIP({
+    ip,
+    reason: "Manually banned by admin",
+    bannedAt: new Date(),
+    bannedBy: "admin",
+    duration,
+    expiresAt: duration ? new Date(Date.now() + duration) : undefined,
+    permanent: !duration,
+    type: "manual",
+  }).catch((err) => console.error("[DDOS] Failed to save ban to DB:", err))
 }
 
+// Admin function to unblock an IP
 export function unblockIP(ip: string) {
   blacklistedIPs.delete(ip)
   const tracker = requestTrackers.get(ip)
@@ -335,6 +369,9 @@ export function unblockIP(ip: string) {
     reason: "Unblocked by admin",
     action: "UNBLOCKED",
   })
+
+  // Remove from MongoDB
+  removeBannedIP(ip).catch((err) => console.error("[DDOS] Failed to remove ban from DB:", err))
 }
 
 // Clean up old trackers every 5 minutes
