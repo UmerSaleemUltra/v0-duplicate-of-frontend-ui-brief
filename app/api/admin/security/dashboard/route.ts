@@ -32,31 +32,37 @@ export async function GET(request: Request) {
 
     const ddosStats = getDDoSStats()
 
-    const blockedIPsList = Array.from(ddosStats.blacklistedIPs || [])
-    const blockedIPs = blockedIPsList.map((ip) => ({
-      ip,
-      reason: "Security violation or manual ban",
-      threatLevel: "high",
-      blockedAt: new Date().toISOString(),
-      requestCount: 0,
-      lastAttempt: new Date().toISOString(),
-    }))
+    const blockedIPs = ddosStats.blacklistedIPs.map((ip) => {
+      const tracker = ddosStats.activeTrackers.find((t) => t.ip === ip)
+      return {
+        ip,
+        reason: tracker?.blocked ? "Automated DDoS detection" : "Manual ban",
+        threatLevel: "high",
+        blockedAt: tracker?.blockedUntil
+          ? new Date(tracker.blockedUntil - 1800000).toISOString()
+          : new Date().toISOString(),
+        requestCount: tracker?.requestCount || 0,
+        lastAttempt: new Date().toISOString(),
+      }
+    })
 
-    const activeIPs = (ddosStats.activeIPs || []).map((tracker) => ({
-      ip: tracker.ip || "unknown",
-      requestCount: tracker.requestCount || 0,
-      suspiciousActivity: tracker.suspiciousActivity || 0,
-      lastSeen: new Date(tracker.lastActivity || Date.now()).toISOString(),
-    }))
+    const activeIPs = ddosStats.activeTrackers
+      .filter((tracker) => !tracker.blocked)
+      .map((tracker) => ({
+        ip: tracker.ip,
+        requestCount: tracker.requestCount,
+        suspiciousActivity: tracker.suspiciousActivity,
+        lastSeen: new Date().toISOString(),
+      }))
 
-    const activeThreats = activeIPs.filter((ip) => ip.suspiciousActivity > 0).length
+    const activeThreats = ddosStats.activeTrackers.filter((t) => t.suspiciousActivity > 0).length
 
     return NextResponse.json({
       success: true,
       stats: {
-        blockedIPs: blockedIPsList.length,
-        totalThreats: ddosStats.totalThreats || 0,
-        requestsToday: ddosStats.totalRequests || 0,
+        blockedIPs: ddosStats.blacklistedIPs.length,
+        totalThreats: ddosStats.threatLogs.length,
+        requestsToday: ddosStats.activeTrackers.reduce((sum, t) => sum + t.requestCount, 0),
         activeThreats,
       },
       blockedIPs,
