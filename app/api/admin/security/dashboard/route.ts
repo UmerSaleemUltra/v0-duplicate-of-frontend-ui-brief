@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server"
-import { getSecurityStats } from "@/lib/security/automated-response"
 import { getDDoSStats } from "@/lib/middleware/ddos-protection"
 
 function getAuthToken(request: Request): string | null {
@@ -31,36 +30,34 @@ export async function GET(request: Request) {
 
     const clientIP = request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
 
-    const securityStats = getSecurityStats()
     const ddosStats = getDDoSStats()
 
-    const recentThreats = ddosStats.threatLogs.filter((log: any) => Date.now() - log.timestamp < 86400000) // Last 24 hours
-
-    const blockedIPs = ddosStats.blacklistedIPs.map((ip: string) => ({
+    const blockedIPsList = Array.from(ddosStats.blacklistedIPs || [])
+    const blockedIPs = blockedIPsList.map((ip) => ({
       ip,
-      reason: "DDoS attack or security violation",
+      reason: "Security violation or manual ban",
       threatLevel: "high",
       blockedAt: new Date().toISOString(),
       requestCount: 0,
       lastAttempt: new Date().toISOString(),
     }))
 
-    const activeIPs = ddosStats.activeTrackers
-      .filter((tracker: any) => !tracker.blocked)
-      .map((tracker: any) => ({
-        ip: tracker.ip,
-        requestCount: tracker.requestCount,
-        suspiciousActivity: tracker.suspiciousActivity,
-        lastSeen: new Date().toISOString(),
-      }))
+    const activeIPs = (ddosStats.activeIPs || []).map((tracker) => ({
+      ip: tracker.ip || "unknown",
+      requestCount: tracker.requestCount || 0,
+      suspiciousActivity: tracker.suspiciousActivity || 0,
+      lastSeen: new Date(tracker.lastActivity || Date.now()).toISOString(),
+    }))
+
+    const activeThreats = activeIPs.filter((ip) => ip.suspiciousActivity > 0).length
 
     return NextResponse.json({
       success: true,
       stats: {
-        blockedIPs: ddosStats.blacklistedIPs.length,
-        totalThreats: recentThreats.length, // Use actual threat count
-        requestsToday: ddosStats.totalTracked,
-        activeThreats: activeIPs.filter((ip: any) => ip.suspiciousActivity > 0).length,
+        blockedIPs: blockedIPsList.length,
+        totalThreats: ddosStats.totalThreats || 0,
+        requestsToday: ddosStats.totalRequests || 0,
+        activeThreats,
       },
       blockedIPs,
       activeIPs,
@@ -69,6 +66,12 @@ export async function GET(request: Request) {
     })
   } catch (error) {
     console.error("[SECURITY DASHBOARD] Error:", error)
-    return NextResponse.json({ error: "Failed to fetch security statistics" }, { status: 500 })
+    return NextResponse.json(
+      {
+        error: "Failed to fetch security statistics",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }

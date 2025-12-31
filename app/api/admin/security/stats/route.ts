@@ -1,64 +1,54 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { verifyToken } from "@/config/jwt"
-import { getSecurityStats, cleanupOldTrackers } from "@/lib/security/automated-response"
-import { connectDB } from "@/lib/db"
+import { getDDoSStats } from "@/lib/middleware/ddos-protection"
+
+function getAuthToken(request: Request): string | null {
+  const authHeader = request.headers.get("authorization")
+  if (authHeader?.startsWith("Bearer ")) {
+    return authHeader.substring(7)
+  }
+
+  const cookieHeader = request.headers.get("cookie")
+  if (cookieHeader) {
+    const cookies = Object.fromEntries(
+      cookieHeader.split("; ").map((c) => {
+        const [key, ...v] = c.split("=")
+        return [key, v.join("=")]
+      }),
+    )
+    return cookies.admin_auth_token || cookies.auth_token || null
+  }
+
+  return null
+}
 
 export async function GET(req: NextRequest) {
   try {
-    const authHeader = req.headers.get("authorization")
-    if (!authHeader?.startsWith("Bearer ")) {
+    const token = getAuthToken(req)
+    if (!token) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const token = authHeader.substring(7)
-    const decoded = verifyToken(token)
-
-    if (!decoded || decoded.role !== "admin") {
-      return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 })
-    }
-
-    cleanupOldTrackers()
-
-    // Get in-memory security stats
-    const stats = getSecurityStats()
-
-    // Get recent security logs from database
-    const db = await connectDB()
-    const recentLogs = await db.collection("security_logs").find({}).sort({ timestamp: -1 }).limit(50).toArray()
-
-    // Get blocked IPs count by type
-    const threatTypes = await db
-      .collection("security_logs")
-      .aggregate([
-        {
-          $group: {
-            _id: "$type",
-            count: { $sum: 1 },
-          },
-        },
-      ])
-      .toArray()
+    const ddosStats = getDDoSStats()
 
     return NextResponse.json({
       success: true,
       stats: {
-        ...stats,
-        recentLogs: recentLogs.map((log) => ({
-          id: log._id.toString(),
-          ip: log.ip,
-          type: log.type,
-          severity: log.severity,
-          timestamp: log.timestamp,
-          details: log.details,
-          action: log.action,
-        })),
-        threatsByType: threatTypes.map((t) => ({
-          type: t._id,
-          count: t.count,
-        })),
+        blockedIPs: Array.from(ddosStats.blacklistedIPs || []).length,
+        whitelistedIPs: Array.from(ddosStats.whitelistedIPs || []).length,
+        totalThreats: ddosStats.totalThreats || 0,
+        totalRequests: ddosStats.totalRequests || 0,
+        activeConnections: (ddosStats.activeIPs || []).length,
+        recentBlocks: ddosStats.recentBlocks || [],
       },
     })
   } catch (error) {
-    return NextResponse.json({ error: "Failed to fetch security stats" }, { status: 500 })
+    console.error("[SECURITY STATS] Error:", error)
+    return NextResponse.json(
+      {
+        error: "Failed to fetch security stats",
+        details: error instanceof Error ? error.message : "Unknown error",
+      },
+      { status: 500 },
+    )
   }
 }
