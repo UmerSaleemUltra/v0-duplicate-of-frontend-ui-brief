@@ -15,6 +15,7 @@ import {
   saveCheckoutStep,
   getSavedStep,
 } from "@/lib/checkout-storage"
+import { authService } from "@/lib/auth"
 
 export type Member = {
   id: string
@@ -134,90 +135,176 @@ export default function CheckoutPage() {
     const savedData = getCheckoutData()
     const savedStep = getSavedStep()
 
-    if (savedStep !== null && savedStep >= 0) {
-      setCurrentStep(savedStep)
-    }
+    const isAuthenticated = authService.isAuthenticated()
+    const currentUser = authService.getCurrentUser()
 
-    if (savedData) {
-      const savedMembers = Array.isArray(savedData.members)
-        ? savedData.members.filter((m): m is NonNullable<typeof m> => m != null && typeof m === "object")
-        : []
+    if (isAuthenticated && currentUser) {
+      // User is logged in, skip to state selection step
+      if (savedStep === null || savedStep === 0) {
+        setCurrentStep(1) // Skip account step, go to State & Package
+        saveCheckoutStep(1)
+      } else {
+        setCurrentStep(savedStep)
+      }
 
-      setData({
-        email: savedData.account?.email || "",
-        password: savedData.account?.password || "",
-        phone: savedData.account?.phone || "",
-        name: savedData.account?.name || "",
-        userId: savedData.account?.userId,
-        state: savedData.state?.state || "",
-        entityType: savedData.state?.entityType || "",
-        packageType: savedData.state?.packageType || "",
-        businessName: savedData.businessInfo?.businessName || "",
-        businessAddress: "",
-        businessCity: "",
-        businessZip: "",
-        businessWebsite: "",
-        businessCategory: savedData.businessInfo?.businessCategory || "",
-        businessDescription: savedData.businessInfo?.businessDescription || "",
-        needsResellerCertificate: savedData.businessInfo?.needsResellerCertificate || false,
-        members:
-          savedMembers.length > 0
-            ? savedMembers.map((m) => ({
-                id: m.id || crypto.randomUUID(),
-                name: m.name || "",
-                firstName: m.firstName || "",
-                middleName: m.middleName || "",
-                lastName: m.lastName || "",
-                email: m.email || "",
-                phone: m.phone || "",
-                address: m.address || "",
-                city: m.city || "",
-                state: m.state || "",
-                country: m.country || "US",
-                zip: m.zip || "",
-                ssn: m.ssn || "",
-                dateOfBirth: m.dateOfBirth || "",
-                isResponsiblePerson: m.isResponsiblePerson || false,
-                needsItin: false,
-                itinAdded: m.itinAdded || false,
-                ownershipPercentage: m.ownershipPercentage || 0,
-                passportFile: null,
-                passportKey: m.passportKey,
-                passportUrl: m.passportUrl,
-              }))
-            : [
-                {
-                  id: crypto.randomUUID(),
-                  name: "",
-                  firstName: "",
-                  middleName: "",
-                  lastName: "",
-                  email: "",
-                  phone: "",
-                  address: "",
-                  city: "",
-                  state: "",
-                  country: "US",
-                  zip: "",
-                  ssn: "",
-                  dateOfBirth: "",
-                  isResponsiblePerson: true,
+      // Pre-fill user data from authenticated session
+      if (savedData) {
+        const savedMembers = Array.isArray(savedData.members)
+          ? savedData.members.filter((m): m is NonNullable<typeof m> => m != null && typeof m === "object")
+          : []
+
+        setData({
+          email: savedData.account?.email || currentUser.email,
+          password: savedData.account?.password || "",
+          phone: savedData.account?.phone || "",
+          name: savedData.account?.name || currentUser.name,
+          userId: savedData.account?.userId || currentUser.id,
+          state: savedData.state?.state || "",
+          entityType: savedData.state?.entityType || "",
+          packageType: savedData.state?.packageType || "",
+          businessName: savedData.businessInfo?.businessName || "",
+          businessAddress: "",
+          businessCity: "",
+          businessZip: "",
+          businessWebsite: "",
+          businessCategory: savedData.businessInfo?.businessCategory || "",
+          businessDescription: savedData.businessInfo?.businessDescription || "",
+          needsResellerCertificate: savedData.businessInfo?.needsResellerCertificate || false,
+          members:
+            savedMembers.length > 0
+              ? savedMembers.map((m) => ({
+                  id: m.id || crypto.randomUUID(),
+                  name: m.name || "",
+                  firstName: m.firstName || "",
+                  middleName: m.middleName || "",
+                  lastName: m.lastName || "",
+                  email: m.email || "",
+                  phone: m.phone || "",
+                  address: m.address || "",
+                  city: m.city || "",
+                  state: m.state || "",
+                  country: m.country || "US",
+                  zip: m.zip || "",
+                  ssn: m.ssn || "",
+                  dateOfBirth: m.dateOfBirth || "",
+                  isResponsiblePerson: m.isResponsiblePerson || false,
                   needsItin: false,
-                  itinAdded: false,
+                  itinAdded: m.itinAdded || false,
+                  ownershipPercentage: m.ownershipPercentage || 0,
                   passportFile: null,
-                  passportKey: undefined,
-                  passportUrl: undefined,
-                  ownershipPercentage: 100,
-                },
-              ],
-        addons: [],
-        upsells: [],
-        totalAmount: savedData.totalAmount,
-        packagePrice: savedData.packagePrice,
-        stateFilingFee: savedData.stateFilingFee,
-        addonsTotal: savedData.addonsTotal,
-      })
+                  passportKey: m.passportKey,
+                  passportUrl: m.passportUrl,
+                }))
+              : [
+                  {
+                    id: crypto.randomUUID(),
+                    name: "",
+                    firstName: "",
+                    middleName: "",
+                    lastName: "",
+                    email: "",
+                    phone: "",
+                    address: "",
+                    city: "",
+                    state: "",
+                    country: "US",
+                    zip: "",
+                    ssn: "",
+                    dateOfBirth: "",
+                    isResponsiblePerson: true,
+                    needsItin: false,
+                    itinAdded: false,
+                    passportFile: null,
+                    passportKey: undefined,
+                    passportUrl: undefined,
+                    ownershipPercentage: 100,
+                  },
+                ],
+          addons: [],
+          upsells: [],
+          totalAmount: savedData.totalAmount,
+          packagePrice: savedData.packagePrice,
+          stateFilingFee: savedData.stateFilingFee,
+          addonsTotal: savedData.addonsTotal,
+        })
+      } else {
+        // Initialize with authenticated user data
+        setData((prev) => ({
+          ...prev,
+          email: currentUser.email,
+          name: currentUser.name,
+          userId: currentUser.id,
+        }))
+      }
+    } else {
+      // User is not logged in, show account step
+      if (savedStep !== null && savedStep >= 0) {
+        setCurrentStep(savedStep)
+      }
+
+      if (savedData) {
+        const savedMembers = Array.isArray(savedData.members)
+          ? savedData.members.filter((m): m is NonNullable<typeof m> => m != null && typeof m === "object")
+          : []
+
+        setData({
+          email: savedData.account?.email || "",
+          password: savedData.account?.password || "",
+          phone: savedData.account?.phone || "",
+          name: savedData.account?.name || "",
+          userId: savedData.account?.userId,
+          state: savedData.state?.state || "",
+          entityType: savedData.state?.entityType || "",
+          packageType: savedData.state?.packageType || "",
+          businessName: savedData.businessInfo?.businessName || "",
+          businessAddress: "",
+          businessCity: "",
+          businessZip: "",
+          businessWebsite: "",
+          businessCategory: savedData.businessInfo?.businessCategory || "",
+          businessDescription: savedData.businessInfo?.businessDescription || "",
+          needsResellerCertificate: savedData.businessInfo?.needsResellerCertificate || false,
+          members:
+            savedMembers.length > 0
+              ? savedMembers.map((m) => ({
+                  ...m,
+                  id: m.id || crypto.randomUUID(),
+                }))
+              : [
+                  {
+                    id: crypto.randomUUID(),
+                    name: "",
+                    firstName: "",
+                    middleName: "",
+                    lastName: "",
+                    email: "",
+                    phone: "",
+                    address: "",
+                    city: "",
+                    state: "",
+                    country: "US",
+                    zip: "",
+                    ssn: "",
+                    dateOfBirth: "",
+                    isResponsiblePerson: true,
+                    needsItin: false,
+                    itinAdded: false,
+                    passportFile: null,
+                    passportKey: undefined,
+                    passportUrl: undefined,
+                    ownershipPercentage: 100,
+                  },
+                ],
+          addons: [],
+          upsells: [],
+          totalAmount: savedData.totalAmount,
+          packagePrice: savedData.packagePrice,
+          stateFilingFee: savedData.stateFilingFee,
+          addonsTotal: savedData.addonsTotal,
+        })
+      }
     }
+
     setIsInitialized(true)
   }, [])
 
@@ -356,8 +443,14 @@ export default function CheckoutPage() {
       )
     }
 
+    const isAuthenticated = authService.isAuthenticated()
+
     switch (currentStep) {
       case 0:
+        // If authenticated, skip to next step
+        if (isAuthenticated) {
+          return <StatePackageStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
+        }
         return <AccountStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
       case 1:
         return <StatePackageStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
