@@ -145,7 +145,7 @@ function SecurityDashboardContent() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.JSON.stringify({ ip }),
+        body: JSON.stringify({ ip }),
       })
 
       if (!response.ok) {
