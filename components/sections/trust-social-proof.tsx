@@ -6,67 +6,52 @@ import Image from "next/image"
 const reviews = [
   {
     platform: "trustpilot",
-    name: "JAAAGA",
-    company: "Biz Network LLC",
+    name: "Kargoas",
     rating: 5,
-    text: "Good service with quick response. The team was very helpful throughout the entire LLC formation process.",
-    initials: "J",
-  },
-  {
-    platform: "google",
-    name: "Varun Krishna",
-    company: "The AIGency LLC",
-    rating: 5,
-    text: "Setting up a US LLC was a breeze. Efficient, professional, and friendly support throughout!",
-    initials: "VK",
+    text: "It was wonderful working with the team. Process was super smooth and team guided us briefly throughout the process. Would surely be recommending it to my friends and family.",
+    initials: "K",
   },
   {
     platform: "trustpilot",
-    name: "Shaytal Angra",
-    company: "Techfly LLC",
+    name: "Mehboob Meghani",
     rating: 5,
-    text: "Prior to this, I was misinformed by many companies. The team helped me out and delivered on time.",
-    initials: "SA",
-  },
-  {
-    platform: "google",
-    name: "Stanley Chiluka",
-    company: "Skilled Crew Solutions LLC",
-    rating: 5,
-    text: "Professional, responsive, and focused on quality. Clear communication; deadlines met.",
-    initials: "SC",
+    text: "Awesome service and I would highly recommend this to everyone! Their communication and guidance is the best and work is according to the timeline committed. What's best is their after sales service, they don't abandon you if you face issues or need guidance after the work is finished. I would rate them 10/10.",
+    initials: "MM",
   },
   {
     platform: "trustpilot",
-    name: "Shambo Ray",
-    company: "Bindt AI LLC",
+    name: "Waqas Ahmed",
     rating: 5,
-    text: "Fast, responsive, and reliable. Great work team! Highly recommend for any non-US founder.",
-    initials: "SR",
-  },
-  {
-    platform: "google",
-    name: "Talabathula Manoj",
-    company: "Your Wellness Products LLC",
-    rating: 5,
-    text: "Forming my US LLC with ITIN, PayPal, and Stripe was quick and easy. Highly recommend.",
-    initials: "TM",
-  },
-  {
-    platform: "google",
-    name: "Sunil Rajput",
-    company: "Traveluxe LLC",
-    rating: 5,
-    text: "Great experience. They helped a lot and completed everything within 10 days.",
-    initials: "SR",
+    text: "My experience was really good regarding LLC Registration in Missouri State. Their communication personnel was really good and overall I'm satisfied with the operations.",
+    initials: "WA",
   },
   {
     platform: "trustpilot",
-    name: "Spy Agent",
-    company: "STRINT Technologies LLC",
+    name: "Abdullah Khan",
     rating: 5,
-    text: "Had a great journey forming my LLC. On-time delivery and great support!",
-    initials: "SA",
+    text: "The team was accommodating in answering all of my queries regarding C-Corporation. I registered my Corporation through them in Texas, and the process was smooth and fast. I would recommend them to anyone registering their company in the US.",
+    initials: "AK",
+  },
+  {
+    platform: "trustpilot",
+    name: "Ramsha Khan",
+    rating: 5,
+    text: "It was a pleasant experience working with Buzz team. They have completed my process professionally and swiftly in Wyoming. I am very satisfied with their services. Highly recommended from my end.",
+    initials: "RK",
+  },
+  {
+    platform: "trustpilot",
+    name: "Mustufa",
+    rating: 5,
+    text: "Buzz Filing made everything so easy for me. I got my U.S. company set up without any tension. Their team guided me step by step, and I didn't have to worry about anything. Highly recommend!",
+    initials: "M",
+  },
+  {
+    platform: "trustpilot",
+    name: "Malik Kamal Akbar",
+    rating: 5,
+    text: "Great service, on time delivery, excellent customer service. Buzz Filing helped me get USA LLC Registration, EIN, Business Bank Accounts, and ITIN. Everything was delivered on time, their service is great, they're really good at what they do. Especially, their customer service is great. If you're someone who is looking to get any of these services, I'd 100% recommend you to try Buzz Filing.",
+    initials: "MKA",
   },
 ]
 
@@ -189,7 +174,7 @@ const TrustSocialProof = () => {
         <div className="text-center mb-6">
           <div className="flex justify-center mb-4">
             <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">500+ Happy Founders</span>
+              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">800+ Happy Founders</span>
             </div>
           </div>
           <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">What Our Clients Say</h2>
@@ -245,7 +230,6 @@ const TrustSocialProof = () => {
                     </div>
                     <div>
                       <p className="font-semibold text-foreground text-sm">{review.name}</p>
-                      <p className="text-muted-foreground text-xs">{review.company}</p>
                     </div>
                   </div>
                   <div
@@ -269,7 +253,7 @@ const TrustSocialProof = () => {
           <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
 
           <div className="flex gap-4 animate-marquee-reverse">
-            {[...reviews.slice(4), ...reviews.slice(0, 4), ...reviews.slice(4), ...reviews.slice(0, 4)].map(
+            {[...reviews.slice(3), ...reviews.slice(0, 3), ...reviews.slice(3), ...reviews.slice(0, 3)].map(
               (review, index) => (
                 <div
                   key={index}
@@ -282,7 +266,6 @@ const TrustSocialProof = () => {
                       </div>
                       <div>
                         <p className="font-semibold text-foreground text-sm">{review.name}</p>
-                        <p className="text-muted-foreground text-xs">{review.company}</p>
                       </div>
                     </div>
                     <div
