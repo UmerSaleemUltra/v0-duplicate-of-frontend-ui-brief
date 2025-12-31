@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs"
 
 const MONGODB_URI =
   process.env.MONGODB_URI ||
-  "mongodb+srv://umer:171175@cluster0.zbqcm.mongodb.net/llc_formation?retryWrites=true&w=majority&appName=Cluster0"
+  "mongodb+srv://Buzzfiling:2668@cluster0.ewwkzzw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 
 async function createAdmin() {
   console.log("[v0] Connecting to MongoDB...")
