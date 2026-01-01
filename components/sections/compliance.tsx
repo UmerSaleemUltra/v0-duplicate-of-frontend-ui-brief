@@ -39,8 +39,7 @@ const complianceFeatures = [
   {
     icon: FileCheck,
     title: "Annual State Filings",
-    description:
-      "We file your required annual report or statement of information with your state on time.",
+    description: "We file your required annual report or statement of information with your state on time.",
   },
   {
     icon: FileText,
@@ -72,15 +71,6 @@ export default function ComplianceSection() {
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13] relative overflow-hidden">
       {/* Background Pattern */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: "40px 40px",
-          }}
-        />
-      </div>
 
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">

@@ -19,17 +19,6 @@ const GlobalFounders = () => {
     <section className="py-16 md:py-20 lg:py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]" />
 
-      {/* Pattern Overlay */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: "30px 30px",
-          }}
-        />
-      </div>
-
       {/* Decorative Globe Pattern */}
       <div className="absolute inset-0 flex items-center justify-center opacity-10">
         <div className="w-[600px] h-[600px] rounded-full border border-white/40" />
