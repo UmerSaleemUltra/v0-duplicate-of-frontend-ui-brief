@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { ChevronDown, Calculator } from "lucide-react"
+import { ChevronDown } from "lucide-react"
 import StateFeesCalculatorModal from "@/components/modals/state-fees-calculator-modal"
 import { authService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
@@ -31,9 +31,9 @@ export default function PricingSection() {
 
   const advanceFeatures = [...advanceUniqueFeatures, ...starterFeatures]
 
-  const handleCalculatorClick = () => {
+  const handleApplyNowClick = () => {
     if (authService.isAuthenticated()) {
-      router.push("/checkout")
+      window.location.href = "/checkout"
     } else {
       setShowCalculator(true)
     }
@@ -53,16 +53,6 @@ export default function PricingSection() {
             <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-6">
               Transparent plans with no hidden fees or surprises.
             </p>
-
-            <div className="flex justify-center">
-              <button
-                onClick={handleCalculatorClick}
-                className="inline-flex items-center justify-center gap-2 text-base text-[#ff0d13] border-2 border-[#ff0d13] rounded-full px-6 py-3 font-semibold hover:bg-[#ff0d13] hover:text-white transition-all"
-              >
-                <Calculator className="w-5 h-5" />
-                <span>Calculate State Fees</span>
-              </button>
-            </div>
           </div>
 
           <div className="grid sm:grid-cols-1 md:grid-cols-2 gap-8 md:gap-10 lg:gap-12">
@@ -95,7 +85,10 @@ export default function PricingSection() {
                 </div>
 
                 {/* Button */}
-                <button className="w-full bg-white text-[#ff0d13] rounded-full py-3.5 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-semibold hover:bg-gray-50 transition-colors">
+                <button
+                  onClick={handleApplyNowClick}
+                  className="w-full bg-white text-[#ff0d13] rounded-full py-3.5 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-semibold hover:bg-gray-50 transition-colors"
+                >
                   Apply Now
                 </button>
               </div>
@@ -161,7 +154,10 @@ export default function PricingSection() {
                 </div>
 
                 {/* Button */}
-                <button className="w-full bg-white text-[#ff0d13] rounded-full py-3.5 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-semibold hover:bg-gray-50 transition-colors relative z-10">
+                <button
+                  onClick={handleApplyNowClick}
+                  className="w-full bg-white text-[#ff0d13] rounded-full py-3.5 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-semibold hover:bg-gray-50 transition-colors relative z-10"
+                >
                   Apply Now
                 </button>
               </div>

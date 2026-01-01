@@ -1,7 +1,9 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
-import { ArrowRight, Menu, X, Calculator } from "lucide-react"
+import { ArrowRight, Menu, X } from "lucide-react"
 import Link from "next/link"
 import StateFeesCalculatorModal from "@/components/modals/state-fees-calculator-modal"
 
@@ -41,10 +43,9 @@ export default function Navbar() {
   const buttonText = isAuthenticated ? "Your Dashboard" : "Start Your Business"
   const buttonLink = isAuthenticated ? dashboardUrl : "/auth"
 
-  const handleCalculatorClick = () => {
-    if (isAuthenticated) {
-      window.location.href = "/checkout"
-    } else {
+  const handleStartBusinessClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault()
       setShowCalculator(true)
     }
   }
@@ -103,16 +104,9 @@ export default function Navbar() {
                 +92 339 4882800
               </a>
 
-              <button
-                onClick={handleCalculatorClick}
-                className="hidden lg:flex items-center justify-center gap-2 text-base xl:text-lg text-white border-2 border-white rounded-full px-6 xl:px-8 py-2.5 xl:py-3 hover:bg-white/10 transition-colors font-semibold whitespace-nowrap"
-              >
-                <Calculator className="w-5 h-5" />
-                <span>State Fees</span>
-              </button>
-
               <Link
                 href={buttonLink}
+                onClick={handleStartBusinessClick}
                 className="hidden lg:flex items-center justify-center gap-2 text-base xl:text-lg text-[#ff0d13] bg-white rounded-full px-6 xl:px-8 py-2.5 xl:py-3 hover:bg-white/90 transition-colors font-semibold shadow-lg whitespace-nowrap"
               >
                 <span>{buttonText}</span>

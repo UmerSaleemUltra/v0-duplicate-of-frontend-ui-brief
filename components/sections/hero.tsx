@@ -1,5 +1,7 @@
 "use client"
 import { ArrowRight, Calculator } from "lucide-react"
+import type React from "react"
+
 import Link from "next/link"
 import { useState, useEffect } from "react"
 import StateFeesCalculatorModal from "@/components/modals/state-fees-calculator-modal"
@@ -47,6 +49,13 @@ export default function HeroSection() {
     }
   }
 
+  const handleStartBusinessClick = (e: React.MouseEvent) => {
+    if (!isAuthenticated) {
+      e.preventDefault()
+      setShowCalculator(true)
+    }
+  }
+
   return (
     <>
       <div id="home" className="bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center py-16 md:py-20 lg:py-24">
@@ -69,6 +78,7 @@ export default function HeroSection() {
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 px-4">
               <Link
                 href={buttonLink}
+                onClick={handleStartBusinessClick}
                 className="flex items-center justify-center gap-2 text-sm sm:text-base md:text-lg 
                          text-[#ff0d13] bg-white rounded-full px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 font-medium 
                          shadow-md hover:shadow-lg hover:bg-white/90 transition-all w-full sm:w-auto"
