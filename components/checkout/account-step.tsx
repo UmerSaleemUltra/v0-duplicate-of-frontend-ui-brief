@@ -41,6 +41,12 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
     }
   }, [data?.phone])
 
+  useEffect(() => {
+    if (phone && phone !== data.phone) {
+      updateData({ phone })
+    }
+  }, [phone])
+
   if (!data) {
     console.log("[v0] AccountStep - data is undefined, showing loader")
     return (
@@ -88,70 +94,106 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (validate()) {
-      setIsCreatingUser(true)
 
-      try {
-        if (!data.userId) {
-          console.log("[v0] Creating user account...")
+    if (!validate()) {
+      setErrors((prev) => ({
+        ...prev,
+        submit: "Please complete all account information: Full Name, Phone Number, Email Address, and Password",
+      }))
+      return
+    }
 
-          const response = await fetch("/api/users", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              name: data.name,
-              email: data.email,
-              password: data.password,
-              phone: phone,
-              isCheckout: true,
-            }),
-          })
+    setIsCreatingUser(true)
 
-          if (!response.ok) {
-            const error = await response.json()
-            throw new Error(error.error || "Failed to create account")
-          }
+    try {
+      if (!data.userId) {
+        console.log("[v0] Creating user account...")
 
-          const result = await response.json()
-          console.log("[v0] User account response:", result)
+        const response = await fetch("/api/users", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name: data.name,
+            email: data.email,
+            password: data.password,
+            phone: phone,
+            isCheckout: true,
+          }),
+        })
 
-          if (result.userExists) {
-            console.log("[v0] User already exists, using existing account:", result.data.id)
-            updateData({
-              phone: phone,
-              name: data.name,
-              email: data.email,
-              password: data.password,
-              userId: result.data.id || result.data._id,
-            })
-          } else {
-            console.log("[v0] New user account created:", result.data.id || result.data._id)
-            updateData({
-              phone: phone,
-              name: data.name,
-              email: data.email,
-              password: data.password,
-              userId: result.data.id || result.data._id,
-            })
-          }
-        } else {
-          console.log("[v0] User already has ID, updating data")
+        if (!response.ok) {
+          const error = await response.json()
+          throw new Error(error.error || "Failed to create account")
+        }
+
+        const result = await response.json()
+        console.log("[v0] User account response:", result)
+
+        if (result.userExists) {
+          console.log("[v0] User already exists, using existing account:", result.data.id)
           updateData({
             phone: phone,
             name: data.name,
             email: data.email,
             password: data.password,
+            userId: result.data.id || result.data._id,
+          })
+        } else {
+          console.log("[v0] New user account created:", result.data.id || result.data._id)
+          updateData({
+            phone: phone,
+            name: data.name,
+            email: data.email,
+            password: data.password,
+            userId: result.data.id || result.data._id,
           })
         }
-
-        console.log("[v0] Account step completed, moving to next step")
-        onNext()
-      } catch (error) {
-        console.error("[v0] Error creating user:", error)
-        setErrors({ submit: error instanceof Error ? error.message : "Failed to create account" })
-      } finally {
-        setIsCreatingUser(false)
+      } else {
+        console.log("[v0] User already has ID, updating data")
+        updateData({
+          phone: phone,
+          name: data.name,
+          email: data.email,
+          password: data.password,
+        })
       }
+
+      console.log("[v0] Account step completed, moving to next step")
+      onNext()
+    } catch (error) {
+      console.error("[v0] Error creating user:", error)
+      setErrors({ submit: error instanceof Error ? error.message : "Failed to create account" })
+    } finally {
+      setIsCreatingUser(false)
+    }
+  }
+
+  const handleNameChange = (value: string) => {
+    updateData({ name: value })
+    if (errors.name) {
+      setErrors((prev) => ({ ...prev, name: "" }))
+    }
+  }
+
+  const handleEmailChange = (value: string) => {
+    updateData({ email: value })
+    if (errors.email) {
+      setErrors((prev) => ({ ...prev, email: "" }))
+    }
+  }
+
+  const handlePasswordChange = (value: string) => {
+    updateData({ password: value })
+    if (errors.password) {
+      setErrors((prev) => ({ ...prev, password: "" }))
+    }
+  }
+
+  const handlePhoneChange = (value: string | undefined) => {
+    const phoneValue = value || ""
+    setPhone(phoneValue)
+    if (errors.phone) {
+      setErrors((prev) => ({ ...prev, phone: "" }))
     }
   }
 
@@ -176,7 +218,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               type="text"
               placeholder="John Doe"
               value={data.name || ""}
-              onChange={(e) => updateData({ name: e.target.value })}
+              onChange={(e) => handleNameChange(e.target.value)}
               className="pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
             />
           </div>
@@ -190,7 +232,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
           </Label>
           <PhoneInput
             value={phone}
-            onChange={(value) => setPhone(value || "")}
+            onChange={handlePhoneChange}
             defaultCountry="US"
             international
             withCountryCallingCode
@@ -210,7 +252,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               type="email"
               placeholder="you@example.com"
               value={data.email || ""}
-              onChange={(e) => updateData({ email: e.target.value })}
+              onChange={(e) => handleEmailChange(e.target.value)}
               className="pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
             />
           </div>
@@ -229,7 +271,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               type={showPassword ? "text" : "password"}
               placeholder="At least 8 characters"
               value={data.password || ""}
-              onChange={(e) => updateData({ password: e.target.value })}
+              onChange={(e) => handlePasswordChange(e.target.value)}
               className="pl-10 pr-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
             />
             <button

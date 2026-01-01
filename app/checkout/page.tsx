@@ -138,6 +138,9 @@ export default function CheckoutPage() {
     const isAuthenticated = authService.isAuthenticated()
     const currentUser = authService.getCurrentUser()
 
+    const hasCompleteAccountData =
+      savedData?.account?.email && savedData?.account?.password && savedData?.account?.phone && savedData?.account?.name
+
     if (isAuthenticated && currentUser) {
       // User is logged in, skip to state selection step
       if (savedStep === null || savedStep === 0) {
@@ -237,9 +240,13 @@ export default function CheckoutPage() {
         }))
       }
     } else {
-      // User is not logged in, show account step
-      if (savedStep !== null && savedStep >= 0) {
+      if (hasCompleteAccountData && savedStep !== null && savedStep > 0) {
+        // Has account data and was on a later step, restore that step
         setCurrentStep(savedStep)
+      } else {
+        // No complete account data or was on account step, start from beginning
+        setCurrentStep(0)
+        saveCheckoutStep(0)
       }
 
       if (savedData) {
