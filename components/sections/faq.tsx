@@ -19,174 +19,169 @@ export default function FAQSection() {
 
   const faqBasicQuestions = [
     {
-      question: "What is BuzzFiling?",
+      question: "Can a non-US resident form an LLC in the United States?",
       answer:
-        "BuzzFiling is a professional US business formation service that helps international entrepreneurs, especially from Pakistan and other countries, establish and manage their US-based LLCs and Corporations. We handle everything from initial registration to ongoing compliance.",
+        "Yes. Non-US residents can legally form and fully own a U.S. LLC without visiting the United States. We assist international founders throughout the entire formation process.",
     },
     {
-      question: "Can non-U.S. residents register a company?",
+      question: "Which state is best for LLC formation for foreigners?",
       answer:
-        "Yes! Non-U.S. residents can absolutely register a US company. You don't need to be a US citizen or resident to form an LLC or Corporation. We specialize in helping international founders navigate the process seamlessly.",
+        "There is no single best state. Wyoming, New Mexico, Texas, Florida, and Montana are commonly chosen based on business activity.",
     },
     {
-      question: "How long does formation take?",
+      question: "Can a non resident apply for an ITIN?",
       answer:
-        "Typically, the complete formation process takes 3-4 weeks. This includes state filing, EIN acquisition, and setting up your registered agent. We keep you updated at every step of the process.",
+        "Yes. Buzz Filing assists non-residents with ITIN applications through an IRS-authorized Certified Acceptance Agent to support U.S. tax compliance.",
     },
     {
-      question: "Do I get an EIN?",
+      question: "How long does it take to form a U.S. LLC?",
       answer:
-        "Yes! All our packages include EIN (Employer Identification Number) acquisition from the IRS. This is essential for opening bank accounts, hiring employees, and filing taxes in the US.",
+        "State approval usually takes 2 to 7 business days, depending on the state. EIN issuance typically takes 7 to 15 business days and may take longer during peak IRS processing periods.",
     },
     {
-      question: "Can BuzzFiling help me open a U.S. bank account?",
+      question: "Can I make changes to my company details after formation?",
       answer:
-        "Yes, we provide guidance and support for opening US bank accounts. We work with several banking partners that are friendly to international business owners and can facilitate remote account opening in many cases.",
+        "Yes. Changes such as company name, ownership, or address can be updated after formation through official amendment filings, and these changes involve additional state fees and service charges.",
     },
   ]
 
   const faqComplianceQuestions = [
     {
-      question: "What is BOI filing?",
+      question: "Why is a registered agent required for my U.S. company?",
       answer:
-        "BOI (Beneficial Ownership Information) filing is a federal requirement where companies must report information about their beneficial owners to FinCEN. We handle this filing for you to ensure compliance with federal regulations.",
+        "A registered agent is legally required to receive official state notices, legal documents, and compliance correspondence on behalf of your company and ensures you do not miss critical communications.",
     },
     {
-      question: "Do I need to file annual reports?",
+      question: "What is an annual report and why is it important?",
       answer:
-        "Yes, most states require annual reports to maintain your company's good standing. We provide compliance support and reminders to ensure you never miss important deadlines.",
+        "An annual report is a mandatory state filing that confirms your company's current details, such as address and ownership. Filing it on time keeps your company in good standing. Missing it can lead to late fees or suspension.",
     },
     {
-      question: "What happens if I miss a filing deadline?",
+      question: "Do I need to file taxes even if my company has no income?",
       answer:
-        "Missing deadlines can result in penalties and loss of good standing. Our compliance monitoring service tracks all your deadlines and sends timely reminders to prevent any issues.",
+        "Yes. U.S. companies, including foreign-owned LLCs, must file required federal tax forms even if there is no income or business activity during the year.",
     },
     {
-      question: "Do I need a U.S. address?",
+      question: "What tax filings are required for my U.S. company?",
       answer:
-        "Yes, every U.S. company requires a U.S. business address. BuzzFiling provides a compliant address with mail handling to meet legal and banking requirements.",
+        "Tax filing requirements depend on the company's structure and ownership. Required federal tax forms must be filed annually to remain compliant with IRS regulations, even when there is no income.",
     },
     {
-      question: "Can I change company details later?",
+      question: "What happens if I miss compliance requirements?",
       answer:
-        "Yes, you can update your company name, members, or structure anytime. BuzzFiling helps by filing the necessary amendments with the state.",
+        "Missing compliance requirements such as maintaining a registered agent, filing annual reports, or completing tax filings can result in penalties, loss of good standing, or company suspension.",
     },
   ]
 
   const faqServicesQuestions = [
     {
-      question: "Do you provide ongoing support?",
+      question: "Can I open a U.S. bank account as a non-resident?",
       answer:
-        "We provide continuous support throughout your business journey. Our team is available via WhatsApp, email, and phone to answer questions and assist with any business needs.",
+        "Yes. Non-residents can open U.S. business bank accounts. Buzz Filing assists clients in applying for suitable banking and fintech solutions designed for international founders.",
     },
     {
-      question: "Can I upgrade my package later?",
-      answer:
-        "Yes, you can upgrade your package at any time. Simply contact our team and we'll help you add additional services like registered agent, compliance monitoring, or mail forwarding.",
+      question: "Is an EIN required to open a U.S. business bank account?",
+      answer: "Yes. An EIN is required by banks to identify the business for compliance and reporting purposes.",
     },
     {
-      question: "What if I need to change my business structure?",
-      answer:
-        "We can help you with business structure changes, whether converting from LLC to Corporation or vice versa. Our team will guide you through the process and handle all necessary filings.",
+      question: "Is it possible to open a U.S. business bank account remotely?",
+      answer: "Yes. Many fintech providers allow remote business account opening without visiting the United States.",
     },
     {
-      question: "What add-on services does BuzzFiling provide?",
+      question: "Which banks and fintechs are you partnered with?",
       answer:
-        "BuzzFiling offers reseller permits, business addresses, dedicated VPS servers, and more. These add-ons give your business the extra tools it needs to succeed.",
+        "Buzz Filing assists clients with applications to selected fintech platforms, including Wise, Payoneer, Sunrate, Airwallex, and Zyla.",
     },
     {
-      question: "How do I contact customer support?",
+      question: "Is it possible to open a traditional, physical U.S. bank account?",
       answer:
-        "You can reach BuzzFiling via email, WhatsApp, or your client dashboard. Our team is available to guide you at every step of the journey.",
+        "No. Opening a traditional physical U.S. bank account is generally not possible without visiting the United States in person, as most banks require branch visits and face to face verification.",
     },
   ]
 
   const tabContent = [
-    { title: "Formation", questions: faqBasicQuestions },
+    { title: "Basics", questions: faqBasicQuestions },
     { title: "Compliance", questions: faqComplianceQuestions },
-    { title: "Services & Support", questions: faqServicesQuestions },
+    { title: "Banking", questions: faqServicesQuestions },
   ]
 
   return (
     <section className="px-4 md:px-8 py-16 md:py-20 lg:py-24 bg-white mt-[-100px]" id="faq">
       <div className="max-w-4xl mx-auto">
-        
-          <div className="flex justify-center mb-4">
-            <div className="inline-flex items-center gap-2 px-0 py-2">
-              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Quick Answers</span>
-            </div>
+        <div className="flex justify-center mb-4">
+          <div className="inline-flex items-center gap-2 px-0 py-2">
+            <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Quick Answers</span>
           </div>
+        </div>
 
-          <h2 className="text-3xl md:text-4xl font-semibold text-center text-gray-900 mb-4 md:mb-6">
-            Frequently Asked Questions
-          </h2>
-          <p className="text-sm md:text-base text-gray-600 text-center max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed">
-            Got a question? Chances are, it's been asked before! Explore our collection of frequently asked questions.
-          </p>
+        <h2 className="text-3xl md:text-4xl font-semibold text-center text-gray-900 mb-4 md:mb-6">
+          Frequently Asked Questions
+        </h2>
+        <p className="text-sm md:text-base text-gray-600 text-center max-w-xl mx-auto mb-8 md:mb-12 leading-relaxed">
+          Got a question? Chances are, it's been asked before! Explore our collection of frequently asked questions.
+        </p>
 
-     
-          <div className="flex flex-wrap justify-center gap-2">
-            {tabContent.map((tab, index) => (
-              <button
-                key={index}
-                onClick={() => handleTabChange(index)}
-                className={cn(
-                  "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out cursor-pointer",
-                  selectedTab === index
-                    ? "bg-[#ff0d13] text-white shadow-md scale-105 cursor-pointer"
-                    : "text-gray-700 hover:bg-gray-100 cursor-pointer",
-                )}
-              >
-                {tab.title}
-              </button>
-            ))}
-          </div>
+        <div className="flex flex-wrap justify-center gap-2">
+          {tabContent.map((tab, index) => (
+            <button
+              key={index}
+              onClick={() => handleTabChange(index)}
+              className={cn(
+                "px-4 md:px-6 py-2.5 rounded-full text-sm md:text-base font-medium transition-all duration-500 ease-in-out cursor-pointer",
+                selectedTab === index
+                  ? "bg-[#ff0d13] text-white shadow-md scale-105 cursor-pointer"
+                  : "text-gray-700 hover:bg-gray-100 cursor-pointer",
+              )}
+            >
+              {tab.title}
+            </button>
+          ))}
+        </div>
 
-                <br />
+        <br />
         <br />
 
-    
-          {tabContent[selectedTab].questions.map((faq, index) => (
-            <div key={index}>
-              <button
-                onClick={() => toggleFaq(index)}
-                className="w-full py-4 md:py-5 flex items-center justify-between text-left group cursor-pointer"
-                aria-expanded={openFaq === index}
-              >
-                <span
-                  className={cn(
-                    "text-sm md:text-lg font-medium transition-colors duration-500 ease-in-out pr-4",
-                    openFaq === index ? "text-[#ff0d13]" : "text-gray-900 group-hover:text-[#ff0d13]",
-                  )}
-                >
-                  {faq.question}
-                </span>
-                <span
-                  className={cn(
-                    "text-xl md:text-2xl font-light flex-shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-500 ease-in-out",
-                    openFaq === index ? "text-[#ff0d13] rotate-45" : "text-gray-900 rotate-0",
-                  )}
-                >
-                  +
-                </span>
-              </button>
-
-              <div
+        {tabContent[selectedTab].questions.map((faq, index) => (
+          <div key={index}>
+            <button
+              onClick={() => toggleFaq(index)}
+              className="w-full py-4 md:py-5 flex items-center justify-between text-left group cursor-pointer"
+              aria-expanded={openFaq === index}
+            >
+              <span
                 className={cn(
-                  "grid transition-all duration-500 ease-in-out",
-                  openFaq === index ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+                  "text-sm md:text-lg font-medium transition-colors duration-500 ease-in-out pr-4",
+                  openFaq === index ? "text-[#ff0d13]" : "text-gray-900 group-hover:text-[#ff0d13]",
                 )}
               >
-                <div className="overflow-hidden">
-                  <div className="pb-4">
-                    <p className="text-sm md:text-base text-gray-600 font-light leading-relaxed">{faq.answer}</p>
-                  </div>
+                {faq.question}
+              </span>
+              <span
+                className={cn(
+                  "text-xl md:text-2xl font-light flex-shrink-0 w-6 h-6 flex items-center justify-center transition-all duration-500 ease-in-out",
+                  openFaq === index ? "text-[#ff0d13] rotate-45" : "text-gray-900 rotate-0",
+                )}
+              >
+                +
+              </span>
+            </button>
+
+            <div
+              className={cn(
+                "grid transition-all duration-500 ease-in-out",
+                openFaq === index ? "grid-rows-[1fr] opacity-100" : "grid-rows-[0fr] opacity-0",
+              )}
+            >
+              <div className="overflow-hidden">
+                <div className="pb-4">
+                  <p className="text-sm md:text-base text-gray-600 font-light leading-relaxed">{faq.answer}</p>
                 </div>
               </div>
-
-              <Separator className="bg-gray-200" />
             </div>
-          ))}
+
+            <Separator className="bg-gray-200" />
+          </div>
+        ))}
       </div>
     </section>
   )

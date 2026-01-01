@@ -144,6 +144,11 @@ const TrustSocialProof = () => {
     ...reviewsRow2,
   ]
 
+  const ratingBadges = Array(20).fill({
+    rating: "4.9",
+    platform: "Trustpilot",
+  })
+
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4">
@@ -160,19 +165,22 @@ const TrustSocialProof = () => {
           </p>
         </div>
 
-        {/* Rating Stats */}
-        <div className="flex justify-center mb-16">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-[#00b67a] flex items-center justify-center">
-              <Star className="w-6 h-6 text-white fill-white" />
-            </div>
-            <div>
-              <div className="flex items-center gap-1">
-                <span className="font-bold text-foreground text-xl">4.9</span>
-                <span className="text-muted-foreground text-sm">/ 5</span>
+        <div className="mb-16 overflow-hidden">
+          <div className="flex gap-6 animate-marquee-slow">
+            {ratingBadges.map((badge, index) => (
+              <div key={index} className="flex-shrink-0 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-[#00b67a] flex items-center justify-center">
+                  <Star className="w-6 h-6 text-white fill-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-1">
+                    <span className="font-bold text-foreground text-xl">{badge.rating}</span>
+                    <span className="text-muted-foreground text-sm">/ 5</span>
+                  </div>
+                  <p className="text-muted-foreground text-sm whitespace-nowrap">{badge.platform}</p>
+                </div>
               </div>
-              <p className="text-muted-foreground text-sm">Trustpilot</p>
-            </div>
+            ))}
           </div>
         </div>
 
