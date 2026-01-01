@@ -113,7 +113,8 @@ const StarRating = ({ rating }: { rating: number }) => (
 )
 
 const TrustSocialProof = () => {
-  const duplicatedReviews = [...reviews, ...reviews, ...reviews, ...reviews, ...reviews, ...reviews]
+  const reviewsRow1 = [...reviews, ...reviews, ...reviews, ...reviews]
+  const reviewsRow2 = [...reviews.slice(3), ...reviews.slice(0, 3), ...reviews, ...reviews, ...reviews]
 
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
@@ -166,9 +167,9 @@ const TrustSocialProof = () => {
           <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
 
           <div className="flex gap-3 animate-marquee">
-            {[...duplicatedReviews, ...duplicatedReviews].map((review, index) => (
+            {[...reviewsRow1, ...reviewsRow1].map((review, index) => (
               <div
-                key={index}
+                key={`row1-${index}`}
                 className="flex-shrink-0 w-[75vw] sm:w-[280px] md:w-[320px] lg:w-[350px] bg-card border border-border rounded-2xl p-5 sm:p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
@@ -201,9 +202,9 @@ const TrustSocialProof = () => {
           <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
 
           <div className="flex gap-3 animate-marquee-reverse">
-            {[...duplicatedReviews, ...duplicatedReviews].map((review, index) => (
+            {[...reviewsRow2, ...reviewsRow2].map((review, index) => (
               <div
-                key={index}
+                key={`row2-${index}`}
                 className="flex-shrink-0 w-[75vw] sm:w-[280px] md:w-[320px] lg:w-[350px] bg-card border border-border rounded-2xl p-5 sm:p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
