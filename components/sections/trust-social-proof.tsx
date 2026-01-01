@@ -34,6 +34,13 @@ const reviews = [
   },
   {
     platform: "trustpilot",
+    name: "Arslan Kamboh",
+    rating: 5,
+    text: "Amazing team and support, communication was top notch, I got my business complete US setup, plus got their Slash Bank Account service as well....Good operations, we might offer them partnership for our US clients....",
+    initials: "AK",
+  },
+  {
+    platform: "trustpilot",
     name: "Ramsha Khan",
     rating: 5,
     text: "It was a pleasant experience working with Buzz team. They have completed my process professionally and swiftly in Wyoming. I am very satisfied with their services. Highly recommended from my end.",
@@ -113,8 +120,8 @@ const StarRating = ({ rating }: { rating: number }) => (
 )
 
 const TrustSocialProof = () => {
-  const reviewsRow1 = [...reviews, ...reviews, ...reviews, ...reviews]
-  const reviewsRow2 = [...reviews.slice(3), ...reviews.slice(0, 3), ...reviews, ...reviews, ...reviews]
+  const reviewsRow1 = [...reviews.slice(0, 4), ...reviews.slice(0, 4), ...reviews.slice(0, 4), ...reviews.slice(0, 4)]
+  const reviewsRow2 = [...reviews.slice(4), ...reviews.slice(4), ...reviews.slice(4), ...reviews.slice(4)]
 
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
