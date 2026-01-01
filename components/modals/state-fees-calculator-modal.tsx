@@ -1,9 +1,11 @@
 "use client"
 
 import { useState } from "react"
-import { X, MapPin, Rocket } from "lucide-react"
+import { X, MapPin, Rocket, Search } from "lucide-react"
 import { US_STATES, STATE_FEES } from "@/lib/constants"
 import { useRouter } from "next/navigation"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
 
 interface StateFeesCalculatorModalProps {
   isOpen: boolean
@@ -12,15 +14,19 @@ interface StateFeesCalculatorModalProps {
 
 export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesCalculatorModalProps) {
   const [selectedState, setSelectedState] = useState<string>("")
+  const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
 
   if (!isOpen) return null
 
   const stateFee = selectedState ? STATE_FEES[selectedState] : 0
+  const packageFee = selectedState ? 150 + stateFee : 0
 
   const handleStartBusiness = () => {
     router.push("/checkout")
   }
+
+  const filteredStates = US_STATES.filter((state) => state.toLowerCase().includes(searchQuery.toLowerCase()))
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -28,8 +34,7 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={onClose} />
 
       {/* Modal */}
-      <div className="relative w-full max-w-2xl bg-white rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
-        {/* Header */}
+      <div className="relative w-full max-w-2xl bg-background rounded-2xl shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
         <div className="bg-gradient-to-r from-[#880000] to-[#ff0d13] px-6 py-5 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-white/20 rounded-full flex items-center justify-center">
@@ -53,52 +58,52 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
         <div className="p-6 sm:p-8">
           {/* State Selection */}
           <div className="mb-6">
-            <label htmlFor="state-select" className="block text-lg font-semibold text-gray-900 mb-3">
+            <label htmlFor="state-select" className="block text-lg font-semibold text-foreground mb-3">
               Choose Your State
             </label>
-            <div className="relative">
-              <select
-                id="state-select"
-                value={selectedState}
-                onChange={(e) => setSelectedState(e.target.value)}
-                className="w-full px-4 py-4 text-base text-gray-900 bg-white border-2 border-gray-200 rounded-xl appearance-none cursor-pointer hover:border-[#ff0d13] focus:border-[#ff0d13] focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 transition-all"
-              >
-                <option value="">Select a state...</option>
-                {US_STATES.map((state) => (
-                  <option key={state} value={state}>
-                    {state}
-                  </option>
-                ))}
-              </select>
-              <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none">
-                <svg
-                  className="w-5 h-5 text-gray-400"
-                  fill="none"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                >
-                  <path d="M19 9l-7 7-7-7"></path>
-                </svg>
+            <div className="space-y-3">
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
+                <Input
+                  type="text"
+                  placeholder="Search states..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 h-11"
+                />
               </div>
+              <Select value={selectedState} onValueChange={setSelectedState}>
+                <SelectTrigger className="w-full h-12 text-base">
+                  <SelectValue placeholder="Select a state..." />
+                </SelectTrigger>
+                <SelectContent className="max-h-[300px]">
+                  {filteredStates.length > 0 ? (
+                    filteredStates.map((state) => (
+                      <SelectItem key={state} value={state} className="cursor-pointer">
+                        {state}
+                      </SelectItem>
+                    ))
+                  ) : (
+                    <div className="py-6 text-center text-sm text-muted-foreground">No states found</div>
+                  )}
+                </SelectContent>
+              </Select>
             </div>
           </div>
 
-          {/* State Fee Display */}
           {selectedState && (
-            <div className="mb-6 bg-gradient-to-br from-blue-50 to-purple-50 rounded-2xl p-6 border-2 border-blue-100 animate-in slide-in-from-bottom duration-300">
+            <div className="mb-6 bg-gradient-to-br from-muted/50 to-muted rounded-2xl p-6 border-2 border-border animate-in slide-in-from-bottom duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600 mb-1">State Fee</p>
-                  <p className="text-lg text-gray-700">{selectedState}</p>
+                  <p className="text-sm font-medium text-muted-foreground mb-1">Package Fee</p>
+                  <p className="text-lg text-foreground">{selectedState}</p>
                 </div>
                 <div className="flex items-center gap-3">
                   <div className="text-right">
-                    <p className="text-4xl font-bold text-blue-600">${stateFee}</p>
+                    <p className="text-4xl font-bold text-[#ff0d13]">${packageFee}</p>
+                    <p className="text-xs text-muted-foreground mt-1">($150 + ${stateFee} state fee)</p>
                   </div>
-                  <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center">
+                  <div className="w-12 h-12 bg-[#ff0d13] rounded-full flex items-center justify-center">
                     <svg
                       className="w-6 h-6 text-white"
                       fill="none"
@@ -127,7 +132,7 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
           </button>
 
           {/* Footer Note */}
-          <div className="mt-6 flex items-center justify-center gap-2 text-sm text-gray-600">
+          <div className="mt-6 flex items-center justify-center gap-2 text-sm text-muted-foreground">
             <div className="w-2 h-2 bg-green-500 rounded-full"></div>
             <p>No hidden fees • Transparent pricing</p>
           </div>
