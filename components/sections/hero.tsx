@@ -38,7 +38,7 @@ export default function HeroSection() {
   const buttonLink = isAuthenticated ? dashboardUrl : "/auth"
 
   return (
-    <div className="bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center py-16 md:py-20 lg:py-24">
+    <div id="home" className="bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center py-16 md:py-20 lg:py-24">
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
         <div className="text-center">
           <h1

@@ -4,11 +4,11 @@ import { Mail, Phone, MapPin, Instagram, Linkedin, Youtube, Facebook } from "luc
 
 const footerLinks = {
   services: [
-    { name: "LLC Formation", href: "#services" },
-    { name: "EIN Registration", href: "#services" },
-    { name: "Bank Account", href: "#services" },
-    { name: "Registered Agent", href: "#services" },
-    { name: "Business Address", href: "#services" },
+    { name: "LLC Formation", href: "/signup" },
+    { name: "EIN Registration", href: "/signup" },
+    { name: "Bank Account", href: "/signup" },
+    { name: "Registered Agent", href: "/signup" },
+    { name: "Business Address", href: "/signup" },
   ],
   company: [
     { name: "About Us", href: "#about" },
@@ -106,7 +106,7 @@ export default function Footer() {
         {/* Bottom Bar */}
         <div className="border-t border-white/20 pt-8">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <p className="text-white text-sm">© {new Date().getFullYear()} BuzzFiling. All rights reserved.</p>
+            <p className="text-white text-sm">© {new Date().getFullYear()} Buzz Filing. All rights reserved.</p>
             <div className="flex items-center gap-6">
               <a href="#" className="text-white hover:text-white/80">
                 <Youtube className="w-6 h-6" />
