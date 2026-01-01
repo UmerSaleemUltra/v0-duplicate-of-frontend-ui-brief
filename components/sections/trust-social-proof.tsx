@@ -116,38 +116,15 @@ const StarRating = ({ rating }: { rating: number }) => (
     {[...Array(5)].map((_, i) => (
       <Star
         key={i}
-        className={`w-5 h-5 ${i < rating ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}`}
+        className={`w-4 h-4 ${i < rating ? "fill-amber-400 text-amber-400" : "fill-gray-200 text-gray-200"}`}
       />
     ))}
   </div>
 )
 
 const TrustSocialProof = () => {
-  const infiniteRow1 = [
-    ...reviewsRow1,
-    ...reviewsRow1,
-    ...reviewsRow1,
-    ...reviewsRow1,
-    ...reviewsRow1,
-    ...reviewsRow1,
-    ...reviewsRow1,
-    ...reviewsRow1,
-  ]
-  const infiniteRow2 = [
-    ...reviewsRow2,
-    ...reviewsRow2,
-    ...reviewsRow2,
-    ...reviewsRow2,
-    ...reviewsRow2,
-    ...reviewsRow2,
-    ...reviewsRow2,
-    ...reviewsRow2,
-  ]
-
-  const ratingBadges = Array(20).fill({
-    rating: "4.9",
-    platform: "Trustpilot",
-  })
+  const infiniteRow1 = [...reviewsRow1, ...reviewsRow1, ...reviewsRow1]
+  const infiniteRow2 = [...reviewsRow2, ...reviewsRow2, ...reviewsRow2]
 
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
@@ -159,61 +136,71 @@ const TrustSocialProof = () => {
               <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">800+ Happy Founders</span>
             </div>
           </div>
-          <h2 className="text-gray-900 text-3xl md:text-4xl lg:text-5xl font-bold mb-4">What Our Clients Say</h2>
-          <p className="text-muted-foreground text-base md:text-lg max-w-2xl mx-auto">
-            Reviews from <span className="font-semibold text-foreground">Trustpilot</span>, verified by our team.
+          <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">What Our Clients Say</h2>
+          <p className="text-muted-foreground text-lg max-w-xl mx-auto">
+            Reviews from <span className="font-semibold text-foreground">Google</span> and{" "}
+            <span className="font-semibold text-foreground">Trustpilot</span>, verified by our team.
           </p>
         </div>
 
-        <div className="mb-16 overflow-hidden">
-          <div className="flex gap-6 animate-marquee-slow">
-            {ratingBadges.map((badge, index) => (
-              <div key={index} className="flex-shrink-0 flex items-center gap-3">
-                <div className="w-12 h-12 rounded-xl bg-[#00b67a] flex items-center justify-center">
-                  <Star className="w-6 h-6 text-white fill-white" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-1">
-                    <span className="font-bold text-foreground text-xl">{badge.rating}</span>
-                    <span className="text-muted-foreground text-sm">/ 5</span>
-                  </div>
-                  <p className="text-muted-foreground text-sm whitespace-nowrap">{badge.platform}</p>
-                </div>
+        {/* Rating Stats */}
+        <div className="flex flex-wrap justify-center gap-8 mb-16">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#00b67a] flex items-center justify-center">
+              <Star className="w-5 h-5 text-white fill-white" />
+            </div>
+            <div>
+              <div className="flex items-center gap-1">
+                <span className="font-bold text-foreground text-lg">4.9</span>
+                <span className="text-muted-foreground text-sm">/ 5</span>
               </div>
-            ))}
+              <p className="text-muted-foreground text-xs">Trustpilot</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-lg bg-[#4285f4] flex items-center justify-center">
+              <span className="text-white font-bold text-lg">G</span>
+            </div>
+            <div>
+              <div className="flex items-center gap-1">
+                <span className="font-bold text-foreground text-lg">4.8</span>
+                <span className="text-muted-foreground text-sm">/ 5</span>
+              </div>
+              <p className="text-muted-foreground text-xs">Google Reviews</p>
+            </div>
           </div>
         </div>
 
         {/* Reviews Marquee - Row 1 */}
-        <div className="relative mb-6 overflow-hidden">
-          <div className="flex gap-4 animate-marquee-fast">
+        <div className="relative mb-4 overflow-hidden">
+          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+
+          <div className="flex gap-4 animate-marquee">
             {infiniteRow1.map((review, index) => (
               <div
                 key={`row1-${index}`}
-                className="flex-shrink-0 w-[85vw] sm:w-[340px] md:w-[360px] lg:w-[380px] bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all relative"
+                className="flex-shrink-0 w-[85vw] sm:w-[340px] md:w-[360px] lg:w-[380px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
               >
-                {/* Trustpilot badge in top right */}
-                <div className="absolute top-4 right-4 w-8 h-8 rounded bg-[#00b67a] flex items-center justify-center">
-                  <Star className="w-5 h-5 text-white fill-white" />
-                </div>
-
-                {/* User info */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center text-red-600 font-bold text-base">
-                    {review.initials}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                      {review.initials}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground text-sm">{review.name}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 pr-8">
-                    <p className="font-semibold text-gray-900 text-base">{review.name}</p>
+                  <div
+                    className={`w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold ${
+                      review.platform === "trustpilot" ? "bg-[#00b67a]" : "bg-[#4285f4]"
+                    }`}
+                  >
+                    {review.platform === "trustpilot" ? "★" : "G"}
                   </div>
                 </div>
-
-                {/* Star rating */}
-                <div className="mb-3">
-                  <StarRating rating={review.rating} />
-                </div>
-
-                {/* Review text */}
-                <p className="text-gray-700 text-sm leading-relaxed">{review.text}</p>
+                <StarRating rating={review.rating} />
+                <p className="text-foreground text-sm leading-relaxed mt-3">{review.text}</p>
               </div>
             ))}
           </div>
@@ -221,34 +208,34 @@ const TrustSocialProof = () => {
 
         {/* Reviews Marquee - Row 2 (Reverse) */}
         <div className="relative overflow-hidden mb-20">
-          <div className="flex gap-4 animate-marquee-reverse-fast">
+          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
+
+          <div className="flex gap-4 animate-marquee-reverse">
             {infiniteRow2.map((review, index) => (
               <div
                 key={`row2-${index}`}
-                className="flex-shrink-0 w-[85vw] sm:w-[340px] md:w-[360px] lg:w-[380px] bg-white border border-gray-200 rounded-2xl p-6 shadow-sm hover:shadow-md transition-all relative"
+                className="flex-shrink-0 w-[85vw] sm:w-[340px] md:w-[360px] lg:w-[380px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
               >
-                {/* Trustpilot badge in top right */}
-                <div className="absolute top-4 right-4 w-8 h-8 rounded bg-[#00b67a] flex items-center justify-center">
-                  <Star className="w-5 h-5 text-white fill-white" />
-                </div>
-
-                {/* User info */}
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-full bg-gradient-to-br from-red-100 to-red-200 flex items-center justify-center text-red-600 font-bold text-base">
-                    {review.initials}
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-11 h-11 rounded-full bg-primary/10 flex items-center justify-center text-primary font-semibold text-sm">
+                      {review.initials}
+                    </div>
+                    <div>
+                      <p className="font-semibold text-foreground text-sm">{review.name}</p>
+                    </div>
                   </div>
-                  <div className="flex-1 pr-8">
-                    <p className="font-semibold text-gray-900 text-base">{review.name}</p>
+                  <div
+                    className={`w-6 h-6 rounded flex items-center justify-center text-white text-xs font-bold ${
+                      review.platform === "trustpilot" ? "bg-[#00b67a]" : "bg-[#4285f4]"
+                    }`}
+                  >
+                    {review.platform === "trustpilot" ? "★" : "G"}
                   </div>
                 </div>
-
-                {/* Star rating */}
-                <div className="mb-3">
-                  <StarRating rating={review.rating} />
-                </div>
-
-                {/* Review text */}
-                <p className="text-gray-700 text-sm leading-relaxed">{review.text}</p>
+                <StarRating rating={review.rating} />
+                <p className="text-foreground text-sm leading-relaxed mt-3">{review.text}</p>
               </div>
             ))}
           </div>

@@ -1,6 +1,5 @@
 "use client"
 
-import { MapPin } from "lucide-react"
 import Image from "next/image"
 
 const regions = [
@@ -84,7 +83,6 @@ const GlobalFounders = () => {
 
         <div className="mt-12 text-center">
           <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-white/10 border border-white/30 backdrop-blur-sm">
-            <MapPin className="w-5 h-5 text-white" />
             <span className="text-white">
               Helping founders from <span className="font-semibold">30+ countries</span> start U.S. businesses
             </span>

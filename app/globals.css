@@ -235,50 +235,6 @@
     }
   }
 
-  /* Updated marquee animations with faster speed matching row 2 */
-  @keyframes marquee-fast {
-    0% {
-      transform: translateX(0);
-    }
-    100% {
-      transform: translateX(-50%);
-    }
-  }
-
-  @keyframes marquee-reverse-fast {
-    0% {
-      transform: translateX(-50%);
-    }
-    100% {
-      transform: translateX(0);
-    }
-  }
-
-  /* Desktop - 40s animation for smooth, continuous scrolling */
-  .animate-marquee-fast {
-    display: flex;
-    gap: 1rem;
-    animation: marquee-fast 40s linear infinite;
-    will-change: transform;
-  }
-
-  .animate-marquee-reverse-fast {
-    display: flex;
-    gap: 1rem;
-    animation: marquee-reverse-fast 40s linear infinite;
-    will-change: transform;
-  }
-
-  /* Mobile - 25s animation for faster viewing */
-  @media (max-width: 768px) {
-    .animate-marquee-fast {
-      animation: marquee-fast 25s linear infinite;
-    }
-    .animate-marquee-reverse-fast {
-      animation: marquee-reverse-fast 25s linear infinite;
-    }
-  }
-
   /* Added safe area padding for mobile devices */
   @supports (padding: env(safe-area-inset-bottom)) {
     .pb-safe {
