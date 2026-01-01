@@ -1,8 +1,8 @@
 "use client"
 
 import { useState } from "react"
-import { X, MapPin, Rocket } from "lucide-react"
-import { US_STATES } from "@/lib/constants"
+import { X, MapPin, Rocket, ArrowRight } from "lucide-react"
+import { US_STATES, STATE_FEES } from "@/lib/constants"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
@@ -20,6 +20,9 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
   const handleStartBusiness = () => {
     router.push("/checkout")
   }
+
+  const stateFee = selectedState ? STATE_FEES[selectedState] || 0 : 0
+  const packageFee = 150 + stateFee
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -54,7 +57,7 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
               Choose Your State
             </label>
             <Select value={selectedState} onValueChange={setSelectedState}>
-              <SelectTrigger className="w-full h-12 text-base">
+              <SelectTrigger className="w-full h-12 text-base cursor-pointer">
                 <SelectValue placeholder="Select a state..." />
               </SelectTrigger>
               <SelectContent className="max-h-[300px]">
@@ -66,6 +69,30 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
               </SelectContent>
             </Select>
           </div>
+
+          {selectedState && (
+            <div className="mb-6 bg-white border border-gray-200 rounded-xl p-6 flex items-center justify-between shadow-sm">
+              <div>
+                <div className="text-sm font-medium text-gray-600 mb-1">Package Fee</div>
+                <div className="text-2xl font-bold text-gray-900">{selectedState}</div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="text-right">
+                  <div className="text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
+                    ${packageFee}
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">($150 + ${stateFee} state fee)</div>
+                </div>
+                <button
+                  onClick={handleStartBusiness}
+                  className="w-12 h-12 bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full flex items-center justify-center hover:shadow-lg hover:scale-110 transition-all duration-200 cursor-pointer"
+                  aria-label="Start your business"
+                >
+                  <ArrowRight className="w-5 h-5 text-white" />
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Start Business Button */}
           <button
