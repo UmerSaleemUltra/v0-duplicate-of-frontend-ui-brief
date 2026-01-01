@@ -3,7 +3,7 @@
 import { Star } from "lucide-react"
 import Image from "next/image"
 
-const reviews = [
+const reviewsRow1 = [
   {
     platform: "trustpilot",
     name: "Kargoas",
@@ -32,11 +32,14 @@ const reviews = [
     text: "The team was accommodating in answering all of my queries regarding C-Corporation. I registered my Corporation through them in Texas, and the process was smooth and fast. I would recommend them to anyone registering their company in the US.",
     initials: "AK",
   },
+]
+
+const reviewsRow2 = [
   {
     platform: "trustpilot",
     name: "Arslan Kamboh",
     rating: 5,
-    text: "Amazing team and support, communication was top notch, I got my business complete US setup, plus got their Slash Bank Account service as well....Good operations, we might offer them partnership for our US clients....",
+    text: "Amazing team and support, communication was top notch, I got my business complete US setup, plus got their Slash Bank Account service as well. Good operations, we might offer them partnership for our US clients.",
     initials: "AK",
   },
   {
@@ -120,8 +123,8 @@ const StarRating = ({ rating }: { rating: number }) => (
 )
 
 const TrustSocialProof = () => {
-  const reviewsRow1 = Array(10).fill(reviews.slice(0, 4)).flat()
-  const reviewsRow2 = Array(10).fill(reviews.slice(4)).flat()
+  const infiniteRow1 = [...reviewsRow1, ...reviewsRow1, ...reviewsRow1]
+  const infiniteRow2 = [...reviewsRow2, ...reviewsRow2, ...reviewsRow2]
 
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
@@ -170,14 +173,14 @@ const TrustSocialProof = () => {
 
         {/* Reviews Marquee - Row 1 */}
         <div className="relative mb-4 overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
+          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
-          <div className="flex gap-3 animate-marquee">
-            {reviewsRow1.map((review, index) => (
+          <div className="flex gap-4 animate-marquee">
+            {infiniteRow1.map((review, index) => (
               <div
                 key={`row1-${index}`}
-                className="flex-shrink-0 w-[75vw] sm:w-[280px] md:w-[320px] lg:w-[350px] bg-card border border-border rounded-2xl p-5 sm:p-6 hover:shadow-lg transition-shadow"
+                className="flex-shrink-0 w-[85vw] sm:w-[340px] md:w-[360px] lg:w-[380px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -205,14 +208,14 @@ const TrustSocialProof = () => {
 
         {/* Reviews Marquee - Row 2 (Reverse) */}
         <div className="relative overflow-hidden mb-20">
-          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
-          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
+          <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
+          <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
 
-          <div className="flex gap-3 animate-marquee-reverse">
-            {reviewsRow2.map((review, index) => (
+          <div className="flex gap-4 animate-marquee-reverse">
+            {infiniteRow2.map((review, index) => (
               <div
                 key={`row2-${index}`}
-                className="flex-shrink-0 w-[75vw] sm:w-[280px] md:w-[320px] lg:w-[350px] bg-card border border-border rounded-2xl p-5 sm:p-6 hover:shadow-lg transition-shadow"
+                className="flex-shrink-0 w-[85vw] sm:w-[340px] md:w-[360px] lg:w-[380px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">

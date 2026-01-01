@@ -190,45 +190,48 @@
     display: none;
   }
 
-  /* Added marquee animation for horizontal scrolling banner */
+  /* Updated marquee animations for smooth, lag-free scrolling */
+  /* Desktop: 20s per loop, Mobile: 10s per loop */
   @keyframes marquee {
     0% {
       transform: translateX(0);
     }
     100% {
-      transform: translateX(-50%);
+      transform: translateX(-33.333%);
     }
   }
 
-  /* Increased marquee speed - faster on both desktop and mobile */
-  .animate-marquee {
-    animation: marquee 25s linear infinite;
-  }
-
-  @media (max-width: 768px) {
-    .animate-marquee {
-      animation: marquee 8s linear infinite;
-    }
-  }
-
-  /* Added reverse marquee animation for second row */
   @keyframes marquee-reverse {
     0% {
-      transform: translateX(-50%);
+      transform: translateX(-33.333%);
     }
     100% {
       transform: translateX(0);
     }
   }
 
-  /* Increased reverse marquee speed - faster on both desktop and mobile */
-  .animate-marquee-reverse {
-    animation: marquee-reverse 25s linear infinite;
+  /* Desktop - 20s animation */
+  .animate-marquee {
+    display: flex;
+    gap: 1rem;
+    animation: marquee 20s linear infinite;
+    will-change: transform;
   }
 
+  .animate-marquee-reverse {
+    display: flex;
+    gap: 1rem;
+    animation: marquee-reverse 20s linear infinite;
+    will-change: transform;
+  }
+
+  /* Mobile - 10s animation for faster scrolling */
   @media (max-width: 768px) {
+    .animate-marquee {
+      animation: marquee 10s linear infinite;
+    }
     .animate-marquee-reverse {
-      animation: marquee-reverse 8s linear infinite;
+      animation: marquee-reverse 10s linear infinite;
     }
   }
 
