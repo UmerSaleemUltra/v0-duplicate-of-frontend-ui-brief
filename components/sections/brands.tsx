@@ -11,8 +11,8 @@ export default function Brands() {
     { name: "Payoneer", logo: "https://cdn.brandfetch.io/idVmyDyyyZ/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
     { name: "Sunrate", logo: "https://cdn.brandfetch.io/idY4rzp0Gt/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
     {
-      name: "Slash",
-      logo: "https://www.slash.com/_next/static/media/fd0c0324b9d9b1f5d86eb79b641ecb95.svg",
+      name: "Zyla",
+      logo: "https://cdn.brandfetch.io/id1R4rkJXF/w/1024/h/280/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
     },
     {
       name: "Openphone",
