@@ -130,7 +130,7 @@ export const emailTemplates = {
                       Need help? Contact us at <a href="mailto:support@buzzfiling.com" style="color: #8b0000; text-decoration: none; font-weight: 500;">support@buzzfiling.com</a>
                     </p>
                     <p style="margin: 0; font-size: 12px; color: #9ca3af;">
-                      All rights reserved © 2025 | <span style="color: #8b0000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #8b0000; font-weight: 600;">BuzzFiling</span>
                     </p>
                   </td>
                 </tr>
@@ -194,7 +194,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2025 | BuzzFiling</p>
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
@@ -270,7 +270,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2025 | BuzzFiling</p>
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
@@ -335,7 +335,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2025 | BuzzFiling</p>
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
@@ -399,7 +399,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2025 | BuzzFiling</p>
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
@@ -467,7 +467,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2025 | BuzzFiling</p>
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
@@ -535,7 +535,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2025 | BuzzFiling</p>
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
@@ -602,7 +602,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2025 | BuzzFiling</p>
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
@@ -667,7 +667,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2025 | BuzzFiling</p>
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
@@ -732,7 +732,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2025 | BuzzFiling</p>
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
