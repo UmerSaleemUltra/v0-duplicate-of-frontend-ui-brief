@@ -81,7 +81,7 @@ export default function HeroSection() {
                 onClick={handleStartBusinessClick}
                 className="flex items-center justify-center gap-2 text-sm sm:text-base md:text-lg 
                          text-[#ff0d13] bg-white rounded-full px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 font-medium 
-                         shadow-md hover:shadow-lg hover:bg-white/90 transition-all w-full sm:w-auto"
+                         shadow-md hover:shadow-lg hover:bg-white/90 transition-all w-full sm:w-auto cursor-pointer"
               >
                 <span>{buttonText}</span>
                 <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -91,7 +91,7 @@ export default function HeroSection() {
                 onClick={handleCalculatorClick}
                 className="flex items-center justify-center gap-2 text-sm sm:text-base md:text-lg 
                          text-white border-2 border-white rounded-full px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 font-medium 
-                         hover:bg-white/10 transition-all w-full sm:w-auto"
+                         hover:bg-white/10 transition-all w-full sm:w-auto cursor-pointer"
               >
                 <Calculator className="w-4 h-4 sm:w-5 sm:h-5" />
                 <span>State Fees Calculator</span>

@@ -87,7 +87,7 @@ export default function PricingSection() {
                 {/* Button */}
                 <button
                   onClick={handleApplyNowClick}
-                  className="w-full bg-white text-[#ff0d13] rounded-full py-3.5 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-semibold hover:bg-gray-50 transition-colors"
+                  className="w-full bg-white text-[#ff0d13] rounded-full py-3.5 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-semibold hover:bg-gray-50 transition-colors cursor-pointer"
                 >
                   Apply Now
                 </button>
@@ -156,7 +156,7 @@ export default function PricingSection() {
                 {/* Button */}
                 <button
                   onClick={handleApplyNowClick}
-                  className="w-full bg-white text-[#ff0d13] rounded-full py-3.5 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-semibold hover:bg-gray-50 transition-colors relative z-10"
+                  className="w-full bg-white text-[#ff0d13] rounded-full py-3.5 sm:py-4 px-6 sm:px-8 text-base sm:text-lg font-semibold hover:bg-gray-50 transition-colors relative z-10 cursor-pointer"
                 >
                   Apply Now
                 </button>
