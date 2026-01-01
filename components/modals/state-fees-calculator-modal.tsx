@@ -1,11 +1,10 @@
 "use client"
 
 import { useState } from "react"
-import { X, MapPin, Rocket, Search } from "lucide-react"
+import { X, MapPin, Rocket } from "lucide-react"
 import { US_STATES, STATE_FEES } from "@/lib/constants"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Input } from "@/components/ui/input"
 
 interface StateFeesCalculatorModalProps {
   isOpen: boolean
@@ -14,7 +13,6 @@ interface StateFeesCalculatorModalProps {
 
 export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesCalculatorModalProps) {
   const [selectedState, setSelectedState] = useState<string>("")
-  const [searchQuery, setSearchQuery] = useState("")
   const router = useRouter()
 
   if (!isOpen) return null
@@ -25,8 +23,6 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
   const handleStartBusiness = () => {
     router.push("/checkout")
   }
-
-  const filteredStates = US_STATES.filter((state) => state.toLowerCase().includes(searchQuery.toLowerCase()))
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
@@ -56,39 +52,22 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
 
         {/* Content */}
         <div className="p-6 sm:p-8">
-          {/* State Selection */}
           <div className="mb-6">
             <label htmlFor="state-select" className="block text-lg font-semibold text-foreground mb-3">
               Choose Your State
             </label>
-            <div className="space-y-3">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground z-10" />
-                <Input
-                  type="text"
-                  placeholder="Search states..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-10 h-11"
-                />
-              </div>
-              <Select value={selectedState} onValueChange={setSelectedState}>
-                <SelectTrigger className="w-full h-12 text-base">
-                  <SelectValue placeholder="Select a state..." />
-                </SelectTrigger>
-                <SelectContent className="max-h-[300px]">
-                  {filteredStates.length > 0 ? (
-                    filteredStates.map((state) => (
-                      <SelectItem key={state} value={state} className="cursor-pointer">
-                        {state}
-                      </SelectItem>
-                    ))
-                  ) : (
-                    <div className="py-6 text-center text-sm text-muted-foreground">No states found</div>
-                  )}
-                </SelectContent>
-              </Select>
-            </div>
+            <Select value={selectedState} onValueChange={setSelectedState}>
+              <SelectTrigger className="w-full h-12 text-base">
+                <SelectValue placeholder="Select a state..." />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px]">
+                {US_STATES.map((state) => (
+                  <SelectItem key={state} value={state} className="cursor-pointer">
+                    {state}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
           {selectedState && (
