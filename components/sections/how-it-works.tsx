@@ -35,16 +35,7 @@ const HowItWorks = () => {
       <div className="absolute inset-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]" />
 
       {/* Pattern Overlay */}
-      <div className="absolute inset-0 opacity-10">
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
-            backgroundSize: "30px 30px",
-          }}
-        />
-      </div>
-
+     
       <div className="container mx-auto px-4 relative z-10">
         <div className="text-center mb-16">
           <div className="flex justify-center mb-4">
