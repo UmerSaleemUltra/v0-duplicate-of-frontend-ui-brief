@@ -1,11 +1,8 @@
 "use client"
 
-import type React from "react"
-
 import { useState, useEffect } from "react"
 import { ArrowRight, Menu, X } from "lucide-react"
 import Link from "next/link"
-import StateFeesCalculatorModal from "@/components/modals/state-fees-calculator-modal"
 
 function getCookie(name: string): string | null {
   if (typeof window === "undefined") return null
@@ -23,7 +20,6 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userRole, setUserRole] = useState<"admin" | "client" | null>(null)
-  const [showCalculator, setShowCalculator] = useState(false)
 
   useEffect(() => {
     const authUserCookie = getCookie("auth_user")
@@ -40,20 +36,6 @@ export default function Navbar() {
   }, [])
 
   const dashboardUrl = userRole === "admin" ? "/admin" : "/client/dashboard"
-  const buttonText = isAuthenticated ? "Your Dashboard" : "Start Your Business"
-  const buttonLink = isAuthenticated ? dashboardUrl : "/auth"
-
-  const handleStartBusinessClick = (e: React.MouseEvent) => {
-    if (!isAuthenticated) {
-      e.preventDefault()
-      const hasLoggedOut = typeof window !== "undefined" && localStorage.getItem("onetime_logout")
-      if (hasLoggedOut) {
-        window.location.href = "/checkout"
-      } else {
-        setShowCalculator(true)
-      }
-    }
-  }
 
   return (
     <>
@@ -101,20 +83,21 @@ export default function Navbar() {
               </a>
             </nav>
 
-            <div className="flex items-center justify-end gap-4 xl:gap-6 pr-4 lg:pr-0">
-              <a
-                href="tel:+923394882800"
-                className="hidden lg:block whitespace-nowrap text-white text-base xl:text-lg font-medium"
-              >
-                +92 339 4882800
-              </a>
+            <div className="flex items-center justify-end gap-3 xl:gap-4 pr-4 lg:pr-0">
+              {!isAuthenticated && (
+                <Link
+                  href="/auth"
+                  className="hidden lg:flex items-center justify-center text-base xl:text-lg text-white border-2 border-white rounded-full px-6 xl:px-8 py-2 xl:py-2.5 hover:bg-white/10 transition-colors font-semibold whitespace-nowrap"
+                >
+                  Login
+                </Link>
+              )}
 
               <Link
-                href={buttonLink}
-                onClick={handleStartBusinessClick}
+                href={isAuthenticated ? dashboardUrl : "/checkout"}
                 className="hidden lg:flex items-center justify-center gap-2 text-base xl:text-lg text-[#ff0d13] bg-white rounded-full px-6 xl:px-8 py-2.5 xl:py-3 hover:bg-white/90 transition-colors font-semibold shadow-lg whitespace-nowrap"
               >
-                <span>{buttonText}</span>
+                <span>{isAuthenticated ? "Your Dashboard" : "Start Your Business"}</span>
                 <ArrowRight className="w-5 h-5" />
               </Link>
 
@@ -184,13 +167,32 @@ export default function Navbar() {
                 >
                   Contact
                 </a>
+
+                <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-white/20">
+                  {!isAuthenticated && (
+                    <Link
+                      href="/auth"
+                      className="flex items-center justify-center text-base text-white border-2 border-white rounded-full px-6 py-3 hover:bg-white/10 transition-colors font-semibold"
+                      onClick={() => setIsMenuOpen(false)}
+                    >
+                      Login
+                    </Link>
+                  )}
+
+                  <Link
+                    href={isAuthenticated ? dashboardUrl : "/checkout"}
+                    className="flex items-center justify-center gap-2 text-base text-[#ff0d13] bg-white rounded-full px-6 py-3 hover:bg-white/90 transition-colors font-semibold shadow-lg"
+                    onClick={() => setIsMenuOpen(false)}
+                  >
+                    <span>{isAuthenticated ? "Your Dashboard" : "Start Your Business"}</span>
+                    <ArrowRight className="w-5 h-5" />
+                  </Link>
+                </div>
               </nav>
             </div>
           </div>
         )}
       </header>
-
-      <StateFeesCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
     </>
   )
 }
