@@ -134,45 +134,45 @@ export default function Navbar() {
               <nav className="flex flex-col p-5 sm:p-6 gap-2">
                 <a
                   href="/#home"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
                 </a>
                 <a
                   href="/#pricing"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Pricing
                 </a>
                 <a
                   href="/#services"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Services
                 </a>
                 <a
                   href="/#about"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   About
                 </a>
                 <a
                   href="/#contact"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contact
                 </a>
 
-                <div className="flex flex-col gap-3 mt-4 pt-4 border-t border-white/20">
+                <div className="flex flex-col gap-3 mt-6 pt-5 border-t border-white/20">
                   {!isAuthenticated && (
                     <Link
                       href="/auth"
-                      className="flex items-center justify-center text-base text-white border-2 border-white rounded-full px-6 py-3 hover:bg-white/10 transition-colors font-semibold"
+                      className="flex items-center justify-center text-base sm:text-lg text-white border-2 border-white rounded-full px-6 py-3.5 sm:py-4 hover:bg-white/10 active:bg-white/20 transition-colors font-semibold"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Login
@@ -181,7 +181,7 @@ export default function Navbar() {
 
                   <Link
                     href={isAuthenticated ? dashboardUrl : "/checkout"}
-                    className="flex items-center justify-center gap-2 text-base text-[#ff0d13] bg-white rounded-full px-6 py-3 hover:bg-white/90 transition-colors font-semibold shadow-lg"
+                    className="flex items-center justify-center gap-2 text-base sm:text-lg text-[#ff0d13] bg-white rounded-full px-6 py-3.5 sm:py-4 hover:bg-white/90 active:bg-white/80 transition-colors font-semibold shadow-lg"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span>{isAuthenticated ? "Your Dashboard" : "Start Your Business"}</span>
