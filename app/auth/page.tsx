@@ -19,14 +19,6 @@ export default function AuthSelectionPage() {
           />
         </div>
 
-        {/* Welcome Text */}
-        <div className="text-center mb-12">
-          <h1 className="text-3xl sm:text-4xl font-bold mb-4 text-balance">Welcome to BuzzFiling</h1>
-          <p className="text-lg text-slate-600 text-pretty">
-            Choose an option below to get started with your business formation
-          </p>
-        </div>
-
         {/* Auth Options */}
         <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
           {/* Sign Up Card */}
