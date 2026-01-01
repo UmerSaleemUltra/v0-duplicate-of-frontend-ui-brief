@@ -170,7 +170,7 @@ export default function PricingSection() {
                 className="w-full flex items-center justify-between py-4 px-5 bg-gray-50 rounded-xl hover:bg-gray-100 transition-all duration-300"
               >
                 <span className="text-[#1A1A1A] text-sm sm:text-base md:text-lg font-medium">
-                  Starter Plans Included
+                  Starter Package Included
                 </span>
                 <ChevronDown
                   className={`w-5 h-5 text-[#1A1A1A] transition-transform duration-300 ${showStarterPlans ? "rotate-180" : ""}`}
