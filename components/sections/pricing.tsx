@@ -35,7 +35,12 @@ export default function PricingSection() {
     if (authService.isAuthenticated()) {
       window.location.href = "/checkout"
     } else {
-      setShowCalculator(true)
+      const hasLoggedOut = typeof window !== "undefined" && localStorage.getItem("onetime_logout")
+      if (hasLoggedOut) {
+        window.location.href = "/checkout"
+      } else {
+        setShowCalculator(true)
+      }
     }
   }
 

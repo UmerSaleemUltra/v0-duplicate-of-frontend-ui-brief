@@ -23,7 +23,7 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
   }
 
   const stateFee = selectedState ? STATE_FEES[selectedState] || 0 : 0
-  const starterPackageFee = 150 + stateFee
+  const starterPackageFee = 149 + stateFee
   const advancedPackageFee = 249 + stateFee
 
   return (
@@ -82,8 +82,8 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
                 }`}
               >
                 <div className="text-left">
-                  <div className="text-sm font-medium text-gray-600 mb-1">Starter Package</div>
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{selectedState}</div>
+                  <div className="text-sm sm:text-base font-medium text-gray-500 mb-0.5">Starter Package</div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">{selectedState}</div>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
@@ -109,8 +109,8 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
                 }`}
               >
                 <div className="text-left">
-                  <div className="text-sm font-medium text-gray-600 mb-1">Advanced Package</div>
-                  <div className="text-lg sm:text-2xl font-bold text-gray-900">{selectedState}</div>
+                  <div className="text-sm sm:text-base font-medium text-gray-500 mb-0.5">Advanced Package</div>
+                  <div className="text-xl sm:text-2xl font-bold text-gray-900">{selectedState}</div>
                 </div>
                 <div className="flex items-center gap-2 sm:gap-3">
                   <div className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">

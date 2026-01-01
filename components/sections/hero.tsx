@@ -52,7 +52,12 @@ export default function HeroSection() {
   const handleStartBusinessClick = (e: React.MouseEvent) => {
     if (!isAuthenticated) {
       e.preventDefault()
-      setShowCalculator(true)
+      const hasLoggedOut = typeof window !== "undefined" && localStorage.getItem("onetime_logout")
+      if (hasLoggedOut) {
+        window.location.href = "/checkout"
+      } else {
+        setShowCalculator(true)
+      }
     }
   }
 

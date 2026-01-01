@@ -130,6 +130,10 @@ export const authService = {
     deleteCookie("admin_auth_token")
     deleteCookie("auth_user")
 
+    if (typeof window !== "undefined") {
+      localStorage.setItem("onetime_logout", "true")
+    }
+
     broadcastLogout()
   },
 
