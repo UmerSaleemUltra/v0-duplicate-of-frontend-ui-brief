@@ -81,7 +81,7 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
                   <div className="text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
                     ${packageFee}
                   </div>
-                 
+                </div>
                 <button
                   onClick={handleStartBusiness}
                   className="w-12 h-12 bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full flex items-center justify-center hover:shadow-lg hover:scale-110 transition-all duration-200 cursor-pointer"
