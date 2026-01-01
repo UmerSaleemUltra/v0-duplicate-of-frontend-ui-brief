@@ -59,7 +59,7 @@ export const STATE_FEES: Record<string, number> = {
   California: 70,
   Colorado: 50,
   Connecticut: 120,
-  Delaware: 90,
+  Delaware: 160, // Updated from $90 to $160
   Florida: 125,
   Georgia: 100,
   Hawaii: 50,
@@ -77,7 +77,7 @@ export const STATE_FEES: Record<string, number> = {
   Minnesota: 135,
   Mississippi: 50,
   Missouri: 50,
-  Montana: 35, // Updated from 70 to 35 per user requirements
+  Montana: 35,
   Nebraska: 100,
   Nevada: 425,
   "New Hampshire": 100,
