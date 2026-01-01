@@ -61,24 +61,24 @@ const whatsappFeedback = [
     alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
   },
   {
-    screenshot: "/images/testimonial1.png",
-    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
+    screenshot: "/images/testimonial6.png",
+    alt: "WhatsApp review from Ahmad Raza - ITIN Application",
   },
   {
-    screenshot: "/images/testimonial1.png",
-    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
+    screenshot: "/images/testimonial4.png",
+    alt: "WhatsApp review from Urban Pulse LLC - LLC Formation",
   },
   {
-    screenshot: "/images/testimonial1.png",
-    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
+    screenshot: "/images/testimonial2.png",
+    alt: "WhatsApp review from Prime Axis LLC - LLC Formation",
   },
   {
-    screenshot: "/images/testimonial1.png",
-    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
+    screenshot: "/images/testimonial3.png",
+    alt: "WhatsApp review from Blue Crest LLC - LLC Formation",
   },
   {
-    screenshot: "/images/testimonial1.png",
-    alt: "WhatsApp review from Kashtqar - Toughsteoutdoors LLC",
+    screenshot: "/images/testimonial5.png",
+    alt: "WhatsApp review from Core Venture LLC - LLC Formation",
   },
 ]
 
