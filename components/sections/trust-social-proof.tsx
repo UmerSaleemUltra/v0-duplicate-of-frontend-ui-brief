@@ -123,8 +123,26 @@ const StarRating = ({ rating }: { rating: number }) => (
 )
 
 const TrustSocialProof = () => {
-  const infiniteRow1 = [...reviewsRow1, ...reviewsRow1, ...reviewsRow1, ...reviewsRow1, ...reviewsRow1, ...reviewsRow1]
-  const infiniteRow2 = [...reviewsRow2, ...reviewsRow2, ...reviewsRow2, ...reviewsRow2, ...reviewsRow2, ...reviewsRow2]
+  const infiniteRow1 = [
+    ...reviewsRow1,
+    ...reviewsRow1,
+    ...reviewsRow1,
+    ...reviewsRow1,
+    ...reviewsRow1,
+    ...reviewsRow1,
+    ...reviewsRow1,
+    ...reviewsRow1,
+  ]
+  const infiniteRow2 = [
+    ...reviewsRow2,
+    ...reviewsRow2,
+    ...reviewsRow2,
+    ...reviewsRow2,
+    ...reviewsRow2,
+    ...reviewsRow2,
+    ...reviewsRow2,
+    ...reviewsRow2,
+  ]
 
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
@@ -160,10 +178,7 @@ const TrustSocialProof = () => {
 
         {/* Reviews Marquee - Row 1 */}
         <div className="relative mb-6 overflow-hidden">
-          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-
-          <div className="flex gap-4 animate-marquee hover:animation-pause">
+          <div className="flex gap-4 animate-marquee-fast">
             {infiniteRow1.map((review, index) => (
               <div
                 key={`row1-${index}`}
@@ -198,10 +213,7 @@ const TrustSocialProof = () => {
 
         {/* Reviews Marquee - Row 2 (Reverse) */}
         <div className="relative overflow-hidden mb-20">
-          <div className="absolute left-0 top-0 bottom-0 w-24 bg-gradient-to-r from-background to-transparent z-10 pointer-events-none" />
-          <div className="absolute right-0 top-0 bottom-0 w-24 bg-gradient-to-l from-background to-transparent z-10 pointer-events-none" />
-
-          <div className="flex gap-4 animate-marquee-reverse hover:animation-pause">
+          <div className="flex gap-4 animate-marquee-reverse-fast">
             {infiniteRow2.map((review, index) => (
               <div
                 key={`row2-${index}`}
