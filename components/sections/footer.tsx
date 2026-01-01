@@ -4,11 +4,11 @@ import { Mail, Phone, MapPin, Instagram, Linkedin, Youtube, Facebook } from "luc
 
 const footerLinks = {
   services: [
-    { name: "LLC Formation", href: "/signup" },
-    { name: "EIN Registration", href: "/signup" },
-    { name: "Bank Account", href: "/signup" },
-    { name: "Registered Agent", href: "/signup" },
-    { name: "Business Address", href: "/signup" },
+    { name: "LLC Formation", href: "/checkout" },
+    { name: "EIN Registration", href: "/checkout" },
+    { name: "Bank Account", href: "/checkout" },
+    { name: "Registered Agent", href: "/checkout" },
+    { name: "Business Address", href: "/checkout" },
   ],
   company: [
     { name: "About Us", href: "#about" },
