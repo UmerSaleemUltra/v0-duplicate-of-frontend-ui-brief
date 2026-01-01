@@ -113,6 +113,8 @@ const StarRating = ({ rating }: { rating: number }) => (
 )
 
 const TrustSocialProof = () => {
+  const duplicatedReviews = [...reviews, ...reviews, ...reviews, ...reviews, ...reviews, ...reviews]
+
   return (
     <section className="py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4">
@@ -163,11 +165,11 @@ const TrustSocialProof = () => {
           <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
           <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
 
-          <div className="flex gap-4 animate-marquee">
-            {[...reviews, ...reviews].map((review, index) => (
+          <div className="flex gap-3 animate-marquee">
+            {[...duplicatedReviews, ...duplicatedReviews].map((review, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-[350px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
+                className="flex-shrink-0 w-[75vw] sm:w-[280px] md:w-[320px] lg:w-[350px] bg-card border border-border rounded-2xl p-5 sm:p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
@@ -198,11 +200,11 @@ const TrustSocialProof = () => {
           <div className="absolute left-0 top-0 bottom-0 w-20 bg-gradient-to-r from-background to-transparent z-10" />
           <div className="absolute right-0 top-0 bottom-0 w-20 bg-gradient-to-l from-background to-transparent z-10" />
 
-          <div className="flex gap-4 animate-marquee-reverse">
-            {[...reviews, ...reviews].map((review, index) => (
+          <div className="flex gap-3 animate-marquee-reverse">
+            {[...duplicatedReviews, ...duplicatedReviews].map((review, index) => (
               <div
                 key={index}
-                className="flex-shrink-0 w-[350px] bg-card border border-border rounded-2xl p-6 hover:shadow-lg transition-shadow"
+                className="flex-shrink-0 w-[75vw] sm:w-[280px] md:w-[320px] lg:w-[350px] bg-card border border-border rounded-2xl p-5 sm:p-6 hover:shadow-lg transition-shadow"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div className="flex items-center gap-3">
