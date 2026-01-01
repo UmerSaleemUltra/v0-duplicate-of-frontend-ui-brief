@@ -118,61 +118,61 @@ export default function Navbar() {
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setIsMenuOpen(false)} />
 
             <div className="absolute right-0 top-0 h-full w-[300px] sm:w-[340px] max-w-[85vw] bg-gradient-to-r from-[#880000] to-[#ff0d13] shadow-2xl transform transition-transform duration-300 ease-in-out translate-x-0 overflow-y-auto">
-              <div className="flex justify-between items-center p-5 sm:p-6 border-b border-white/20">
+              <div className="flex justify-between items-center p-4 sm:p-5 md:p-6 border-b border-white/20">
                 <Link href="/" onClick={() => setIsMenuOpen(false)}>
                   <img
                     src="/images/buzz-filing-logo-white.png"
                     alt="BuzzFiling Logo"
-                    className="h-auto w-[160px] sm:w-[180px]"
+                    className="h-auto w-[140px] sm:w-[160px] md:w-[180px]"
                   />
                 </Link>
                 <button onClick={() => setIsMenuOpen(false)} aria-label="Close menu" className="text-white p-1">
-                  <X className="h-8 w-8 sm:h-9 sm:w-9" />
+                  <X className="h-7 w-7 sm:h-8 sm:w-8 md:h-9 md:w-9" />
                 </button>
               </div>
 
-              <nav className="flex flex-col p-5 sm:p-6 gap-2">
+              <nav className="flex flex-col p-4 sm:p-5 md:p-6 gap-1.5 sm:gap-2">
                 <a
                   href="/#home"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-3 sm:px-4 py-3 sm:py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Home
                 </a>
                 <a
                   href="/#pricing"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-3 sm:px-4 py-3 sm:py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Pricing
                 </a>
                 <a
                   href="/#services"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-3 sm:px-4 py-3 sm:py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Services
                 </a>
                 <a
                   href="/#about"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-3 sm:px-4 py-3 sm:py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   About
                 </a>
                 <a
                   href="/#contact"
-                  className="block rounded-lg px-4 py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
+                  className="block rounded-lg px-3 sm:px-4 py-3 sm:py-3.5 text-white text-base sm:text-lg font-medium hover:bg-white/10 transition-colors"
                   onClick={() => setIsMenuOpen(false)}
                 >
                   Contact
                 </a>
 
-                <div className="flex flex-col gap-3 mt-6 pt-5 border-t border-white/20">
+                <div className="flex flex-col gap-2.5 sm:gap-3 mt-4 sm:mt-5 md:mt-6 pt-4 sm:pt-5 border-t border-white/20">
                   {!isAuthenticated && (
                     <Link
                       href="/auth"
-                      className="flex items-center justify-center text-base sm:text-lg text-white border-2 border-white rounded-full px-6 py-3.5 sm:py-4 hover:bg-white/10 active:bg-white/20 transition-colors font-semibold"
+                      className="flex items-center justify-center text-sm sm:text-base md:text-lg text-white border-2 border-white rounded-full px-5 sm:px-6 py-3 sm:py-3.5 md:py-4 hover:bg-white/10 active:bg-white/20 transition-colors font-semibold"
                       onClick={() => setIsMenuOpen(false)}
                     >
                       Login
@@ -181,11 +181,11 @@ export default function Navbar() {
 
                   <Link
                     href={isAuthenticated ? dashboardUrl : "/checkout"}
-                    className="flex items-center justify-center gap-2 text-base sm:text-lg text-[#ff0d13] bg-white rounded-full px-6 py-3.5 sm:py-4 hover:bg-white/90 active:bg-white/80 transition-colors font-semibold shadow-lg"
+                    className="flex items-center justify-center gap-2 text-sm sm:text-base md:text-lg text-[#ff0d13] bg-white rounded-full px-5 sm:px-6 py-3 sm:py-3.5 md:py-4 hover:bg-white/90 active:bg-white/80 transition-colors font-semibold shadow-lg"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     <span>{isAuthenticated ? "Your Dashboard" : "Start Your Business"}</span>
-                    <ArrowRight className="w-5 h-5" />
+                    <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                   </Link>
                 </div>
               </nav>
