@@ -1,5 +1,3 @@
-"use client"
-
 import Navbar from "@/components/sections/navbar"
 import HeroSection from "@/components/sections/hero"
 import Brands from "@/components/sections/brands"
@@ -8,19 +6,20 @@ import GlobalFounders from "@/components/sections/global-founders"
 import PricingSection from "@/components/sections/pricing"
 import ServicesSection from "@/components/sections/services"
 import Footer from "@/components/sections/footer"
-import { useEffect } from "react"
 import WhyChooseUs from "@/components/sections/why-choose-us"
 import ComplianceSection from "@/components/sections/compliance"
 import ClientDashboardSection from "@/components/sections/client-dashboard"
 import TrustSocialProof from "@/components/sections/trust-social-proof"
 import ContactSection from "@/components/sections/contact"
 import FAQSection from "@/components/sections/faq"
+import type { Metadata } from "next"
 
-export default function LandingPage() {
-  useEffect(() => {
-    const script = document.createElement("script")
-    script.type = "application/ld+json"
-    script.text = JSON.stringify({
+export const metadata: Metadata = {
+  title: "BuzzFiling - US Business Formation for Entrepreneurs",
+  description:
+    "Professional US LLC and Corporation formation service for Pakistani entrepreneurs. Get your US business registered in 4 weeks with full compliance support.",
+  other: {
+    "structured-data": JSON.stringify({
       "@context": "https://schema.org",
       "@type": "ProfessionalService",
       name: "BuzzFiling US Business Formation",
@@ -60,13 +59,11 @@ export default function LandingPage() {
           description: "Complete business formation with EIN, BOI filing, and premium support",
         },
       ],
-    })
-    document.head.appendChild(script)
-    return () => {
-      document.head.removeChild(script)
-    }
-  }, [])
+    }),
+  },
+}
 
+export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
