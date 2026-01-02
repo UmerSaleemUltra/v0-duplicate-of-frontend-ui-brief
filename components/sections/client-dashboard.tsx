@@ -96,7 +96,7 @@ const ClientDashboardSection = () => {
               <div className="w-56 bg-gradient-to-b from-[#880000] to-[#ff0d13] p-4 hidden md:flex flex-col">
                 {/* Logo */}
                 <div className="flex items-center gap-2 mb-6 px-2">
-                  <img src="/images/buzz-filing-logo-white.png" alt="BuzzFiling Logo" className="h-[100px] w-auto" />
+                  <img src="/images/buzz-filing-logo-white.png" alt="BuzzFiling Logo" className="h-[80px] w-auto" />
                 </div>
 
                 {/* Company Selector */}
