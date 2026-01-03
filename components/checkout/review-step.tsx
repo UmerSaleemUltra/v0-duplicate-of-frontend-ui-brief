@@ -188,7 +188,7 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
             </div>
             <div>
               <p className="text-xs text-slate-600 mb-0.5">State</p>
-              <p className="font-semibold text-slate-900">{formData.state}</p>
+              <p className="font-semibold text-slate-900">{formData?.state || "N/A"}</p>
             </div>
           </div>
         </div>
@@ -200,7 +200,7 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
             </div>
             <div>
               <p className="text-xs text-slate-500 mb-0.5">Entity Type</p>
-              <p className="font-semibold text-slate-900">{formData.entityType}</p>
+              <p className="font-semibold text-slate-900">{formData?.entityType || "LLC"}</p>
             </div>
           </div>
         </div>
@@ -212,7 +212,7 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
             </div>
             <div>
               <p className="text-xs text-slate-500 mb-0.5">Members</p>
-              <p className="font-semibold text-slate-900">{formData.members?.length || 0} member(s)</p>
+              <p className="font-semibold text-slate-900">{formData?.members?.length || 0} member(s)</p>
             </div>
           </div>
         </div>
@@ -234,15 +234,15 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">State</span>
-            <span className="text-sm font-medium text-slate-900">{formData.state}</span>
+            <span className="text-sm font-medium text-slate-900">{formData?.state || "N/A"}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-500">Entity Type</span>
-            <span className="text-sm font-medium text-slate-900">{formData.entityType}</span>
+            <span className="text-sm font-medium text-slate-900">{formData?.entityType || "LLC"}</span>
           </div>
           <div className="flex justify-between items-center py-2">
             <span className="text-sm text-slate-700">Members</span>
-            <span className="text-sm font-medium text-slate-900">{formData.members?.length || 0}</span>
+            <span className="text-sm font-medium text-slate-900">{formData?.members?.length || 0}</span>
           </div>
         </div>
       </div>
@@ -263,23 +263,23 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Company Name</span>
-            <span className="text-sm font-medium text-slate-900">{formData.businessName}</span>
+            <span className="text-sm font-medium text-slate-900">{formData?.businessName || "N/A"}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Company Ending</span>
-            <span className="text-sm font-medium text-slate-900">{formData.entityType}</span>
+            <span className="text-sm font-medium text-slate-900">{formData?.entityType || "LLC"}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Industry</span>
-            <span className="text-sm font-medium text-slate-900">{formData.businessCategory || "General"}</span>
+            <span className="text-sm font-medium text-slate-900">{formData?.businessCategory || "General"}</span>
           </div>
-          {formData.businessWebsite && (
+          {formData?.businessWebsite && (
             <div className="flex justify-between items-center py-2 border-b border-slate-100">
               <span className="text-sm text-slate-700">Website</span>
               <span className="text-sm font-medium text-slate-900">{formData.businessWebsite}</span>
             </div>
           )}
-          {formData.businessDescription && (
+          {formData?.businessDescription && (
             <div className="flex flex-col py-2 border-b border-slate-100">
               <span className="text-sm text-slate-700 mb-2">Business Description</span>
               <span className="text-sm text-slate-900 leading-relaxed">{formData.businessDescription}</span>
@@ -521,7 +521,7 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-slate-900">
-            {formData.state} {formData.packageType === "starter" ? "Starter" : "Advanced"} Package
+            {formData?.state || "N/A"} {formData?.packageType === "starter" ? "Starter" : "Advanced"} Package
           </h2>
           <Button
             variant="ghost"
@@ -539,7 +539,7 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
               <Package className="w-6 h-6 text-[#ffffff]" />
             </div>
             <div>
-              <p className="font-semibold text-slate-900 capitalize">{formData.packageType} Package</p>
+              <p className="font-semibold text-slate-900 capitalize">{formData?.packageType || "starter"} Package</p>
               <p className="text-sm text-slate-700">Formation service + state filing included</p>
             </div>
           </div>
@@ -655,7 +655,7 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
             <div>
               <span className="text-sm text-slate-700">Formation Package</span>
               <p className="text-xs text-slate-500 mt-0.5">
-                {formData.state} {formData.packageType === "starter" ? "Starter" : "Advanced"} Package
+                {formData?.state || "N/A"} {formData?.packageType === "starter" ? "Starter" : "Advanced"} Package
               </p>
             </div>
             <span className="text-sm font-medium text-slate-900">${subtotal}</span>
