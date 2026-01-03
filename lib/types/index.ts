@@ -137,6 +137,7 @@ export interface Order {
     status: "pending" | "pending_verification" | "paid" | "failed"
     transactionId?: string
     transactionReference?: string
+    receiptUrl?: string // Added payment receipt URL field
     date?: string
     terms?: string
   }

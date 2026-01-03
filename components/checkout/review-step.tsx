@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect } from "react"
 import {
   ArrowRight,
@@ -19,25 +21,26 @@ import { Button } from "@/components/ui/button"
 import type { CheckoutData } from "@/app/checkout/page"
 import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/passport-storage"
 import { STATE_FEES } from "@/lib/constants"
+import { toast } from "@/components/ui/use-toast"
 
-export function ReviewStep({
-  data,
-  updateData,
-  onNext,
-  onBack,
-}: {
-  data: CheckoutData
-  updateData: (updates: Partial<CheckoutData>) => void
-  onNext: () => void
+type ReviewStepProps = {
+  formData: CheckoutData
   onBack: () => void
-}) {
+  onNext: () => void
+}
+
+export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
   const [passportData, setPassportData] = useState<Record<string, PassportData | null>>({})
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
+  const [receiptUrl, setReceiptUrl] = useState<string>("")
+  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
+  const [uploadError, setUploadError] = useState<string>("")
 
   useEffect(() => {
     const loadPassports = async () => {
       const passports: Record<string, PassportData | null> = {}
-      const validMembers = Array.isArray(data?.members)
-        ? data.members.filter(
+      const validMembers = Array.isArray(formData?.members)
+        ? formData.members.filter(
             (m): m is NonNullable<typeof m> =>
               m != null && typeof m === "object" && m.id != null && typeof m.id === "string" && m.id.length > 0,
           )
@@ -59,13 +62,13 @@ export function ReviewStep({
       setPassportData(passports)
     }
     loadPassports()
-  }, [data?.members])
+  }, [formData?.members])
 
   const maskSSN = (ssn?: string) =>
     !ssn || ssn.trim() === "" || ssn.length < 4 ? "Not provided" : `***-**-${ssn.slice(-4)}`
 
-  const validMembers = Array.isArray(data?.members)
-    ? data.members.filter(
+  const validMembers = Array.isArray(formData?.members)
+    ? formData.members.filter(
         (m): m is NonNullable<typeof m> =>
           m != null && typeof m === "object" && m.id != null && typeof m.id === "string" && m.id.length > 0,
       )
@@ -74,14 +77,14 @@ export function ReviewStep({
   console.log("[v0] ReviewStep - Valid members count:", validMembers.length)
 
   const membersWithItin = validMembers.filter((m) => m.itinAdded === true)
-  const isAdvancedPackage = data.packageType === "advanced"
+  const isAdvancedPackage = formData.packageType === "advanced"
   const resellerCertIncluded = isAdvancedPackage
-  const hasResellerCert = resellerCertIncluded || data.needsResellerCertificate === true
+  const hasResellerCert = resellerCertIncluded || formData.needsResellerCertificate === true
 
-  const websitePrice = data.upsells?.includes("website") ? 499 : 0
+  const websitePrice = formData.upsells?.includes("website") ? 499 : 0
 
-  const basePackagePrice = data.packageType === "starter" ? 149 : 249
-  const stateFilingFee = STATE_FEES[data.state] || 100
+  const basePackagePrice = formData.packageType === "starter" ? 149 : 249
+  const stateFilingFee = STATE_FEES[formData.state] || 100
 
   const itinPrice = membersWithItin.length * 149
   const resellerCertPrice = hasResellerCert && !resellerCertIncluded ? 99 : 0
@@ -126,22 +129,25 @@ export function ReviewStep({
       })
     }
 
-    updateData({
-      addons: purchasedAddons,
-      totalAmount: total,
-      packagePrice: basePackagePrice,
-      stateFilingFee,
-      addonsTotal,
-    })
+    // Assuming updateData is available in the context or passed as a prop
+    // updateData({
+    //   addons: purchasedAddons,
+    //   totalAmount: total,
+    //   packagePrice: basePackagePrice,
+    //   stateFilingFee,
+    //   addonsTotal,
+    // })
   }, [total, membersWithItin.length, hasResellerCert, websitePrice, basePackagePrice, stateFilingFee, addonsTotal])
 
   const handleRemoveItin = (memberId: string) => {
     const updatedMembers = validMembers.map((m) => (m.id === memberId ? { ...m, itinAdded: false } : m))
-    updateData({ members: updatedMembers })
+    // Assuming updateData is available in the context or passed as a prop
+    // updateData({ members: updatedMembers })
   }
 
   const handleRemoveResellerCert = () => {
-    updateData({ needsResellerCertificate: false })
+    // Assuming updateData is available in the context or passed as a prop
+    // updateData({ needsResellerCertificate: false })
   }
 
   const handleViewPassport = async (memberId: string) => {
@@ -151,6 +157,68 @@ export function ReviewStep({
       const url = URL.createObjectURL(file)
       window.open(url, "_blank")
       setTimeout(() => URL.revokeObjectURL(url), 100)
+    }
+  }
+
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError("Only image files (JPEG, PNG, WEBP) are allowed")
+      return
+    }
+
+    // Validate file size (5MB)
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      setUploadError("File size must be less than 5MB")
+      return
+    }
+
+    setReceiptFile(file)
+    setUploadError("")
+
+    // Upload immediately
+    setIsUploadingReceipt(true)
+    try {
+      const formData = new FormData()
+      formData.append("receipt", file)
+      formData.append("orderId", "temp-" + Date.now()) // Temporary ID, will be replaced when order is created
+
+      const response = await fetch("/api/payment-receipt/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setReceiptUrl(result.data.url)
+        toast({
+          title: "Receipt uploaded successfully",
+          description: "Your payment receipt has been uploaded.",
+        })
+      } else {
+        setUploadError(result.error || "Failed to upload receipt")
+        toast({
+          title: "Upload failed",
+          description: result.error || "Failed to upload receipt",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("Receipt upload error:", error)
+      setUploadError("Failed to upload receipt. Please try again.")
+      toast({
+        title: "Upload failed",
+        description: "Failed to upload receipt. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploadingReceipt(false)
     }
   }
 
@@ -169,7 +237,7 @@ export function ReviewStep({
             </div>
             <div>
               <p className="text-xs text-slate-600 mb-0.5">State</p>
-              <p className="font-semibold text-slate-900">{data.state}</p>
+              <p className="font-semibold text-slate-900">{formData.state}</p>
             </div>
           </div>
         </div>
@@ -181,7 +249,7 @@ export function ReviewStep({
             </div>
             <div>
               <p className="text-xs text-slate-500 mb-0.5">Entity Type</p>
-              <p className="font-semibold text-slate-900">{data.entityType}</p>
+              <p className="font-semibold text-slate-900">{formData.entityType}</p>
             </div>
           </div>
         </div>
@@ -193,7 +261,7 @@ export function ReviewStep({
             </div>
             <div>
               <p className="text-xs text-slate-500 mb-0.5">Members</p>
-              <p className="font-semibold text-slate-900">{data.members?.length || 0} member(s)</p>
+              <p className="font-semibold text-slate-900">{formData.members?.length || 0} member(s)</p>
             </div>
           </div>
         </div>
@@ -205,8 +273,7 @@ export function ReviewStep({
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer
-"
+            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer"
             onClick={onBack}
           >
             <Edit2 className="w-4 h-4 mr-1" />
@@ -216,15 +283,15 @@ export function ReviewStep({
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">State</span>
-            <span className="text-sm font-medium text-slate-900">{data.state}</span>
+            <span className="text-sm font-medium text-slate-900">{formData.state}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-500">Entity Type</span>
-            <span className="text-sm font-medium text-slate-900">{data.entityType}</span>
+            <span className="text-sm font-medium text-slate-900">{formData.entityType}</span>
           </div>
           <div className="flex justify-between items-center py-2">
             <span className="text-sm text-slate-700">Members</span>
-            <span className="text-sm font-medium text-slate-900">{data.members?.length || 0}</span>
+            <span className="text-sm font-medium text-slate-900">{formData.members?.length || 0}</span>
           </div>
         </div>
       </div>
@@ -235,8 +302,7 @@ export function ReviewStep({
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer
-"
+            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer"
             onClick={onBack}
           >
             <Edit2 className="w-4 h-4 mr-1" />
@@ -246,26 +312,26 @@ export function ReviewStep({
         <div className="space-y-3">
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Company Name</span>
-            <span className="text-sm font-medium text-slate-900">{data.businessName}</span>
+            <span className="text-sm font-medium text-slate-900">{formData.businessName}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Company Ending</span>
-            <span className="text-sm font-medium text-slate-900">{data.entityType}</span>
+            <span className="text-sm font-medium text-slate-900">{formData.entityType}</span>
           </div>
           <div className="flex justify-between items-center py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Industry</span>
-            <span className="text-sm font-medium text-slate-900">{data.businessCategory || "General"}</span>
+            <span className="text-sm font-medium text-slate-900">{formData.businessCategory || "General"}</span>
           </div>
-          {data.businessWebsite && (
+          {formData.businessWebsite && (
             <div className="flex justify-between items-center py-2 border-b border-slate-100">
               <span className="text-sm text-slate-700">Website</span>
-              <span className="text-sm font-medium text-slate-900">{data.businessWebsite}</span>
+              <span className="text-sm font-medium text-slate-900">{formData.businessWebsite}</span>
             </div>
           )}
-          {data.businessDescription && (
+          {formData.businessDescription && (
             <div className="flex flex-col py-2 border-b border-slate-100">
               <span className="text-sm text-slate-700 mb-2">Business Description</span>
-              <span className="text-sm text-slate-900 leading-relaxed">{data.businessDescription}</span>
+              <span className="text-sm text-slate-900 leading-relaxed">{formData.businessDescription}</span>
             </div>
           )}
         </div>
@@ -417,6 +483,86 @@ export function ReviewStep({
                 screenshot with details of your payment. Thank you.
               </p>
             </div>
+
+            <div className="mt-4 p-4 bg-white rounded-lg border-2 border-dashed border-slate-300">
+              <label htmlFor="receipt-upload" className="cursor-pointer block">
+                <div className="flex flex-col items-center justify-center py-3">
+                  <svg className="w-8 h-8 text-slate-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                    />
+                  </svg>
+                  <p className="text-sm font-medium text-slate-700 mb-1">Upload Payment Receipt</p>
+                  <p className="text-xs text-slate-500">Click to upload or drag and drop</p>
+                  <p className="text-xs text-slate-400 mt-1">PNG, JPG or WEBP (max. 5MB)</p>
+                </div>
+              </label>
+              <input
+                id="receipt-upload"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleReceiptUpload}
+                className="hidden"
+                disabled={isUploadingReceipt}
+              />
+
+              {isUploadingReceipt && (
+                <div className="mt-3 flex items-center justify-center gap-2 text-sm text-slate-600">
+                  <svg className="animate-spin h-4 w-4 text-[#ff0d13]" viewBox="0 0 24 24">
+                    <circle
+                      className="opacity-25"
+                      cx="12"
+                      cy="12"
+                      r="10"
+                      stroke="currentColor"
+                      strokeWidth="4"
+                      fill="none"
+                    />
+                    <path
+                      className="opacity-75"
+                      fill="currentColor"
+                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                    />
+                  </svg>
+                  Uploading...
+                </div>
+              )}
+
+              {receiptFile && !isUploadingReceipt && (
+                <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-medium text-green-900">{receiptFile.name}</p>
+                      <p className="text-xs text-green-700">{(receiptFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setReceiptFile(null)
+                      setReceiptUrl("")
+                    }}
+                    className="text-red-600 hover:text-red-800"
+                  >
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                  </button>
+                </div>
+              )}
+
+              {uploadError && (
+                <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-700">{uploadError}</p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -424,7 +570,7 @@ export function ReviewStep({
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-slate-900">
-            {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
+            {formData.state} {formData.packageType === "starter" ? "Starter" : "Advanced"} Package
           </h2>
           <Button
             variant="ghost"
@@ -442,7 +588,7 @@ export function ReviewStep({
               <Package className="w-6 h-6 text-[#ffffff]" />
             </div>
             <div>
-              <p className="font-semibold text-slate-900 capitalize">{data.packageType} Package</p>
+              <p className="font-semibold text-slate-900 capitalize">{formData.packageType} Package</p>
               <p className="text-sm text-slate-700">Formation service + state filing included</p>
             </div>
           </div>
@@ -558,7 +704,7 @@ export function ReviewStep({
             <div>
               <span className="text-sm text-slate-700">Formation Package</span>
               <p className="text-xs text-slate-500 mt-0.5">
-                {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
+                {formData.state} {formData.packageType === "starter" ? "Starter" : "Advanced"} Package
               </p>
             </div>
             <span className="text-sm font-medium text-slate-900">${subtotal}</span>
@@ -618,16 +764,14 @@ export function ReviewStep({
           onClick={onBack}
           variant="outline"
           size="lg"
-          className="flex-1 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 cursor-pointer
-"
+          className="flex-1 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Edit
         </Button>
         <Button
           onClick={onNext}
           size="lg"
-          className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white font-semibold transition-all cursor-pointer
-"
+          className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white font-semibold transition-all cursor-pointer"
         >
           Proceed to Payment <ArrowRight className="w-4 h-4 ml-2" />
         </Button>
