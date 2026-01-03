@@ -80,6 +80,7 @@ const STEPS = ["Account", "State & Package", "Business Info", "Owner Info", "Rev
 export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(0)
   const [isInitialized, setIsInitialized] = useState(false)
+  const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [data, setData] = useState<CheckoutData>({
     email: "",
     password: "",
@@ -140,6 +141,8 @@ export default function CheckoutPage() {
 
     const hasCompleteAccountData =
       savedData?.account?.email && savedData?.account?.password && savedData?.account?.phone && savedData?.account?.name
+
+    setIsAuthenticated(isAuthenticated)
 
     if (isAuthenticated && currentUser) {
       // User is logged in, skip to state selection step
@@ -430,7 +433,6 @@ export default function CheckoutPage() {
   }
 
   const prevStep = () => {
-    const isAuthenticated = authService.isAuthenticated()
     const minStep = isAuthenticated ? 1 : 0
 
     if (currentStep > minStep) {
@@ -452,8 +454,6 @@ export default function CheckoutPage() {
         </div>
       )
     }
-
-    const isAuthenticated = authService.isAuthenticated()
 
     switch (currentStep) {
       case 0:
@@ -477,8 +477,11 @@ export default function CheckoutPage() {
     }
   }
 
+  const visibleSteps = isAuthenticated ? STEPS.filter((step) => step !== "Account") : STEPS
+  const displayStep = isAuthenticated ? currentStep - 1 : currentStep
+
   return (
-    <CheckoutShell steps={STEPS} currentStep={currentStep} data={data}>
+    <CheckoutShell steps={visibleSteps} currentStep={displayStep} data={data}>
       {renderStep()}
     </CheckoutShell>
   )
