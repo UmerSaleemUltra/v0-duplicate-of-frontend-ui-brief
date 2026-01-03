@@ -77,14 +77,14 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
   console.log("[v0] ReviewStep - Valid members count:", validMembers.length)
 
   const membersWithItin = validMembers.filter((m) => m.itinAdded === true)
-  const isAdvancedPackage = formData.packageType === "advanced"
+  const isAdvancedPackage = formData?.packageType === "advanced"
   const resellerCertIncluded = isAdvancedPackage
-  const hasResellerCert = resellerCertIncluded || formData.needsResellerCertificate === true
+  const hasResellerCert = resellerCertIncluded || formData?.needsResellerCertificate === true
 
-  const websitePrice = formData.upsells?.includes("website") ? 499 : 0
+  const websitePrice = formData?.upsells?.includes("website") ? 499 : 0
 
-  const basePackagePrice = formData.packageType === "starter" ? 149 : 249
-  const stateFilingFee = STATE_FEES[formData.state] || 100
+  const basePackagePrice = formData?.packageType === "starter" ? 149 : 249
+  const stateFilingFee = STATE_FEES[formData?.state || ""] || 100
 
   const itinPrice = membersWithItin.length * 149
   const resellerCertPrice = hasResellerCert && !resellerCertIncluded ? 99 : 0
@@ -128,16 +128,21 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
         price: websitePrice,
       })
     }
-
-    // Assuming updateData is available in the context or passed as a prop
-    // updateData({
-    //   addons: purchasedAddons,
-    //   totalAmount: total,
-    //   packagePrice: basePackagePrice,
-    //   stateFilingFee,
-    //   addonsTotal,
-    // })
   }, [total, membersWithItin.length, hasResellerCert, websitePrice, basePackagePrice, stateFilingFee, addonsTotal])
+
+  if (!formData || !formData.packageType || !formData.state) {
+    console.error("[v0] ReviewStep - Invalid formData:", formData)
+    return (
+      <div className="p-6 bg-white rounded-xl border border-slate-200">
+        <p className="text-red-600">
+          Error: Missing required checkout data. Please go back and complete the previous steps.
+        </p>
+        <Button onClick={onBack} className="mt-4">
+          Go Back
+        </Button>
+      </div>
+    )
+  }
 
   const handleRemoveItin = (memberId: string) => {
     const updatedMembers = validMembers.map((m) => (m.id === memberId ? { ...m, itinAdded: false } : m))
@@ -164,14 +169,12 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
     const file = e.target.files?.[0]
     if (!file) return
 
-    // Validate file type
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
     if (!allowedTypes.includes(file.type)) {
       setUploadError("Only image files (JPEG, PNG, WEBP) are allowed")
       return
     }
 
-    // Validate file size (5MB)
     const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
       setUploadError("File size must be less than 5MB")
@@ -181,12 +184,11 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
     setReceiptFile(file)
     setUploadError("")
 
-    // Upload immediately
     setIsUploadingReceipt(true)
     try {
       const formData = new FormData()
       formData.append("receipt", file)
-      formData.append("orderId", "temp-" + Date.now()) // Temporary ID, will be replaced when order is created
+      formData.append("orderId", "temp-" + Date.now())
 
       const response = await fetch("/api/payment-receipt/upload", {
         method: "POST",
