@@ -2,13 +2,12 @@
 
 import type React from "react"
 import { useState } from "react"
-import { ArrowRight, ArrowLeft, Building, Check, DollarSign, FileCheck, X, Globe } from "lucide-react"
+import { ArrowRight, ArrowLeft, Building, Globe } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Badge } from "@/components/ui/badge"
 import type { CheckoutData } from "@/app/checkout/page"
 
 type BusinessInfoStepProps = {
@@ -140,7 +139,7 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
         </div>
       </form>
 
-      {data.businessCategory === "E-commerce" && (
+      {/* {data.businessCategory === "E-commerce" && (
         <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
           <div className="p-4 md:p-6 space-y-4">
             <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
@@ -192,8 +191,7 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
                     type="button"
                     onClick={() => updateData({ needsResellerCertificate: false })}
                     variant="outline"
-                    className="border-red-200 text-red-600 hover:bg-red-50 h-10 px-5 text-sm font-medium rounded-lg whitespace-nowrap cursor-pointer
-"
+                    className="border-red-200 text-red-600 hover:bg-red-50 h-10 px-5 text-sm font-medium rounded-lg whitespace-nowrap cursor-pointer"
                   >
                     <X className="w-4 h-4 mr-2" />
                     Remove
@@ -202,8 +200,7 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
                   <Button
                     type="button"
                     onClick={handleAddReseller}
-                    className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-10 px-5 text-sm font-medium rounded-lg shadow-sm transition-all whitespace-nowrap cursor-pointer
-"
+                    className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-10 px-5 text-sm font-medium rounded-lg shadow-sm transition-all whitespace-nowrap cursor-pointer"
                   >
                     <DollarSign className="w-4 h-4 mr-2" />
                     Add to Order
@@ -220,21 +217,19 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
             </div>
           </div>
         </div>
-      )}
+      )} */}
 
       <div className="flex flex-col sm:flex-row gap-3 pt-6">
         <Button
           onClick={onBack}
           variant="outline"
-          className="w-full sm:w-auto px-6 h-10 border border-slate-200 bg-white text-slate-900 font-medium text-sm rounded-lg cursor-pointer
-"
+          className="w-full sm:w-auto px-6 h-10 border border-slate-200 bg-white text-slate-900 font-medium text-sm rounded-lg cursor-pointer"
         >
           <ArrowLeft className="mr-2 w-4 h-4" /> Back
         </Button>
         <Button
           onClick={handleSubmit}
-          className="w-full sm:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-10 text-sm font-medium rounded-lg px-5 flex items-center justify-center cursor-pointer
-"
+          className="w-full sm:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-10 text-sm font-medium rounded-lg px-5 flex items-center justify-center cursor-pointer"
         >
           Next <ArrowRight className="ml-2 w-4 h-4" />
         </Button>
