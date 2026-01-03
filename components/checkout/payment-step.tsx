@@ -43,7 +43,6 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
     // Use addon name if available, otherwise fallback to service name
     return addon.name || addon.serviceName || "Add-on"
   }
-  // </CHANGE>
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -58,8 +57,30 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
 
     try {
       console.log("[v0] Starting checkout submission via API...")
+      console.log("[v0] Payment step - data object:", data)
 
-      if (!data.email || !data.password || !data.name) {
+      const accountEmail = data.email || data.accountInfo?.email
+      const accountPassword = data.password || data.accountInfo?.password
+      const accountName = data.name || data.accountInfo?.name
+
+      console.log(
+        "[v0] Payment validation - email:",
+        accountEmail,
+        "name:",
+        accountName,
+        "hasPassword:",
+        !!accountPassword,
+      )
+
+      if (!accountEmail || !accountPassword || !accountName) {
+        console.error(
+          "[v0] Missing account info - email:",
+          !!accountEmail,
+          "password:",
+          !!accountPassword,
+          "name:",
+          !!accountName,
+        )
         alert("Please complete the account information.")
         setIsSubmitting(false)
         setLoading(false)
@@ -67,6 +88,14 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
       }
 
       if (!data.businessName || !data.state || !data.entityType) {
+        console.error(
+          "[v0] Missing business info - businessName:",
+          !!data.businessName,
+          "state:",
+          !!data.state,
+          "entityType:",
+          !!data.entityType,
+        )
         alert("Please complete the business information.")
         setIsSubmitting(false)
         setLoading(false)
@@ -86,9 +115,9 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
 
       try {
         const signupResponse = await ApiClient.auth.signup({
-          email: data.email,
-          password: data.password,
-          name: data.name || "User",
+          email: accountEmail,
+          password: accountPassword,
+          name: accountName,
           phone: data.phone || "",
           role: "client",
         })
@@ -113,8 +142,8 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
           console.log("[v0] User exists (409), logging in instead...")
           try {
             const loginResponse = await ApiClient.auth.login({
-              email: data.email,
-              password: data.password,
+              email: accountEmail,
+              password: accountPassword,
             })
 
             console.log("[v0] Login response received:", JSON.stringify(loginResponse))
@@ -153,8 +182,8 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
 
       const authUser = {
         id: userId,
-        email: data.email,
-        name: data.name || "User",
+        email: accountEmail,
+        name: accountName,
         role: "client" as const,
       }
       authService.setAuth(token, authUser)
@@ -427,7 +456,6 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
 
   console.log("[v0] Payment step - addons data:", data.addons)
   console.log("[v0] Payment step - addonsTotal:", addonsTotal)
-  // </CHANGE>
 
   return (
     <div className="space-y-6">
@@ -478,7 +506,6 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
             </div>
           </div>
         </div>
-        {/* </CHANGE> */}
 
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 rounded-xl border border-[#ff0d13]/20 p-6 mb-6">

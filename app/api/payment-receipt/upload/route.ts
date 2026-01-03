@@ -1,11 +1,15 @@
-import { type NextRequest, NextResponse } from "next"
-import { blobStorage } from "@/config/storage"
+import { type NextRequest, NextResponse } from "next/server"
+import { put } from "@vercel/blob"
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("[v0] Receipt upload API called")
+
     const formData = await request.formData()
     const file = formData.get("receipt") as File
     const orderId = formData.get("orderId") as string
+
+    console.log("[v0] Receipt upload - orderId:", orderId, "file:", file?.name)
 
     if (!file) {
       return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 })
@@ -15,7 +19,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Order ID is required" }, { status: 400 })
     }
 
-    // Validate file type (images only)
     const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
@@ -24,28 +27,37 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Validate file size (max 5MB)
-    const maxSize = 5 * 1024 * 1024 // 5MB
+    const maxSize = 5 * 1024 * 1024
     if (file.size > maxSize) {
       return NextResponse.json({ success: false, error: "File size must be less than 5MB" }, { status: 400 })
     }
 
-    // Upload to Vercel Blob
-    const uploadResult = await blobStorage.upload(file, {
-      folder: `payment-receipts/${orderId}`,
-      filename: `receipt-${Date.now()}.${file.name.split(".").pop()}`,
+    const pathname = `payment-receipts/${orderId}/receipt-${Date.now()}.${file.name.split(".").pop()}`
+
+    console.log("[v0] Uploading to blob storage:", pathname)
+
+    const blob = await put(pathname, file, {
       access: "public",
+      addRandomSuffix: true,
     })
+
+    console.log("[v0] Upload successful:", blob.url)
 
     return NextResponse.json({
       success: true,
       data: {
-        url: uploadResult.url,
-        pathname: uploadResult.pathname,
+        url: blob.url,
+        pathname: blob.pathname,
       },
     })
-  } catch (error) {
-    console.error("Payment receipt upload error:", error)
-    return NextResponse.json({ success: false, error: "Failed to upload payment receipt" }, { status: 500 })
+  } catch (error: any) {
+    console.error("[v0] Payment receipt upload error:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: error?.message || "Failed to upload payment receipt",
+      },
+      { status: 500 },
+    )
   }
 }
