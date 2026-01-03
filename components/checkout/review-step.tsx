@@ -1,7 +1,20 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { ArrowRight, ArrowLeft, Building2, Users, Package, MapPin, Globe, FileText, Shield, Edit2, User, X } from 'lucide-react'
+import {
+  ArrowRight,
+  ArrowLeft,
+  Building2,
+  Users,
+  Package,
+  MapPin,
+  Globe,
+  FileText,
+  Shield,
+  Edit2,
+  User,
+  X,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { CheckoutData } from "@/app/checkout/page"
 import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/passport-storage"
@@ -79,37 +92,37 @@ export function ReviewStep({
 
   useEffect(() => {
     const purchasedAddons: any[] = []
-    
+
     // Add ITIN applications with full details
     if (membersWithItin.length > 0) {
       membersWithItin.forEach((member) => {
         if (member.id) {
           purchasedAddons.push({
-            serviceId: 'itin',
-            name: 'ITIN Application',
-            memberName: member.name || member.firstName + ' ' + member.lastName || 'Member',
+            serviceId: "itin",
+            name: "ITIN Application",
+            memberName: member.name || member.firstName + " " + member.lastName || "Member",
             memberId: member.id,
-            price: 149
+            price: 149,
           })
         }
       })
     }
-    
+
     // Add reseller certificate if selected
     if (hasResellerCert && !resellerCertIncluded) {
       purchasedAddons.push({
-        serviceId: 'reseller-cert',
-        name: 'Reseller Certificate',
-        price: 99
+        serviceId: "reseller-cert",
+        name: "Reseller Certificate",
+        price: 99,
       })
     }
-    
+
     // Add website if selected
     if (websitePrice > 0) {
       purchasedAddons.push({
-        serviceId: 'website',
-        name: 'Business Website',
-        price: websitePrice
+        serviceId: "website",
+        name: "Business Website",
+        price: websitePrice,
       })
     }
 
@@ -339,9 +352,79 @@ export function ReviewStep({
         </div>
       )}
 
+      <div className="bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 rounded-xl border border-[#ff0d13]/20 p-6">
+        <div className="flex items-start gap-4">
+          <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+            <Building2 className="w-6 h-6 text-white" />
+          </div>
+          <div className="flex-1">
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">U.S. Business Bank Account Assistance</h2>
+            <p className="text-sm text-slate-700 mb-4">
+              After your LLC formation is complete, we'll help you apply for a U.S. business bank account with our
+              trusted fintech partners.
+            </p>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Remote Account Opening</p>
+                  <p className="text-xs text-slate-600">No U.S. visit required</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Fintech Partners</p>
+                  <p className="text-xs text-slate-600">Wise, Mercury, Payoneer & more</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Application Support</p>
+                  <p className="text-xs text-slate-600">Guidance throughout the process</p>
+                </div>
+              </div>
+              <div className="flex items-start gap-2">
+                <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                  <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Non-Resident Friendly</p>
+                  <p className="text-xs text-slate-600">Designed for international founders</p>
+                </div>
+              </div>
+            </div>
+            <div className="mt-4 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
+              <p className="text-xs text-slate-600">
+                <span className="font-semibold text-slate-900">Note:</span> Bank account setup is provided as a separate
+                service after LLC formation. Our team will contact you with detailed information and next steps once
+                your company documents are ready.
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-slate-900">{data.state} {data.packageType === 'starter' ? 'Starter' : 'Advanced'} Package</h2>
+          <h2 className="text-lg font-semibold text-slate-900">
+            {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
+          </h2>
           <Button
             variant="ghost"
             size="sm"
@@ -473,7 +556,9 @@ export function ReviewStep({
           <div className="flex items-center justify-between pb-4 border-b border-slate-200">
             <div>
               <span className="text-sm text-slate-700">Formation Package</span>
-              <p className="text-xs text-slate-500 mt-0.5">{data.state} {data.packageType === 'starter' ? 'Starter' : 'Advanced'} Package</p>
+              <p className="text-xs text-slate-500 mt-0.5">
+                {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
+              </p>
             </div>
             <span className="text-sm font-medium text-slate-900">${subtotal}</span>
           </div>
