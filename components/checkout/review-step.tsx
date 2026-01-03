@@ -248,33 +248,65 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
             </Button>
           </div>
           <div className="space-y-6">
-            {(formData?.members || []).map((member, index) => (
-              <div key={member.id || index} className="space-y-3">
-                <div className="flex items-center gap-2 pb-2 border-b border-slate-200">
-                  <User className="w-4 h-4 text-slate-400" />
-                  <h4 className="font-medium text-slate-900">{member.name || `Member ${index + 1}`}</h4>
-                  {member.isResponsiblePerson && (
-                    <span className="px-2 py-0.5 bg-red-50 text-red-600 text-xs font-medium rounded">
-                      Responsible Person
-                    </span>
+            {validMembers.map((member, index) => (
+              <div key={member.id} className={`${index > 0 ? "pt-6 border-t border-slate-200" : ""}`}>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                    <User className="w-5 h-5 text-[#ffffff]" />
+                  </div>
+                  <div>
+                    <p className="font-semibold text-slate-900">{member.name || "Member"}</p>
+                    <p className="text-xs text-slate-500">Member {index + 1}</p>
+                  </div>
+                </div>
+                <div className="space-y-3 ml-12">
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-sm text-slate-500">Full Name</span>
+                    <span className="text-sm font-medium text-slate-900">{member.name || "N/A"}</span>
+                  </div>
+                  {member.email && (
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-sm text-slate-500">Email</span>
+                      <span className="text-sm font-medium text-slate-900">{member.email}</span>
+                    </div>
                   )}
-                </div>
-
-                <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Address</span>
-                  <span className="text-sm font-medium text-slate-900 text-right">{member.address || "N/A"}</span>
-                </div>
-
-                <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">City, State ZIP</span>
-                  <span className="text-sm font-medium text-slate-900">
-                    {member.city}, {member.state} {member.zip}
-                  </span>
-                </div>
-
-                <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                  <span className="text-sm text-slate-500">Country</span>
-                  <span className="text-sm font-medium text-slate-900">{member.country || "US"}</span>
+                  {member.phone && (
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-sm text-slate-500">Phone</span>
+                      <span className="text-sm font-medium text-slate-900">{member.phone}</span>
+                    </div>
+                  )}
+                  {member.ownershipPercentage && member.ownershipPercentage > 0 && (
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-sm text-slate-500">Ownership</span>
+                      <span className="text-sm font-medium text-slate-900">{member.ownershipPercentage}%</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-sm text-slate-500">Country</span>
+                    <span className="text-sm font-medium text-slate-900">{member.country || "US"}</span>
+                  </div>
+                  <div className="flex justify-between items-start py-2 border-b border-slate-100">
+                    <span className="text-sm text-slate-500">Address</span>
+                    <span className="text-sm font-medium text-slate-900 text-right max-w-xs">
+                      {member.address || "N/A"}
+                      <br />
+                      {member.city || ""}, {member.state || ""} {member.zip || ""}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <span className="text-sm text-slate-500">SSN/ITIN</span>
+                    <span className="text-sm font-medium text-slate-900">{maskSSN(member.ssn)}</span>
+                  </div>
+                  {member.passportFile && (
+                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                      <span className="text-sm text-slate-500">Passport Document</span>
+                      <div className="flex items-center gap-2">
+                        <FileText className="w-4 h-4 text-[#ff0d13]" />
+                        <span className="text-sm font-medium text-slate-900">{member.passportFile.name}</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             ))}

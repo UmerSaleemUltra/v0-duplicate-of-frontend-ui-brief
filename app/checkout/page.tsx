@@ -32,6 +32,7 @@ export type Member = {
   zip?: string
   dateOfBirth?: string
   ssn?: string
+  ownershipPercentage?: number
   isResponsiblePerson?: boolean
   needsItin?: boolean
   itinAdded?: boolean
@@ -119,6 +120,7 @@ export default function CheckoutPage() {
         passportFile: null,
         passportKey: undefined,
         passportUrl: undefined,
+        ownershipPercentage: 100,
       },
     ],
     addons: [],
@@ -190,6 +192,7 @@ export default function CheckoutPage() {
                   isResponsiblePerson: m.isResponsiblePerson || false,
                   needsItin: false,
                   itinAdded: m.itinAdded || false,
+                  ownershipPercentage: m.ownershipPercentage || 0,
                   passportFile: null,
                   passportKey: m.passportKey,
                   passportUrl: m.passportUrl,
@@ -216,6 +219,7 @@ export default function CheckoutPage() {
                     passportFile: null,
                     passportKey: undefined,
                     passportUrl: undefined,
+                    ownershipPercentage: 100,
                   },
                 ],
           addons: [],
@@ -284,6 +288,7 @@ export default function CheckoutPage() {
                     passportFile: null,
                     passportKey: undefined,
                     passportUrl: undefined,
+                    ownershipPercentage: 100,
                   },
                 ],
           addons: [],
@@ -338,6 +343,7 @@ export default function CheckoutPage() {
                 passportFile: null,
                 passportKey: undefined,
                 passportUrl: undefined,
+                ownershipPercentage: 100,
               },
             ]
 
@@ -378,6 +384,7 @@ export default function CheckoutPage() {
             dateOfBirth: m.dateOfBirth || "",
             isResponsiblePerson: m.isResponsiblePerson || false,
             itinAdded: m.itinAdded || false,
+            ownershipPercentage: m.ownershipPercentage || 0,
             passportKey: m.passportKey,
             passportUrl: m.passportUrl,
           })),
