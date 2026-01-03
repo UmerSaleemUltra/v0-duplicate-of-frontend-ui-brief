@@ -1,17 +1,27 @@
 "use client"
 
-import React, { useState, useMemo } from "react"
-import { ArrowRight, ArrowLeft, User, Plus, Trash2, Shield, Check, DollarSign, FileText, Upload, X, Globe, ChevronDown } from 'lucide-react'
+import type React from "react"
+import { useState, useMemo } from "react"
+import {
+  ArrowRight,
+  ArrowLeft,
+  User,
+  Plus,
+  Trash2,
+  Shield,
+  Check,
+  DollarSign,
+  FileText,
+  Upload,
+  X,
+  Globe,
+  ChevronDown,
+} from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Country } from "country-state-city"
 import type { CheckoutData, Member } from "@/app/checkout/page"
 
@@ -40,7 +50,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       zip: "",
       ssn: "",
       dateOfBirth: "",
-      isResponsiblePerson: false,
+      isResponsiblePerson: (data.members || []).length === 0,
       itinAdded: false,
       passportFile: null,
       passportKey: undefined,
@@ -51,7 +61,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
   }
 
   const removeMember = (id: string) => {
-    if (data.members?.length > 1) {
+    if ((data.members || []).length > 1) {
       updateData({ members: (data.members || []).filter((m) => m.id !== id) })
     }
   }
@@ -74,11 +84,16 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
   const validate = () => {
     const newErrors: Record<string, string> = {}
 
+    if ((data.members || []).length === 1 && !data.members[0].isResponsiblePerson) {
+      updateData({
+        members: [{ ...data.members[0], isResponsiblePerson: true }],
+      })
+    }
+
     const hasResponsiblePerson = (data.members || []).some((m) => m.isResponsiblePerson)
     if (!hasResponsiblePerson) {
       newErrors.responsiblePerson = "At least one member must be designated as Responsible Person"
     }
-
     ;(data.members || []).forEach((member, index) => {
       if (!member.name) newErrors[`member${index}Name`] = "Name is required"
       if (!member.address) newErrors[`member${index}Address`] = "Address is required"
@@ -88,27 +103,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       if (!member.zip) newErrors[`member${index}Zip`] = "ZIP code is required"
       if (!member.passportFile) newErrors[`member${index}Passport`] = "Passport is required"
     })
-
-    if (data.members && data.members.length > 1) {
-      const totalOwnership = data.members.reduce(
-        (sum, member) => sum + (member.ownershipPercentage || 0),
-        0
-      )
-
-      if (totalOwnership !== 100) {
-        newErrors.ownershipTotal = `Total ownership must equal 100% (currently ${totalOwnership.toFixed(
-          1
-        )}%)`
-      }
-
-      data.members.forEach((member, index) => {
-        if (!member.ownershipPercentage || member.ownershipPercentage <= 0) {
-          newErrors[`member${index}Ownership`] = "Ownership percentage is required"
-        } else if (member.ownershipPercentage < 5) {
-          newErrors[`member${index}Ownership`] = "Each member must own at least 5%"
-        }
-      })
-    }
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
@@ -137,7 +131,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
     const blobUrl = URL.createObjectURL(file)
     setPassportPreviews((prev) => ({ ...prev, [memberId]: blobUrl }))
-    
+
     updateMember(memberId, {
       passportFile: file,
       passportKey: undefined,
@@ -165,22 +159,13 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
   return (
     <div className="space-y-8 md:space-y-12">
       <div className="space-y-2">
-        <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight">
-          Member Information
-        </h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight">Member Information</h1>
         <p className="text-sm md:text-base text-slate-500 max-w-2xl leading-relaxed">
-          Add all members or owners of the business. At least one must be designated as the
-          Responsible Person.
+          Add all members or owners of the business. At least one must be designated as the Responsible Person.
         </p>
 
         {errors.responsiblePerson && (
           <p className="text-xs text-red-600 mt-3 font-medium">{errors.responsiblePerson}</p>
-        )}
-
-        {errors.ownershipTotal && (
-          <div className="p-4 rounded-lg bg-red-50 border border-red-200 mt-3">
-            <p className="text-sm text-red-600 font-medium">{errors.ownershipTotal}</p>
-          </div>
         )}
       </div>
 
@@ -192,9 +177,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
               <div className="p-4 md:p-6 rounded-lg border border-slate-200 bg-white space-y-4 md:space-y-6">
                 {/* Member Header */}
                 <div className="flex items-center justify-between">
-                  <h3 className="text-base md:text-lg font-semibold text-slate-900">
-                    Member {index + 1}
-                  </h3>
+                  <h3 className="text-base md:text-lg font-semibold text-slate-900">Member {index + 1}</h3>
 
                   {data.members.length > 1 && (
                     <Button
@@ -216,24 +199,24 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                     <Checkbox
                       id={`responsible-${member.id}`}
                       checked={member.isResponsiblePerson}
-                      onCheckedChange={(c) =>
-                        toggleResponsiblePerson(member.id, c as boolean)
-                      }
+                      onCheckedChange={(c) => toggleResponsiblePerson(member.id, c as boolean)}
+                      disabled={(data.members || []).length === 1}
                     />
                     <label
                       htmlFor={`responsible-${member.id}`}
                       className="text-xs md:text-sm font-medium text-slate-900 cursor-pointer"
                     >
                       Responsible Person / Authorized Person
+                      {(data.members || []).length === 1 && (
+                        <span className="text-slate-500 ml-1">(automatically assigned)</span>
+                      )}
                     </label>
                   </div>
                 </div>
 
                 {/* Full Name */}
                 <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-slate-900">
-                    Full Legal Name
-                  </Label>
+                  <Label className="text-sm font-semibold text-slate-900">Full Legal Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <Input
@@ -278,9 +261,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   </div>
 
                   <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-slate-900">
-                      State / Province
-                    </Label>
+                    <Label className="text-sm font-semibold text-slate-900">State / Province</Label>
                     <Input
                       placeholder="California"
                       value={member.state}
@@ -300,10 +281,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-between pl-10 h-11 relative"
-                        >
+                        <Button variant="outline" className="w-full justify-between pl-10 h-11 relative bg-transparent">
                           <Globe className="absolute left-3 w-5 h-5 text-slate-400" />
                           <span>{getCountryName(member.country)}</span>
                           <ChevronDown className="w-4 h-4 opacity-50" />
@@ -343,9 +321,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
                 {/* SSN / ITIN */}
                 <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-slate-900">
-                    SSN or ITIN (optional)
-                  </Label>
+                  <Label className="text-sm font-semibold text-slate-900">SSN or ITIN (optional)</Label>
                   <div className="relative">
                     <Shield className="absolute left-3 w-5 h-5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <Input
@@ -362,45 +338,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   </p>
                 </div>
 
-                {/* Ownership */}
-                {data.members.length > 1 && (
-                  <div className="space-y-3">
-                    <Label className="text-sm font-semibold text-slate-900">
-                      Ownership Percentage *
-                    </Label>
-
-                    <div className="relative">
-                      <DollarSign className="absolute left-3 w-5 h-5 top-1/2 -translate-y-1/2 text-slate-400" />
-                      <Input
-                        type="number"
-                        min="5"
-                        max="100"
-                        step="0.01"
-                        placeholder="25.00"
-                        value={member.ownershipPercentage}
-                        onChange={(e) =>
-                          updateMember(member.id, {
-                            ownershipPercentage: parseFloat(e.target.value) || 0,
-                          })
-                        }
-                        className="pl-10 pr-10 h-11"
-                      />
-                      <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 text-sm">
-                        %
-                      </span>
-                    </div>
-
-                    {errors[`member${index}Ownership`] && (
-                      <p className="text-xs text-red-600">
-                        {errors[`member${index}Ownership`]}
-                      </p>
-                    )}
-                    <p className="text-xs text-slate-600">
-                      Must be at least 5%. Total must equal 100%.
-                    </p>
-                  </div>
-                )}
-
                 {/* Passport Upload */}
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold text-slate-900">
@@ -413,9 +350,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       id={`passport-${member.id}`}
                       type="file"
                       accept="image/*,.pdf"
-                      onChange={(e) =>
-                        handlePassportUpload(member.id, e.target.files?.[0] || null)
-                      }
+                      onChange={(e) => handlePassportUpload(member.id, e.target.files?.[0] || null)}
                       className="pl-10 h-11 file:text-sm file:font-medium"
                     />
                   </div>
@@ -424,9 +359,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   {member.passportFile && (
                     <div className="p-3 rounded-lg bg-green-50 border border-green-200 flex items-center justify-between">
                       <div className="flex flex-col">
-                        <span className="text-sm font-medium text-green-700 truncate">
-                          {member.passportFile.name}
-                        </span>
+                        <span className="text-sm font-medium text-green-700 truncate">{member.passportFile.name}</span>
                         <span className="text-xs text-green-600">Ready to upload after company creation</span>
                       </div>
 
@@ -459,8 +392,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                           </h3>
 
                           <p className="text-sm text-slate-600">
-                            Need an ITIN to open bank accounts or file taxes? We handle the complete
-                            process for you.
+                            Need an ITIN to open bank accounts or file taxes? We handle the complete process for you.
                           </p>
 
                           <ul className="space-y-2 text-sm text-slate-700">
@@ -489,7 +421,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                             <Button
                               type="button"
                               variant="outline"
-                              className="border-red-300 text-red-600"
+                              className="border-red-300 text-red-600 bg-transparent"
                               onClick={() => updateMember(member.id, { itinAdded: false })}
                             >
                               <X className="w-4 h-4 mr-2" /> Remove
@@ -517,28 +449,19 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
               </div>
             </div>
           ))}
-      
-      {/* Add Member Button */}
-      <div className="flex justify-center">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={addMember}
-          className="w-full sm:w-auto"
-        >
-          <Plus className="w-4 h-4 mr-2" />
-          Add Another Member
-        </Button>
-      </div>
-    </form>
+
+        {/* Add Member Button */}
+        <div className="flex justify-center">
+          <Button type="button" variant="outline" onClick={addMember} className="w-full sm:w-auto bg-transparent">
+            <Plus className="w-4 h-4 mr-2" />
+            Add Another Member
+          </Button>
+        </div>
+      </form>
 
       {/* Navigation */}
       <div className="flex flex-col sm:flex-row gap-3 pt-6">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="w-full sm:w-auto"
-        >
+        <Button onClick={onBack} variant="outline" className="w-full sm:w-auto bg-transparent">
           <ArrowLeft className="mr-2 w-4 h-4" />
           Back
         </Button>
