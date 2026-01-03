@@ -1979,6 +1979,27 @@ export default function OrderDetailPage() {
                     <p className="text-sm text-slate-700">{order.paymentInfo.terms}</p>
                   </div>
                 )}
+                {order?.paymentInfo?.receiptUrl && (
+                  <div className="mt-4 border-t border-slate-200 pt-4">
+                    <p className="text-sm font-medium text-slate-600 mb-2">Payment Receipt</p>
+                    <a
+                      href={order.paymentInfo.receiptUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                    >
+                      <CreditCard className="w-4 h-4" />
+                      View Receipt Image
+                    </a>
+                    <div className="mt-2 border border-slate-200 rounded-lg overflow-hidden">
+                      <img
+                        src={order.paymentInfo.receiptUrl || "/placeholder.svg"}
+                        alt="Payment Receipt"
+                        className="w-full h-auto max-w-md"
+                      />
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>

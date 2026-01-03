@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
       purchasedAddons,
       paymentMethod,
       transactionReference,
+      receiptUrl,
     } = body
 
     if (!companyId || !companyName || !type || !amount) {
@@ -117,6 +118,13 @@ export async function POST(req: NextRequest) {
       paymentStatus: "pending",
       paymentMethod: paymentMethod || "stripe",
       transactionReference: transactionReference || null,
+      paymentInfo: {
+        method: paymentMethod || "stripe",
+        status: "pending",
+        transactionReference: transactionReference || null,
+        receiptUrl: receiptUrl || null,
+        date: new Date().toISOString(),
+      },
       items: items || [],
       purchasedAddons: Array.isArray(purchasedAddons) ? purchasedAddons : [],
       createdAt: new Date().toISOString(),

@@ -243,8 +243,13 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
         return
       }
 
-      const companyResponse = await ApiClient.companies.create(
-        {
+      const companyResponse = await fetch("/api/companies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
           name: data.businessName,
           type: data.entityType,
           state: data.state,
@@ -285,14 +290,14 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
             boiReportFiled: false,
           },
           purchasedAddons: data.addons || [],
-        },
-        token,
-      )
+        }),
+      })
 
-      console.log("[v0] Company created:", companyResponse.data.id)
+      const companyData = await companyResponse.json()
+      console.log("[v0] Company created:", companyData.data.id)
 
       try {
-        console.log("[v0] Starting passport uploads with companyId:", companyResponse.data.id)
+        console.log("[v0] Starting passport uploads with companyId:", companyData.data.id)
 
         const passportUploadPromises = validMembers
           .filter((m) => {
@@ -308,11 +313,11 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
             const formData = new FormData()
             formData.append("file", originalMember.passportFile)
             formData.append("userId", userId)
-            formData.append("companyId", companyResponse.data.id)
+            formData.append("companyId", companyData.data.id)
             formData.append("memberId", memberIndex.toString())
             formData.append("memberName", member.name)
 
-            console.log(`[v0] Uploading passport for: ${member.name}, companyId: ${companyResponse.data.id}`)
+            console.log(`[v0] Uploading passport for: ${member.name}, companyId: ${companyData.data.id}`)
 
             const response = await fetch("/api/passports/upload", {
               method: "POST",
@@ -343,9 +348,14 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
       const addonsTotal = data.addonsTotal || 0
       const totalAmount = packagePrice + stateFilingFee + addonsTotal
 
-      const orderResponse = await ApiClient.orders.create(
-        {
-          companyId: companyResponse.data.id,
+      const orderResponse = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          companyId: companyData.data.id,
           companyName: data.businessName,
           type: `${data.entityType.toUpperCase()} Formation`,
           amount: totalAmount,
@@ -361,13 +371,14 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
             },
           ],
           purchasedAddons: data.addons || [],
-          paymentMethod: "whatsapp",
+          paymentMethod: "bank_transfer",
           transactionReference: whatsappReference,
-        },
-        token,
-      )
+          receiptUrl: receiptUrl || null,
+        }),
+      })
 
-      console.log("[v0] Order created:", orderResponse.data.id)
+      const orderData = await orderResponse.json()
+      console.log("[v0] Order created:", orderData.data.id)
 
       console.log("[v0] Notifications will be created by backend APIs")
 
