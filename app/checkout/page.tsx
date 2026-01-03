@@ -481,7 +481,13 @@ export default function CheckoutPage() {
   const displayStep = isAuthenticated ? currentStep - 1 : currentStep
 
   return (
-    <CheckoutShell steps={visibleSteps} currentStep={displayStep} data={data}>
+    <CheckoutShell
+      steps={visibleSteps}
+      currentStep={displayStep}
+      data={data}
+      isAuthenticated={isAuthenticated}
+      originalStep={currentStep}
+    >
       {renderStep()}
     </CheckoutShell>
   )

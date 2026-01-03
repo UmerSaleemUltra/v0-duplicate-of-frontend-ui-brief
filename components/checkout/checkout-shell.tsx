@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { Check, Menu, X, Save } from 'lucide-react'
+import { Check, Menu, X, Save } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 import type { CheckoutData } from "@/app/checkout/page"
@@ -14,9 +14,18 @@ type CheckoutShellProps = {
   currentStep: number
   data: CheckoutData
   children: React.ReactNode
+  isAuthenticated?: boolean
+  originalStep?: number
 }
 
-export function CheckoutShell({ steps, currentStep, data, children }: CheckoutShellProps) {
+export function CheckoutShell({
+  steps,
+  currentStep,
+  data,
+  children,
+  isAuthenticated = false,
+  originalStep = 0,
+}: CheckoutShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string>("")
 
@@ -32,7 +41,7 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
   const handleSaveProgress = () => {
     const result = saveProgress()
     setSaveMessage(result.message)
-    
+
     setTimeout(() => {
       setSaveMessage("")
     }, 3000)
@@ -64,50 +73,74 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
           </Link>
 
           <div className="space-y-4 lg:space-y-5">
-            {steps.map((step, index) => (
-              <div
-                key={step}
-                className={`transition-all duration-300 ${
-                  index === currentStep
-                    ? "opacity-100 scale-100"
-                    : index < currentStep
-                    ? "opacity-90 scale-[0.98]"
-                    : "opacity-60 scale-95"
-                }`}
-              >
+            {isAuthenticated && (
+              <div className="transition-all duration-300 opacity-90 scale-[0.98]">
                 <div className="flex items-start gap-3">
-                  <div
-                    className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm lg:text-base transition-all duration-300 ${
-                      index < currentStep
-                        ? "bg-white/25 text-white backdrop-blur-sm"
-                        : index === currentStep
-                        ? "bg-white text-[#ff0d13] ring-4 ring-white/40 shadow-xl scale-110"
-                        : "bg-white/10 text-white/60 backdrop-blur-sm"
-                    }`}
-                    aria-current={index === currentStep ? "step" : undefined}
-                  >
-                    {index < currentStep ? <Check className="w-5 h-5 text-white" /> : index + 1}
+                  <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm lg:text-base transition-all duration-300 bg-white/25 text-white backdrop-blur-sm">
+                    <Check className="w-5 h-5 text-white" />
                   </div>
-
                   <div className="flex-1 pt-0.5">
-                    <h3
-                      className={`font-semibold text-sm lg:text-base mb-0.5 transition-colors duration-300 ${
-                        index === currentStep ? "text-white" : index < currentStep ? "text-white/95" : "text-white/60"
-                      }`}
-                    >
-                      {step}
+                    <h3 className="font-semibold text-sm lg:text-base mb-0.5 transition-colors duration-300 text-white/95">
+                      Account
                     </h3>
-                    <p
-                      className={`text-xs lg:text-sm leading-relaxed transition-colors duration-300 ${
-                        index === currentStep ? "text-white/95" : "text-white/75"
-                      }`}
-                    >
-                      {stepDescriptions[index]}
+                    <p className="text-xs lg:text-sm leading-relaxed transition-colors duration-300 text-white/75">
+                      Logged in as {data.email || data.name}
                     </p>
                   </div>
                 </div>
               </div>
-            ))}
+            )}
+
+            {steps.map((step, index) => {
+              const adjustedIndex = isAuthenticated ? index + 1 : index
+              const isCurrentStep = adjustedIndex === originalStep
+              const isPastStep = adjustedIndex < (originalStep || 0)
+
+              return (
+                <div
+                  key={step}
+                  className={`transition-all duration-300 ${
+                    isCurrentStep
+                      ? "opacity-100 scale-100"
+                      : isPastStep
+                        ? "opacity-90 scale-[0.98]"
+                        : "opacity-60 scale-95"
+                  }`}
+                >
+                  <div className="flex items-start gap-3">
+                    <div
+                      className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm lg:text-base transition-all duration-300 ${
+                        isPastStep
+                          ? "bg-white/25 text-white backdrop-blur-sm"
+                          : isCurrentStep
+                            ? "bg-white text-[#ff0d13] ring-4 ring-white/40 shadow-xl scale-110"
+                            : "bg-white/10 text-white/60 backdrop-blur-sm"
+                      }`}
+                      aria-current={isCurrentStep ? "step" : undefined}
+                    >
+                      {isPastStep ? <Check className="w-5 h-5 text-white" /> : adjustedIndex + 1}
+                    </div>
+
+                    <div className="flex-1 pt-0.5">
+                      <h3
+                        className={`font-semibold text-sm lg:text-base mb-0.5 transition-colors duration-300 ${
+                          isCurrentStep ? "text-white" : isPastStep ? "text-white/95" : "text-white/60"
+                        }`}
+                      >
+                        {step}
+                      </h3>
+                      <p
+                        className={`text-xs lg:text-sm leading-relaxed transition-colors duration-300 ${
+                          isCurrentStep ? "text-white/95" : "text-white/75"
+                        }`}
+                      >
+                        {stepDescriptions[adjustedIndex]}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )
+            })}
           </div>
         </div>
       </aside>
@@ -157,16 +190,12 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
         <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 max-w-7xl w-full mx-auto">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-7 lg:p-8">
             <div className="flex justify-end mb-4">
-              <Button
-                onClick={handleSaveProgress}
-                variant="outline"
-                className="gap-2 text-sm"
-              >
+              <Button onClick={handleSaveProgress} variant="outline" className="gap-2 text-sm bg-transparent">
                 <Save className="w-4 h-4" />
                 Save Progress
               </Button>
             </div>
-            
+
             {saveMessage && (
               <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200">
                 <p className="text-sm text-green-700">{saveMessage}</p>
