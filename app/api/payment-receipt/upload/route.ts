@@ -5,6 +5,18 @@ export async function POST(request: NextRequest) {
   try {
     console.log("[v0] Receipt upload API called")
 
+    const token = process.env.BLOB_READ_WRITE_TOKEN
+    if (!token) {
+      console.error("[v0] BLOB_READ_WRITE_TOKEN is not configured")
+      return NextResponse.json(
+        {
+          success: false,
+          error: "Blob storage is not configured. Please add BLOB_READ_WRITE_TOKEN to environment variables.",
+        },
+        { status: 500 },
+      )
+    }
+
     const formData = await request.formData()
     const file = formData.get("receipt") as File
     const orderId = formData.get("orderId") as string
@@ -39,6 +51,7 @@ export async function POST(request: NextRequest) {
     const blob = await put(pathname, file, {
       access: "public",
       addRandomSuffix: true,
+      token: token,
     })
 
     console.log("[v0] Upload successful:", blob.url)
