@@ -358,62 +358,63 @@ export function ReviewStep({
             <Building2 className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1">
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">U.S. Business Bank Account Assistance</h2>
-            <p className="text-sm text-slate-700 mb-4">
-              After your LLC formation is complete, we'll help you apply for a U.S. business bank account with our
-              trusted fintech partners.
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex items-start gap-2">
+            <h2 className="text-lg font-semibold text-slate-900 mb-2">Payment Bank Account Details</h2>
+            <p className="text-sm text-slate-700 mb-4">For the payment, please find the details below:</p>
+
+            <div className="space-y-3 mb-4">
+              <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
                 <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Remote Account Opening</p>
-                  <p className="text-xs text-slate-600">No U.S. visit required</p>
+                  <p className="text-xs text-slate-600 font-medium">Bank Name</p>
+                  <p className="text-sm font-semibold text-slate-900">United Bank Limited (UBL)</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
+
+              <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
                 <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Fintech Partners</p>
-                  <p className="text-xs text-slate-600">Wise, Mercury, Payoneer & more</p>
+                  <p className="text-xs text-slate-600 font-medium">Account Title</p>
+                  <p className="text-sm font-semibold text-slate-900">BUZZ FILING</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
+
+              <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
                 <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Application Support</p>
-                  <p className="text-xs text-slate-600">Guidance throughout the process</p>
+                  <p className="text-xs text-slate-600 font-medium">Account Number</p>
+                  <p className="text-sm font-semibold text-slate-900">1176314943776</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
+
+              <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
                 <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
                   <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                   </svg>
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-slate-900">Non-Resident Friendly</p>
-                  <p className="text-xs text-slate-600">Designed for international founders</p>
+                  <p className="text-xs text-slate-600 font-medium">IBAN</p>
+                  <p className="text-sm font-semibold text-slate-900">PK22UNIL0109000314943776</p>
                 </div>
               </div>
             </div>
-            <div className="mt-4 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
-              <p className="text-xs text-slate-600">
-                <span className="font-semibold text-slate-900">Note:</span> Bank account setup is provided as a separate
-                service after LLC formation. Our team will contact you with detailed information and next steps once
-                your company documents are ready.
+
+            <div className="mt-4 p-3 bg-[#ff0d13]/5 rounded-lg border border-[#ff0d13]/20">
+              <p className="text-xs text-slate-700">
+                <span className="font-semibold text-[#ff0d13]">Important:</span> After making the payment, kindly send a
+                screenshot with details of your payment. Thank you.
               </p>
             </div>
           </div>
