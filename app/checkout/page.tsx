@@ -469,7 +469,7 @@ export default function CheckoutPage() {
       case 3:
         return <OwnerInfoStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
       case 4:
-        return <ReviewStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
+        return <ReviewStep formData={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
       case 5:
         return <PaymentStep data={data} onBack={prevStep} />
       default:

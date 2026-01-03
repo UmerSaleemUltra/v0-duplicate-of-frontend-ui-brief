@@ -37,6 +37,15 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
   const [uploadError, setUploadError] = useState<string>("")
 
   useEffect(() => {
+    console.log("[v0] ReviewStep formData:", {
+      state: formData?.state,
+      entityType: formData?.entityType,
+      packageType: formData?.packageType,
+      businessName: formData?.businessName,
+      businessCategory: formData?.businessCategory,
+      membersCount: formData?.members?.length,
+    })
+
     const loadPassports = async () => {
       const passports: Record<string, PassportData | null> = {}
       const validMembers = Array.isArray(formData?.members)
