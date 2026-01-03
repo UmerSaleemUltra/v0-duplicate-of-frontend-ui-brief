@@ -210,7 +210,17 @@ export default function ClientDashboard() {
 
     const customMilestoneValues = Object.values(company.milestones?.custom || {}).map((m: any) => m.completed)
     const allMilestones = [...defaultMilestones, ...customMilestoneValues]
-    const allMilestonesComplete = allMilestones.length > 0 && allMilestones.every((m) => m === true)
+
+    console.log("[v0] All milestones values:", allMilestones)
+    console.log("[v0] Company milestones:", company.milestones)
+
+    // Only check if all milestones exist and are true (no undefined/null values)
+    const allMilestonesComplete =
+      allMilestones.length > 0 &&
+      allMilestones.every((m) => m === true) &&
+      allMilestones.filter((m) => m === undefined || m === null).length === 0
+
+    console.log("[v0] All milestones complete?", allMilestonesComplete)
 
     if (allMilestonesComplete && !celebrationShown) {
       // Check localStorage to see if celebration was already shown for this company
