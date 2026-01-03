@@ -10,7 +10,7 @@ export default function PrivacyPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen text-gray-800 py-12 px-4 sm:px-6 lg:px-8 pt-24">
+      <main className="min-h-screen text-gray-800 py-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-5xl mx-auto overflow-hidden">
           {/* Header */}
           <h1 className="text-4xl sm:text-5xl font-bold mb-2 text-center">Privacy Policy</h1>
