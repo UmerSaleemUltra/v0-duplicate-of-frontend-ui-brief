@@ -213,19 +213,24 @@ export default function ClientDashboard() {
 
     console.log("[v0] All milestones values:", allMilestones)
     console.log("[v0] Company milestones:", company.milestones)
+    console.log("[v0] Default milestones:", defaultMilestones)
+    console.log("[v0] Custom milestone values:", customMilestoneValues)
 
-    // Only check if all milestones exist and are true (no undefined/null values)
-    const allMilestonesComplete =
-      allMilestones.length > 0 &&
-      allMilestones.every((m) => m === true) &&
-      allMilestones.filter((m) => m === undefined || m === null).length === 0
+    // Only check default milestones for completion (6 standard milestones)
+    const allDefaultMilestonesComplete =
+      defaultMilestones.length === 6 &&
+      defaultMilestones.every((m) => m === true) &&
+      defaultMilestones.filter((m) => m === undefined || m === null).length === 0
 
-    console.log("[v0] All milestones complete?", allMilestonesComplete)
+    console.log("[v0] All default milestones complete?", allDefaultMilestonesComplete)
+    console.log("[v0] Celebration already shown?", celebrationShown)
 
-    if (allMilestonesComplete && !celebrationShown) {
+    if (allDefaultMilestonesComplete && !celebrationShown) {
       // Check localStorage to see if celebration was already shown for this company
       const celebrationKey = `celebration_shown_${company.id}`
       const wasShown = localStorage.getItem(celebrationKey)
+
+      console.log("[v0] Celebration key:", celebrationKey, "Was shown:", wasShown)
 
       if (!wasShown) {
         console.log("[v0] All milestones completed! Showing celebration...")
@@ -264,6 +269,14 @@ export default function ClientDashboard() {
       } else {
         console.log("[v0] Celebration already shown for this company")
       }
+    } else {
+      console.log("[v0] Celebration conditions not met:")
+      console.log("  - Milestones length:", defaultMilestones.length)
+      console.log(
+        "  - All true:",
+        defaultMilestones.every((m) => m === true),
+      )
+      console.log("  - No undefined/null:", defaultMilestones.filter((m) => m === undefined || m === null).length === 0)
     }
   }, [company, celebrationShown])
 

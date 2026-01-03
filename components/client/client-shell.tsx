@@ -117,8 +117,14 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   }, [])
 
   const handleSelectCompany = (company: any) => {
+    console.log("[v0] Switching to company:", company.id, company.name)
     setSelectedCompanyId(company.id)
     setCompanyModalOpen(false)
+
+    // Force refresh the page to reload data for new company
+    setTimeout(() => {
+      window.location.reload()
+    }, 100)
   }
 
   const handleAddNewCompany = () => {
