@@ -1,5 +1,5 @@
 import Navbar from "@/components/sections/navbar"
-import  Footer  from "@/components/sections/footer"
+import Footer from "@/components/sections/footer"
 
 export const metadata = {
   title: "Terms and Conditions - BuzzFiling",
@@ -10,8 +10,8 @@ export default function TermsPage() {
   return (
     <>
       <Navbar />
-      <main className="min-h-screen bg-gray-50 text-gray-800 py-12 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-5xl mx-auto overflow-hidden mt-[100px]">
+      <main className="min-h-screen bg-gray-50 text-gray-800 py-12 px-4 sm:px-6 lg:px-8 pt-24">
+        <div className="max-w-5xl mx-auto overflow-hidden">
           {/* Header */}
           <h1 className="text-4xl sm:text-5xl font-bold mb-2 text-center">Terms and Conditions</h1>
           <p className="text-md sm:text-lg font-light max-w-2xl mx-auto text-center">
@@ -41,7 +41,7 @@ export default function TermsPage() {
                 CONDITIONS, SO PLEASE READ CAREFULLY BEFORE PROCEEDING.
               </p>
 
-              <h2 className="text-2xl font-semibold text-[#8B0000] mt-8">Usage Rules</h2>
+              <h2 className="text-2xl font-semibold text-[#ff0d13] mt-8">Usage Rules</h2>
               <ul className="list-disc list-inside text-gray-700 leading-relaxed space-y-2">
                 <li>Provide true, accurate, and complete information during and after registration.</li>
                 <li>
@@ -69,14 +69,14 @@ export default function TermsPage() {
                 <li>Force majeure events may excuse non-performance under these Terms.</li>
               </ul>
 
-              <h2 className="text-2xl font-semibold text-[#8B0000] mt-8">Governing Law</h2>
+              <h2 className="text-2xl font-semibold text-[#ff0d13] mt-8">Governing Law</h2>
               <p className="text-gray-700 leading-relaxed">
                 These Terms and any disputes or claims relating to them are governed by the laws of the United States.
                 All disputes shall be subject to the exclusive jurisdiction of courts at 117 South Lexington Street STE
                 100, Harrisonville, MO 64701.
               </p>
 
-              <h2 className="text-2xl font-semibold text-[#8B0000] mt-8">Contact</h2>
+              <h2 className="text-2xl font-semibold text-[#ff0d13] mt-8">Contact</h2>
               <p className="text-gray-700 leading-relaxed">
                 All concerns or communications regarding these Terms must be sent using the contact information provided
                 on the website.
