@@ -139,20 +139,16 @@ export default function CheckoutPage() {
     const isAuthenticated = authService.isAuthenticated()
     const currentUser = authService.getCurrentUser()
 
-    const hasCompleteAccountData =
-      savedData?.account?.email && savedData?.account?.password && savedData?.account?.phone && savedData?.account?.name
-
     setIsAuthenticated(isAuthenticated)
 
-    if (isAuthenticated && currentUser) {
-      // User is logged in, skip to state selection step
-      if (savedStep === null || savedStep === 0) {
-        setCurrentStep(1) // Skip account step, go to State & Package
-        saveCheckoutStep(1)
-      } else {
-        setCurrentStep(savedStep)
-      }
+    if (savedStep !== null && savedStep >= 0) {
+      setCurrentStep(savedStep)
+    } else {
+      setCurrentStep(0) // Always start at Account step
+      saveCheckoutStep(0)
+    }
 
+    if (isAuthenticated && currentUser) {
       // Pre-fill user data from authenticated session
       if (savedData) {
         const savedMembers = Array.isArray(savedData.members)
@@ -234,7 +230,6 @@ export default function CheckoutPage() {
           addonsTotal: savedData.addonsTotal,
         })
       } else {
-        // Initialize with authenticated user data
         setData((prev) => ({
           ...prev,
           email: currentUser.email,
@@ -243,15 +238,6 @@ export default function CheckoutPage() {
         }))
       }
     } else {
-      if (hasCompleteAccountData && savedStep !== null && savedStep > 0) {
-        // Has account data and was on a later step, restore that step
-        setCurrentStep(savedStep)
-      } else {
-        // No complete account data or was on account step, start from beginning
-        setCurrentStep(0)
-        saveCheckoutStep(0)
-      }
-
       if (savedData) {
         const savedMembers = Array.isArray(savedData.members)
           ? savedData.members.filter((m): m is NonNullable<typeof m> => m != null && typeof m === "object")
@@ -433,9 +419,7 @@ export default function CheckoutPage() {
   }
 
   const prevStep = () => {
-    const minStep = isAuthenticated ? 1 : 0
-
-    if (currentStep > minStep) {
+    if (currentStep > 0) {
       const newStep = currentStep - 1
       setCurrentStep(newStep)
       saveCheckoutStep(newStep)
@@ -457,10 +441,6 @@ export default function CheckoutPage() {
 
     switch (currentStep) {
       case 0:
-        // If authenticated, skip to next step
-        if (isAuthenticated) {
-          return <StatePackageStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
-        }
         return <AccountStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
       case 1:
         return <StatePackageStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
@@ -477,13 +457,10 @@ export default function CheckoutPage() {
     }
   }
 
-  const visibleSteps = isAuthenticated ? STEPS.filter((step) => step !== "Account") : STEPS
-  const displayStep = isAuthenticated ? currentStep - 1 : currentStep
-
   return (
     <CheckoutShell
-      steps={visibleSteps}
-      currentStep={displayStep}
+      steps={STEPS}
+      currentStep={currentStep}
       data={data}
       isAuthenticated={isAuthenticated}
       originalStep={currentStep}

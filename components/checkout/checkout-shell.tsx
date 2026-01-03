@@ -73,28 +73,9 @@ export function CheckoutShell({
           </Link>
 
           <div className="space-y-4 lg:space-y-5">
-            {isAuthenticated && (
-              <div className="transition-all duration-300 opacity-90 scale-[0.98]">
-                <div className="flex items-start gap-3">
-                  <div className="w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm lg:text-base transition-all duration-300 bg-white/25 text-white backdrop-blur-sm">
-                    <Check className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="flex-1 pt-0.5">
-                    <h3 className="font-semibold text-sm lg:text-base mb-0.5 transition-colors duration-300 text-white/95">
-                      Account
-                    </h3>
-                    <p className="text-xs lg:text-sm leading-relaxed transition-colors duration-300 text-white/75">
-                      Logged in as {data.email || data.name}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {steps.map((step, index) => {
-              const adjustedIndex = isAuthenticated ? index + 1 : index
-              const isCurrentStep = adjustedIndex === originalStep
-              const isPastStep = adjustedIndex < (originalStep || 0)
+              const isCurrentStep = index === currentStep
+              const isPastStep = index < currentStep
 
               return (
                 <div
@@ -118,7 +99,7 @@ export function CheckoutShell({
                       }`}
                       aria-current={isCurrentStep ? "step" : undefined}
                     >
-                      {isPastStep ? <Check className="w-5 h-5 text-white" /> : adjustedIndex + 1}
+                      {isPastStep ? <Check className="w-5 h-5 text-white" /> : index + 1}
                     </div>
 
                     <div className="flex-1 pt-0.5">
@@ -134,7 +115,7 @@ export function CheckoutShell({
                           isCurrentStep ? "text-white/95" : "text-white/75"
                         }`}
                       >
-                        {stepDescriptions[adjustedIndex]}
+                        {stepDescriptions[index]}
                       </p>
                     </div>
                   </div>
