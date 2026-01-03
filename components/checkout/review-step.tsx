@@ -1,6 +1,4 @@
 "use client"
-
-import type React from "react"
 import { useState, useEffect } from "react"
 import {
   ArrowRight,
@@ -31,19 +29,14 @@ type ReviewStepProps = {
 export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
   const { toast } = useToast()
   const [passportData, setPassportData] = useState<Record<string, PassportData | null>>({})
-  const [receiptFile, setReceiptFile] = useState<File | null>(null)
-  const [receiptUrl, setReceiptUrl] = useState<string>("")
-  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
-  const [uploadError, setUploadError] = useState<string>("")
 
   useEffect(() => {
     console.log("[v0] ReviewStep formData:", {
+      hasFormData: !!formData,
       state: formData?.state,
-      entityType: formData?.entityType,
-      packageType: formData?.packageType,
       businessName: formData?.businessName,
-      businessCategory: formData?.businessCategory,
-      membersCount: formData?.members?.length,
+      packageType: formData?.packageType,
+      members: formData?.members?.length,
     })
 
     const loadPassports = async () => {
@@ -71,7 +64,7 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
       setPassportData(passports)
     }
     loadPassports()
-  }, [formData?.members])
+  }, [formData])
 
   const maskSSN = (ssn?: string) =>
     !ssn || ssn.trim() === "" || ssn.length < 4 ? "Not provided" : `***-**-${ssn.slice(-4)}`
@@ -123,64 +116,7 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
     }
   }
 
-  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
-    if (!allowedTypes.includes(file.type)) {
-      setUploadError("Only image files (JPEG, PNG, WEBP) are allowed")
-      return
-    }
-
-    const maxSize = 5 * 1024 * 1024
-    if (file.size > maxSize) {
-      setUploadError("File size must be less than 5MB")
-      return
-    }
-
-    setReceiptFile(file)
-    setUploadError("")
-
-    setIsUploadingReceipt(true)
-    try {
-      const formData = new FormData()
-      formData.append("receipt", file)
-      formData.append("orderId", "temp-" + Date.now())
-
-      const response = await fetch("/api/payment-receipt/upload", {
-        method: "POST",
-        body: formData,
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        setReceiptUrl(result.data.url)
-        toast({
-          title: "Receipt uploaded successfully",
-          description: "Your payment receipt has been uploaded.",
-        })
-      } else {
-        setUploadError(result.error || "Failed to upload receipt")
-        toast({
-          title: "Upload failed",
-          description: result.error || "Failed to upload receipt",
-          variant: "destructive",
-        })
-      }
-    } catch (error) {
-      console.error("Receipt upload error:", error)
-      setUploadError("Failed to upload receipt. Please try again.")
-      toast({
-        title: "Upload failed",
-        description: "Failed to upload receipt. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setIsUploadingReceipt(false)
-    }
-  }
+  const handleSubmit = async () => {}
 
   return (
     <div className="space-y-6 pb-10">
@@ -377,155 +313,6 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
           </div>
         </div>
       )}
-
-      <div className="bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 rounded-xl border border-[#ff0d13]/20 p-6">
-        <div className="flex items-start gap-4">
-          <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-            <Building2 className="w-6 h-6 text-white" />
-          </div>
-          <div className="flex-1">
-            <h2 className="text-lg font-semibold text-slate-900 mb-2">Payment Bank Account Details</h2>
-            <p className="text-sm text-slate-700 mb-4">For the payment, please find the details below:</p>
-
-            <div className="space-y-3 mb-4">
-              <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
-                <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-600 font-medium">Bank Name</p>
-                  <p className="text-sm font-semibold text-slate-900">United Bank Limited (UBL)</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
-                <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-600 font-medium">Account Title</p>
-                  <p className="text-sm font-semibold text-slate-900">BUZZ FILING</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
-                <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-600 font-medium">Account Number</p>
-                  <p className="text-sm font-semibold text-slate-900">1176314943776</p>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
-                <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
-                  <svg className="w-3 h-3 text-[#ff0d13]" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                  </svg>
-                </div>
-                <div>
-                  <p className="text-xs text-slate-600 font-medium">IBAN</p>
-                  <p className="text-sm font-semibold text-slate-900">PK22UNIL0109000314943776</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="mt-4 p-3 bg-[#ff0d13]/5 rounded-lg border border-[#ff0d13]/20">
-              <p className="text-xs text-slate-700">
-                <span className="font-semibold text-[#ff0d13]">Important:</span> After making the payment, kindly send a
-                screenshot with details of your payment. Thank you.
-              </p>
-            </div>
-
-            <div className="mt-4 p-4 bg-white rounded-lg border-2 border-dashed border-slate-300">
-              <label htmlFor="receipt-upload" className="cursor-pointer block">
-                <div className="flex flex-col items-center justify-center py-3">
-                  <svg className="w-8 h-8 text-slate-400 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <p className="text-sm font-medium text-slate-700 mb-1">Upload Payment Receipt</p>
-                  <p className="text-xs text-slate-500">Click to upload or drag and drop</p>
-                  <p className="text-xs text-slate-400 mt-1">PNG, JPG or WEBP (max. 5MB)</p>
-                </div>
-              </label>
-              <input
-                id="receipt-upload"
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={handleReceiptUpload}
-                className="hidden"
-                disabled={isUploadingReceipt}
-              />
-
-              {isUploadingReceipt && (
-                <div className="mt-3 flex items-center justify-center gap-2 text-sm text-slate-600">
-                  <svg className="animate-spin h-4 w-4 text-[#ff0d13]" viewBox="0 0 24 24">
-                    <circle
-                      className="opacity-25"
-                      cx="12"
-                      cy="12"
-                      r="10"
-                      stroke="currentColor"
-                      strokeWidth="4"
-                      fill="none"
-                    />
-                    <path
-                      className="opacity-75"
-                      fill="currentColor"
-                      d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                    />
-                  </svg>
-                  Uploading...
-                </div>
-              )}
-
-              {receiptFile && !isUploadingReceipt && (
-                <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <svg className="w-5 h-5 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                    <div>
-                      <p className="text-sm font-medium text-green-900">{receiptFile.name}</p>
-                      <p className="text-xs text-green-700">{(receiptFile.size / 1024 / 1024).toFixed(2)} MB</p>
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setReceiptFile(null)
-                      setReceiptUrl("")
-                    }}
-                    className="text-red-600 hover:text-red-800"
-                  >
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-              )}
-
-              {uploadError && (
-                <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-700">{uploadError}</p>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-center justify-between mb-6">
