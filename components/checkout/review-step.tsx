@@ -93,57 +93,6 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
   const subtotal = basePackagePrice + stateFilingFee
   const total = subtotal + addonsTotal
 
-  useEffect(() => {
-    const purchasedAddons: any[] = []
-
-    // Add ITIN applications with full details
-    if (membersWithItin.length > 0) {
-      membersWithItin.forEach((member) => {
-        if (member.id) {
-          purchasedAddons.push({
-            serviceId: "itin",
-            name: "ITIN Application",
-            memberName: member.name || member.firstName + " " + member.lastName || "Member",
-            memberId: member.id,
-            price: 149,
-          })
-        }
-      })
-    }
-
-    // Add reseller certificate if selected
-    if (hasResellerCert && !resellerCertIncluded) {
-      purchasedAddons.push({
-        serviceId: "reseller-cert",
-        name: "Reseller Certificate",
-        price: 99,
-      })
-    }
-
-    // Add website if selected
-    if (websitePrice > 0) {
-      purchasedAddons.push({
-        serviceId: "website",
-        name: "Business Website",
-        price: websitePrice,
-      })
-    }
-  }, [total, membersWithItin.length, hasResellerCert, websitePrice, basePackagePrice, stateFilingFee, addonsTotal])
-
-  if (!formData || !formData.packageType || !formData.state) {
-    console.error("[v0] ReviewStep - Invalid formData:", formData)
-    return (
-      <div className="p-6 bg-white rounded-xl border border-slate-200">
-        <p className="text-red-600">
-          Error: Missing required checkout data. Please go back and complete the previous steps.
-        </p>
-        <Button onClick={onBack} className="mt-4">
-          Go Back
-        </Button>
-      </div>
-    )
-  }
-
   const handleRemoveItin = (memberId: string) => {
     const updatedMembers = validMembers.map((m) => (m.id === memberId ? { ...m, itinAdded: false } : m))
     // Assuming updateData is available in the context or passed as a prop
