@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import {
   ArrowRight,
@@ -19,17 +18,18 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { CheckoutData } from "@/app/checkout/page"
-import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/passport-storage"
+import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/local-storage"
+import { useToast } from "@/hooks/use-toast"
 import { STATE_FEES } from "@/lib/constants"
-import { toast } from "@/components/ui/use-toast"
 
 type ReviewStepProps = {
-  formData: CheckoutData
+  formData?: CheckoutData
   onBack: () => void
   onNext: () => void
 }
 
 export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
+  const { toast } = useToast()
   const [passportData, setPassportData] = useState<Record<string, PassportData | null>>({})
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [receiptUrl, setReceiptUrl] = useState<string>("")

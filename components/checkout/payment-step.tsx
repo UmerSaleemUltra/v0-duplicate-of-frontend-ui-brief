@@ -2,8 +2,8 @@
 
 import type React from "react"
 import { useState } from "react"
-import { useRouter } from 'next/navigation'
-import { ArrowLeft, Lock, CheckCircle2, MessageCircle } from 'lucide-react'
+import { useRouter } from "next/navigation"
+import { ArrowLeft, Lock, CheckCircle2, MessageCircle, Building2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -27,15 +27,19 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
   const [loading, setLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [whatsappReference, setWhatsappReference] = useState("")
+  const [receiptFile, setReceiptFile] = useState<File | null>(null)
+  const [receiptUrl, setReceiptUrl] = useState<string>("")
+  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
+  const [uploadError, setUploadError] = useState<string>("")
 
   const getAddonName = (addon: any) => {
     if (!addon) return "Unknown Add-on"
-    
+
     // For ITIN applications with member info
-    if (addon.serviceId === 'itin' && addon.memberName) {
+    if (addon.serviceId === "itin" && addon.memberName) {
       return `ITIN Application - ${addon.memberName}`
     }
-    
+
     // Use addon name if available, otherwise fallback to service name
     return addon.name || addon.serviceName || "Add-on"
   }
@@ -43,7 +47,7 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    
+
     if (isSubmitting || loading) {
       console.log("[v0] Order creation already in progress, ignoring duplicate request")
       return
@@ -260,45 +264,45 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
 
       try {
         console.log("[v0] Starting passport uploads with companyId:", companyResponse.data.id)
-        
+
         const passportUploadPromises = validMembers
-          .filter(m => {
-            const originalMember = data.members?.find(dm => dm.id === m.id)
+          .filter((m) => {
+            const originalMember = data.members?.find((dm) => dm.id === m.id)
             const hasPassport = originalMember?.passportFile instanceof File
             console.log(`[v0] Member ${m.name}: has passport = ${hasPassport}`)
             return hasPassport
           })
           .map(async (member, memberIndex) => {
-            const originalMember = data.members?.find(dm => dm.id === member.id)
+            const originalMember = data.members?.find((dm) => dm.id === member.id)
             if (!originalMember?.passportFile) return null
-            
+
             const formData = new FormData()
             formData.append("file", originalMember.passportFile)
             formData.append("userId", userId)
             formData.append("companyId", companyResponse.data.id)
             formData.append("memberId", memberIndex.toString())
             formData.append("memberName", member.name)
-            
+
             console.log(`[v0] Uploading passport for: ${member.name}, companyId: ${companyResponse.data.id}`)
-            
+
             const response = await fetch("/api/passports/upload", {
               method: "POST",
               body: formData,
             })
-            
+
             if (!response.ok) {
               const errorText = await response.text()
               console.error(`[v0] Failed to upload passport for ${member.name}:`, errorText)
               return null
             }
-            
+
             const result = await response.json()
             console.log(`[v0] Passport uploaded successfully for ${member.name}:`, result.data)
             return result.data
           })
-        
+
         const uploadResults = await Promise.all(passportUploadPromises)
-        const successCount = uploadResults.filter(r => r !== null).length
+        const successCount = uploadResults.filter((r) => r !== null).length
         console.log(`[v0] Passport upload complete: ${successCount}/${passportUploadPromises.length} successful`)
       } catch (passportError) {
         console.error("[v0] Error uploading passports:", passportError)
@@ -322,7 +326,7 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
           addonsTotal: addonsTotal,
           items: [
             {
-              name: `${data.state} ${data.packageType === 'starter' ? 'Starter' : 'Advanced'} Package`,
+              name: `${data.state} ${data.packageType === "starter" ? "Starter" : "Advanced"} Package`,
               price: packagePrice,
               quantity: 1,
             },
@@ -338,19 +342,22 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
 
       console.log("[v0] Notifications will be created by backend APIs")
 
-      const savedCheckoutData = localStorage.getItem('checkoutData')
+      const savedCheckoutData = localStorage.getItem("checkoutData")
       if (savedCheckoutData) {
         try {
           const parsed = JSON.parse(savedCheckoutData)
           // Keep only the saved progress data structure, remove completed order data
-          localStorage.setItem('checkoutData', JSON.stringify({
-            savedAt: parsed.savedAt,
-            expiresAt: parsed.expiresAt,
-            currentStep: 0 // Reset to first step
-          }))
+          localStorage.setItem(
+            "checkoutData",
+            JSON.stringify({
+              savedAt: parsed.savedAt,
+              expiresAt: parsed.expiresAt,
+              currentStep: 0, // Reset to first step
+            }),
+          )
         } catch (e) {
           // If parsing fails, just clear everything
-          localStorage.removeItem('checkoutData')
+          localStorage.removeItem("checkoutData")
         }
       }
 
@@ -364,6 +371,52 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
       alert("Failed to process checkout. Please try again.")
       setIsSubmitting(false)
       setLoading(false)
+    }
+  }
+
+  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+    if (!allowedTypes.includes(file.type)) {
+      setUploadError("Only image files (JPEG, PNG, WEBP) are allowed")
+      return
+    }
+
+    const maxSize = 5 * 1024 * 1024
+    if (file.size > maxSize) {
+      setUploadError("File size must be less than 5MB")
+      return
+    }
+
+    setReceiptFile(file)
+    setUploadError("")
+
+    setIsUploadingReceipt(true)
+    try {
+      const formData = new FormData()
+      formData.append("receipt", file)
+      formData.append("orderId", "temp-" + Date.now())
+
+      const response = await fetch("/api/payment-receipt/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        setReceiptUrl(result.data.url)
+        alert("Receipt uploaded successfully!")
+      } else {
+        setUploadError(result.error || "Failed to upload receipt")
+      }
+    } catch (error) {
+      console.error("Receipt upload error:", error)
+      setUploadError("Failed to upload receipt. Please try again.")
+    } finally {
+      setIsUploadingReceipt(false)
     }
   }
 
@@ -397,11 +450,11 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
             {/* Package + State Fee Combined */}
             <div className="flex justify-between items-center">
               <span className="text-sm text-slate-600">
-                {data.state} {data.packageType === 'starter' ? 'Starter' : 'Advanced'} Package
+                {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
               </span>
               <span className="text-sm font-medium text-slate-900">${packagePrice + stateFilingFee}</span>
             </div>
-            
+
             {/* Individual Addons */}
             {data.addons && data.addons.length > 0 ? (
               data.addons.map((addon, index) => (
@@ -417,7 +470,7 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
                 <span className="text-sm font-medium text-slate-900">${addonsTotal}</span>
               </div>
             ) : null}
-            
+
             {/* Total */}
             <div className="flex justify-between items-center pt-3 border-t border-slate-300">
               <span className="text-base font-semibold text-slate-900">Total Amount</span>
@@ -428,6 +481,150 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
         {/* </CHANGE> */}
 
         <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-gradient-to-br from-[#880000]/5 to-[#ff0d13]/5 rounded-xl border border-[#ff0d13]/20 p-6 mb-6">
+            <div className="flex items-start gap-4">
+              <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-6 h-6 text-white" />
+              </div>
+              <div className="flex-1">
+                <h2 className="text-lg font-semibold text-slate-900 mb-2">Payment Bank Account Details</h2>
+                <p className="text-sm text-slate-700 mb-4">For the payment, please find the details below:</p>
+
+                <div className="space-y-3 mb-4">
+                  <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
+                    <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-3 h-3 text-[#ff0d13]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 font-medium">Bank Name</p>
+                      <p className="text-sm font-semibold text-slate-900">United Bank Limited (UBL)</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
+                    <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-3 h-3 text-[#ff0d13]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 font-medium">Account Title</p>
+                      <p className="text-sm font-semibold text-slate-900">BUZZ FILING</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
+                    <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-3 h-3 text-[#ff0d13]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 font-medium">Account Number</p>
+                      <p className="text-sm font-semibold text-slate-900">1176314943776</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-start gap-3 p-3 bg-white/70 rounded-lg border border-[#ff0d13]/10">
+                    <div className="w-5 h-5 rounded-full bg-[#ff0d13]/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <CheckCircle2 className="w-3 h-3 text-[#ff0d13]" />
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 font-medium">IBAN</p>
+                      <p className="text-sm font-semibold text-slate-900">PK22UNIL0109000314943776</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-4 p-3 bg-[#ff0d13]/5 rounded-lg border border-[#ff0d13]/20">
+                  <p className="text-xs text-slate-700">
+                    <span className="font-semibold text-[#ff0d13]">Important:</span> After making the payment, kindly
+                    send a screenshot with details of your payment. Thank you.
+                  </p>
+                </div>
+
+                <div className="mt-4 p-4 bg-white rounded-lg border-2 border-dashed border-slate-300">
+                  <label htmlFor="receipt-upload-payment" className="cursor-pointer block">
+                    <div className="flex flex-col items-center justify-center py-3">
+                      <svg
+                        className="w-8 h-8 text-slate-400 mb-2"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"
+                        />
+                      </svg>
+                      <p className="text-sm font-medium text-slate-700 mb-1">Upload Payment Receipt</p>
+                      <p className="text-xs text-slate-500">Click to upload or drag and drop</p>
+                      <p className="text-xs text-slate-400 mt-1">PNG, JPG or WEBP (max. 5MB)</p>
+                    </div>
+                  </label>
+                  <input
+                    id="receipt-upload-payment"
+                    type="file"
+                    accept="image/jpeg,image/jpg,image/png,image/webp"
+                    onChange={handleReceiptUpload}
+                    className="hidden"
+                    disabled={isUploadingReceipt}
+                  />
+
+                  {isUploadingReceipt && (
+                    <div className="mt-3 flex items-center justify-center gap-2 text-sm text-slate-600">
+                      <svg className="animate-spin h-4 w-4 text-[#ff0d13]" viewBox="0 0 24 24">
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                          fill="none"
+                        />
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        />
+                      </svg>
+                      Uploading...
+                    </div>
+                  )}
+
+                  {receiptFile && !isUploadingReceipt && (
+                    <div className="mt-3 p-2 bg-green-50 border border-green-200 rounded-lg flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        <div>
+                          <p className="text-sm font-medium text-green-900">{receiptFile.name}</p>
+                          <p className="text-xs text-green-700">{(receiptFile.size / 1024 / 1024).toFixed(2)} MB</p>
+                        </div>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setReceiptFile(null)
+                          setReceiptUrl("")
+                        }}
+                        className="text-red-600 hover:text-red-800"
+                      >
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  )}
+
+                  {uploadError && (
+                    <div className="mt-3 p-2 bg-red-50 border border-red-200 rounded-lg">
+                      <p className="text-sm text-red-700">{uploadError}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
           <div className="p-6 rounded-xl bg-success/5 border border-success/20">
             <div className="flex items-start gap-4 mb-4">
               <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
@@ -492,7 +689,7 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
               size="lg"
               disabled={loading || isSubmitting || !whatsappReference}
             >
-              {(loading || isSubmitting) ? (
+              {loading || isSubmitting ? (
                 "Processing Order..."
               ) : (
                 <>

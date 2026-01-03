@@ -86,6 +86,27 @@ export const currentUserStorage = {
   clear: () => {},
 }
 
+export type PassportData = {
+  memberId: string
+  memberName: string
+  fileName: string
+  fileType: string
+  fileSize: number
+  data: ArrayBuffer
+}
+
+export const getPassport = async (memberId: string): Promise<PassportData | null> => {
+  // This is a placeholder function since passports are stored in IndexedDB or handled by the browser
+  // In a real implementation, this would fetch from IndexedDB or a similar storage mechanism
+  return null
+}
+
+export const arrayBufferToFile = (passportData: PassportData): File => {
+  const blob = new Blob([passportData.data], { type: passportData.fileType })
+  return new File([blob], passportData.fileName, { type: passportData.fileType })
+}
+// </CHANGE>
+
 export const initializeDefaultData = () => {
   // No-op for API-based system
 }
