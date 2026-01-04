@@ -100,7 +100,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     console.log("[v0] receiptUrl:", receiptUrl)
 
     // Get company data from session storage
-    const companyDataStr = sessionStorage.getItem("companyData")
+    const companyDataStr = localStorage.getItem("companyData")
     console.log("[v0] companyDataStr:", companyDataStr)
 
     if (!companyDataStr) {
