@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { packagePricing } from "@/lib/pricing"
-import { STATE_FEES } from "@/lib/constants"
 
 interface PaymentStepProps {
   data: any
@@ -81,12 +80,10 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       }
 
       const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
-      const stateFilingFee = STATE_FEES[data.state] || 100
       const addonsTotal = data.addonsTotal || 0
-      const totalAmount = packagePrice + stateFilingFee + addonsTotal
+      const totalAmount = packagePrice + addonsTotal
 
       console.log("[v0] Payment step - state:", data.state)
-      console.log("[v0] Payment step - stateFilingFee:", stateFilingFee)
       console.log("[v0] Payment step - packagePrice:", packagePrice)
       console.log("[v0] Payment step - totalAmount:", totalAmount)
       console.log("[v0] Payment step - addons data:", data.addons)
@@ -99,7 +96,6 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         amount: totalAmount,
         total: totalAmount,
         packagePrice: packagePrice,
-        stateFilingFee: stateFilingFee,
         addonsTotal: addonsTotal,
         items: [
           {
@@ -182,9 +178,8 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   }
 
   const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
-  const stateFilingFee = STATE_FEES[data.state] || 100
   const addonsTotal = data.addonsTotal || 0
-  const totalAmount = packagePrice + stateFilingFee + addonsTotal
+  const totalAmount = packagePrice + addonsTotal
 
   console.log("[v0] Payment step - addons data:", data.addons)
   console.log("[v0] Payment step - addonsTotal:", addonsTotal)
@@ -222,11 +217,6 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                   {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
                 </span>
                 <span className="font-semibold text-foreground">${packagePrice.toFixed(2)}</span>
-              </div>
-
-              <div className="flex items-center justify-between py-3 border-b border-glass-border">
-                <span className="text-muted">{data.state} State Filing Fee</span>
-                <span className="font-semibold text-foreground">${stateFilingFee.toFixed(2)}</span>
               </div>
 
               {data.addons && data.addons.length > 0 ? (
@@ -398,23 +388,33 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
           {!isPaymentValid && <p className="text-sm text-destructive text-center mt-2">{getValidationMessage()}</p>}
 
-          <Button
-            onClick={handleSubmit}
-            disabled={isSubmitting || !isPaymentValid}
-            className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-smooth shadow-glass disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isSubmitting ? (
-              <>
-                <div className="animate-spin mr-2 h-5 w-5 border-2 border-white/30 border-t-white rounded-full" />
-                Processing...
-              </>
-            ) : (
-              <>
-                Submit Order
-                <X className="w-5 h-5 ml-2" />
-              </>
-            )}
-          </Button>
+          <div className="flex gap-4">
+            <Button
+              type="button"
+              onClick={onBack}
+              variant="outline"
+              className="h-14 px-8 text-lg font-semibold border-2 hover:bg-muted/50 transition-smooth bg-transparent"
+            >
+              Back
+            </Button>
+            <Button
+              onClick={handleSubmit}
+              disabled={isSubmitting || !isPaymentValid}
+              className="flex-1 h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-smooth shadow-glass disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isSubmitting ? (
+                <>
+                  <div className="animate-spin mr-2 h-5 w-5 border-2 border-white/30 border-t-white rounded-full" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  Submit Order
+                  <CheckCircle2 className="w-5 h-5 ml-2" />
+                </>
+              )}
+            </Button>
+          </div>
         </Card>
       </div>
     </form>
