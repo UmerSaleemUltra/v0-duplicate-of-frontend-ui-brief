@@ -276,12 +276,6 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
                       <span className="text-sm font-medium text-slate-900">{member.phone}</span>
                     </div>
                   )}
-                  {member.ownershipPercentage && member.ownershipPercentage > 0 && (
-                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
-                      <span className="text-sm text-slate-500">Ownership</span>
-                      <span className="text-sm font-medium text-slate-900">{member.ownershipPercentage}%</span>
-                    </div>
-                  )}
                   <div className="flex justify-between items-center py-2 border-b border-slate-100">
                     <span className="text-sm text-slate-500">Country</span>
                     <span className="text-sm font-medium text-slate-900">{member.country || "US"}</span>

@@ -216,7 +216,6 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
                 ssn: m.ssn || "",
                 dateOfBirth: m.dateOfBirth || "",
                 isResponsiblePerson: m.isResponsiblePerson || false,
-                ownershipPercentage: m.ownershipPercentage || 0,
                 needsItin: m.needsItin || false,
               }
             })
@@ -278,7 +277,6 @@ export function PaymentStep({ data, onBack }: PaymentStepProps) {
             dateOfBirth: m.dateOfBirth || "",
             ssn: m.ssn || "",
             isResponsiblePerson: m.isResponsiblePerson || false,
-            ownershipPercentage: m.ownershipPercentage || 0,
             needsItin: m.needsItin || false,
           })),
           milestones: {

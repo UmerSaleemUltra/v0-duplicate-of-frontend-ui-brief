@@ -99,7 +99,6 @@ export interface Company {
     ssn?: string
     dateOfBirth?: string
     isResponsiblePerson: boolean
-    ownershipPercentage?: number
     needsItin?: boolean
     passportKey?: string
   }>
