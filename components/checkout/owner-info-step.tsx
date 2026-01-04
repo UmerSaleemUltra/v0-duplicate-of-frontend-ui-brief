@@ -86,7 +86,41 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
   const removeMember = (id: string) => {
     if (data.members?.length > 1) {
-      updateData({ members: (data.members || []).filter((m) => m.id !== id) })
+      // Revoke blob URL for this member's passport preview
+      if (passportPreviews[id]) {
+        URL.revokeObjectURL(passportPreviews[id])
+      }
+
+      // Remove member from data
+      const updatedMembers = (data.members || []).filter((m) => m.id !== id)
+
+      // If we removed the responsible person, make the first remaining member responsible
+      const hadResponsible = data.members.find((m) => m.id === id)?.isResponsiblePerson
+      if (hadResponsible && updatedMembers.length > 0) {
+        updatedMembers[0].isResponsiblePerson = true
+      }
+
+      updateData({ members: updatedMembers })
+
+      // Clean up state for this member
+      setPassportPreviews((prev) => {
+        const newPreviews = { ...prev }
+        delete newPreviews[id]
+        return newPreviews
+      })
+
+      setUploadingPassports((prev) => {
+        const newUploading = { ...prev }
+        delete newUploading[id]
+        return newUploading
+      })
+
+      // Clear any errors for this member
+      setErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[`member-${id}`]
+        return newErrors
+      })
     }
   }
 
