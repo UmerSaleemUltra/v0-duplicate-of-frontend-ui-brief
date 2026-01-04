@@ -242,7 +242,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-[#ff0d13] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
             <Lock className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
@@ -302,7 +302,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                 className={`flex items-center justify-center gap-2 h-11 px-6 rounded-lg font-semibold text-sm transition-all cursor-pointer ${
                   isUploadingReceipt || receiptFile
                     ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                    : "bg-[#ff0d13] text-white hover:bg-[#d81c20]"
+                    : "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:from-[#6b0000] hover:to-[#d81c20]"
                 }`}
               >
                 {isUploadingReceipt ? (
@@ -407,7 +407,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         <Button
           type="submit"
           disabled={isSubmitting || !isPaymentValid}
-          className="flex-1 h-12 px-8 text-base font-semibold bg-[#ff0d13] hover:bg-[#d81c20] text-white transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-lg"
+          className="flex-1 h-12 px-8 text-base font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#6b0000] hover:to-[#d81c20] text-white transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-lg"
         >
           {isSubmitting ? (
             <>
