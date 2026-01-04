@@ -1,14 +1,24 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { Lock, X, CheckCircle2, ArrowLeft, ArrowRight, AlertCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { packagePricing } from "@/lib/pricing"
-import { STATE_FEES } from "@/lib/constants"
+import { ArrowLeft, ArrowRight, Lock, CheckCircle2, Phone, X } from "lucide-react"
+import axios from "axios"
+
+const packagePricing = {
+  starter: 149,
+  advanced: 299,
+}
+
+const STATE_FEES = {
+  NY: 50,
+  CA: 75,
+  TX: 60,
+}
 
 interface PaymentStepProps {
   data: any
@@ -32,6 +42,29 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
   const [uploadError, setUploadError] = useState<string>("")
+  const [pkrRate, setPkrRate] = useState<number | null>(null)
+  const [isLoadingRate, setIsLoadingRate] = useState(true)
+
+  useEffect(() => {
+    async function convertUSDtoPKR() {
+      try {
+        const response = await axios.get("https://api.exchangerate-api.com/v4/latest/USD")
+        return response.data.rates.PKR
+      } catch (error) {
+        console.log("Error converting USD to PKR:", error)
+        throw new Error("Currency conversion failed")
+      }
+    }
+
+    convertUSDtoPKR()
+      .then((rate) => {
+        setPkrRate(rate)
+        setIsLoadingRate(false)
+      })
+      .catch(() => {
+        setIsLoadingRate(false)
+      })
+  }, [])
 
   const getAddonName = (addon: any) => {
     if (!addon) return "Unknown Add-on"
@@ -212,6 +245,9 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     return ""
   }
 
+  const totalAmountPKR = pkrRate ? totalAmount * pkrRate : null
+  const packageWithStateFeePKR = pkrRate ? packageWithStateFee * pkrRate : null
+
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto space-y-6 pb-10">
       <div>
@@ -285,20 +321,33 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             <span className="text-sm text-slate-700">
               {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
             </span>
-            <span className="text-sm font-medium text-slate-900">${packageWithStateFee.toFixed(2)}</span>
+            <div className="text-right">
+              <span className="text-sm font-medium text-slate-900">${packageWithStateFee.toFixed(2)}</span>
+              {packageWithStateFeePKR && (
+                <p className="text-xs text-slate-500 mt-0.5">PKR {packageWithStateFeePKR.toFixed(2)}</p>
+              )}
+            </div>
           </div>
 
           {data.addons && data.addons.length > 0 ? (
             data.addons.map((addon, index) => (
               <div key={index} className="flex items-center justify-between py-2 border-b border-slate-100">
                 <span className="text-sm text-slate-700">{getAddonName(addon)}</span>
-                <span className="text-sm font-medium text-slate-900">${addon.price || 0}</span>
+                <div className="text-right">
+                  <span className="text-sm font-medium text-slate-900">${addon.price || 0}</span>
+                  {pkrRate && addon.price && (
+                    <p className="text-xs text-slate-500 mt-0.5">PKR {(addon.price * pkrRate).toFixed(2)}</p>
+                  )}
+                </div>
               </div>
             ))
           ) : addonsTotal > 0 ? (
             <div className="flex items-center justify-between py-2 border-b border-slate-100">
               <span className="text-sm text-slate-700">Add-ons</span>
-              <span className="text-sm font-medium text-slate-900">${addonsTotal.toFixed(2)}</span>
+              <div className="text-right">
+                <span className="text-sm font-medium text-slate-900">${addonsTotal.toFixed(2)}</span>
+                {pkrRate && <p className="text-xs text-slate-500 mt-0.5">PKR {(addonsTotal * pkrRate).toFixed(2)}</p>}
+              </div>
             </div>
           ) : null}
 
@@ -307,7 +356,16 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               <p className="text-lg font-semibold text-slate-900">Total Amount</p>
               <p className="text-xs text-slate-600 mt-0.5">One-time payment</p>
             </div>
-            <span className="text-3xl font-bold text-slate-900">${totalAmount.toFixed(2)}</span>
+            <div className="text-right">
+              <span className="text-3xl font-bold text-slate-900">${totalAmount.toFixed(2)}</span>
+              {isLoadingRate ? (
+                <p className="text-sm text-slate-500 mt-1">Loading PKR rate...</p>
+              ) : totalAmountPKR ? (
+                <p className="text-lg font-semibold text-slate-600 mt-1">PKR {totalAmountPKR.toFixed(2)}</p>
+              ) : (
+                <p className="text-xs text-slate-500 mt-1">PKR conversion unavailable</p>
+              )}
+            </div>
           </div>
         </div>
       </div>
@@ -347,7 +405,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           </div>
 
           <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
-            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <Phone className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
               <p className="text-red-900">
                 <span className="font-semibold">Important:</span> After making the payment, kindly send a screenshot
@@ -450,7 +508,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
+            <Phone className="w-5 h-5 text-yellow-600" />
           </div>
           <div>
             <h4 className="text-base font-semibold text-slate-900 mb-1">Payment Verification</h4>
