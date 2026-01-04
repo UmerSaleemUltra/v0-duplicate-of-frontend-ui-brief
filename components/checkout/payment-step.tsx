@@ -242,7 +242,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+          <div className="w-10 h-10 rounded-lg bg-[#ff0d13] flex items-center justify-center flex-shrink-0">
             <Lock className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
@@ -302,7 +302,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                 className={`flex items-center justify-center gap-2 h-11 px-6 rounded-lg font-semibold text-sm transition-all cursor-pointer ${
                   isUploadingReceipt || receiptFile
                     ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                    : "bg-[#880000] text-white hover:bg-[#A00000]"
+                    : "bg-[#ff0d13] text-white hover:bg-[#d81c20]"
                 }`}
               >
                 {isUploadingReceipt ? (
@@ -399,7 +399,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           type="button"
           onClick={onBack}
           variant="outline"
-          className="w-full sm:w-auto h-11 px-6 text-sm font-medium border-2 border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all bg-white flex items-center justify-center gap-2 rounded-lg"
+          className="w-full sm:w-auto h-12 px-8 text-base font-medium border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all bg-white flex items-center justify-center gap-2 rounded-lg"
         >
           <ArrowLeft className="w-4 h-4" />
           Back to Edit
@@ -407,7 +407,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         <Button
           type="submit"
           disabled={isSubmitting || !isPaymentValid}
-          className="flex-1 h-11 text-sm font-semibold bg-gradient-to-r from-[#880000] to-[#A00000] hover:from-[#A00000] hover:to-[#C00000] text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-lg"
+          className="flex-1 h-12 px-8 text-base font-semibold bg-[#ff0d13] hover:bg-[#d81c20] text-white transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-lg"
         >
           {isSubmitting ? (
             <>
