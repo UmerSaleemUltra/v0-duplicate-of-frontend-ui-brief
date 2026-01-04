@@ -52,7 +52,16 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         })
       }
     }
-  }, [])
+  }, [data.members, updateData])
+
+  useEffect(() => {
+    return () => {
+      // Cleanup all blob URLs when component unmounts
+      Object.values(passportPreviews).forEach((url) => {
+        if (url) URL.revokeObjectURL(url)
+      })
+    }
+  }, [passportPreviews])
 
   const addMember = () => {
     const newMember: Member = {
@@ -105,6 +114,9 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     }
     ;(data.members || []).forEach((member, index) => {
       if (!member.name) newErrors[`member${index}Name`] = "Name is required"
+      if (!member.email) newErrors[`member${index}Email`] = "Email is required"
+      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(member.email))
+        newErrors[`member${index}Email`] = "Invalid email format"
       if (!member.address) newErrors[`member${index}Address`] = "Address is required"
       if (!member.city) newErrors[`member${index}City`] = "City is required"
       if (!member.state) newErrors[`member${index}State`] = "State/Province is required"
@@ -122,10 +134,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     if (validate()) onNext()
   }
 
-  const handleAddItinForMember = (memberId: string) => {
-    updateMember(memberId, { itinAdded: true })
-  }
-
   const handlePassportUpload = async (memberId: string, file: File | null) => {
     if (!file) {
       if (passportPreviews[memberId]) URL.revokeObjectURL(passportPreviews[memberId])
@@ -135,6 +143,11 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         return n
       })
       updateMember(memberId, { passportFile: null, passportKey: undefined, passportUrl: undefined })
+      return
+    }
+
+    if (uploadingPassports[memberId]) {
+      console.log("[v0] Upload already in progress for this member")
       return
     }
 
@@ -158,7 +171,10 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       const { url, downloadUrl } = await response.json()
       console.log("[v0] Passport uploaded successfully:", url)
 
-      // Create preview URL for display
+      if (passportPreviews[memberId]) {
+        URL.revokeObjectURL(passportPreviews[memberId])
+      }
+
       const blobUrl = URL.createObjectURL(file)
       setPassportPreviews((prev) => ({ ...prev, [memberId]: blobUrl }))
 
@@ -194,6 +210,40 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
   const getCountryName = (isoCode: string) => {
     return countries.find((c) => c.isoCode === isoCode)?.name || "Select a country"
+  }
+
+  const handleAddItinForMember = (memberId: string) => {
+    const itinAddon = {
+      id: `itin-${memberId}`,
+      name: `ITIN Application - ${data.members?.find((m) => m.id === memberId)?.name || "Member"}`,
+      price: 149,
+      memberId: memberId,
+    }
+
+    const currentAddons = data.addons || []
+    const addonExists = currentAddons.some((a) => a.id === itinAddon.id)
+
+    if (!addonExists) {
+      updateData({
+        addons: [...currentAddons, itinAddon],
+        addonsTotal: (data.addonsTotal || 0) + 149,
+      })
+    }
+
+    updateMember(memberId, { itinAdded: true })
+  }
+
+  const handleRemoveItinForMember = (memberId: string) => {
+    const itinAddonId = `itin-${memberId}`
+    const currentAddons = data.addons || []
+    const updatedAddons = currentAddons.filter((a) => a.id !== itinAddonId)
+
+    updateData({
+      addons: updatedAddons,
+      addonsTotal: Math.max(0, (data.addonsTotal || 0) - 149),
+    })
+
+    updateMember(memberId, { itinAdded: false })
   }
 
   return (
@@ -465,7 +515,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                               type="button"
                               variant="outline"
                               className="border-red-300 text-red-600 bg-transparent"
-                              onClick={() => updateMember(member.id, { itinAdded: false })}
+                              onClick={() => handleRemoveItinForMember(member.id)}
                             >
                               <X className="w-4 h-4 mr-2" /> Remove
                             </Button>
