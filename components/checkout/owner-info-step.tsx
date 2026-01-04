@@ -166,7 +166,15 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (validate()) onNext()
+    console.log("[v0] Owner info form submitted")
+    console.log("[v0] Members:", data.members)
+    console.log("[v0] Validating...")
+    if (validate()) {
+      console.log("[v0] Validation passed, calling onNext")
+      onNext()
+    } else {
+      console.log("[v0] Validation failed, errors:", errors)
+    }
   }
 
   const handlePassportUpload = async (memberId: string, file: File | null) => {
@@ -506,18 +514,41 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                     <Input
                       id={`passport-${member.id}`}
                       type="file"
-                      accept="image/*,.pdf"
+                      accept="image/*,application/pdf,.pdf"
                       onChange={(e) => handlePassportUpload(member.id, e.target.files?.[0] || null)}
                       className="pl-10 h-11 file:text-sm file:font-medium"
+                      disabled={uploadingPassports[member.id]}
                     />
                   </div>
 
+                  {uploadingPassports[member.id] && (
+                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-center gap-3">
+                      <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
+                      <span className="text-sm font-medium text-blue-700">Uploading passport...</span>
+                    </div>
+                  )}
+
                   {/* Uploaded File */}
-                  {member.passportFile && (
+                  {member.passportFile && !uploadingPassports[member.id] && (
                     <div className="p-3 rounded-lg bg-green-50 border border-green-200 flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-green-700 truncate">{member.passportFile.name}</span>
-                        <span className="text-xs text-green-600">Ready to upload after company creation</span>
+                      <div className="flex items-center gap-3">
+                        {member.passportFile.type.startsWith("image/") && passportPreviews[member.id] ? (
+                          <img
+                            src={passportPreviews[member.id] || "/placeholder.svg"}
+                            alt="Passport preview"
+                            className="w-10 h-10 rounded object-cover"
+                          />
+                        ) : (
+                          <div className="w-10 h-10 rounded bg-green-100 flex items-center justify-center">
+                            <FileText className="w-5 h-5 text-green-600" />
+                          </div>
+                        )}
+                        <div className="flex flex-col">
+                          <span className="text-sm font-medium text-green-700 truncate">
+                            {member.passportFile.name}
+                          </span>
+                          <span className="text-xs text-green-600">Uploaded successfully</span>
+                        </div>
                       </div>
 
                       <Button
@@ -533,7 +564,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                     </div>
                   )}
 
-                  {errors[`member${index}Passport`] && (
+                  {errors[`member${index}Passport`] && !uploadingPassports[member.id] && (
                     <p className="text-xs text-red-600">{errors[`member${index}Passport`]}</p>
                   )}
                 </div>
@@ -624,11 +655,22 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         </Button>
 
         <Button
+          type="button"
           onClick={handleSubmit}
-          className="w-full sm:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white"
+          disabled={Object.values(uploadingPassports).some(Boolean)}
+          className="w-full sm:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Next
-          <ArrowRight className="ml-2 w-4 h-4" />
+          {Object.values(uploadingPassports).some(Boolean) ? (
+            <>
+              <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              Uploading...
+            </>
+          ) : (
+            <>
+              Next
+              <ArrowRight className="ml-2 w-4 h-4" />
+            </>
+          )}
         </Button>
       </div>
     </div>
