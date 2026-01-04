@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { ArrowLeft, ArrowRight, Lock, CheckCircle2, Phone, X } from "lucide-react"
-import axios from "axios"
 
 const packagePricing = {
   starter: 149,
@@ -48,8 +47,14 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   useEffect(() => {
     async function convertUSDtoPKR() {
       try {
-        const response = await axios.get("https://api.exchangerate-api.com/v4/latest/USD")
-        return response.data.rates.PKR
+        const response = await fetch("/api/exchange-rate")
+        const data = await response.json()
+
+        if (data.success && data.rate) {
+          return data.rate
+        } else {
+          throw new Error("Currency conversion failed")
+        }
       } catch (error) {
         console.log("Error converting USD to PKR:", error)
         throw new Error("Currency conversion failed")
@@ -346,7 +351,9 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               <span className="text-sm text-slate-700">Add-ons</span>
               <div className="text-right">
                 <span className="text-sm font-medium text-slate-900">${addonsTotal.toFixed(2)}</span>
-                {pkrRate && <p className="text-xs text-slate-500 mt-0.5">PKR {(addonsTotal * pkrRate).toFixed(2)}</p>}
+                {pkrRate && (
+                  <p className="text-lg font-semibold text-slate-600 mt-1">PKR {(addonsTotal * pkrRate).toFixed(2)}</p>
+                )}
               </div>
             </div>
           ) : null}
