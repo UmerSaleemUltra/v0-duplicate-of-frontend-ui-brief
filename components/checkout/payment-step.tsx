@@ -347,6 +347,13 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       const addonsTotal = data.addonsTotal || 0
       const totalAmount = packagePrice + stateFilingFee + addonsTotal
 
+      console.log("[v0] Payment step - state:", data.state)
+      console.log("[v0] Payment step - stateFilingFee:", stateFilingFee)
+      console.log("[v0] Payment step - packagePrice:", packagePrice)
+      console.log("[v0] Payment step - totalAmount:", totalAmount)
+      console.log("[v0] Payment step - addons data:", data.addons)
+      console.log("[v0] Payment step - addonsTotal:", addonsTotal)
+
       const orderData = {
         companyId: companyData.data.id,
         companyName: data.businessName,
@@ -479,6 +486,11 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                   {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
                 </span>
                 <span className="font-semibold text-foreground">${packagePrice.toFixed(2)}</span>
+              </div>
+
+              <div className="flex items-center justify-between py-3 border-b border-glass-border">
+                <span className="text-muted">{data.state} State Filing Fee</span>
+                <span className="font-semibold text-foreground">${stateFilingFee.toFixed(2)}</span>
               </div>
 
               {data.addons && data.addons.length > 0 ? (
