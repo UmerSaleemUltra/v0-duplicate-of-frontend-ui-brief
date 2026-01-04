@@ -22,9 +22,9 @@ function calculateRenewalDate(): string {
   return date.toISOString()
 }
 
-export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
+export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const router = useRouter()
-  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "already_paid">("bank_transfer")
+  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "already_paid">("already_paid")
   const [whatsappPhone, setWhatsappPhone] = useState("")
   const [receiptUrl, setReceiptUrl] = useState("")
   const [loading, setLoading] = useState(false)
@@ -244,6 +244,13 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const totalAmountPKR = pkrRate ? totalAmount * pkrRate : null
   const packageWithStateFeePKR = pkrRate ? packageWithStateFee * pkrRate : null
 
+  const formatPKR = (amount: number) => {
+    return new Intl.NumberFormat('en-US', {
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(Math.round(amount))
+  }
+
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto space-y-6 pb-10">
       <div>
@@ -251,36 +258,9 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         <p className="text-slate-700">Complete your payment via WhatsApp to finalize your business formation order.</p>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
         <h3 className="text-lg font-semibold mb-4 text-slate-900">Select Payment Method</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <button
-            type="button"
-            onClick={() => setPaymentMethod("bank_transfer")}
-            className={`relative p-6 rounded-xl border-2 transition-all text-left ${
-              paymentMethod === "bank_transfer"
-                ? "border-[#ff0d13] bg-red-50/50"
-                : "border-slate-200 hover:border-slate-300 bg-white"
-            }`}
-          >
-            {paymentMethod === "bank_transfer" && (
-              <div className="absolute top-4 right-4">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4 text-white" />
-                </div>
-              </div>
-            )}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <Lock className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-slate-900 mb-1">Bank Transfer</h4>
-                <p className="text-sm text-slate-600">View bank details, make payment, and upload receipt</p>
-              </div>
-            </div>
-          </button>
-
           <button
             type="button"
             onClick={() => setPaymentMethod("already_paid")}
@@ -307,6 +287,33 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               </div>
             </div>
           </button>
+
+          <button
+            type="button"
+            onClick={() => setPaymentMethod("bank_transfer")}
+            className={`relative p-6 rounded-xl border-2 transition-all text-left ${
+              paymentMethod === "bank_transfer"
+                ? "border-[#ff0d13] bg-red-50/50"
+                : "border-slate-200 hover:border-slate-300 bg-white"
+            }`}
+          >
+            {paymentMethod === "bank_transfer" && (
+              <div className="absolute top-4 right-4">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+              </div>
+            )}
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Lock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-900 mb-1">Make Payment</h4>
+                <p className="text-sm text-slate-600">View bank details, make payment, and upload receipt</p>
+              </div>
+            </div>
+          </button>
         </div>
       </div>
 
@@ -320,7 +327,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             <div className="text-right">
               <span className="text-sm font-medium text-slate-900">${packageWithStateFee.toFixed(2)}</span>
               {packageWithStateFeePKR && (
-                <p className="text-xs text-slate-500 mt-0.5">PKR {packageWithStateFeePKR.toFixed(2)}</p>
+                <p className="text-xs text-slate-500 mt-0.5">{formatPKR(packageWithStateFeePKR)} PKR</p>
               )}
             </div>
           </div>
@@ -332,7 +339,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                 <div className="text-right">
                   <span className="text-sm font-medium text-slate-900">${addon.price || 0}</span>
                   {pkrRate && addon.price && (
-                    <p className="text-xs text-slate-500 mt-0.5">PKR {(addon.price * pkrRate).toFixed(2)}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{formatPKR(addon.price * pkrRate)} PKR</p>
                   )}
                 </div>
               </div>
@@ -343,7 +350,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               <div className="text-right">
                 <span className="text-sm font-medium text-slate-900">${addonsTotal.toFixed(2)}</span>
                 {pkrRate && (
-                  <p className="text-lg font-semibold text-slate-600 mt-1">PKR {(addonsTotal * pkrRate).toFixed(2)}</p>
+                  <p className="text-lg font-semibold text-slate-600 mt-1">{formatPKR(addonsTotal * pkrRate)} PKR</p>
                 )}
               </div>
             </div>
@@ -359,7 +366,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               {isLoadingRate ? (
                 <p className="text-sm text-slate-500 mt-1">Loading PKR rate...</p>
               ) : totalAmountPKR ? (
-                <p className="text-lg font-semibold text-slate-600 mt-1">PKR {totalAmountPKR.toFixed(2)}</p>
+                <p className="text-lg font-semibold text-slate-600 mt-1">{formatPKR(totalAmountPKR)} PKR</p>
               ) : (
                 <p className="text-xs text-slate-500 mt-1">PKR conversion unavailable</p>
               )}
@@ -478,7 +485,6 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               <p className="text-xs text-slate-600">Click to upload or drag and drop PNG, JPG or WEBP (max. 5MB)</p>
             </div>
           </div>
-        </div>
       )}
 
       {paymentMethod === "already_paid" && (
@@ -549,3 +555,5 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     </form>
   )
 }
+
+export { PaymentStep }\
