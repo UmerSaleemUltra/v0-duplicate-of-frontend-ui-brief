@@ -359,27 +359,6 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
-          </div>
-          <div>
-            <h4 className="text-base font-semibold text-slate-900 mb-1">Payment Verification</h4>
-            <p className="text-sm text-slate-700 leading-relaxed">
-              Your order will be processed once we verify your payment. This usually takes 1-2 business hours during
-              office hours.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      {!isPaymentValid && (
-        <p className="text-sm text-red-600 text-center bg-red-50 border border-red-200 rounded-lg p-3">
-          {getValidationMessage()}
-        </p>
-      )}
-
       <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <Button
           type="button"
