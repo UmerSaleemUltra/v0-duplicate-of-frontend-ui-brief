@@ -24,7 +24,6 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Country } from "country-state-city"
 import type { CheckoutData, Member } from "@/app/checkout/page"
-import { authService } from "@/lib/auth"
 
 type OwnerInfoStepProps = {
   data: CheckoutData
@@ -53,7 +52,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         })
       }
     }
-  }, [data.members, updateData])
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -164,8 +163,8 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
     console.log("[v0] Owner info form submitted")
     console.log("[v0] Members:", data.members)
     console.log("[v0] Validating...")
@@ -175,6 +174,27 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     } else {
       console.log("[v0] Validation failed, errors:", errors)
     }
+  }
+
+  const handleAddItinForMember = (memberId: string) => {
+    const itinAddon = {
+      id: `itin-${memberId}`,
+      name: `ITIN Application - ${data.members?.find((m) => m.id === memberId)?.name || "Member"}`,
+      price: 149,
+      memberId: memberId,
+    }
+
+    const currentAddons = data.addons || []
+    const addonExists = currentAddons.some((a) => a.id === itinAddon.id)
+
+    if (!addonExists) {
+      updateData({
+        addons: [...currentAddons, itinAddon],
+        addonsTotal: (data.addonsTotal || 0) + 149,
+      })
+    }
+
+    updateMember(memberId, { itinAdded: true })
   }
 
   const handlePassportUpload = async (memberId: string, file: File | null) => {
@@ -197,38 +217,13 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     setUploadingPassports((prev) => ({ ...prev, [memberId]: true }))
 
     try {
-      console.log("[v0] Uploading passport to database...")
-
-      // Get auth token
-      const token = authService.getToken()
-      if (!token) {
-        throw new Error("Authentication required. Please log in to upload passports.")
-      }
-
-      // Get current user info
-      const currentUser = authService.getCurrentUser()
-      if (!currentUser) {
-        throw new Error("User information not found. Please log in again.")
-      }
-
-      // Find member details
-      const member = data.members?.find((m) => m.id === memberId)
-      const memberName = member
-        ? `${member.firstName || ""} ${member.lastName || ""}`.trim() || member.name || "Unknown"
-        : "Unknown"
+      console.log("[v0] Uploading passport to Vercel Blob...")
 
       const formData = new FormData()
       formData.append("file", file)
-      formData.append("userId", currentUser.id)
-      formData.append("companyId", data.userId || "") // Use empty string if no company yet
-      formData.append("memberId", memberId)
-      formData.append("memberName", memberName)
 
       const response = await fetch("/api/passports/upload", {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
         body: formData,
       })
 
@@ -237,22 +232,17 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         throw new Error(errorData.error || "Failed to upload passport")
       }
 
-      const result = await response.json()
-      console.log("[v0] Passport uploaded successfully:", result)
+      const { url, downloadUrl } = await response.json()
+      console.log("[v0] Passport uploaded successfully:", url)
 
-      const passportUrl = result.data?.fileUrl || ""
-
-      if (passportPreviews[memberId]) {
-        URL.revokeObjectURL(passportPreviews[memberId])
-      }
-
+      // Create preview URL for display
       const blobUrl = URL.createObjectURL(file)
       setPassportPreviews((prev) => ({ ...prev, [memberId]: blobUrl }))
 
       updateMember(memberId, {
         passportFile: file,
-        passportKey: result.data?.id || passportUrl, // Store passport DB ID
-        passportUrl: passportUrl,
+        passportKey: url,
+        passportUrl: downloadUrl || url,
       })
     } catch (error) {
       console.error("[v0] Error uploading passport:", error)
@@ -282,27 +272,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
   const getCountryName = (isoCode: string) => {
     return countries.find((c) => c.isoCode === isoCode)?.name || "Select a country"
-  }
-
-  const handleAddItinForMember = (memberId: string) => {
-    const itinAddon = {
-      id: `itin-${memberId}`,
-      name: `ITIN Application - ${data.members?.find((m) => m.id === memberId)?.name || "Member"}`,
-      price: 149,
-      memberId: memberId,
-    }
-
-    const currentAddons = data.addons || []
-    const addonExists = currentAddons.some((a) => a.id === itinAddon.id)
-
-    if (!addonExists) {
-      updateData({
-        addons: [...currentAddons, itinAddon],
-        addonsTotal: (data.addonsTotal || 0) + 149,
-      })
-    }
-
-    updateMember(memberId, { itinAdded: true })
   }
 
   const handleRemoveItinForMember = (memberId: string) => {
@@ -514,41 +483,18 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                     <Input
                       id={`passport-${member.id}`}
                       type="file"
-                      accept="image/*,application/pdf,.pdf"
+                      accept="image/*,.pdf"
                       onChange={(e) => handlePassportUpload(member.id, e.target.files?.[0] || null)}
                       className="pl-10 h-11 file:text-sm file:font-medium"
-                      disabled={uploadingPassports[member.id]}
                     />
                   </div>
 
-                  {uploadingPassports[member.id] && (
-                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-200 flex items-center gap-3">
-                      <div className="w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                      <span className="text-sm font-medium text-blue-700">Uploading passport...</span>
-                    </div>
-                  )}
-
                   {/* Uploaded File */}
-                  {member.passportFile && !uploadingPassports[member.id] && (
+                  {member.passportFile && (
                     <div className="p-3 rounded-lg bg-green-50 border border-green-200 flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        {member.passportFile.type.startsWith("image/") && passportPreviews[member.id] ? (
-                          <img
-                            src={passportPreviews[member.id] || "/placeholder.svg"}
-                            alt="Passport preview"
-                            className="w-10 h-10 rounded object-cover"
-                          />
-                        ) : (
-                          <div className="w-10 h-10 rounded bg-green-100 flex items-center justify-center">
-                            <FileText className="w-5 h-5 text-green-600" />
-                          </div>
-                        )}
-                        <div className="flex flex-col">
-                          <span className="text-sm font-medium text-green-700 truncate">
-                            {member.passportFile.name}
-                          </span>
-                          <span className="text-xs text-green-600">Uploaded successfully</span>
-                        </div>
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-green-700 truncate">{member.passportFile.name}</span>
+                        <span className="text-xs text-green-600">Ready to upload after company creation</span>
                       </div>
 
                       <Button
@@ -564,7 +510,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                     </div>
                   )}
 
-                  {errors[`member${index}Passport`] && !uploadingPassports[member.id] && (
+                  {errors[`member${index}Passport`] && (
                     <p className="text-xs text-red-600">{errors[`member${index}Passport`]}</p>
                   )}
                 </div>
@@ -649,28 +595,18 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
       {/* Navigation */}
       <div className="flex flex-col sm:flex-row gap-3 pt-6">
-        <Button onClick={onBack} variant="outline" className="w-full sm:w-auto bg-transparent">
+        <Button onClick={onBack} variant="outline" type="button" className="w-full sm:w-auto bg-transparent">
           <ArrowLeft className="mr-2 w-4 h-4" />
           Back
         </Button>
 
         <Button
+          onClick={() => handleSubmit()}
           type="button"
-          onClick={handleSubmit}
-          disabled={Object.values(uploadingPassports).some(Boolean)}
-          className="w-full sm:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white"
         >
-          {Object.values(uploadingPassports).some(Boolean) ? (
-            <>
-              <div className="w-4 h-4 mr-2 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              Uploading...
-            </>
-          ) : (
-            <>
-              Next
-              <ArrowRight className="ml-2 w-4 h-4" />
-            </>
-          )}
+          Next
+          <ArrowRight className="ml-2 w-4 h-4" />
         </Button>
       </div>
     </div>
