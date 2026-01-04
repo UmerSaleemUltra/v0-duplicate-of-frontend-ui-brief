@@ -3,14 +3,13 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Lock, CheckCircle2, MessageCircle, Upload, AlertCircle, X, ArrowRight } from "lucide-react"
+import { Lock, Upload, X, CheckCircle2, PhoneIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
-import { ApiClient } from "@/lib/api-client"
-import { authService } from "@/lib/auth"
-import { packagePricing, stateFees } from "@/lib/pricing"
+import { packagePricing } from "@/lib/pricing"
+import { STATE_FEES } from "@/lib/constants"
 
 interface PaymentStepProps {
   data: any
@@ -49,301 +48,40 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (isSubmitting || loading) {
-      console.log("[v0] Order creation already in progress, ignoring duplicate request")
-      return
-    }
-
-    setLoading(true)
-    setIsSubmitting(true)
-
     try {
-      console.log("[v0] Starting checkout submission via API...")
-      console.log("[v0] Payment step - data object:", data)
+      console.log("[v0] handleSubmit called")
 
-      const accountEmail = data.email || data.accountInfo?.email
-      const accountPassword = data.password || data.accountInfo?.password
-      const accountName = data.name || data.accountInfo?.name
-
-      console.log(
-        "[v0] Payment validation - email:",
-        accountEmail,
-        "name:",
-        accountName,
-        "hasPassword:",
-        !!accountPassword,
-      )
-
-      if (!accountEmail || !accountPassword || !accountName) {
-        console.error(
-          "[v0] Missing account info - email:",
-          !!accountEmail,
-          "password:",
-          !!accountPassword,
-          "name:",
-          !!accountName,
-        )
-        alert("Please complete the account information.")
-        setIsSubmitting(false)
-        setLoading(false)
+      // Validation
+      if (!whatsappPhone.trim() && !receiptUrl) {
+        alert("Please provide either a phone number or upload a payment receipt")
         return
       }
 
-      if (!data.businessName || !data.state || !data.entityType) {
-        console.error(
-          "[v0] Missing business info - businessName:",
-          !!data.businessName,
-          "state:",
-          !!data.state,
-          "entityType:",
-          !!data.entityType,
-        )
-        alert("Please complete the business information.")
-        setIsSubmitting(false)
-        setLoading(false)
+      console.log("[v0] Starting payment submission...")
+      console.log("[v0] whatsappPhone:", whatsappPhone)
+      console.log("[v0] receiptUrl:", receiptUrl)
+
+      // Get company data from session storage
+      const companyDataStr = sessionStorage.getItem("companyData")
+      console.log("[v0] companyDataStr:", companyDataStr)
+
+      if (!companyDataStr) {
+        console.error("[v0] No company data found in session storage")
+        alert("Company data not found. Please complete the previous steps.")
         return
       }
 
-      if (!data.members || data.members.length === 0) {
-        alert("Please add at least one member.")
-        setIsSubmitting(false)
-        setLoading(false)
+      const companyData = JSON.parse(companyDataStr)
+      console.log("[v0] companyData:", companyData)
+
+      if (!companyData.data?.id) {
+        console.error("[v0] No company ID found in company data")
+        alert("Company ID not found. Please complete the previous steps.")
         return
       }
 
-      console.log("[v0] Creating/logging in user...")
-      let token = ""
-      let userId = ""
-
-      try {
-        const signupResponse = await ApiClient.auth.signup({
-          email: accountEmail,
-          password: accountPassword,
-          name: accountName,
-          phone: data.phone || "",
-          role: "client",
-        })
-
-        console.log("[v0] Signup response received:", JSON.stringify(signupResponse))
-
-        const responseData = signupResponse.data || signupResponse
-
-        if (!responseData.token) {
-          throw new Error("Unable to create your account. Please try again.")
-        }
-
-        if (!responseData.user || !responseData.user.id) {
-          throw new Error("Unable to create your account. Please try again.")
-        }
-
-        token = responseData.token
-        userId = responseData.user.id
-        console.log("[v0] New user created:", userId)
-      } catch (signupError: any) {
-        if (signupError.message?.includes("409") || signupError.message?.includes("exists")) {
-          console.log("[v0] User exists (409), logging in instead...")
-          try {
-            const loginResponse = await ApiClient.auth.login({
-              email: accountEmail,
-              password: accountPassword,
-            })
-
-            console.log("[v0] Login response received:", JSON.stringify(loginResponse))
-
-            const loginData = loginResponse.data || loginResponse
-
-            if (!loginData.token || !loginData.user || !loginData.user.id) {
-              throw new Error("Unable to log you in. Please check your password.")
-            }
-
-            token = loginData.token
-            userId = loginData.user.id
-            console.log("[v0] User logged in successfully:", userId)
-          } catch (loginError: any) {
-            console.error("[v0] Login error after 409:", loginError)
-            alert(`We couldn't log you in. ${loginError.message || "Please check your password and try again."}`)
-            setIsSubmitting(false)
-            setLoading(false)
-            return
-          }
-        } else {
-          console.error("[v0] Signup error:", signupError)
-          alert(`Unable to create account: ${signupError.message || "Please try again."}`)
-          setIsSubmitting(false)
-          setLoading(false)
-          return
-        }
-      }
-
-      if (!token || !userId) {
-        alert("Authentication failed. Please try again.")
-        setIsSubmitting(false)
-        setLoading(false)
-        return
-      }
-
-      const authUser = {
-        id: userId,
-        email: accountEmail,
-        name: accountName,
-        role: "client" as const,
-      }
-      authService.setAuth(token, authUser)
-
-      console.log("[v0] Creating company via API...")
-
-      const validMembers = Array.isArray(data.members)
-        ? data.members
-            .filter((m) => {
-              if (!m || typeof m !== "object" || !m.id) return false
-              return true
-            })
-            .map((m) => {
-              const memberId =
-                m.id && typeof m.id === "string" && m.id.length > 0 ? m.id : globalThis.crypto.randomUUID()
-
-              return {
-                ...m,
-                id: memberId,
-                name: m.name || `${m.firstName || ""} ${m.lastName || ""}`.trim() || "Member",
-                firstName: m.firstName || m.name?.split(" ")[0] || "",
-                lastName: m.lastName || m.name?.split(" ").slice(1).join(" ") || "",
-                email: m.email || data.email,
-                phone: m.phone || data.phone || "",
-                address: m.address || "",
-                city: m.city || "",
-                state: m.state || data.state,
-                country: m.country || "US",
-                zip: m.zip || "",
-                ssn: m.ssn || "",
-                dateOfBirth: m.dateOfBirth || "",
-                isResponsiblePerson: m.isResponsiblePerson || false,
-                needsItin: m.needsItin || false,
-              }
-            })
-        : []
-
-      console.log("[v0] Valid members count:", validMembers.length)
-      console.log(
-        "[v0] Valid members with IDs:",
-        validMembers.map((m) => ({ id: m.id, name: m.name })),
-      )
-
-      if (validMembers.length === 0) {
-        alert("No valid members found. Please add at least one member.")
-        setIsSubmitting(false)
-        setLoading(false)
-        return
-      }
-
-      const firstMember = validMembers[0]
-      if (!firstMember || !firstMember.id) {
-        alert("Invalid member data. Please try again.")
-        setIsSubmitting(false)
-        setLoading(false)
-        return
-      }
-
-      const companyResponse = await fetch("/api/companies", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: data.businessName,
-          type: data.entityType,
-          state: data.state,
-          status: "processing",
-          address: {
-            street: firstMember.address || "",
-            city: firstMember.city || "",
-            state: firstMember.state || data.state,
-            zip: firstMember.zip || "",
-          },
-          businessCategory: data.businessCategory,
-          businessDescription: data.businessDescription,
-          businessWebsite: data.businessWebsite,
-          packageType: data.packageType,
-          members: validMembers.map((m) => ({
-            firstName: m.firstName || "",
-            middleName: m.middleName || "",
-            lastName: m.lastName || "",
-            email: m.email || data.email,
-            phone: m.phone || data.phone || "",
-            address: m.address || "",
-            city: m.city || "",
-            state: m.state || data.state,
-            zip: m.zip || "",
-            dateOfBirth: m.dateOfBirth || "",
-            ssn: m.ssn || "",
-            isResponsiblePerson: m.isResponsiblePerson || false,
-            needsItin: m.needsItin || false,
-          })),
-          milestones: {
-            orderProcessed: false,
-            registeredAgentAssigned: false,
-            mailingAddressIssued: false,
-            formationCompleted: false,
-            einProcessed: false,
-            boiReportFiled: false,
-          },
-          purchasedAddons: data.addons || [],
-        }),
-      })
-
-      const companyData = await companyResponse.json()
-      console.log("[v0] Company created:", companyData.data.id)
-
-      try {
-        console.log("[v0] Starting passport uploads with companyId:", companyData.data.id)
-
-        const passportUploadPromises = validMembers
-          .filter((m) => {
-            const originalMember = data.members?.find((dm) => dm.id === m.id)
-            const hasPassport = originalMember?.passportFile instanceof File
-            console.log(`[v0] Member ${m.name}: has passport = ${hasPassport}`)
-            return hasPassport
-          })
-          .map(async (member, memberIndex) => {
-            const originalMember = data.members?.find((dm) => dm.id === member.id)
-            if (!originalMember?.passportFile) return null
-
-            const formData = new FormData()
-            formData.append("file", originalMember.passportFile)
-            formData.append("userId", userId)
-            formData.append("companyId", companyData.data.id)
-            formData.append("memberId", memberIndex.toString())
-            formData.append("memberName", member.name)
-
-            console.log(`[v0] Uploading passport for: ${member.name}, companyId: ${companyData.data.id}`)
-
-            const response = await fetch("/api/passports/upload", {
-              method: "POST",
-              body: formData,
-            })
-
-            if (!response.ok) {
-              const errorText = await response.text()
-              console.error(`[v0] Failed to upload passport for ${member.name}:`, errorText)
-              return null
-            }
-
-            const result = await response.json()
-            console.log(`[v0] Passport uploaded successfully for ${member.name}:`, result.data)
-            return result.data
-          })
-
-        const uploadResults = await Promise.all(passportUploadPromises)
-        const successCount = uploadResults.filter((r) => r !== null).length
-        console.log(`[v0] Passport upload complete: ${successCount}/${passportUploadPromises.length} successful`)
-      } catch (passportError) {
-        console.error("[v0] Error uploading passports:", passportError)
-      }
-
-      console.log("[v0] Creating order via API...")
-      const packagePrice = packagePricing[data.packageType] || 149
-      const stateFilingFee = stateFees[data.state] || 100
+      const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
+      const stateFilingFee = STATE_FEES[data.state] || 100
       const addonsTotal = data.addonsTotal || 0
       const totalAmount = packagePrice + stateFilingFee + addonsTotal
 
@@ -388,8 +126,6 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     } catch (error) {
       console.error("[v0] Checkout error:", error)
       alert("Failed to process checkout. Please try again.")
-      setIsSubmitting(false)
-      setLoading(false)
     }
   }
 
@@ -445,8 +181,8 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     setUploadError("")
   }
 
-  const packagePrice = packagePricing[data.packageType] || 149
-  const stateFilingFee = stateFees[data.state] || 100
+  const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
+  const stateFilingFee = STATE_FEES[data.state] || 100
   const addonsTotal = data.addonsTotal || 0
   const totalAmount = packagePrice + stateFilingFee + addonsTotal
 
@@ -517,7 +253,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           <div className="p-6 rounded-2xl bg-error/5 border border-error/20 space-y-4">
             <div className="flex items-start gap-4">
               <div className="w-12 h-12 rounded-xl bg-error flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="w-6 h-6 text-white" />
+                <CheckCircle2 className="w-6 h-6 text-white" />
               </div>
               <div className="flex-1">
                 <h4 className="text-lg font-bold text-foreground mb-2">Payment Bank Account Details</h4>
@@ -583,7 +319,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               </div>
               {uploadError && (
                 <p className="text-sm text-error flex items-center gap-2">
-                  <AlertCircle className="w-4 h-4" />
+                  <X className="w-4 h-4" />
                   {uploadError}
                 </p>
               )}
@@ -615,7 +351,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
           <div className="rounded-2xl bg-glass-panel backdrop-blur-glass border border-glass-border p-6 space-y-6 shadow-glass">
             <div className="flex items-start gap-3">
-              <MessageCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
+              <PhoneIcon className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
               <div className="flex-1">
                 <p className="font-semibold text-success mb-3">Payment Instructions</p>
                 <ol className="text-sm text-muted space-y-2 list-decimal list-inside leading-relaxed">
@@ -675,7 +411,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             ) : (
               <>
                 Submit Order
-                <ArrowRight className="w-5 h-5 ml-2" />
+                <X className="w-5 h-5 ml-2" />
               </>
             )}
           </Button>
