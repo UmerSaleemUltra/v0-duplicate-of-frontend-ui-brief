@@ -239,7 +239,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
                     <Input
-                      placeholder="John Smith"
+                      placeholder="Muhammad Ahmed Khan"
                       value={member.name}
                       onChange={(e) => updateMember(member.id, { name: e.target.value })}
                       className="pl-10 h-11"
