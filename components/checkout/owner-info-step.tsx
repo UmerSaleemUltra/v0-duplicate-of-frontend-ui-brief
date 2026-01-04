@@ -254,7 +254,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                 <div className="space-y-3">
                   <Label className="text-sm font-semibold text-slate-900">Home Address</Label>
                   <Input
-                    placeholder="456 Oak Avenue"
+                    placeholder="House 123, Street 4, F-7 Markaz"
                     value={member.address}
                     onChange={(e) => updateMember(member.id, { address: e.target.value })}
                     className="h-11"
@@ -269,7 +269,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold text-slate-900">City</Label>
                     <Input
-                      placeholder="San Francisco"
+                      placeholder="Islamabad"
                       value={member.city}
                       onChange={(e) => updateMember(member.id, { city: e.target.value })}
                       className="h-11"
@@ -282,7 +282,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold text-slate-900">State / Province</Label>
                     <Input
-                      placeholder="California"
+                      placeholder="Punjab"
                       value={member.state}
                       onChange={(e) => updateMember(member.id, { state: e.target.value })}
                       className="h-11"
@@ -327,7 +327,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   <div className="space-y-3">
                     <Label className="text-sm font-semibold text-slate-900">ZIP Code</Label>
                     <Input
-                      placeholder="94102"
+                      placeholder="44000"
                       value={member.zip}
                       onChange={(e) => updateMember(member.id, { zip: e.target.value })}
                       className="h-11"
@@ -345,7 +345,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                     <Shield className="absolute left-3 w-5 h-5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <Input
                       type="password"
-                      placeholder="XXX-XX-XXXX"
+                      placeholder="XXXXX-XXXXXXX-X"
                       value={member.ssn}
                       onChange={(e) => updateMember(member.id, { ssn: e.target.value })}
                       className="pl-10 h-11"
