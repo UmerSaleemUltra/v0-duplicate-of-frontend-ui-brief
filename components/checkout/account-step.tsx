@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PhoneInput } from "./phone-input"
 import type { CheckoutData } from "@/app/page"
+import { authService } from "@/lib/auth"
 
 type AccountStepProps = {
   data: CheckoutData
@@ -106,62 +107,33 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
     setIsCreatingUser(true)
 
     try {
-      if (!data.userId) {
-        console.log("[v0] Creating user account...")
+      console.log("[v0] Signing up user with authService...")
+      const signupResult = await authService.signup({
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        phone: phone,
+      })
 
-        const response = await fetch("/api/users", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            phone: phone,
-            isCheckout: true,
-          }),
-        })
-
-        if (!response.ok) {
-          const error = await response.json()
-          throw new Error(error.error || "Failed to create account")
-        }
-
-        const result = await response.json()
-        console.log("[v0] User account response:", result)
-
-        if (result.userExists) {
-          console.log("[v0] User already exists, using existing account:", result.data.id)
-          updateData({
-            phone: phone,
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            userId: result.data.id || result.data._id,
-          })
-        } else {
-          console.log("[v0] New user account created:", result.data.id || result.data._id)
-          updateData({
-            phone: phone,
-            name: data.name,
-            email: data.email,
-            password: data.password,
-            userId: result.data.id || result.data._id,
-          })
-        }
-      } else {
-        console.log("[v0] User already has ID, updating data")
-        updateData({
-          phone: phone,
-          name: data.name,
-          email: data.email,
-          password: data.password,
-        })
+      if (!signupResult.success) {
+        throw new Error(signupResult.error || "Failed to create account")
       }
+
+      console.log("[v0] User signed up successfully, auth token saved in cookies")
+      console.log("[v0] User data:", signupResult.user)
+
+      updateData({
+        phone: phone,
+        name: data.name,
+        email: data.email,
+        password: data.password,
+        userId: signupResult.user?.id,
+      })
 
       console.log("[v0] Account step completed, moving to next step")
       onNext()
     } catch (error) {
-      console.error("[v0] Error creating user:", error)
+      console.error("[v0] Error during signup:", error)
       setErrors({ submit: error instanceof Error ? error.message : "Failed to create account" })
     } finally {
       setIsCreatingUser(false)
