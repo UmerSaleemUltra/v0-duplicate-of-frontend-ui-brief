@@ -246,7 +246,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             <Lock className="w-5 h-5 text-white" />
           </div>
           <div className="flex-1">
-            <h4 className="text-lg font-semibold text-slate-900 mb-1">Payment Bank Account Details</h4>
+            <h4 className="text-lg font-semibold mb-1 text-slate-900">Payment Bank Account Details</h4>
             <p className="text-sm text-slate-700">For the payment, please find the details below:</p>
           </div>
         </div>
@@ -287,41 +287,67 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           <Label htmlFor="receipt-upload" className="text-sm font-semibold text-slate-900">
             Upload Payment Receipt
           </Label>
-          <div className="relative">
-            <Input
-              id="receipt-upload"
-              type="file"
-              accept="image/jpeg,image/jpg,image/png,image/webp"
-              onChange={handleReceiptUpload}
-              disabled={isUploadingReceipt || !!receiptFile}
-              className="file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#880000] file:text-white hover:file:bg-[#A00000] file:cursor-pointer cursor-pointer text-sm h-11"
-            />
-          </div>
-          {uploadError && (
-            <p className="text-sm text-red-600 flex items-center gap-2">
-              <X className="w-4 h-4" />
-              {uploadError}
-            </p>
-          )}
-          {receiptFile && (
-            <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5 text-green-600" />
-                <span className="text-sm font-medium text-green-900">{receiptFile.name}</span>
-                <span className="text-xs text-slate-600">({(receiptFile.size / 1024).toFixed(2)} KB)</span>
-              </div>
-              <Button
-                type="button"
-                variant="ghost"
-                size="sm"
-                onClick={handleRemoveReceipt}
-                className="h-8 w-8 p-0 hover:bg-red-100"
+          <div className="space-y-3">
+            <div className="relative">
+              <input
+                id="receipt-upload"
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                onChange={handleReceiptUpload}
+                disabled={isUploadingReceipt || !!receiptFile}
+                className="hidden"
+              />
+              <label
+                htmlFor="receipt-upload"
+                className={`flex items-center justify-center gap-2 h-11 px-6 rounded-lg font-semibold text-sm transition-all cursor-pointer ${
+                  isUploadingReceipt || receiptFile
+                    ? "bg-slate-200 text-slate-500 cursor-not-allowed"
+                    : "bg-[#880000] text-white hover:bg-[#A00000]"
+                }`}
               >
-                <X className="w-4 h-4 text-red-600" />
-              </Button>
+                {isUploadingReceipt ? (
+                  <>
+                    <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
+                    Uploading...
+                  </>
+                ) : receiptFile ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4" />
+                    File Selected
+                  </>
+                ) : (
+                  "Choose file"
+                )}
+              </label>
             </div>
-          )}
-          <p className="text-xs text-slate-600">Click to upload or drag and drop PNG, JPG or WEBP (max. 5MB)</p>
+
+            {uploadError && (
+              <p className="text-sm text-red-600 flex items-center gap-2">
+                <X className="w-4 h-4" />
+                {uploadError}
+              </p>
+            )}
+
+            {receiptFile && (
+              <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  <span className="text-sm font-medium text-green-900">{receiptFile.name}</span>
+                  <span className="text-xs text-slate-600">({(receiptFile.size / 1024).toFixed(2)} KB)</span>
+                </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemoveReceipt}
+                  className="h-8 w-8 p-0 hover:bg-red-100"
+                >
+                  <X className="w-4 h-4 text-red-600" />
+                </Button>
+              </div>
+            )}
+            <p className="text-xs text-slate-600">Click to upload or drag and drop PNG, JPG or WEBP (max. 5MB)</p>
+          </div>
         </div>
       </div>
 
