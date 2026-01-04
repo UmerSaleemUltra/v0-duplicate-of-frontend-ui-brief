@@ -43,7 +43,6 @@ export interface Company {
   einDocument?: string
   itemNumber?: string
   itemNumberDocument?: string
-  transactionReference?: string // Added transaction reference field
   address?: {
     street: string
     city: string
@@ -135,8 +134,8 @@ export interface Order {
     method: "whatsapp" | "bank_transfer" | "stripe"
     status: "pending" | "pending_verification" | "paid" | "failed"
     transactionId?: string
-    transactionReference?: string
-    receiptUrl?: string // Added payment receipt URL field
+    whatsappPhone?: string // Added WhatsApp phone field
+    receiptUrl?: string
     date?: string
     terms?: string
   }

@@ -84,7 +84,7 @@ export async function POST(req: NextRequest) {
       items,
       purchasedAddons,
       paymentMethod,
-      transactionReference,
+      whatsappPhone, // Changed from transactionReference to whatsappPhone
       receiptUrl,
     } = body
 
@@ -117,11 +117,10 @@ export async function POST(req: NextRequest) {
       addonsTotal,
       paymentStatus: "pending",
       paymentMethod: paymentMethod || "stripe",
-      transactionReference: transactionReference || null,
       paymentInfo: {
         method: paymentMethod || "stripe",
         status: "pending",
-        transactionReference: transactionReference || null,
+        whatsappPhone: whatsappPhone || null,
         receiptUrl: receiptUrl || null,
         date: new Date().toISOString(),
       },

@@ -49,6 +49,7 @@ import {
   Eye,
   MapPin,
   Trash2,
+  MessageCircle,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -2000,6 +2001,23 @@ export default function OrderDetailPage() {
                     </div>
                   </div>
                 )}
+                {/* WhatsApp phone number display */}
+                {order?.paymentInfo?.whatsappPhone && (
+                  <div className="mt-4 border-t border-slate-200 pt-4">
+                    <p className="text-sm font-medium text-slate-600 mb-1">WhatsApp Contact</p>
+                    <div className="flex items-center gap-2">
+                      <MessageCircle className="w-4 h-4 text-green-600" />
+                      <a
+                        href={`https://wa.me/${order.paymentInfo.whatsappPhone.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
+                      >
+                        {order.paymentInfo.whatsappPhone}
+                      </a>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
@@ -2471,12 +2489,6 @@ export default function OrderDetailPage() {
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
-                {company?.transactionReference && (
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-sm font-medium text-slate-700 mb-1">Transaction Reference</p>
-                    <p className="text-base font-semibold text-slate-900">{company.transactionReference}</p>
-                  </div>
-                )}
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600">Order ID</span>
                   <span className="text-sm font-mono font-medium text-slate-900">{order.id}</span>
