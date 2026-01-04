@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { ChevronDown } from "lucide-react"
 import StateFeesCalculatorModal from "@/components/modals/state-fees-calculator-modal"
-import { authService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 
 export default function PricingSection() {
@@ -32,16 +31,7 @@ export default function PricingSection() {
   const advanceFeatures = [...advanceUniqueFeatures, ...starterFeatures]
 
   const handleApplyNowClick = () => {
-    if (authService.isAuthenticated()) {
-      window.location.href = "/checkout"
-    } else {
-      const hasLoggedOut = typeof window !== "undefined" && localStorage.getItem("onetime_logout")
-      if (hasLoggedOut) {
-        window.location.href = "/checkout"
-      } else {
-        setShowCalculator(true)
-      }
-    }
+    setShowCalculator(true)
   }
 
   return (
