@@ -123,14 +123,37 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       return
     }
 
-    const blobUrl = URL.createObjectURL(file)
-    setPassportPreviews((prev) => ({ ...prev, [memberId]: blobUrl }))
+    try {
+      console.log("[v0] Uploading passport to Vercel Blob...")
 
-    updateMember(memberId, {
-      passportFile: file,
-      passportKey: undefined,
-      passportUrl: blobUrl,
-    })
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const response = await fetch("/api/upload", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to upload passport")
+      }
+
+      const { url, downloadUrl } = await response.json()
+      console.log("[v0] Passport uploaded successfully:", url)
+
+      // Create preview URL for display
+      const blobUrl = URL.createObjectURL(file)
+      setPassportPreviews((prev) => ({ ...prev, [memberId]: blobUrl }))
+
+      updateMember(memberId, {
+        passportFile: file,
+        passportKey: url,
+        passportUrl: downloadUrl || url,
+      })
+    } catch (error) {
+      console.error("[v0] Error uploading passport:", error)
+      alert("Failed to upload passport. Please try again.")
+    }
   }
 
   const handleRemovePassport = (memberId: string) => {

@@ -116,7 +116,11 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
       })
 
       if (!signupResult.success) {
-        throw new Error(signupResult.error || "Failed to create account")
+        const errorMessage = signupResult.error || "Failed to create account"
+        if (errorMessage.toLowerCase().includes("already exists") || errorMessage.toLowerCase().includes("duplicate")) {
+          throw new Error("An account with this email already exists. Please use a different email or login.")
+        }
+        throw new Error(errorMessage)
       }
 
       console.log("[v0] User signed up successfully, auth token saved in cookies")
@@ -205,7 +209,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
           <PhoneInput
             value={phone}
             onChange={handlePhoneChange}
-            defaultCountry="US"
+            defaultCountry="PK"
             international
             withCountryCallingCode
           />

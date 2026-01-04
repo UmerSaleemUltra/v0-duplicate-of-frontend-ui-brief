@@ -6,14 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { US_STATES, STATE_FEES } from "@/lib/constants"
-import type { CheckoutData } from "@/app/checkout/page"
-
-type StatePackageStepProps = {
-  data: CheckoutData
-  updateData: (updates: Partial<CheckoutData>) => void
-  onNext: () => void
-  onBack: () => void
-}
+import type { StatePackageStepProps } from "./state-package-step-props" // Declare the variable before using it
 
 const ENTITY_TYPES = [
   {
@@ -29,16 +22,16 @@ const ENTITY_TYPES = [
     bestFor: "General purpose, consultants, e-commerce, agencies",
   },
   {
-    id: "s-corp",
-    name: "S Corporation",
+    id: "C-Corp",
+    name: "C Corporation",
     badges: ["Growth"],
     features: [
-      "Pass-through taxation",
+      "Separate taxation",
       "Limited liability protection",
-      "Potential self-employment tax savings",
-      "Great for owner-operators",
+      "Unlimited shareholders",
+      "Great for raising capital",
     ],
-    bestFor: "Owner-operators with steady profit and U.S. payroll",
+    bestFor: "Startups seeking investment, businesses planning to go public",
   },
 ]
 
@@ -46,7 +39,7 @@ const PACKAGES = [
   {
     id: "starter",
     name: "Starter",
-    price: 149, // Fixed pricing from 150 to 149
+    price: 149,
     features: ["Articles of Organization", "Registered Agent (1 year)", "Operating Agreement", "EIN Application"],
     includesResellerCert: false,
   },
@@ -67,6 +60,8 @@ const PACKAGES = [
   },
 ]
 
+const PRIORITY_STATES = ["Wyoming", "Montana", "Florida", "New Mexico"]
+
 export function StatePackageStep({ data, updateData, onNext, onBack }: StatePackageStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const stateFee = data.state ? STATE_FEES[data.state] || 0 : 0
@@ -86,6 +81,8 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
     }
   }
 
+  const orderedStates = [...PRIORITY_STATES, ...US_STATES.filter((state) => !PRIORITY_STATES.includes(state))]
+
   return (
     <div className="space-y-10">
       <div className="space-y-3">
@@ -104,7 +101,7 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
             <SelectValue placeholder="Select a state..." />
           </SelectTrigger>
           <SelectContent>
-            {US_STATES.map((state) => (
+            {orderedStates.map((state) => (
               <SelectItem key={state} value={state}>
                 {state}
               </SelectItem>
@@ -182,10 +179,11 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                 key={pkg.id}
                 type="button"
                 onClick={() => updateData({ packageType: pkg.id })}
-                className={`p-6 rounded-lg border-2 cursor-pointer
- transition-all text-left shadow-sm hover:shadow-md ${
-   data.packageType === pkg.id ? "border-[#ff0d13] bg-[#fff5f5]" : "border-slate-200 bg-white hover:border-slate-300"
- }`}
+                className={`p-6 rounded-lg border-2 cursor-pointer transition-all text-left shadow-sm hover:shadow-md ${
+                  data.packageType === pkg.id
+                    ? "border-[#ff0d13] bg-[#fff5f5]"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                }`}
               >
                 <div className="flex items-start justify-between gap-3 mb-4">
                   <h3 className="text-base font-semibold text-slate-900">{pkg.name}</h3>
@@ -217,20 +215,11 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
       </div>
 
       <div className="flex gap-3 pt-8 border-t border-slate-100">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="h-11 cursor-pointer
- bg-transparent"
-        >
+        <Button onClick={onBack} variant="outline" className="h-11 cursor-pointer bg-transparent">
           <ArrowLeft className="mr-2 w-4 h-4" /> Previous
         </Button>
-        <Button
-          onClick={handleSubmit}
-          className="h-11 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer
-"
-        >
-          Next <ArrowRight className="ml-2 w-4 h-4 " />
+        <Button onClick={handleSubmit} className="h-11 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer">
+          Next <ArrowRight className="ml-2 w-4 h-4" />
         </Button>
       </div>
     </div>
