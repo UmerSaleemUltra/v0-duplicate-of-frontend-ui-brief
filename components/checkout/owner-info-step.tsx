@@ -157,10 +157,13 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       if (!member.state) newErrors[`member${index}State`] = "State/Province is required"
       if (!member.country) newErrors[`member${index}Country`] = "Country is required"
       if (!member.zip) newErrors[`member${index}Zip`] = "ZIP code is required"
-      if (!member.passportFile) newErrors[`member${index}Passport`] = "Passport is required"
+      if (!member.passportFile && !member.passportUrl) {
+        newErrors[`member${index}Passport`] = "Passport is required"
+      }
     })
 
     setErrors(newErrors)
+    console.log("[v0] Validation errors found:", newErrors)
     return Object.keys(newErrors).length === 0
   }
 
@@ -169,11 +172,23 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     console.log("[v0] Owner info form submitted")
     console.log("[v0] Members:", data.members)
     console.log("[v0] Validating...")
+
+    const hasUploading = Object.values(uploadingPassports).some((uploading) => uploading)
+    if (hasUploading) {
+      console.log("[v0] Passport upload in progress, please wait...")
+      alert("Please wait for passport uploads to complete before proceeding.")
+      return
+    }
+
     if (validate()) {
       console.log("[v0] Validation passed, calling onNext")
       onNext()
     } else {
       console.log("[v0] Validation failed, errors:", errors)
+      const firstError = Object.values(errors)[0]
+      if (firstError) {
+        alert(firstError)
+      }
     }
   }
 
