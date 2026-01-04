@@ -6,18 +6,9 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, Lock, CheckCircle2, Phone, X } from "lucide-react"
-
-const packagePricing = {
-  starter: 149,
-  advanced: 299,
-}
-
-const STATE_FEES = {
-  NY: 50,
-  CA: 75,
-  TX: 60,
-}
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload } from "lucide-react"
+import { packagePricing } from "@/lib/pricing"
+import { STATE_FEES } from "@/lib/constants"
 
 interface PaymentStepProps {
   data: any
@@ -412,7 +403,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           </div>
 
           <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
-            <Phone className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <Upload className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
             <div className="text-sm">
               <p className="text-red-900">
                 <span className="font-semibold">Important:</span> After making the payment, kindly send a screenshot
@@ -461,7 +452,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
               {uploadError && (
                 <p className="text-sm text-red-600 flex items-center gap-2">
-                  <X className="w-4 h-4" />
+                  <Upload className="w-4 h-4" />
                   {uploadError}
                 </p>
               )}
@@ -480,7 +471,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                     onClick={handleRemoveReceipt}
                     className="h-8 w-8 p-0 hover:bg-red-100"
                   >
-                    <X className="w-4 h-4 text-red-600" />
+                    <Upload className="w-4 h-4 text-red-600" />
                   </Button>
                 </div>
               )}
@@ -515,7 +506,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-start gap-3">
           <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
-            <Phone className="w-5 h-5 text-yellow-600" />
+            <Upload className="w-5 h-5 text-yellow-600" />
           </div>
           <div>
             <h4 className="text-base font-semibold text-slate-900 mb-1">Payment Verification</h4>
