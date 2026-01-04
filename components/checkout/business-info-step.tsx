@@ -84,7 +84,7 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
             />
           </div>
           {errors.businessName && <p className="text-xs text-red-600 mt-1">{errors.businessName}</p>}
-          <p className="text-xs text-slate-500">Include LLC or Corp designation</p>
+          <p className="text-xs text-slate-500">Include LLC or Inc in business name </p>
         </div>
 
         <div className="space-y-3">
