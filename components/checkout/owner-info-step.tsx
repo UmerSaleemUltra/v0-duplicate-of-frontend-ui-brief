@@ -16,6 +16,7 @@ import {
   X,
   Globe,
   ChevronDown,
+  Mail,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -421,6 +422,24 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   </div>
                   {errors[`member${index}Name`] && (
                     <p className="text-xs text-red-600">{errors[`member${index}Name`]}</p>
+                  )}
+                </div>
+
+                {/* Email Address */}
+                <div className="space-y-3">
+                  <Label className="text-sm font-semibold text-slate-900">Email Address</Label>
+                  <div className="relative">
+                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                    <Input
+                      type="email"
+                      placeholder="ahmed.khan@example.com"
+                      value={member.email}
+                      onChange={(e) => updateMember(member.id, { email: e.target.value })}
+                      className="pl-10 h-11"
+                    />
+                  </div>
+                  {errors[`member${index}Email`] && (
+                    <p className="text-xs text-red-600">{errors[`member${index}Email`]}</p>
                   )}
                 </div>
 
