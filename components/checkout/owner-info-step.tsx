@@ -80,6 +80,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       passportFile: null,
       passportKey: undefined,
       passportUrl: undefined,
+      passportId: undefined, // New field for storing passport database ID
     }
     updateData({ members: [...(data.members || []), newMember] })
   }
@@ -205,7 +206,12 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         delete n[memberId]
         return n
       })
-      updateMember(memberId, { passportFile: null, passportKey: undefined, passportUrl: undefined })
+      updateMember(memberId, {
+        passportFile: null,
+        passportKey: undefined,
+        passportUrl: undefined,
+        passportId: undefined,
+      })
       return
     }
 
@@ -214,6 +220,19 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       return
     }
 
+    if (!data.userId) {
+      alert("User ID is missing. Please complete the account setup first.")
+      return
+    }
+
+    const member = data.members.find((m) => m.id === memberId)
+    if (!member) {
+      alert("Member not found. Please refresh and try again.")
+      return
+    }
+
+    const memberName = `${member.firstName || ""} ${member.lastName || ""}`.trim() || "Unknown Member"
+
     setUploadingPassports((prev) => ({ ...prev, [memberId]: true }))
 
     try {
@@ -221,6 +240,23 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
       const formData = new FormData()
       formData.append("file", file)
+      formData.append("userId", data.userId)
+
+      // Get companyId from localStorage if available (created in review step)
+      const companyDataStr = localStorage.getItem("companyData")
+      if (companyDataStr) {
+        try {
+          const companyData = JSON.parse(companyDataStr)
+          if (companyData.id) {
+            formData.append("companyId", companyData.id)
+          }
+        } catch (e) {
+          console.log("[v0] No company data yet, proceeding without companyId")
+        }
+      }
+
+      formData.append("memberId", memberId)
+      formData.append("memberName", memberName)
 
       const response = await fetch("/api/passports/upload", {
         method: "POST",
@@ -232,8 +268,8 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         throw new Error(errorData.error || "Failed to upload passport")
       }
 
-      const { url, downloadUrl } = await response.json()
-      console.log("[v0] Passport uploaded successfully:", url)
+      const result = await response.json()
+      console.log("[v0] Passport uploaded successfully:", result)
 
       // Create preview URL for display
       const blobUrl = URL.createObjectURL(file)
@@ -241,9 +277,12 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
       updateMember(memberId, {
         passportFile: file,
-        passportKey: url,
-        passportUrl: downloadUrl || url,
+        passportKey: result.data?.fileUrl || result.url,
+        passportUrl: result.data?.fileUrl || result.url,
+        passportId: result.data?.id, // Store the database ID for future reference
       })
+
+      alert("Passport uploaded successfully!")
     } catch (error) {
       console.error("[v0] Error uploading passport:", error)
       const errorMessage = error instanceof Error ? error.message : "Failed to upload passport. Please try again."
@@ -264,7 +303,12 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       delete n[memberId]
       return n
     })
-    updateMember(memberId, { passportFile: null, passportKey: undefined, passportUrl: undefined })
+    updateMember(memberId, {
+      passportFile: null,
+      passportKey: undefined,
+      passportUrl: undefined,
+      passportId: undefined,
+    })
 
     const fileInput = document.getElementById(`passport-${memberId}`) as HTMLInputElement
     if (fileInput) fileInput.value = ""
