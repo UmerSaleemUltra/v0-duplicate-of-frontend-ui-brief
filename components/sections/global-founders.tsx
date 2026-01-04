@@ -8,10 +8,11 @@ const regions = [
   { name: "United Kingdom", code: "gb", flagUrl: "https://flagcdn.com/w40/gb.png" },
   { name: "India", code: "in", flagUrl: "https://flagcdn.com/w40/in.png" },
   { name: "Europe", code: "eu", flagUrl: "https://flagcdn.com/w40/eu.png" },
-  { name: "Asia Pacific", code: "", icon: "🌏" },
-  { name: "Middle East", code: "", icon: "🌍" },
-  { name: "Africa", code: "", icon: "🌍" },
+  { name: "Australia", code: "au", flagUrl: "https://flagcdn.com/w40/au.png" },
+  { name: "Germany", code: "de", flagUrl: "https://flagcdn.com/w40/de.png" },
+  { name: "Canada", code: "ca", flagUrl: "https://flagcdn.com/w40/ca.png" },
 ]
+
 
 const GlobalFounders = () => {
   return (
