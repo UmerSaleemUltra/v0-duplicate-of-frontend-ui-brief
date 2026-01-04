@@ -40,14 +40,14 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
   }, [])
 
   const addMember = () => {
-    const newMember = {
-      id: Math.random().toString(36).substr(2, 9),
+    const newMember: Member = {
+      id: Math.random().toString(),
       name: "",
       email: "",
       address: "",
       city: "",
       state: "",
-      country: "US",
+      country: "PK",
       zip: "",
       ssn: "",
       dateOfBirth: "",
