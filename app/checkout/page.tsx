@@ -424,10 +424,16 @@ export default function CheckoutPage() {
     try {
       console.log("[v0] Submitting order from checkout page:", orderData)
 
+      const token = authService.getToken()
+      if (!token) {
+        throw new Error("Authentication required. Please log in to complete your order.")
+      }
+
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(orderData),
       })
