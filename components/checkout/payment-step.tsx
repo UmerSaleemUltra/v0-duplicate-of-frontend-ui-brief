@@ -294,7 +294,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               accept="image/jpeg,image/jpg,image/png,image/webp"
               onChange={handleReceiptUpload}
               disabled={isUploadingReceipt || !!receiptFile}
-              className="file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#880000] file:text-white hover:file:bg-[#A00000] file:cursor-pointer cursor-pointer text-sm"
+              className="file:mr-3 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-[#880000] file:text-white hover:file:bg-[#A00000] file:cursor-pointer cursor-pointer text-sm h-11"
             />
           </div>
           {uploadError && (
@@ -325,18 +325,12 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
-            <AlertCircle className="w-5 h-5 text-yellow-600" />
-          </div>
-          <div>
-            <h4 className="text-base font-semibold text-slate-900 mb-1">Payment Verification</h4>
-            <p className="text-sm text-slate-700 leading-relaxed">
-              Your order will be processed once we verify your payment. This usually takes 1-2 business hours during
-              office hours.
-            </p>
-          </div>
+      <div className="relative flex items-center justify-center py-4">
+        <div className="absolute inset-0 flex items-center">
+          <div className="w-full border-t border-slate-200"></div>
+        </div>
+        <div className="relative bg-white px-6">
+          <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">OR</span>
         </div>
       </div>
 
@@ -356,6 +350,21 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           <p className="text-sm text-slate-600 leading-relaxed">
             If you can share a screenshot on WhatsApp to our representative, add your phone number and we'll contact you
           </p>
+        </div>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="w-5 h-5 text-yellow-600" />
+          </div>
+          <div>
+            <h4 className="text-base font-semibold text-slate-900 mb-1">Payment Verification</h4>
+            <p className="text-sm text-slate-700 leading-relaxed">
+              Your order will be processed once we verify your payment. This usually takes 1-2 business hours during
+              office hours.
+            </p>
+          </div>
         </div>
       </div>
 
