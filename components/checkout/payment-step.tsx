@@ -57,8 +57,8 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           return
         }
       } else {
-        if (!whatsappPhone.trim() && !receiptUrl) {
-          alert("Please provide either a phone number or upload a payment receipt")
+        if (!receiptUrl) {
+          alert("Please upload a payment receipt to proceed")
           return
         }
       }
@@ -197,8 +197,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   console.log("[v0] Payment step - addons data:", data.addons)
   console.log("[v0] Payment step - addonsTotal:", addonsTotal)
 
-  const isPaymentValid =
-    paymentMethod === "already_paid" ? whatsappPhone.trim() !== "" : whatsappPhone.trim() !== "" || receiptUrl !== ""
+  const isPaymentValid = paymentMethod === "already_paid" ? whatsappPhone.trim() !== "" : receiptUrl !== ""
 
   const getValidationMessage = () => {
     if (paymentMethod === "already_paid") {
@@ -206,8 +205,8 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         return "Please provide your phone number to proceed"
       }
     } else {
-      if (!whatsappPhone.trim() && !receiptUrl) {
-        return "Please provide either a phone number or upload a payment receipt"
+      if (!receiptUrl) {
+        return "Please upload a payment receipt to proceed"
       }
     }
     return ""
@@ -426,40 +425,27 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         </div>
       )}
 
-      {paymentMethod === "bank_transfer" && (
-        <div className="relative flex items-center justify-center py-4">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-slate-200"></div>
-          </div>
-          <div className="relative bg-white px-6">
-            <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">OR</span>
+      {paymentMethod === "already_paid" && (
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="space-y-2">
+            <Label htmlFor="whatsapp-phone" className="text-sm font-semibold text-slate-900">
+              Phone Number <span className="text-red-600">*</span>
+            </Label>
+            <Input
+              id="whatsapp-phone"
+              type="tel"
+              placeholder="+1 234 567 8900"
+              value={whatsappPhone}
+              onChange={(e) => setWhatsappPhone(e.target.value)}
+              className="h-11"
+              required
+            />
+            <p className="text-sm text-slate-600 leading-relaxed">
+              Please provide your phone number so our team can verify your payment and process your order
+            </p>
           </div>
         </div>
       )}
-
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="space-y-2">
-          <Label htmlFor="whatsapp-phone" className="text-sm font-semibold text-slate-900">
-            Phone Number{" "}
-            {paymentMethod === "bank_transfer" && (
-              <span className="text-xs text-slate-500 font-normal">(Optional)</span>
-            )}
-          </Label>
-          <Input
-            id="whatsapp-phone"
-            type="tel"
-            placeholder="+1 234 567 8900"
-            value={whatsappPhone}
-            onChange={(e) => setWhatsappPhone(e.target.value)}
-            className="h-11"
-          />
-          <p className="text-sm text-slate-600 leading-relaxed">
-            {paymentMethod === "already_paid"
-              ? "Please provide your phone number so our team can verify your payment and process your order"
-              : "If you can share a screenshot on WhatsApp to our representative, add your phone number and we'll contact you"}
-          </p>
-        </div>
-      </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="flex items-start gap-3">
