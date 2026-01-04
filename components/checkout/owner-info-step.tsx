@@ -76,7 +76,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     updateData({
       members: (data.members || []).map((m) => ({
         ...m,
-        isResponsiblePerson: m.id === id ? checked : m.isResponsiblePerson,
+        isResponsiblePerson: m.id === id ? checked : false, // Uncheck all others
       })),
     })
   }
