@@ -218,6 +218,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       checked={member.isResponsiblePerson}
                       onCheckedChange={(c) => toggleResponsiblePerson(member.id, c as boolean)}
                       disabled={data.members?.length === 1}
+                      className="data-[state=checked]:bg-[#ff0d13] data-[state=checked]:border-[#ff0d13]"
                     />
                     <label
                       htmlFor={`responsible-${member.id}`}
