@@ -16,7 +16,6 @@ import {
   X,
   Globe,
   ChevronDown,
-  Mail,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -68,14 +67,12 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     const newMember: Member = {
       id: Math.random().toString(),
       name: "",
-      email: "",
       address: "",
       city: "",
       state: "",
       country: "PK",
       zip: "",
       ssn: "",
-      dateOfBirth: "",
       isResponsiblePerson: (data.members || []).length === 0,
       itinAdded: false,
       passportFile: null,
@@ -150,9 +147,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     }
     ;(data.members || []).forEach((member, index) => {
       if (!member.name) newErrors[`member${index}Name`] = "Name is required"
-      if (!member.email) newErrors[`member${index}Email`] = "Email is required"
-      else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(member.email))
-        newErrors[`member${index}Email`] = "Invalid email format"
+
       if (!member.address) newErrors[`member${index}Address`] = "Address is required"
       if (!member.city) newErrors[`member${index}City`] = "City is required"
       if (!member.state) newErrors[`member${index}State`] = "State/Province is required"
@@ -422,24 +417,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   </div>
                   {errors[`member${index}Name`] && (
                     <p className="text-xs text-red-600">{errors[`member${index}Name`]}</p>
-                  )}
-                </div>
-
-                {/* Email Address */}
-                <div className="space-y-3">
-                  <Label className="text-sm font-semibold text-slate-900">Email Address</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-                    <Input
-                      type="email"
-                      placeholder="ahmed.khan@example.com"
-                      value={member.email}
-                      onChange={(e) => updateMember(member.id, { email: e.target.value })}
-                      className="pl-10 h-11"
-                    />
-                  </div>
-                  {errors[`member${index}Email`] && (
-                    <p className="text-xs text-red-600">{errors[`member${index}Email`]}</p>
                   )}
                 </div>
 
