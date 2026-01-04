@@ -19,16 +19,19 @@ import type { CheckoutData } from "@/app/checkout/page"
 import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/local-storage"
 import { useToast } from "@/hooks/use-toast"
 import { STATE_FEES } from "@/lib/constants"
+import { authService } from "@/lib/auth"
 
 type ReviewStepProps = {
   formData?: CheckoutData
   onBack: () => void
   onNext: () => void
+  updateData?: (updates: Partial<CheckoutData>) => void
 }
 
-export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
+export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepProps) {
   const { toast } = useToast()
   const [passportData, setPassportData] = useState<Record<string, PassportData | null>>({})
+  const [isCreatingCompany, setIsCreatingCompany] = useState(false)
 
   useEffect(() => {
     console.log("[v0] ReviewStep formData:", {
@@ -96,14 +99,16 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
   const total = subtotal + addonsTotal
 
   const handleRemoveItin = (memberId: string) => {
-    const updatedMembers = validMembers.map((m) => (m.id === memberId ? { ...m, itinAdded: false } : m))
-    // Assuming updateData is available in the context or passed as a prop
-    // updateData({ members: updatedMembers })
+    if (updateData) {
+      const updatedMembers = validMembers.map((m) => (m.id === memberId ? { ...m, itinAdded: false } : m))
+      updateData({ members: updatedMembers })
+    }
   }
 
   const handleRemoveResellerCert = () => {
-    // Assuming updateData is available in the context or passed as a prop
-    // updateData({ needsResellerCertificate: false })
+    if (updateData) {
+      updateData({ needsResellerCertificate: false })
+    }
   }
 
   const handleViewPassport = async (memberId: string) => {
@@ -116,7 +121,133 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
     }
   }
 
-  const handleSubmit = async () => {}
+  const handleProceedToPayment = async () => {
+    if (!formData) {
+      toast({
+        title: "Error",
+        description: "Form data is missing. Please try again.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsCreatingCompany(true)
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        throw new Error("Authentication required. Please log in.")
+      }
+
+      // Prepare addons array with all selected add-ons
+      const addons: any[] = []
+
+      // Add ITIN applications
+      membersWithItin.forEach((member) => {
+        addons.push({
+          serviceId: "itin",
+          name: `ITIN Application - ${member.name}`,
+          price: 149,
+          memberName: member.name,
+          memberId: member.id,
+        })
+      })
+
+      // Add reseller certificate if selected and not included in package
+      if (hasResellerCert && !resellerCertIncluded) {
+        addons.push({
+          serviceId: "reseller-certificate",
+          name: "Reseller Certificate",
+          price: 99,
+        })
+      }
+
+      // Add website if selected
+      if (websitePrice > 0) {
+        addons.push({
+          serviceId: "website",
+          name: "Business Website",
+          price: websitePrice,
+        })
+      }
+
+      // Update checkout data with pricing and addons
+      if (updateData) {
+        updateData({
+          addons: addons,
+          addonsTotal: addonsTotal,
+          packagePrice: basePackagePrice,
+          stateFilingFee: stateFilingFee,
+          totalAmount: total,
+        })
+      }
+
+      console.log("[v0] Creating company with data:", {
+        userId: formData.userId,
+        businessName: formData.businessName,
+        state: formData.state,
+        entityType: formData.entityType,
+      })
+
+      // Create company in database
+      const companyResponse = await fetch("/api/companies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: formData.businessName,
+          state: formData.state,
+          type: formData.entityType,
+          userId: formData.userId,
+          packageType: formData.packageType,
+          status: "pending",
+          members: validMembers.map((m) => ({
+            name: m.name || `${m.firstName} ${m.lastName}`,
+            email: m.email,
+            phone: m.phone,
+            address: m.address,
+            city: m.city,
+            state: m.state,
+            zip: m.zip,
+            country: m.country,
+            ssn: m.ssn,
+            dateOfBirth: m.dateOfBirth,
+            isResponsiblePerson: m.isResponsiblePerson,
+          })),
+        }),
+      })
+
+      if (!companyResponse.ok) {
+        const errorData = await companyResponse.json()
+        throw new Error(errorData.error || "Failed to create company")
+      }
+
+      const companyData = await companyResponse.json()
+      console.log("[v0] Company created successfully:", companyData)
+
+      // Store company data in localStorage for payment step
+      localStorage.setItem("companyData", JSON.stringify(companyData))
+
+      toast({
+        title: "Success",
+        description: "Company information saved successfully",
+      })
+
+      // Proceed to payment
+      onNext()
+    } catch (error) {
+      console.error("[v0] Error creating company:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save company information",
+        variant: "destructive",
+      })
+    } finally {
+      setIsCreatingCompany(false)
+    }
+  }
 
   return (
     <div className="space-y-6 pb-10">
@@ -505,16 +636,27 @@ export function ReviewStep({ formData, onBack, onNext }: ReviewStepProps) {
           onClick={onBack}
           variant="outline"
           size="lg"
+          disabled={isCreatingCompany}
           className="flex-1 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Edit
         </Button>
         <Button
-          onClick={onNext}
+          onClick={handleProceedToPayment}
           size="lg"
-          className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white font-semibold transition-all cursor-pointer"
+          disabled={isCreatingCompany}
+          className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white font-semibold transition-all cursor-pointer disabled:opacity-50"
         >
-          Proceed to Payment <ArrowRight className="w-4 h-4 ml-2" />
+          {isCreatingCompany ? (
+            <>
+              <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full mr-2" />
+              Saving...
+            </>
+          ) : (
+            <>
+              Proceed to Payment <ArrowRight className="w-4 h-4 ml-2" />
+            </>
+          )}
         </Button>
       </div>
     </div>

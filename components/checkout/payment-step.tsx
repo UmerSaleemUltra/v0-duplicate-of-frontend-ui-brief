@@ -86,6 +86,11 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         setShowValidationError(true)
         return
       }
+      const phoneDigits = whatsappPhone.replace(/\D/g, "")
+      if (phoneDigits.length < 10) {
+        alert("Please enter a valid phone number with at least 10 digits")
+        return
+      }
     } else {
       if (!receiptUrl) {
         setShowValidationError(true)
@@ -99,13 +104,12 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     console.log("[v0] whatsappPhone:", whatsappPhone)
     console.log("[v0] receiptUrl:", receiptUrl)
 
-    // Get company data from session storage
     const companyDataStr = localStorage.getItem("companyData")
     console.log("[v0] companyDataStr:", companyDataStr)
 
     if (!companyDataStr) {
-      console.error("[v0] No company data found in session storage")
-      alert("Company data not found. Please complete the previous steps.")
+      console.error("[v0] No company data found in localStorage")
+      alert("Company data not found. Please go back and complete the review step.")
       return
     }
 
@@ -114,14 +118,17 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
     if (!companyData.data?.id) {
       console.error("[v0] No company ID found in company data")
-      alert("Company ID not found. Please complete the previous steps.")
+      alert("Company ID not found. Please go back and complete the review step.")
       return
     }
 
     const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
     const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
     const packageWithStateFee = packagePrice + stateFilingFee
-    const addonsTotal = data.addonsTotal || 0
+
+    const addonsTotal =
+      data.addonsTotal ||
+      (Array.isArray(data.addons) ? data.addons.reduce((sum, addon) => sum + (addon.price || 0), 0) : 0)
     const totalAmount = packageWithStateFee + addonsTotal
 
     console.log("[v0] Payment step - state:", data.state)
@@ -151,7 +158,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       ],
       purchasedAddons: data.addons || [],
       paymentMethod: paymentMethod,
-      whatsappPhone: whatsappPhone || null,
+      whatsappPhone: whatsappPhone ? (whatsappPhone.startsWith("+") ? whatsappPhone : `+${whatsappPhone}`) : null,
       receiptUrl: receiptUrl || null,
     }
 
@@ -159,15 +166,10 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
     try {
       await onSubmit(orderData)
-
-      console.log("[v0] Checkout completed successfully, redirecting to dashboard...")
-
-      setTimeout(() => {
-        router.push("/client/dashboard")
-      }, 1000)
+      // Success - user will be redirected by handlePaymentSubmit in checkout page
     } catch (error) {
-      console.error("[v0] Checkout error:", error)
-      alert("Failed to process checkout. Please try again.")
+      console.error("[v0] Payment submission error:", error)
+      alert(error instanceof Error ? error.message : "Failed to process payment. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -233,7 +235,9 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
   const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
   const packageWithStateFee = packagePrice + stateFilingFee
-  const addonsTotal = data.addonsTotal || 0
+  const addonsTotal =
+    data.addonsTotal ||
+    (Array.isArray(data.addons) ? data.addons.reduce((sum, addon) => sum + (addon.price || 0), 0) : 0)
   const totalAmount = packageWithStateFee + addonsTotal
 
   console.log("[v0] Payment step - addons data:", data.addons)
