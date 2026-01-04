@@ -107,7 +107,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
     setIsCreatingUser(true)
 
     try {
-      console.log("[v0] Signing up user with authService...")
+      console.log("[v0] Attempting to sign up user with authService...")
       const signupResult = await authService.signup({
         name: data.name,
         email: data.email,
@@ -117,9 +117,42 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
 
       if (!signupResult.success) {
         const errorMessage = signupResult.error || "Failed to create account"
+
+        // If the email already exists, attempt to login with provided credentials
         if (errorMessage.toLowerCase().includes("already exists") || errorMessage.toLowerCase().includes("duplicate")) {
-          throw new Error("An account with this email already exists. Please use a different email or login.")
+          console.log("[v0] Account exists, attempting to login instead...")
+
+          try {
+            const loginResult = await authService.login({
+              email: data.email,
+              password: data.password,
+            })
+
+            if (!loginResult.success) {
+              throw new Error(
+                "An account with this email already exists. The password you entered is incorrect. Please enter the correct password or use a different email.",
+              )
+            }
+
+            console.log("[v0] Existing user logged in successfully")
+            console.log("[v0] User data:", loginResult.user)
+
+            updateData({
+              phone: phone,
+              name: data.name,
+              email: data.email,
+              password: data.password,
+              userId: loginResult.user?.id,
+            })
+
+            console.log("[v0] Account step completed (existing user), moving to next step")
+            onNext()
+            return
+          } catch (loginError) {
+            throw loginError
+          }
         }
+
         throw new Error(errorMessage)
       }
 
