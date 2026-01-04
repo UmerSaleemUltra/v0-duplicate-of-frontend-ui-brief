@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card } from "@/components/ui/card"
 import { packagePricing } from "@/lib/pricing"
+import { STATE_FEES } from "@/lib/constants"
 
 interface PaymentStepProps {
   data: any
@@ -80,11 +81,15 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       }
 
       const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
+      const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
+      const packageWithStateFee = packagePrice + stateFilingFee
       const addonsTotal = data.addonsTotal || 0
-      const totalAmount = packagePrice + addonsTotal
+      const totalAmount = packageWithStateFee + addonsTotal
 
       console.log("[v0] Payment step - state:", data.state)
       console.log("[v0] Payment step - packagePrice:", packagePrice)
+      console.log("[v0] Payment step - stateFilingFee:", stateFilingFee)
+      console.log("[v0] Payment step - packageWithStateFee:", packageWithStateFee)
       console.log("[v0] Payment step - totalAmount:", totalAmount)
       console.log("[v0] Payment step - addons data:", data.addons)
       console.log("[v0] Payment step - addonsTotal:", addonsTotal)
@@ -100,7 +105,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         items: [
           {
             name: `${data.state} ${data.packageType === "starter" ? "Starter" : "Advanced"} Package`,
-            price: packagePrice,
+            price: packageWithStateFee,
             quantity: 1,
           },
         ],
@@ -178,8 +183,10 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   }
 
   const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
+  const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
+  const packageWithStateFee = packagePrice + stateFilingFee
   const addonsTotal = data.addonsTotal || 0
-  const totalAmount = packagePrice + addonsTotal
+  const totalAmount = packageWithStateFee + addonsTotal
 
   console.log("[v0] Payment step - addons data:", data.addons)
   console.log("[v0] Payment step - addonsTotal:", addonsTotal)
@@ -216,7 +223,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                 <span className="text-muted">
                   {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
                 </span>
-                <span className="font-semibold text-foreground">${packagePrice.toFixed(2)}</span>
+                <span className="font-semibold text-foreground">${packageWithStateFee.toFixed(2)}</span>
               </div>
 
               {data.addons && data.addons.length > 0 ? (
