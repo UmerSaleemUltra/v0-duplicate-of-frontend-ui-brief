@@ -24,6 +24,7 @@ function calculateRenewalDate(): string {
 
 export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const router = useRouter()
+  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "already_paid">("bank_transfer")
   const [whatsappPhone, setWhatsappPhone] = useState("")
   const [receiptUrl, setReceiptUrl] = useState("")
   const [loading, setLoading] = useState(false)
@@ -50,10 +51,16 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     try {
       console.log("[v0] handleSubmit called")
 
-      // Validation
-      if (!whatsappPhone.trim() && !receiptUrl) {
-        alert("Please provide either a phone number or upload a payment receipt")
-        return
+      if (paymentMethod === "already_paid") {
+        if (!whatsappPhone.trim()) {
+          alert("Please provide your phone number to proceed")
+          return
+        }
+      } else {
+        if (!whatsappPhone.trim() && !receiptUrl) {
+          alert("Please provide either a phone number or upload a payment receipt")
+          return
+        }
       }
 
       console.log("[v0] Starting payment submission...")
@@ -109,7 +116,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           },
         ],
         purchasedAddons: data.addons || [],
-        paymentMethod: "bank_transfer",
+        paymentMethod: paymentMethod,
         whatsappPhone: whatsappPhone || null,
         receiptUrl: receiptUrl || null,
       }
@@ -190,11 +197,18 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   console.log("[v0] Payment step - addons data:", data.addons)
   console.log("[v0] Payment step - addonsTotal:", addonsTotal)
 
-  const isPaymentValid = whatsappPhone.trim() !== "" || receiptUrl !== ""
+  const isPaymentValid =
+    paymentMethod === "already_paid" ? whatsappPhone.trim() !== "" : whatsappPhone.trim() !== "" || receiptUrl !== ""
 
   const getValidationMessage = () => {
-    if (!whatsappPhone.trim() && !receiptUrl) {
-      return "Please provide either a phone number or upload a payment receipt"
+    if (paymentMethod === "already_paid") {
+      if (!whatsappPhone.trim()) {
+        return "Please provide your phone number to proceed"
+      }
+    } else {
+      if (!whatsappPhone.trim() && !receiptUrl) {
+        return "Please provide either a phone number or upload a payment receipt"
+      }
     }
     return ""
   }
@@ -204,6 +218,65 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       <div>
         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Secure Payment</h1>
         <p className="text-slate-700">Complete your payment via WhatsApp to finalize your business formation order.</p>
+      </div>
+
+      <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <h3 className="text-lg font-semibold mb-4 text-slate-900">Select Payment Method</h3>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <button
+            type="button"
+            onClick={() => setPaymentMethod("bank_transfer")}
+            className={`relative p-6 rounded-xl border-2 transition-all text-left ${
+              paymentMethod === "bank_transfer"
+                ? "border-[#ff0d13] bg-red-50/50"
+                : "border-slate-200 hover:border-slate-300 bg-white"
+            }`}
+          >
+            {paymentMethod === "bank_transfer" && (
+              <div className="absolute top-4 right-4">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+              </div>
+            )}
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Lock className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-900 mb-1">Bank Transfer</h4>
+                <p className="text-sm text-slate-600">View bank details, make payment, and upload receipt</p>
+              </div>
+            </div>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => setPaymentMethod("already_paid")}
+            className={`relative p-6 rounded-xl border-2 transition-all text-left ${
+              paymentMethod === "already_paid"
+                ? "border-[#ff0d13] bg-red-50/50"
+                : "border-slate-200 hover:border-slate-300 bg-white"
+            }`}
+          >
+            {paymentMethod === "already_paid" && (
+              <div className="absolute top-4 right-4">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                  <CheckCircle2 className="w-4 h-4 text-white" />
+                </div>
+              </div>
+            )}
+            <div className="flex items-start gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <h4 className="font-semibold text-slate-900 mb-1">Already Paid</h4>
+                <p className="text-sm text-slate-600">Payment made via WhatsApp or representative</p>
+              </div>
+            </div>
+          </button>
+        </div>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
@@ -240,130 +313,137 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-            <Lock className="w-5 h-5 text-white" />
-          </div>
-          <div className="flex-1">
-            <h4 className="text-lg font-semibold mb-1 text-slate-900">Payment Bank Account Details</h4>
-            <p className="text-sm text-slate-700">For the payment, please find the details below:</p>
-          </div>
-        </div>
-
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2 border-b border-slate-100">
-            <span className="text-sm text-slate-700">Bank Name</span>
-            <span className="text-sm font-medium text-slate-900">United Bank Limited (UBL)</span>
+      {paymentMethod === "bank_transfer" && (
+        <div className="bg-white rounded-xl border border-slate-200 p-6">
+          <div className="flex items-start gap-3 mb-4">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+              <Lock className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1">
+              <h4 className="text-lg font-semibold mb-1 text-slate-900">Payment Bank Account Details</h4>
+              <p className="text-sm text-slate-700">For the payment, please find the details below:</p>
+            </div>
           </div>
 
-          <div className="flex items-center justify-between py-2 border-b border-slate-100">
-            <span className="text-sm text-slate-700">Account Title</span>
-            <span className="text-sm font-medium text-slate-900">BUZZ FILING</span>
-          </div>
-
-          <div className="flex items-center justify-between py-2 border-b border-slate-100">
-            <span className="text-sm text-slate-700">Account Number</span>
-            <span className="text-sm font-medium text-slate-900">1176314943776</span>
-          </div>
-
-          <div className="flex items-center justify-between py-2">
-            <span className="text-sm text-slate-700">IBAN</span>
-            <span className="text-sm font-medium text-slate-900 break-all">PK22UNIL0109000314943776</span>
-          </div>
-        </div>
-
-        <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
-          <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <p className="text-red-900">
-              <span className="font-semibold">Important:</span> After making the payment, kindly send a screenshot with
-              details of your payment. Thank you.
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-6 space-y-2">
-          <Label htmlFor="receipt-upload" className="text-sm font-semibold text-slate-900">
-            Upload Payment Receipt
-          </Label>
           <div className="space-y-3">
-            <div className="relative">
-              <input
-                id="receipt-upload"
-                type="file"
-                accept="image/jpeg,image/jpg,image/png,image/webp"
-                onChange={handleReceiptUpload}
-                disabled={isUploadingReceipt || !!receiptFile}
-                className="hidden"
-              />
-              <label
-                htmlFor="receipt-upload"
-                className={`flex items-center justify-center gap-2 h-11 px-6 rounded-lg font-semibold text-sm transition-all cursor-pointer ${
-                  isUploadingReceipt || receiptFile
-                    ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                    : "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:from-[#6b0000] hover:to-[#d81c20]"
-                }`}
-              >
-                {isUploadingReceipt ? (
-                  <>
-                    <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
-                    Uploading...
-                  </>
-                ) : receiptFile ? (
-                  <>
-                    <CheckCircle2 className="w-4 h-4" />
-                    File Selected
-                  </>
-                ) : (
-                  "Choose file"
-                )}
-              </label>
+            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <span className="text-sm text-slate-700">Bank Name</span>
+              <span className="text-sm font-medium text-slate-900">United Bank Limited (UBL)</span>
             </div>
 
-            {uploadError && (
-              <p className="text-sm text-red-600 flex items-center gap-2">
-                <X className="w-4 h-4" />
-                {uploadError}
-              </p>
-            )}
+            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <span className="text-sm text-slate-700">Account Title</span>
+              <span className="text-sm font-medium text-slate-900">BUZZ FILING</span>
+            </div>
 
-            {receiptFile && (
-              <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-                <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  <span className="text-sm font-medium text-green-900">{receiptFile.name}</span>
-                  <span className="text-xs text-slate-600">({(receiptFile.size / 1024).toFixed(2)} KB)</span>
-                </div>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={handleRemoveReceipt}
-                  className="h-8 w-8 p-0 hover:bg-red-100"
+            <div className="flex items-center justify-between py-2 border-b border-slate-100">
+              <span className="text-sm text-slate-700">Account Number</span>
+              <span className="text-sm font-medium text-slate-900">1176314943776</span>
+            </div>
+
+            <div className="flex items-center justify-between py-2">
+              <span className="text-sm text-slate-700">IBAN</span>
+              <span className="text-sm font-medium text-slate-900 break-all">PK22UNIL0109000314943776</span>
+            </div>
+          </div>
+
+          <div className="mt-4 p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
+            <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
+            <div className="text-sm">
+              <p className="text-red-900">
+                <span className="font-semibold">Important:</span> After making the payment, kindly send a screenshot
+                with details of your payment. Thank you.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-6 space-y-2">
+            <Label htmlFor="receipt-upload" className="text-sm font-semibold text-slate-900">
+              Upload Payment Receipt
+            </Label>
+            <div className="space-y-3">
+              <div className="relative">
+                <input
+                  id="receipt-upload"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/webp"
+                  onChange={handleReceiptUpload}
+                  disabled={isUploadingReceipt || !!receiptFile}
+                  className="hidden"
+                />
+                <label
+                  htmlFor="receipt-upload"
+                  className={`flex items-center justify-center gap-2 h-11 px-6 rounded-lg font-semibold text-sm transition-all cursor-pointer ${
+                    isUploadingReceipt || receiptFile
+                      ? "bg-slate-200 text-slate-500 cursor-not-allowed"
+                      : "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:from-[#6b0000] hover:to-[#d81c20]"
+                  }`}
                 >
-                  <X className="w-4 h-4 text-red-600" />
-                </Button>
+                  {isUploadingReceipt ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
+                      Uploading...
+                    </>
+                  ) : receiptFile ? (
+                    <>
+                      <CheckCircle2 className="w-4 h-4" />
+                      File Selected
+                    </>
+                  ) : (
+                    "Choose file"
+                  )}
+                </label>
               </div>
-            )}
-            <p className="text-xs text-slate-600">Click to upload or drag and drop PNG, JPG or WEBP (max. 5MB)</p>
+
+              {uploadError && (
+                <p className="text-sm text-red-600 flex items-center gap-2">
+                  <X className="w-4 h-4" />
+                  {uploadError}
+                </p>
+              )}
+
+              {receiptFile && (
+                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    <span className="text-sm font-medium text-green-900">{receiptFile.name}</span>
+                    <span className="text-xs text-slate-600">({(receiptFile.size / 1024).toFixed(2)} KB)</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={handleRemoveReceipt}
+                    className="h-8 w-8 p-0 hover:bg-red-100"
+                  >
+                    <X className="w-4 h-4 text-red-600" />
+                  </Button>
+                </div>
+              )}
+              <p className="text-xs text-slate-600">Click to upload or drag and drop PNG, JPG or WEBP (max. 5MB)</p>
+            </div>
           </div>
         </div>
-      </div>
+      )}
 
-      <div className="relative flex items-center justify-center py-4">
-        <div className="absolute inset-0 flex items-center">
-          <div className="w-full border-t border-slate-200"></div>
+      {paymentMethod === "bank_transfer" && (
+        <div className="relative flex items-center justify-center py-4">
+          <div className="absolute inset-0 flex items-center">
+            <div className="w-full border-t border-slate-200"></div>
+          </div>
+          <div className="relative bg-white px-6">
+            <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">OR</span>
+          </div>
         </div>
-        <div className="relative bg-white px-6">
-          <span className="text-sm font-medium text-slate-500 uppercase tracking-wide">OR</span>
-        </div>
-      </div>
+      )}
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
         <div className="space-y-2">
           <Label htmlFor="whatsapp-phone" className="text-sm font-semibold text-slate-900">
-            Phone Number <span className="text-xs text-slate-500 font-normal">(Optional)</span>
+            Phone Number{" "}
+            {paymentMethod === "bank_transfer" && (
+              <span className="text-xs text-slate-500 font-normal">(Optional)</span>
+            )}
           </Label>
           <Input
             id="whatsapp-phone"
@@ -374,7 +454,9 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             className="h-11"
           />
           <p className="text-sm text-slate-600 leading-relaxed">
-            If you can share a screenshot on WhatsApp to our representative, add your phone number and we'll contact you
+            {paymentMethod === "already_paid"
+              ? "Please provide your phone number so our team can verify your payment and process your order"
+              : "If you can share a screenshot on WhatsApp to our representative, add your phone number and we'll contact you"}
           </p>
         </div>
       </div>
