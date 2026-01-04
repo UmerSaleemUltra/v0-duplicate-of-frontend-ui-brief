@@ -294,7 +294,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               accept="image/jpeg,image/jpg,image/png,image/webp"
               onChange={handleReceiptUpload}
               disabled={isUploadingReceipt || !!receiptFile}
-              className="file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-[#880000] file:text-white hover:file:bg-[#A00000] file:cursor-pointer"
+              className="file:mr-3 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-[#880000] file:text-white hover:file:bg-[#A00000] file:cursor-pointer cursor-pointer text-sm"
             />
           </div>
           {uploadError && (
@@ -326,20 +326,18 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-start gap-3 mb-4">
-          <div className="w-10 h-10 rounded-lg bg-green-100 flex items-center justify-center flex-shrink-0">
-            <CheckCircle2 className="w-5 h-5 text-green-600" />
+        <div className="flex items-start gap-3">
+          <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
+            <AlertCircle className="w-5 h-5 text-yellow-600" />
           </div>
-          <div className="flex-1">
-            <h4 className="text-lg font-semibold text-slate-900 mb-1">Payment Instructions</h4>
+          <div>
+            <h4 className="text-base font-semibold text-slate-900 mb-1">Payment Verification</h4>
+            <p className="text-sm text-slate-700 leading-relaxed">
+              Your order will be processed once we verify your payment. This usually takes 1-2 business hours during
+              office hours.
+            </p>
           </div>
         </div>
-        <ol className="text-sm text-slate-700 space-y-2 list-decimal list-inside leading-relaxed ml-1">
-          <li>Contact us on WhatsApp to receive payment details</li>
-          <li>Complete your payment via WhatsApp</li>
-          <li>Provide your phone number or upload payment receipt</li>
-          <li>Submit to complete your order</li>
-        </ol>
       </div>
 
       <div className="bg-white rounded-xl border border-slate-200 p-6">
@@ -382,30 +380,30 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         </p>
       )}
 
-      <div className="flex flex-col sm:flex-row gap-4">
+      <div className="flex flex-col sm:flex-row gap-3 pt-2">
         <Button
           type="button"
           onClick={onBack}
           variant="outline"
-          className="h-14 px-8 text-base font-semibold border-2 border-slate-200 hover:bg-slate-50 transition-all bg-white flex items-center justify-center gap-3 rounded-xl"
+          className="w-full sm:w-auto h-11 px-6 text-sm font-medium border-2 border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all bg-white flex items-center justify-center gap-2 rounded-lg"
         >
-          <ArrowLeft className="w-5 h-5" />
+          <ArrowLeft className="w-4 h-4" />
           Back to Edit
         </Button>
         <Button
           type="submit"
           disabled={isSubmitting || !isPaymentValid}
-          className="flex-1 h-14 text-base font-semibold bg-[#8B0000] hover:bg-[#A00000] text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 rounded-xl"
+          className="flex-1 h-11 text-sm font-semibold bg-gradient-to-r from-[#880000] to-[#A00000] hover:from-[#A00000] hover:to-[#C00000] text-white transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-lg"
         >
           {isSubmitting ? (
             <>
-              <div className="animate-spin mr-2 h-5 w-5 border-2 border-white/30 border-t-white rounded-full" />
+              <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
               Processing...
             </>
           ) : (
             <>
               Proceed to Payment
-              <ArrowRight className="w-5 h-5" />
+              <ArrowRight className="w-4 h-4" />
             </>
           )}
         </Button>
