@@ -27,7 +27,7 @@ function calculateRenewalDate(): string {
 export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const router = useRouter()
   const [whatsappReference, setWhatsappReference] = useState("")
-  const [phoneNumber, setPhoneNumber] = useState("")
+  const [contactPhone, setContactPhone] = useState("")
   const [loading, setLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
@@ -448,7 +448,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   console.log("[v0] Payment step - addons data:", data.addons)
   console.log("[v0] Payment step - addonsTotal:", addonsTotal)
 
-  const isSubmitDisabled = !receiptUrl || !whatsappReference.trim() || loading || isSubmitting
+  const isSubmitDisabled = (!receiptUrl && !contactPhone.trim()) || loading || isSubmitting
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto space-y-8 pb-8">
@@ -620,8 +620,8 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               id="whatsapp-phone"
               type="tel"
               placeholder="+1 302 209 8440"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
+              value={contactPhone}
+              onChange={(e) => setContactPhone(e.target.value)}
               className="h-12 bg-white/60 border-glass-border focus:border-success/50 transition-smooth"
             />
             <p className="text-sm text-muted leading-relaxed">
@@ -631,8 +631,8 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="whatsapp-ref" className="text-sm font-semibold">
-              Transaction Reference / Group Code *
+            <Label htmlFor="whatsapp-ref" className="text-base font-medium mb-3 block">
+              Transaction Reference / Group Code
             </Label>
             <Input
               id="whatsapp-ref"
@@ -640,7 +640,6 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               value={whatsappReference}
               onChange={(e) => setWhatsappReference(e.target.value)}
               className="h-12 bg-white/60 border-glass-border focus:border-success/50 transition-smooth"
-              required
             />
             <p className="text-sm text-muted leading-relaxed">
               Please enter the transaction ID, reference number, or group code from your WhatsApp payment
@@ -660,14 +659,15 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             </div>
           </div>
 
-          {isSubmitDisabled && (receiptUrl || whatsappReference.trim()) && (
+          {isSubmitDisabled && (receiptUrl || contactPhone.trim()) && (
             <div className="p-4 rounded-xl bg-error/10 border border-error/20 flex items-start gap-3">
               <AlertCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
               <div className="text-sm text-error">
                 <p className="font-semibold mb-1">Missing Required Information</p>
-                <ul className="list-disc list-inside space-y-1">
-                  {!receiptUrl && <li>Please upload your payment receipt screenshot</li>}
-                  {!whatsappReference.trim() && <li>Please enter your transaction reference number</li>}
+                <p>Please provide at least one of the following:</p>
+                <ul className="list-disc list-inside space-y-1 mt-2">
+                  <li>Upload your payment receipt screenshot, OR</li>
+                  <li>Add your phone number for WhatsApp contact</li>
                 </ul>
               </div>
             </div>
