@@ -24,6 +24,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Country } from "country-state-city"
 import type { CheckoutData, Member } from "@/app/checkout/page"
+import { authService } from "@/lib/auth"
 
 type OwnerInfoStepProps = {
   data: CheckoutData
@@ -188,22 +189,50 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     setUploadingPassports((prev) => ({ ...prev, [memberId]: true }))
 
     try {
-      console.log("[v0] Uploading passport to Vercel Blob...")
+      console.log("[v0] Uploading passport to database...")
+
+      // Get auth token
+      const token = authService.getToken()
+      if (!token) {
+        throw new Error("Authentication required. Please log in to upload passports.")
+      }
+
+      // Get current user info
+      const currentUser = authService.getCurrentUser()
+      if (!currentUser) {
+        throw new Error("User information not found. Please log in again.")
+      }
+
+      // Find member details
+      const member = data.members?.find((m) => m.id === memberId)
+      const memberName = member
+        ? `${member.firstName || ""} ${member.lastName || ""}`.trim() || member.name || "Unknown"
+        : "Unknown"
 
       const formData = new FormData()
       formData.append("file", file)
+      formData.append("userId", currentUser.id)
+      formData.append("companyId", data.userId || "") // Use empty string if no company yet
+      formData.append("memberId", memberId)
+      formData.append("memberName", memberName)
 
-      const response = await fetch("/api/upload", {
+      const response = await fetch("/api/passports/upload", {
         method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
         body: formData,
       })
 
       if (!response.ok) {
-        throw new Error("Failed to upload passport")
+        const errorData = await response.json().catch(() => ({ error: "Failed to upload passport" }))
+        throw new Error(errorData.error || "Failed to upload passport")
       }
 
-      const { url, downloadUrl } = await response.json()
-      console.log("[v0] Passport uploaded successfully:", url)
+      const result = await response.json()
+      console.log("[v0] Passport uploaded successfully:", result)
+
+      const passportUrl = result.data?.fileUrl || ""
 
       if (passportPreviews[memberId]) {
         URL.revokeObjectURL(passportPreviews[memberId])
@@ -214,12 +243,13 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
       updateMember(memberId, {
         passportFile: file,
-        passportKey: url,
-        passportUrl: downloadUrl || url,
+        passportKey: result.data?.id || passportUrl, // Store passport DB ID
+        passportUrl: passportUrl,
       })
     } catch (error) {
       console.error("[v0] Error uploading passport:", error)
-      alert("Failed to upload passport. Please try again.")
+      const errorMessage = error instanceof Error ? error.message : "Failed to upload passport. Please try again."
+      alert(errorMessage)
     } finally {
       setUploadingPassports((prev) => {
         const n = { ...prev }
