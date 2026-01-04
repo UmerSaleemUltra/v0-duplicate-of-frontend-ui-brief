@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { ArrowLeft, Lock, CheckCircle2, MessageCircle, Upload, AlertCircle, X } from "lucide-react"
+import { Lock, CheckCircle2, MessageCircle, Upload, AlertCircle, X, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -26,12 +26,11 @@ function calculateRenewalDate(): string {
 
 export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const router = useRouter()
-  const [whatsappReference, setWhatsappReference] = useState("")
-  const [contactPhone, setContactPhone] = useState("")
+  const [whatsappPhone, setWhatsappPhone] = useState("")
+  const [receiptUrl, setReceiptUrl] = useState("")
   const [loading, setLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
-  const [receiptUrl, setReceiptUrl] = useState<string>("")
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
   const [uploadError, setUploadError] = useState<string>("")
 
@@ -266,7 +265,6 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           businessDescription: data.businessDescription,
           businessWebsite: data.businessWebsite,
           packageType: data.packageType,
-          transactionReference: whatsappReference, // Save reference number
           members: validMembers.map((m) => ({
             firstName: m.firstName || "",
             middleName: m.middleName || "",
@@ -367,7 +365,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         ],
         purchasedAddons: data.addons || [],
         paymentMethod: "bank_transfer",
-        transactionReference: whatsappReference,
+        whatsappPhone: whatsappPhone || null,
         receiptUrl: receiptUrl || null,
       }
 
@@ -448,7 +446,14 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   console.log("[v0] Payment step - addons data:", data.addons)
   console.log("[v0] Payment step - addonsTotal:", addonsTotal)
 
-  const isSubmitDisabled = (!receiptUrl && !contactPhone.trim()) || loading || isSubmitting
+  const isPaymentValid = whatsappPhone.trim() !== "" || receiptUrl !== ""
+
+  const getValidationMessage = () => {
+    if (!whatsappPhone.trim() && !receiptUrl) {
+      return "Please provide either a phone number or upload a payment receipt"
+    }
+    return ""
+  }
 
   return (
     <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto space-y-8 pb-8">
@@ -596,7 +601,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             </div>
           </div>
 
-          <div className="p-5 rounded-xl bg-success/5 border border-success/20 space-y-3">
+          <div className="rounded-2xl bg-glass-panel backdrop-blur-glass border border-glass-border p-6 space-y-6 shadow-glass">
             <div className="flex items-start gap-3">
               <MessageCircle className="w-5 h-5 text-success flex-shrink-0 mt-0.5" />
               <div className="flex-1">
@@ -604,7 +609,7 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                 <ol className="text-sm text-muted space-y-2 list-decimal list-inside leading-relaxed">
                   <li>Contact us on WhatsApp to receive payment details</li>
                   <li>Complete your payment via WhatsApp</li>
-                  <li>Enter your transaction reference below</li>
+                  <li>Provide your phone number or upload payment receipt</li>
                   <li>Submit to complete your order</li>
                 </ol>
               </div>
@@ -613,36 +618,20 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
           <div className="space-y-2">
             <Label htmlFor="whatsapp-phone" className="text-sm font-semibold flex items-center gap-2">
-              <MessageCircle className="w-4 h-4" />
-              Phone Number (Optional)
+              Phone Number
+              <span className="text-xs text-muted font-normal">(Optional)</span>
             </Label>
             <Input
               id="whatsapp-phone"
               type="tel"
-              placeholder="+1 302 209 8440"
-              value={contactPhone}
-              onChange={(e) => setContactPhone(e.target.value)}
+              placeholder="+1 234 567 8900"
+              value={whatsappPhone}
+              onChange={(e) => setWhatsappPhone(e.target.value)}
               className="h-12 bg-white/60 border-glass-border focus:border-success/50 transition-smooth"
             />
             <p className="text-sm text-muted leading-relaxed">
               If you can share a screenshot on WhatsApp to our representative, add your phone number and we'll contact
               you
-            </p>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="whatsapp-ref" className="text-base font-medium mb-3 block">
-              Transaction Reference / Group Code
-            </Label>
-            <Input
-              id="whatsapp-ref"
-              placeholder="Enter your transaction ID or reference number"
-              value={whatsappReference}
-              onChange={(e) => setWhatsappReference(e.target.value)}
-              className="h-12 bg-white/60 border-glass-border focus:border-success/50 transition-smooth"
-            />
-            <p className="text-sm text-muted leading-relaxed">
-              Please enter the transaction ID, reference number, or group code from your WhatsApp payment
             </p>
           </div>
 
@@ -659,49 +648,25 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             </div>
           </div>
 
-          {isSubmitDisabled && (receiptUrl || contactPhone.trim()) && (
-            <div className="p-4 rounded-xl bg-error/10 border border-error/20 flex items-start gap-3">
-              <AlertCircle className="w-5 h-5 text-error flex-shrink-0 mt-0.5" />
-              <div className="text-sm text-error">
-                <p className="font-semibold mb-1">Missing Required Information</p>
-                <p>Please provide at least one of the following:</p>
-                <ul className="list-disc list-inside space-y-1 mt-2">
-                  <li>Upload your payment receipt screenshot, OR</li>
-                  <li>Add your phone number for WhatsApp contact</li>
-                </ul>
-              </div>
-            </div>
-          )}
+          {!isPaymentValid && <p className="text-sm text-destructive text-center mt-2">{getValidationMessage()}</p>}
 
-          <div className="flex flex-col sm:flex-row gap-4 pt-4">
-            <Button
-              type="button"
-              onClick={onBack}
-              variant="outline"
-              size="lg"
-              className="flex-1 bg-white/50 hover:bg-white/80 border-glass-border transition-smooth"
-              disabled={loading || isSubmitting}
-            >
-              <ArrowLeft className="mr-2 w-5 h-5" /> Back to Review
-            </Button>
-            <Button
-              type="submit"
-              size="lg"
-              className="flex-1 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 text-white shadow-lg shadow-primary/20 transition-smooth"
-              disabled={isSubmitDisabled}
-            >
-              {loading ? (
-                <>
-                  <div className="animate-spin mr-2 h-5 w-5 border-2 border-white/30 border-t-white rounded-full" />
-                  Processing...
-                </>
-              ) : (
-                <>
-                  Submit Order <CheckCircle2 className="ml-2 w-5 h-5" />
-                </>
-              )}
-            </Button>
-          </div>
+          <Button
+            onClick={handleSubmit}
+            disabled={isSubmitting || !isPaymentValid}
+            className="w-full h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-smooth shadow-glass disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {isSubmitting ? (
+              <>
+                <div className="animate-spin mr-2 h-5 w-5 border-2 border-white/30 border-t-white rounded-full" />
+                Processing...
+              </>
+            ) : (
+              <>
+                Submit Order
+                <ArrowRight className="w-5 h-5 ml-2" />
+              </>
+            )}
+          </Button>
         </Card>
       </div>
     </form>
