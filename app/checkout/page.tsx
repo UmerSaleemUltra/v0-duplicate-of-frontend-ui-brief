@@ -420,6 +420,38 @@ export default function CheckoutPage() {
     }
   }
 
+  const handlePaymentSubmit = async (orderData: any) => {
+    try {
+      console.log("[v0] Submitting order from checkout page:", orderData)
+
+      const response = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(orderData),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.error || "Failed to create order")
+      }
+
+      const result = await response.json()
+      console.log("[v0] Order created successfully:", result)
+
+      // Clear checkout data after successful order
+      localStorage.removeItem("checkoutData")
+      localStorage.removeItem("checkoutStep")
+
+      // Redirect to dashboard
+      window.location.href = "/client/dashboard"
+    } catch (error) {
+      console.error("[v0] Error submitting order:", error)
+      throw error
+    }
+  }
+
   const renderStep = () => {
     if (!data || !isInitialized) {
       return (
@@ -444,7 +476,7 @@ export default function CheckoutPage() {
       case 4:
         return <ReviewStep formData={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
       case 5:
-        return <PaymentStep data={data} onBack={prevStep} />
+        return <PaymentStep data={data} onBack={prevStep} onSubmit={handlePaymentSubmit} />
       default:
         return null
     }
