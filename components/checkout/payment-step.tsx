@@ -27,7 +27,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "already_paid">("already_paid")
   const [whatsappPhone, setWhatsappPhone] = useState("")
   const [receiptUrl, setReceiptUrl] = useState("")
-  const [loading, setLoading] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
@@ -48,13 +47,15 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         }
       } catch (error) {
         console.log("Error converting USD to PKR:", error)
-        throw new Error("Currency conversion failed")
+        return null
       }
     }
 
     convertUSDtoPKR()
       .then((rate) => {
-        setPkrRate(rate)
+        if (rate) {
+          setPkrRate(rate)
+        }
         setIsLoadingRate(false)
       })
       .catch(() => {
@@ -129,6 +130,8 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       console.log("[v0] Payment step - addons data:", data.addons)
       console.log("[v0] Payment step - addonsTotal:", addonsTotal)
 
+      setIsSubmitting(true)
+
       const orderData = {
         companyId: companyData.data.id,
         companyName: data.businessName,
@@ -162,6 +165,8 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     } catch (error) {
       console.error("[v0] Checkout error:", error)
       alert("Failed to process checkout. Please try again.")
+    } finally {
+      setIsSubmitting(false)
     }
   }
 
@@ -245,7 +250,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const packageWithStateFeePKR = pkrRate ? packageWithStateFee * pkrRate : null
 
   const formatPKR = (amount: number) => {
-    return new Intl.NumberFormat('en-US', {
+    return new Intl.NumberFormat("en-US", {
       minimumFractionDigits: 0,
       maximumFractionDigits: 0,
     }).format(Math.round(amount))
@@ -485,59 +490,39 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
               <p className="text-xs text-slate-600">Click to upload or drag and drop PNG, JPG or WEBP (max. 5MB)</p>
             </div>
           </div>
+        </div>
       )}
 
       {paymentMethod === "already_paid" && (
         <div className="bg-white rounded-xl border border-slate-200 p-6">
           <div className="space-y-2">
             <Label htmlFor="whatsapp-phone" className="text-sm font-semibold text-slate-900">
-              Phone Number <span className="text-red-600">*</span>
+              WhatsApp Phone Number
             </Label>
             <Input
               id="whatsapp-phone"
               type="tel"
-              placeholder="+1 234 567 8900"
+              placeholder="Enter your WhatsApp phone number"
               value={whatsappPhone}
               onChange={(e) => setWhatsappPhone(e.target.value)}
               className="h-11"
-              required
             />
-            <p className="text-sm text-slate-600 leading-relaxed">
-              Please provide your phone number so our team can verify your payment and process your order
+            <p className="text-xs text-slate-600">
+              We&apos;ll contact you via WhatsApp at this number to confirm your payment
             </p>
           </div>
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-start gap-3">
-          <div className="w-10 h-10 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
-            <Upload className="w-5 h-5 text-yellow-600" />
-          </div>
-          <div>
-            <h4 className="text-base font-semibold text-slate-900 mb-1">Payment Verification</h4>
-            <p className="text-sm text-slate-700 leading-relaxed">
-              Your order will be processed once we verify your payment. This usually takes 1-2 business hours during
-              office hours.
-            </p>
-          </div>
-        </div>
-      </div>
-
-      <div className="flex flex-col sm:flex-row gap-3 pt-2">
-        <Button
-          type="button"
-          onClick={onBack}
-          variant="outline"
-          className="w-full sm:w-auto h-12 px-8 text-base font-medium border border-slate-300 hover:bg-slate-50 hover:border-slate-400 transition-all bg-white flex items-center justify-center gap-2 rounded-lg"
-        >
+      <div className="flex items-center gap-4">
+        <Button type="button" variant="outline" onClick={onBack} className="h-11 gap-2 bg-transparent">
           <ArrowLeft className="w-4 h-4" />
-          Back to Edit
+          Back
         </Button>
         <Button
           type="submit"
-          disabled={isSubmitting || !isPaymentValid}
-          className="flex-1 h-12 px-8 text-base font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#6b0000] hover:to-[#d81c20] text-white transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 rounded-lg"
+          disabled={!isPaymentValid || isSubmitting}
+          className="flex-1 h-11 gap-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:from-[#6b0000] hover:to-[#d81c20] disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>
@@ -546,14 +531,20 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
             </>
           ) : (
             <>
-              Proceed to Payment
+              Complete Payment
               <ArrowRight className="w-4 h-4" />
             </>
           )}
         </Button>
       </div>
+
+      {getValidationMessage() && (
+        <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
+          <p className="text-sm text-amber-900">{getValidationMessage()}</p>
+        </div>
+      )}
     </form>
   )
 }
 
-export { PaymentStep }\
+export { PaymentStep }
