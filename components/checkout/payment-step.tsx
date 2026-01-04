@@ -3,7 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Lock, Upload, X, CheckCircle2, PhoneIcon } from "lucide-react"
+import { Lock, Upload, X, CheckCircle2, PhoneIcon, ArrowLeft, ArrowRight } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -395,19 +395,20 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
           {!isPaymentValid && <p className="text-sm text-destructive text-center mt-2">{getValidationMessage()}</p>}
 
-          <div className="flex gap-4">
+          <div className="flex flex-col sm:flex-row gap-4">
             <Button
               type="button"
               onClick={onBack}
               variant="outline"
-              className="h-14 px-8 text-lg font-semibold border-2 hover:bg-muted/50 transition-smooth bg-transparent"
+              className="h-14 px-8 text-base font-semibold border-2 border-border hover:bg-muted/50 transition-smooth bg-white/80 backdrop-blur-sm flex items-center justify-center gap-3 rounded-xl"
             >
-              Back
+              <ArrowLeft className="w-5 h-5" />
+              Back to Edit
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting || !isPaymentValid}
-              className="flex-1 h-14 text-lg font-semibold bg-gradient-to-r from-primary to-primary-dark hover:opacity-90 transition-smooth shadow-glass disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 h-14 text-base font-semibold bg-[#8B0000] hover:bg-[#A00000] text-white transition-smooth shadow-lg disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-3 rounded-xl"
             >
               {isSubmitting ? (
                 <>
@@ -416,8 +417,8 @@ export function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                 </>
               ) : (
                 <>
-                  Submit Order
-                  <CheckCircle2 className="w-5 h-5 ml-2" />
+                  Proceed to Payment
+                  <ArrowRight className="w-5 h-5" />
                 </>
               )}
             </Button>
