@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   ArrowRight,
   ArrowLeft,
@@ -34,9 +34,24 @@ type OwnerInfoStepProps = {
 
 export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [uploadingPassports, setUploadingPassports] = useState<Record<string, boolean>>({})
   const [passportPreviews, setPassportPreviews] = useState<Record<string, string>>({})
   const countries = useMemo(() => {
     return Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name))
+  }, [])
+
+  useEffect(() => {
+    if (data.members && data.members.length > 0) {
+      const needsUpdate = data.members.some((m) => !m.country || m.country === "US")
+      if (needsUpdate) {
+        updateData({
+          members: data.members.map((m) => ({
+            ...m,
+            country: m.country && m.country !== "US" ? m.country : "PK",
+          })),
+        })
+      }
+    }
   }, [])
 
   const addMember = () => {
@@ -123,6 +138,8 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       return
     }
 
+    setUploadingPassports((prev) => ({ ...prev, [memberId]: true }))
+
     try {
       console.log("[v0] Uploading passport to Vercel Blob...")
 
@@ -153,6 +170,12 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     } catch (error) {
       console.error("[v0] Error uploading passport:", error)
       alert("Failed to upload passport. Please try again.")
+    } finally {
+      setUploadingPassports((prev) => {
+        const n = { ...prev }
+        delete n[memberId]
+        return n
+      })
     }
   }
 
