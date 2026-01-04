@@ -26,13 +26,14 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const router = useRouter()
   const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "already_paid">("already_paid")
   const [whatsappPhone, setWhatsappPhone] = useState("")
-  const [receiptUrl, setReceiptUrl] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [receiptUrl, setReceiptUrl] = useState<string | null>(null)
   const [receiptFile, setReceiptFile] = useState<File | null>(null)
+  const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
   const [uploadError, setUploadError] = useState<string>("")
   const [pkrRate, setPkrRate] = useState<number | null>(null)
   const [isLoadingRate, setIsLoadingRate] = useState(true)
+  const [showValidationError, setShowValidationError] = useState(false)
 
   useEffect(() => {
     async function convertUSDtoPKR() {
@@ -78,83 +79,85 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    console.log("[v0] handleSubmit called")
+
+    if (paymentMethod === "already_paid") {
+      if (!whatsappPhone.trim()) {
+        setShowValidationError(true)
+        return
+      }
+    } else {
+      if (!receiptUrl) {
+        setShowValidationError(true)
+        return
+      }
+    }
+
+    setShowValidationError(false)
+
+    console.log("[v0] Starting payment submission...")
+    console.log("[v0] whatsappPhone:", whatsappPhone)
+    console.log("[v0] receiptUrl:", receiptUrl)
+
+    // Get company data from session storage
+    const companyDataStr = sessionStorage.getItem("companyData")
+    console.log("[v0] companyDataStr:", companyDataStr)
+
+    if (!companyDataStr) {
+      console.error("[v0] No company data found in session storage")
+      alert("Company data not found. Please complete the previous steps.")
+      return
+    }
+
+    const companyData = JSON.parse(companyDataStr)
+    console.log("[v0] companyData:", companyData)
+
+    if (!companyData.data?.id) {
+      console.error("[v0] No company ID found in company data")
+      alert("Company ID not found. Please complete the previous steps.")
+      return
+    }
+
+    const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
+    const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
+    const packageWithStateFee = packagePrice + stateFilingFee
+    const addonsTotal = data.addonsTotal || 0
+    const totalAmount = packageWithStateFee + addonsTotal
+
+    console.log("[v0] Payment step - state:", data.state)
+    console.log("[v0] Payment step - packagePrice:", packagePrice)
+    console.log("[v0] Payment step - stateFilingFee:", stateFilingFee)
+    console.log("[v0] Payment step - packageWithStateFee:", packageWithStateFee)
+    console.log("[v0] Payment step - totalAmount:", totalAmount)
+    console.log("[v0] Payment step - addons data:", data.addons)
+    console.log("[v0] Payment step - addonsTotal:", addonsTotal)
+
+    setIsSubmitting(true)
+
+    const orderData = {
+      companyId: companyData.data.id,
+      companyName: data.businessName,
+      type: `${data.entityType.toUpperCase()} Formation`,
+      amount: totalAmount,
+      total: totalAmount,
+      packagePrice: packagePrice,
+      addonsTotal: addonsTotal,
+      items: [
+        {
+          name: `${data.state} ${data.packageType === "starter" ? "Starter" : "Advanced"} Package`,
+          price: packageWithStateFee,
+          quantity: 1,
+        },
+      ],
+      purchasedAddons: data.addons || [],
+      paymentMethod: paymentMethod,
+      whatsappPhone: whatsappPhone || null,
+      receiptUrl: receiptUrl || null,
+    }
+
+    console.log("[v0] Order data:", orderData)
+
     try {
-      console.log("[v0] handleSubmit called")
-
-      if (paymentMethod === "already_paid") {
-        if (!whatsappPhone.trim()) {
-          alert("Please provide your phone number to proceed")
-          return
-        }
-      } else {
-        if (!receiptUrl) {
-          alert("Please upload a payment receipt to proceed")
-          return
-        }
-      }
-
-      console.log("[v0] Starting payment submission...")
-      console.log("[v0] whatsappPhone:", whatsappPhone)
-      console.log("[v0] receiptUrl:", receiptUrl)
-
-      // Get company data from session storage
-      const companyDataStr = sessionStorage.getItem("companyData")
-      console.log("[v0] companyDataStr:", companyDataStr)
-
-      if (!companyDataStr) {
-        console.error("[v0] No company data found in session storage")
-        alert("Company data not found. Please complete the previous steps.")
-        return
-      }
-
-      const companyData = JSON.parse(companyDataStr)
-      console.log("[v0] companyData:", companyData)
-
-      if (!companyData.data?.id) {
-        console.error("[v0] No company ID found in company data")
-        alert("Company ID not found. Please complete the previous steps.")
-        return
-      }
-
-      const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
-      const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
-      const packageWithStateFee = packagePrice + stateFilingFee
-      const addonsTotal = data.addonsTotal || 0
-      const totalAmount = packageWithStateFee + addonsTotal
-
-      console.log("[v0] Payment step - state:", data.state)
-      console.log("[v0] Payment step - packagePrice:", packagePrice)
-      console.log("[v0] Payment step - stateFilingFee:", stateFilingFee)
-      console.log("[v0] Payment step - packageWithStateFee:", packageWithStateFee)
-      console.log("[v0] Payment step - totalAmount:", totalAmount)
-      console.log("[v0] Payment step - addons data:", data.addons)
-      console.log("[v0] Payment step - addonsTotal:", addonsTotal)
-
-      setIsSubmitting(true)
-
-      const orderData = {
-        companyId: companyData.data.id,
-        companyName: data.businessName,
-        type: `${data.entityType.toUpperCase()} Formation`,
-        amount: totalAmount,
-        total: totalAmount,
-        packagePrice: packagePrice,
-        addonsTotal: addonsTotal,
-        items: [
-          {
-            name: `${data.state} ${data.packageType === "starter" ? "Starter" : "Advanced"} Package`,
-            price: packageWithStateFee,
-            quantity: 1,
-          },
-        ],
-        purchasedAddons: data.addons || [],
-        paymentMethod: paymentMethod,
-        whatsappPhone: whatsappPhone || null,
-        receiptUrl: receiptUrl || null,
-      }
-
-      console.log("[v0] Order data:", orderData)
-
       await onSubmit(orderData)
 
       console.log("[v0] Checkout completed successfully, redirecting to dashboard...")
@@ -168,6 +171,11 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setWhatsappPhone(e.target.value)
+    setShowValidationError(false)
   }
 
   const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -218,7 +226,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
   const handleRemoveReceipt = () => {
     setReceiptFile(null)
-    setReceiptUrl("")
+    setReceiptUrl(null)
     setUploadError("")
   }
 
@@ -504,7 +512,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
               type="tel"
               placeholder="Enter your WhatsApp phone number"
               value={whatsappPhone}
-              onChange={(e) => setWhatsappPhone(e.target.value)}
+              onChange={handlePhoneChange}
               className="h-11"
             />
             <p className="text-xs text-slate-600">
@@ -538,9 +546,9 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         </Button>
       </div>
 
-      {getValidationMessage() && (
-        <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-          <p className="text-sm text-amber-900">{getValidationMessage()}</p>
+      {showValidationError && getValidationMessage() && (
+        <div className="p-4 rounded-lg bg-red-50 border border-red-200">
+          <p className="text-sm text-red-900">{getValidationMessage()}</p>
         </div>
       )}
     </form>
