@@ -261,7 +261,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
   }
 
   return (
-    <div className="space-y-4 md:space-y-6 pb-6 md:pb-10">
+    <div className="space-y-4 md:space-y-6 pb-6 md:pb-10 overflow-x-hidden max-w-full">
       <div className="space-y-2">
         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Review Your Business Details</h1>
         <p className="text-sm md:text-base text-slate-700 leading-relaxed">

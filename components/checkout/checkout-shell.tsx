@@ -48,7 +48,7 @@ export function CheckoutShell({
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50">
+    <div className="min-h-screen flex bg-gray-50 overflow-x-hidden">
       {/* Sidebar — made narrower */}
       <aside
         className={`fixed lg:sticky top-0 h-screen z-50
@@ -134,7 +134,7 @@ export function CheckoutShell({
       )}
 
       {/* Main Content */}
-      <div className="flex-1 flex flex-col min-h-screen">
+      <div className="flex-1 flex flex-col min-h-screen overflow-x-hidden">
         <div
           className="lg:hidden sticky top-0 z-30 
             h-14 sm:h-16 px-4 sm:px-5
@@ -168,8 +168,8 @@ export function CheckoutShell({
           <div className="w-10 sm:w-11" />
         </div>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 max-w-7xl w-full mx-auto">
-          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-7 lg:p-8">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 max-w-7xl w-full mx-auto overflow-x-hidden">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-7 lg:p-8 overflow-x-hidden">
             <div className="flex justify-end mb-4">
               <Button onClick={handleSaveProgress} variant="outline" className="gap-2 text-sm bg-transparent">
                 <Save className="w-4 h-4" />
