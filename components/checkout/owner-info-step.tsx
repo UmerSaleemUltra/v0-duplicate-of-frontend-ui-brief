@@ -514,22 +514,31 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
                   {/* Uploaded File */}
                   {member.passportFile && (
-                    <div className="p-3 rounded-lg bg-green-50 border border-green-200 flex items-center justify-between">
-                      <div className="flex flex-col">
-                        <span className="text-sm font-medium text-green-700 truncate">{member.passportFile.name}</span>
-                        <span className="text-xs text-green-600">Ready to upload after company creation</span>
-                      </div>
+                    <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <span
+                            className="text-sm font-medium text-green-700 block truncate"
+                            title={member.passportFile.name}
+                          >
+                            {member.passportFile.name}
+                          </span>
+                          <span className="text-xs text-green-600 block mt-1">
+                            Ready to upload after company creation
+                          </span>
+                        </div>
 
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleRemovePassport(member.id)}
-                        className="text-red-600 hover:bg-red-50"
-                      >
-                        <X className="w-4 h-4 mr-1" />
-                        Remove
-                      </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleRemovePassport(member.id)}
+                          className="text-red-600 hover:bg-red-50 flex-shrink-0 h-8 px-2"
+                        >
+                          <X className="w-4 h-4" />
+                          <span className="ml-1 hidden sm:inline">Remove</span>
+                        </Button>
+                      </div>
                     </div>
                   )}
 
