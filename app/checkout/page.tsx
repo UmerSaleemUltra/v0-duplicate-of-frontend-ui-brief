@@ -16,6 +16,7 @@ import {
   getSavedStep,
 } from "@/lib/checkout-storage"
 import { authService } from "@/lib/auth"
+import { uploadPassportsFromIndexedDB } from "@/lib/upload-passports-from-indexeddb"
 
 export type Member = {
   id: string
@@ -38,6 +39,8 @@ export type Member = {
   passportFile?: File | null
   passportKey?: string
   passportUrl?: string
+  passportId?: string
+  passportIndexedDBId?: string // Added IndexedDB ID field
   // Legacy fields
   name?: string
 }
@@ -119,6 +122,8 @@ export default function CheckoutPage() {
         passportFile: null,
         passportKey: undefined,
         passportUrl: undefined,
+        passportId: undefined,
+        passportIndexedDBId: undefined,
       },
     ],
     addons: [],
@@ -193,6 +198,8 @@ export default function CheckoutPage() {
                   passportFile: null,
                   passportKey: m.passportKey,
                   passportUrl: m.passportUrl,
+                  passportId: m.passportId,
+                  passportIndexedDBId: m.passportIndexedDBId,
                 }))
               : [
                   {
@@ -216,6 +223,8 @@ export default function CheckoutPage() {
                     passportFile: null,
                     passportKey: undefined,
                     passportUrl: undefined,
+                    passportId: undefined,
+                    passportIndexedDBId: undefined,
                   },
                 ],
           addons: savedData.addons || [],
@@ -284,6 +293,8 @@ export default function CheckoutPage() {
                     passportFile: null,
                     passportKey: undefined,
                     passportUrl: undefined,
+                    passportId: undefined,
+                    passportIndexedDBId: undefined,
                   },
                 ],
           addons: savedData.addons || [],
@@ -338,6 +349,8 @@ export default function CheckoutPage() {
                 passportFile: null,
                 passportKey: undefined,
                 passportUrl: undefined,
+                passportId: undefined,
+                passportIndexedDBId: undefined,
               },
             ]
 
@@ -380,6 +393,8 @@ export default function CheckoutPage() {
             itinAdded: m.itinAdded || false,
             passportKey: m.passportKey,
             passportUrl: m.passportUrl,
+            passportId: m.passportId,
+            passportIndexedDBId: m.passportIndexedDBId,
           })),
           addons: newData.addons || [],
           orderId: getCheckoutData()?.orderId || `ORD-${Date.now()}`,
@@ -430,13 +445,26 @@ export default function CheckoutPage() {
         throw new Error("Authentication required. Please log in to complete your order.")
       }
 
+      console.log("[v0] Uploading passports from IndexedDB...")
+      const updatedMembers = await uploadPassportsFromIndexedDB(
+        data.members || [],
+        data.userId || "",
+        orderData.companyId,
+      )
+      console.log("[v0] Passports uploaded successfully")
+
+      const orderDataWithPassports = {
+        ...orderData,
+        members: updatedMembers,
+      }
+
       const response = await fetch("/api/orders", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(orderData),
+        body: JSON.stringify(orderDataWithPassports),
       })
 
       if (!response.ok) {

@@ -21,6 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Country } from "country-state-city"
 import type { CheckoutData, Member } from "@/app/checkout/page"
+import { saveFileToIndexedDB, deleteFileFromIndexedDB } from "@/lib/indexeddb"
 
 type OwnerInfoStepProps = {
   data: CheckoutData
@@ -40,7 +41,6 @@ const truncateFilename = (filename: string, maxWords = 6): string => {
 
 export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
-  const [uploadingPassports, setUploadingPassports] = useState<Record<string, boolean>>({})
   const [passportPreviews, setPassportPreviews] = useState<Record<string, string>>({})
   const countries = useMemo(() => {
     return Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name))
@@ -85,12 +85,17 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       passportKey: undefined,
       passportUrl: undefined,
       passportId: undefined,
+      passportIndexedDBId: undefined,
     }
     updateData({ members: [...(data.members || []), newMember] })
   }
 
   const removeMember = (id: string) => {
     if (data.members?.length > 1) {
+      const member = data.members?.find((m) => m.id === id)
+      if (member?.passportIndexedDBId) {
+        deleteFileFromIndexedDB(member.passportIndexedDBId).catch(() => {})
+      }
       if (passportPreviews[id]) {
         URL.revokeObjectURL(passportPreviews[id])
       }
@@ -108,12 +113,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         const newPreviews = { ...prev }
         delete newPreviews[id]
         return newPreviews
-      })
-
-      setUploadingPassports((prev) => {
-        const newUploading = { ...prev }
-        delete newUploading[id]
-        return newUploading
       })
 
       setErrors((prev) => {
@@ -154,7 +153,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       if (!member.state) newErrors[`member${index}State`] = "State/Province is required"
       if (!member.country) newErrors[`member${index}Country`] = "Country is required"
       if (!member.zip) newErrors[`member${index}Zip`] = "ZIP code is required"
-      if (!member.passportFile && !member.passportUrl) {
+      if (!member.passportFile) {
         newErrors[`member${index}Passport`] = "Passport is required"
       }
     })
@@ -164,14 +163,82 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
   }
 
   const handleSubmit = () => {
-    const hasUploading = Object.values(uploadingPassports).some((uploading) => uploading)
-    if (hasUploading) {
-      return
-    }
-
     if (validate()) {
       onNext()
     }
+  }
+
+  const handlePassportUpload = async (memberId: string, file: File | null) => {
+    if (!file) {
+      // Remove file from IndexedDB and preview
+      const member = data.members?.find((m) => m.id === memberId)
+      if (member?.passportIndexedDBId) {
+        await deleteFileFromIndexedDB(member.passportIndexedDBId).catch(() => {})
+      }
+
+      if (passportPreviews[memberId]) {
+        URL.revokeObjectURL(passportPreviews[memberId])
+      }
+
+      setPassportPreviews((prev) => {
+        const n = { ...prev }
+        delete n[memberId]
+        return n
+      })
+
+      updateMember(memberId, {
+        passportFile: null,
+        passportIndexedDBId: undefined,
+      })
+      return
+    }
+
+    try {
+      // Save file to IndexedDB
+      const memberIndex = data.members?.findIndex((m) => m.id === memberId) ?? 0
+      const indexedDBId = await saveFileToIndexedDB(file, memberIndex)
+
+      // Create preview URL
+      const blobUrl = URL.createObjectURL(file)
+      setPassportPreviews((prev) => ({ ...prev, [memberId]: blobUrl }))
+
+      // Update member with file reference
+      updateMember(memberId, {
+        passportFile: file,
+        passportIndexedDBId: indexedDBId,
+      })
+    } catch (error) {
+      console.error("Error saving passport to IndexedDB:", error)
+    }
+  }
+
+  const handleRemovePassport = async (memberId: string) => {
+    const member = data.members?.find((m) => m.id === memberId)
+
+    // Remove from IndexedDB
+    if (member?.passportIndexedDBId) {
+      await deleteFileFromIndexedDB(member.passportIndexedDBId).catch(() => {})
+    }
+
+    // Clean up preview URL
+    if (passportPreviews[memberId]) {
+      URL.revokeObjectURL(passportPreviews[memberId])
+    }
+
+    setPassportPreviews((prev) => {
+      const n = { ...prev }
+      delete n[memberId]
+      return n
+    })
+
+    updateMember(memberId, {
+      passportFile: null,
+      passportIndexedDBId: undefined,
+    })
+
+    // Clear file input
+    const fileInput = document.getElementById(`passport-${memberId}`) as HTMLInputElement
+    if (fileInput) fileInput.value = ""
   }
 
   const handleAddItinForMember = (memberId: string) => {
@@ -195,114 +262,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     updateMember(memberId, { itinAdded: true })
   }
 
-  const handlePassportUpload = async (memberId: string, file: File | null) => {
-    if (!file) {
-      if (passportPreviews[memberId]) URL.revokeObjectURL(passportPreviews[memberId])
-      setPassportPreviews((prev) => {
-        const n = { ...prev }
-        delete n[memberId]
-        return n
-      })
-      updateMember(memberId, {
-        passportFile: null,
-        passportKey: undefined,
-        passportUrl: undefined,
-        passportId: undefined,
-      })
-      return
-    }
-
-    if (uploadingPassports[memberId]) {
-      return
-    }
-
-    if (!data.userId) {
-      return
-    }
-
-    const member = data.members.find((m) => m.id === memberId)
-    if (!member) {
-      return
-    }
-
-    const memberName = member.name || "Unknown Member"
-
-    setUploadingPassports((prev) => ({ ...prev, [memberId]: true }))
-
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("userId", data.userId)
-
-      const companyDataStr = localStorage.getItem("companyData")
-      if (companyDataStr) {
-        try {
-          const companyData = JSON.parse(companyDataStr)
-          if (companyData.id) {
-            formData.append("companyId", companyData.id)
-          }
-        } catch (e) {
-          // No company data yet
-        }
-      }
-
-      formData.append("memberId", memberId)
-      formData.append("memberName", memberName)
-
-      const response = await fetch("/api/passports/upload", {
-        method: "POST",
-        body: formData,
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Failed to upload passport" }))
-        throw new Error(errorData.error || "Failed to upload passport")
-      }
-
-      const result = await response.json()
-
-      const blobUrl = URL.createObjectURL(file)
-      setPassportPreviews((prev) => ({ ...prev, [memberId]: blobUrl }))
-
-      updateMember(memberId, {
-        passportFile: file,
-        passportKey: result.data?.fileUrl || result.url,
-        passportUrl: result.data?.fileUrl || result.url,
-        passportId: result.data?.id,
-      })
-    } catch (error) {
-      console.error("Error uploading passport:", error)
-    } finally {
-      setUploadingPassports((prev) => {
-        const n = { ...prev }
-        delete n[memberId]
-        return n
-      })
-    }
-  }
-
-  const handleRemovePassport = (memberId: string) => {
-    if (passportPreviews[memberId]) URL.revokeObjectURL(passportPreviews[memberId])
-    setPassportPreviews((prev) => {
-      const n = { ...prev }
-      delete n[memberId]
-      return n
-    })
-    updateMember(memberId, {
-      passportFile: null,
-      passportKey: undefined,
-      passportUrl: undefined,
-      passportId: undefined,
-    })
-
-    const fileInput = document.getElementById(`passport-${memberId}`) as HTMLInputElement
-    if (fileInput) fileInput.value = ""
-  }
-
-  const getCountryName = (isoCode: string) => {
-    return countries.find((c) => c.isoCode === isoCode)?.name || "Select a country"
-  }
-
   const handleRemoveItinForMember = (memberId: string) => {
     const itinAddonId = `itin-${memberId}`
     const currentAddons = data.addons || []
@@ -314,6 +273,10 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     })
 
     updateMember(memberId, { itinAdded: false })
+  }
+
+  const getCountryName = (isoCode: string) => {
+    return countries.find((c) => c.isoCode === isoCode)?.name || "Select a country"
   }
 
   return (
@@ -534,7 +497,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                             {truncateFilename(member.passportFile.name, 6)}
                           </p>
                           <p className="text-xs text-green-600 mt-0.5 leading-tight break-words">
-                            Ready to upload after company creation
+                            Saved locally - will upload after order
                           </p>
                         </div>
 
@@ -654,7 +617,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         <Button
           type="button"
           onClick={handleSubmit}
-          disabled={Object.values(uploadingPassports).some((uploading) => uploading)}
           className="w-full sm:w-auto sm:px-8 h-11 px-6 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-base order-1 sm:order-2 cursor-pointer"
         >
           Next

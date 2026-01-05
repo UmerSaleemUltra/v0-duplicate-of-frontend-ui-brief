@@ -84,8 +84,9 @@ export async function POST(req: NextRequest) {
       items,
       purchasedAddons,
       paymentMethod,
-      whatsappPhone, // Changed from transactionReference to whatsappPhone
+      whatsappPhone,
       receiptUrl,
+      members,
     } = body
 
     if (!companyId || !companyName || !type || !amount) {
@@ -126,6 +127,7 @@ export async function POST(req: NextRequest) {
       },
       items: items || [],
       purchasedAddons: Array.isArray(purchasedAddons) ? purchasedAddons : [],
+      members: members || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
