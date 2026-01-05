@@ -596,31 +596,31 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         type="button"
         onClick={addMember}
         variant="outline"
-        className="w-full border-slate-300 hover:bg-slate-50 h-11 md:h-12 text-sm md:text-base font-medium bg-transparent"
+        className="w-full border-slate-300 hover:bg-slate-50 bg-white h-12 text-base font-medium"
       >
-        <Plus className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+        <Plus className="w-5 h-5 mr-2" />
         Add Another Member
       </Button>
 
       {/* Navigation Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 md:pt-6">
+      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
         <Button
           type="button"
           variant="outline"
           onClick={onBack}
-          className="w-full sm:w-auto h-11 px-6 sm:px-8 border-slate-300 hover:bg-slate-50 text-base order-2 sm:order-1 bg-transparent cursor-pointer"
+          className="w-full sm:w-auto px-8 h-12 font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-5 h-5 mr-2" />
           Back
         </Button>
 
         <Button
           type="button"
           onClick={handleSubmit}
-          className="w-full sm:w-auto sm:px-8 h-11 px-6 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-base order-1 sm:order-2 cursor-pointer"
+          className="w-full sm:flex-1 h-12 px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
         >
           Next
-          <ArrowRight className="w-4 h-4 ml-2" />
+          <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
       </div>
     </div>

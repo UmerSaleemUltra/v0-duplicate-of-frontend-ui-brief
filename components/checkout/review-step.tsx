@@ -661,31 +661,31 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
       </div>
 
       {/* Navigation Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 md:pt-6">
+      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
         <Button
           variant="outline"
           onClick={onBack}
           disabled={isCreatingCompany}
-          className="w-full sm:w-auto h-12 px-6 border-slate-300 hover:bg-slate-50 text-base order-2 sm:order-1 bg-transparent cursor-pointer"
+          className="w-full sm:w-auto px-8 h-12 font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Edit
         </Button>
 
         <Button
           onClick={handleProceedToPayment}
           disabled={isCreatingCompany}
-          className="w-full sm:flex-1 h-12 px-6 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-base order-1 sm:order-2 cursor-pointer"
+          className="w-full sm:flex-1 h-12 px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
         >
           {isCreatingCompany ? (
             <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
               Creating Company...
             </>
           ) : (
             <>
               Proceed to Payment
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-5 h-5 ml-2" />
             </>
           )}
         </Button>
