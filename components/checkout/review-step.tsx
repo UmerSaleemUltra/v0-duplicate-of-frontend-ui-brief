@@ -28,6 +28,14 @@ type ReviewStepProps = {
   updateData?: (updates: Partial<CheckoutData>) => void
 }
 
+const truncateFilename = (filename: string, maxWords = 6): string => {
+  const words = filename.split(/[\s._-]+/)
+  if (words.length <= maxWords) {
+    return filename
+  }
+  return words.slice(0, maxWords).join(" ") + "..."
+}
+
 export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepProps) {
   const { toast } = useToast()
   const [passportData, setPassportData] = useState<Record<string, PassportData | null>>({})
@@ -438,10 +446,10 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
                       <div className="flex items-center gap-2 min-w-0">
                         <FileText className="w-4 h-4 text-[#ff0d13] flex-shrink-0" />
                         <span
-                          className="text-sm font-medium text-slate-900 truncate max-w-[200px] sm:max-w-xs"
+                          className="text-sm font-medium text-slate-900 break-words"
                           title={member.passportFile.name}
                         >
-                          {member.passportFile.name}
+                          {truncateFilename(member.passportFile.name, 6)}
                         </span>
                       </div>
                     </div>

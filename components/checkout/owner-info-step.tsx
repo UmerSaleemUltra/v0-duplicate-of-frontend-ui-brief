@@ -29,6 +29,15 @@ type OwnerInfoStepProps = {
   onBack: () => void
 }
 
+// Helper function to truncate long filenames to 5-6 words
+const truncateFilename = (filename: string, maxWords = 6): string => {
+  const words = filename.split(/[\s._-]+/)
+  if (words.length <= maxWords) {
+    return filename
+  }
+  return words.slice(0, maxWords).join(" ") + "..."
+}
+
 export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [uploadingPassports, setUploadingPassports] = useState<Record<string, boolean>>({})
@@ -519,10 +528,10 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                         {/* Filename and status text - takes available space and truncates properly */}
                         <div className="flex-1 min-w-0 overflow-hidden">
                           <p
-                            className="text-sm font-medium text-green-700 truncate break-all"
+                            className="text-sm font-medium text-green-700 break-words"
                             title={member.passportFile.name}
                           >
-                            {member.passportFile.name}
+                            {truncateFilename(member.passportFile.name, 6)}
                           </p>
                           <p className="text-xs text-green-600 mt-0.5 leading-tight break-words">
                             Ready to upload after company creation
