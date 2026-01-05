@@ -177,17 +177,16 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     const { db } = await connectDB()
     const userId = new ObjectId(id)
+    const userIdString = id
 
     console.log("[v0] Deleting user and all related data:", id)
 
     await Promise.all([
-      db.collection("companies").deleteMany({ userId }),
-      db.collection("orders").deleteMany({ userId }),
-      db.collection("passports").deleteMany({ userId }),
-      db.collection("notifications").deleteMany({ userId }),
-      db
-        .collection("documents")
-        .deleteMany({ userId }), // Added missing documents deletion
+      db.collection("companies").deleteMany({ userId: userIdString }),
+      db.collection("orders").deleteMany({ userId: userIdString }),
+      db.collection("passports").deleteMany({ userId: userIdString }),
+      db.collection("notifications").deleteMany({ userId: userIdString }),
+      db.collection("documents").deleteMany({ userId: userIdString }),
     ])
 
     const result = await db.collection("users").deleteOne({ _id: userId })
