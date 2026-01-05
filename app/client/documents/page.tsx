@@ -76,16 +76,27 @@ export default function DocumentsPage() {
 
   const handleDownload = async (doc: any) => {
     try {
+      console.log("[v0] Starting download for:", doc.title)
+      const token = authService.getToken()
+
+      if (!token) {
+        toast({
+          title: "Authentication Required",
+          description: "Please log in to download documents.",
+          variant: "destructive",
+        })
+        return
+      }
+
       if (doc.fileUrls && doc.fileUrls.length > 1) {
-        // Download all files
+        // Download all files using API proxy
         for (const fileInfo of doc.fileUrls) {
-          if (!fileInfo.url) {
-            console.error("[v0] Missing URL for file:", fileInfo.name)
+          if (!fileInfo.id && !doc.id) {
+            console.error("[v0] Missing document ID for file:", fileInfo.name)
             continue
           }
 
-          const response = await fetch(fileInfo.url)
-          const blob = await response.blob()
+          const blob = await ApiClient.documents.download(token, fileInfo.id || doc.id)
           const url = URL.createObjectURL(blob)
           const link = document.createElement("a")
           link.href = url
@@ -103,20 +114,18 @@ export default function DocumentsPage() {
           description: `Downloading ${doc.fileUrls.length} files from ${doc.title}`,
         })
       } else {
-        // Single file download
-        const fileUrl = doc.fileUrl
-        if (!fileUrl) {
-          console.error("[v0] Document URL not available for:", doc.title)
+        // Single file download using API proxy
+        if (!doc.id) {
+          console.error("[v0] Document ID not available for:", doc.title)
           toast({
             title: "Download Failed",
-            description: "Document URL not available.",
+            description: "Document ID not available.",
             variant: "destructive",
           })
           return
         }
 
-        const response = await fetch(fileUrl)
-        const blob = await response.blob()
+        const blob = await ApiClient.documents.download(token, doc.id)
         const url = URL.createObjectURL(blob)
         const link = document.createElement("a")
         link.href = url

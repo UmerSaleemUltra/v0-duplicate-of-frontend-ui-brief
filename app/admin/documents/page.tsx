@@ -581,8 +581,16 @@ export default function DocumentsPage() {
                             className="h-8 w-8 p-0"
                             onClick={async () => {
                               try {
+                                console.log("[v0] Admin downloading document:", doc.id)
                                 const token = authService.getToken()
-                                if (!token) return
+                                if (!token) {
+                                  toast({
+                                    title: "Authentication Required",
+                                    description: "Please log in to download documents.",
+                                    variant: "destructive",
+                                  })
+                                  return
+                                }
 
                                 const blob = await ApiClient.documents.download(token, doc.id)
                                 if (blob) {
@@ -592,8 +600,14 @@ export default function DocumentsPage() {
                                   a.download = doc.fileName || doc.title || "document"
                                   a.click()
                                   URL.revokeObjectURL(url)
+
+                                  toast({
+                                    title: "Download Started",
+                                    description: `Downloading ${doc.fileName || doc.title}`,
+                                  })
                                 }
                               } catch (error) {
+                                console.error("[v0] Download error:", error)
                                 toast({
                                   title: "Download Failed",
                                   description: "Failed to download document",
