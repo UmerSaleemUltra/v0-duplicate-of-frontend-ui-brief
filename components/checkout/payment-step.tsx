@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare, Loader2 } from "lucide-react"
 import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
 
@@ -34,6 +34,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const [pkrRate, setPkrRate] = useState<number | null>(null)
   const [isLoadingRate, setIsLoadingRate] = useState(true)
   const [showValidationError, setShowValidationError] = useState(false)
+  const [errors, setErrors] = useState({ whatsappNumber: "" })
 
   useEffect(() => {
     async function convertUSDtoPKR() {
@@ -83,6 +84,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
     if (paymentMethod === "already_paid") {
       if (!whatsappPhone.trim()) {
+        setErrors({ whatsappNumber: "Please provide your phone number to proceed" })
         setShowValidationError(true)
         return
       }
@@ -177,6 +179,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setWhatsappPhone(e.target.value)
+    setErrors({ whatsappNumber: "" })
     setShowValidationError(false)
   }
 
@@ -258,49 +261,45 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     return ""
   }
 
-  const totalAmountPKR = pkrRate ? totalAmount * pkrRate : null
-  const packageWithStateFeePKR = pkrRate ? packageWithStateFee * pkrRate : null
-
-  const formatPKR = (amount: number) => {
-    return new Intl.NumberFormat("en-US", {
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(Math.round(amount))
+  const calculateTotal = () => {
+    return totalAmount.toFixed(2)
   }
 
+  const PKR_RATE = pkrRate || 1
+
   return (
-    <form onSubmit={handleSubmit} className="w-full max-w-4xl mx-auto space-y-6 pb-10">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-bold text-slate-900">Secure Payment</h1>
-        <p className="text-slate-600">Complete your payment via WhatsApp to finalize your business formation order.</p>
+    <form onSubmit={handleSubmit} className="space-y-8 md:space-y-10">
+      <div className="space-y-2 md:space-y-3">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">Secure Payment</h1>
+        <p className="text-sm md:text-base text-slate-700 leading-relaxed">
+          Complete your payment via WhatsApp to finalize your business formation order.
+        </p>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-        <h3 className="font-semibold text-slate-900">Select Payment Method</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div className="space-y-3 md:space-y-4">
+        <h2 className="text-sm md:text-base font-semibold text-slate-900">Select Payment Method</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
           <button
             type="button"
             onClick={() => setPaymentMethod("already_paid")}
-            className={`relative p-5 rounded-lg border-2 transition-all text-left cursor-pointer ${
+            className={`relative p-4 md:p-5 rounded-lg border-2 transition-all text-left cursor-pointer ${
               paymentMethod === "already_paid"
                 ? "border-[#ff0d13] bg-red-50"
                 : "border-slate-200 hover:border-slate-300 bg-white"
             }`}
           >
             {paymentMethod === "already_paid" && (
-              <div className="absolute top-4 right-4">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4 text-white" />
-                </div>
+              <div className="absolute top-3 right-3 md:top-4 md:right-4 w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                <CheckCircle2 className="w-4 h-4 text-white" />
               </div>
             )}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 className="w-5 h-5 text-white" />
+            <div className="flex items-start gap-3 md:gap-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-slate-900 mb-1">Already Paid</h4>
-                <p className="text-sm text-slate-600">Partial Payment Made or Will be made on WhatsApp</p>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm md:text-base font-semibold text-slate-900 mb-1">Already Paid</h3>
+                <p className="text-xs md:text-sm text-slate-600">Partial Payment Made or Will be made on WhatsApp</p>
               </div>
             </div>
           </button>
@@ -308,26 +307,24 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           <button
             type="button"
             onClick={() => setPaymentMethod("bank_transfer")}
-            className={`relative p-5 rounded-lg border-2 transition-all text-left cursor-pointer ${
+            className={`relative p-4 md:p-5 rounded-lg border-2 transition-all text-left cursor-pointer ${
               paymentMethod === "bank_transfer"
                 ? "border-[#ff0d13] bg-red-50"
                 : "border-slate-200 hover:border-slate-300 bg-white"
             }`}
           >
             {paymentMethod === "bank_transfer" && (
-              <div className="absolute top-4 right-4">
-                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                  <CheckCircle2 className="w-4 h-4 text-white" />
-                </div>
+              <div className="absolute top-3 right-3 md:top-4 md:right-4 w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                <Building2 className="w-4 h-4 text-white" />
               </div>
             )}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <Lock className="w-5 h-5 text-white" />
+            <div className="flex items-start gap-3 md:gap-4">
+              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
-              <div className="flex-1">
-                <h4 className="font-semibold text-slate-900 mb-1">Make Payment</h4>
-                <p className="text-sm text-slate-600">View bank details, make payment, and upload receipt</p>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-sm md:text-base font-semibold text-slate-900 mb-1">Make Payment</h3>
+                <p className="text-xs md:text-sm text-slate-600">View bank details, make payment, and upload receipt</p>
               </div>
             </div>
           </button>
@@ -343,8 +340,10 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
             </span>
             <div className="text-right">
               <span className="font-semibold text-slate-900">${packageWithStateFee.toFixed(2)}</span>
-              {packageWithStateFeePKR && (
-                <p className="text-sm text-slate-500">PKR {formatPKR(packageWithStateFeePKR)}</p>
+              {pkrRate && (
+                <p className="text-sm text-slate-500">
+                  {Math.round(packageWithStateFee * pkrRate).toLocaleString()} PKR
+                </p>
               )}
             </div>
           </div>
@@ -356,7 +355,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
                 <div className="text-right">
                   <span className="font-semibold text-slate-900">${addon.price || 0}</span>
                   {pkrRate && addon.price && (
-                    <p className="text-sm text-slate-500">PKR {formatPKR(addon.price * pkrRate)}</p>
+                    <p className="text-sm text-slate-500">{Math.round(addon.price * pkrRate).toLocaleString()} PKR</p>
                   )}
                 </div>
               </div>
@@ -366,25 +365,25 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
               <span className="text-slate-700">Add-ons</span>
               <div className="text-right">
                 <span className="font-semibold text-slate-900">${addonsTotal.toFixed(2)}</span>
-                {pkrRate && <p className="text-sm text-slate-500">PKR {formatPKR(addonsTotal * pkrRate)}</p>}
+                {pkrRate && (
+                  <p className="text-sm text-slate-500">{Math.round(addonsTotal * pkrRate).toLocaleString()} PKR</p>
+                )}
               </div>
             </div>
           ) : null}
 
-          <div className="flex items-center justify-between pt-4 mt-2">
-            <div>
-              <p className="text-lg font-semibold text-slate-900">Total Amount</p>
-              <p className="text-sm text-slate-600">One-time payment</p>
-            </div>
-            <div className="text-right">
-              <span className="text-3xl font-bold text-slate-900">${totalAmount.toFixed(2)}</span>
-              {isLoadingRate ? (
-                <p className="text-sm text-slate-500 mt-1">Loading PKR rate...</p>
-              ) : totalAmountPKR ? (
-                <p className="text-lg font-semibold text-slate-600 mt-1">PKR {formatPKR(totalAmountPKR)}</p>
-              ) : (
-                <p className="text-sm text-slate-500 mt-1">PKR conversion unavailable</p>
-              )}
+          <div className="p-4 md:p-6 bg-slate-50 border-t border-slate-200">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="text-sm md:text-base font-semibold text-slate-900">Total Amount</p>
+                <p className="text-xs md:text-sm text-slate-600 mt-0.5">One-time payment</p>
+              </div>
+              <div className="text-right">
+                <p className="text-2xl md:text-3xl font-bold text-slate-900">${calculateTotal()}</p>
+                <p className="text-xs md:text-sm text-slate-600 mt-0.5">
+                  {Math.round(calculateTotal() * PKR_RATE).toLocaleString()} PKR
+                </p>
+              </div>
             </div>
           </div>
         </div>
@@ -512,24 +511,28 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         </div>
       )}
 
-      {paymentMethod === "already_paid" && (
-        <div className="bg-white rounded-lg border border-slate-200 p-6">
-          <div className="space-y-2">
-            <Label htmlFor="whatsapp-phone" className="text-sm font-semibold text-slate-900">
-              WhatsApp Number (Used to Contact Us)
-            </Label>
+      {(paymentMethod === "already_paid" || paymentMethod === "bank_transfer") && (
+        <div className="space-y-2 md:space-y-3">
+          <Label htmlFor="whatsappNumber" className="text-sm font-semibold text-slate-900">
+            WhatsApp Number {paymentMethod === "already_paid" ? "(Used to Contact Us)" : ""}
+          </Label>
+          <div className="relative">
+            <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             <Input
-              id="whatsapp-phone"
+              id="whatsappNumber"
               type="tel"
-              placeholder="Enter your WhatsApp number"
+              placeholder="Enter your WhatsApp phone number"
               value={whatsappPhone}
               onChange={handlePhoneChange}
-              className="h-11 border-slate-300 focus:border-[#ff0d13] focus:ring-[#ff0d13]"
+              className="pl-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
             />
-            <p className="text-sm text-slate-600">
-              Provide the WhatsApp number you used or will use to discuss payment with our team
-            </p>
           </div>
+          {errors.whatsappNumber && <p className="text-xs md:text-sm text-red-600">{errors.whatsappNumber}</p>}
+          <p className="text-xs md:text-sm text-slate-600">
+            {paymentMethod === "already_paid"
+              ? "The number you used to discuss payment with our team"
+              : "We'll contact you via WhatsApp at this number to confirm your payment"}
+          </p>
         </div>
       )}
 
@@ -538,7 +541,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           type="button"
           variant="outline"
           onClick={onBack}
-          className="h-11 gap-2 border-slate-300 hover:bg-slate-50 font-semibold bg-transparent cursor-pointer"
+          className="w-full sm:w-auto h-11 md:h-12 gap-2 border-slate-300 hover:bg-slate-50 font-semibold bg-transparent cursor-pointer text-sm md:text-base"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -546,27 +549,20 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         <Button
           type="submit"
           disabled={!isPaymentValid || isSubmitting}
-          className="flex-1 h-11 gap-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold cursor-pointer"
+          className="w-full sm:w-auto flex-1 h-11 md:h-12 gap-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold cursor-pointer text-sm md:text-base"
         >
           {isSubmitting ? (
             <>
-              <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
-              Processing Payment...
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Processing...
             </>
           ) : (
             <>
-              Complete Payment
-              <ArrowRight className="w-4 h-4" />
+              Complete Payment <ArrowRight className="w-4 h-4" />
             </>
           )}
         </Button>
       </div>
-
-      {showValidationError && getValidationMessage() && (
-        <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-          <p className="text-sm text-red-900 font-semibold">{getValidationMessage()}</p>
-        </div>
-      )}
     </form>
   )
 }

@@ -207,16 +207,18 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
   }
 
   return (
-    <div className="space-y-12">
-      <div className="space-y-2">
-        <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Create Your Account</h1>
-        <p className="text-base text-slate-700 max-w-2xl leading-relaxed">
+    <div className="space-y-8 md:space-y-12">
+      <div className="space-y-2 md:space-y-3">
+        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-950 tracking-tight">
+          Create Your Account
+        </h1>
+        <p className="text-sm md:text-base text-slate-700 max-w-2xl leading-relaxed">
           Set up your account to track your formation progress and manage your business.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
-        <div className="space-y-3">
+      <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
+        <div className="space-y-2 md:space-y-3">
           <Label htmlFor="name" className="text-sm font-semibold text-slate-900">
             Full Name
           </Label>
@@ -228,14 +230,14 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               placeholder="John Doe"
               value={data.name || ""}
               onChange={(e) => handleNameChange(e.target.value)}
-              className="pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
+              className="pl-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
             />
           </div>
           {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
-          <p className="text-xs text-slate-700">Your full legal name</p>
+          <p className="text-xs md:text-sm text-slate-700">Your full legal name</p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           <Label htmlFor="phone" className="text-sm font-semibold text-slate-900">
             Phone Number
           </Label>
@@ -247,10 +249,10 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
             withCountryCallingCode
           />
           {errors.phone && <p className="text-xs text-red-600 mt-1">{errors.phone}</p>}
-          <p className="text-xs text-slate-700">We'll use this to contact you about your order</p>
+          <p className="text-xs md:text-sm text-slate-700">We'll use this to contact you about your order</p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           <Label htmlFor="email" className="text-sm font-semibold text-slate-900">
             Email Address
           </Label>
@@ -262,14 +264,14 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               placeholder="you@example.com"
               value={data.email || ""}
               onChange={(e) => handleEmailChange(e.target.value)}
-              className="pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
+              className="pl-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
             />
           </div>
           {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
-          <p className="text-xs text-slate-700">We'll send order updates to this email</p>
+          <p className="text-xs md:text-sm text-slate-700">We'll send order updates to this email</p>
         </div>
 
-        <div className="space-y-3">
+        <div className="space-y-2 md:space-y-3">
           <Label htmlFor="password" className="text-sm font-semibold text-slate-900">
             Password
           </Label>
@@ -281,7 +283,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               placeholder="At least 8 characters"
               value={data.password || ""}
               onChange={(e) => handlePasswordChange(e.target.value)}
-              className="pl-10 pr-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
+              className="pl-10 pr-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
             />
             <button
               type="button"
@@ -292,28 +294,28 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
             </button>
           </div>
           {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
-          <p className="text-xs text-slate-700">Choose a strong password to secure your account</p>
+          <p className="text-xs md:text-sm text-slate-700">Choose a strong password to secure your account</p>
         </div>
 
         {errors.submit && (
-          <div className="p-4 rounded-lg bg-red-50 border border-red-200">
-            <p className="text-sm text-red-600 font-medium">{errors.submit}</p>
+          <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200">
+            <p className="text-xs md:text-sm text-red-600 font-medium">{errors.submit}</p>
           </div>
         )}
 
-        <div className="flex gap-3 pt-6">
+        <div className="flex flex-col sm:flex-row gap-3 pt-6">
           <Button
             onClick={onBack}
             variant="outline"
             disabled={isCreatingUser}
-            className="px-6 h-10 border border-slate-200 bg-white text-slate-900 font-medium text-sm rounded-lg cursor-pointer"
+            className="w-full sm:w-auto px-6 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 font-medium text-sm md:text-base rounded-lg cursor-pointer"
           >
             <ArrowLeft className="mr-2 w-4 h-4" /> Back
           </Button>
           <Button
             type="submit"
             disabled={isCreatingUser}
-            className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-10 text-sm font-medium rounded-lg px-4 cursor-pointer"
+            className="w-full sm:w-auto flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 md:h-12 text-sm md:text-base font-medium rounded-lg px-4 cursor-pointer"
           >
             {isCreatingUser ? (
               <>
