@@ -539,18 +539,42 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                 </div>
               </div>
 
-              <div className="p-4 md:p-5 rounded-lg border-2 border-red-100 bg-gradient-to-br from-red-50 to-white">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                  <div className="space-y-3 flex-1">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-red-600 flex items-center justify-center flex-shrink-0">
-                        <DollarSign className="w-5 h-5 text-white" />
-                      </div>
-                      <h4 className="text-base md:text-lg font-bold text-slate-900">Add ITIN Service</h4>
-                      <span className="text-lg md:text-xl font-bold text-red-600">$149</span>
+              <div className="p-5 md:p-6 rounded-lg border border-red-200 bg-red-50/50">
+                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
+                  {/* Left: Icon, Title, and Price */}
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-600 flex items-center justify-center">
+                      <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-white" />
                     </div>
+                    <div className="flex flex-col md:flex-row md:items-baseline md:gap-2">
+                      <h4 className="text-base md:text-lg font-bold text-slate-900">Add ITIN Service</h4>
+                      <span className="text-xl md:text-2xl font-bold text-red-600">$149</span>
+                    </div>
+                  </div>
 
-                    <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+                  {/* Center: Description and Features (only on mobile, hidden on desktop in favor of right side) */}
+                  <div className="space-y-3 md:hidden">
+                    <p className="text-sm text-slate-700">
+                      Need an ITIN for this member? We'll handle the entire application process for you.
+                    </p>
+
+                    <ul className="space-y-2">
+                      {[
+                        "Complete ITIN application preparation",
+                        "IRS submission handling",
+                        "Status tracking and updates",
+                      ].map((feature) => (
+                        <li key={feature} className="flex items-start gap-2 text-sm text-slate-700">
+                          <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                          <span>{feature}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  {/* Center: Description and Features (desktop only) */}
+                  <div className="hidden md:block flex-1 space-y-3">
+                    <p className="text-sm text-slate-700">
                       Need an ITIN for this member? We'll handle the entire application process for you.
                     </p>
 
@@ -560,7 +584,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                         "IRS submission handling",
                         "Status tracking and updates",
                       ].map((feature) => (
-                        <li key={feature} className="flex items-start gap-2 text-xs md:text-sm text-slate-700">
+                        <li key={feature} className="flex items-start gap-2 text-sm text-slate-700">
                           <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
                           <span>{feature}</span>
                         </li>
@@ -568,12 +592,13 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                     </ul>
                   </div>
 
-                  <div className="flex-shrink-0">
+                  {/* Right: Button */}
+                  <div className="flex-shrink-0 w-full md:w-auto">
                     {member.itinAdded ? (
                       <Button
                         type="button"
                         onClick={() => handleRemoveItinForMember(member.id)}
-                        className="w-full lg:w-auto h-11 px-6 bg-white text-red-600 border-2 border-red-600 hover:bg-red-50 rounded-lg font-semibold text-sm md:text-base"
+                        className="w-full md:w-auto h-12 md:h-11 px-8 bg-white text-red-600 border-2 border-red-600 hover:bg-red-50 rounded-lg font-semibold text-base"
                       >
                         Remove from Order
                       </Button>
@@ -581,9 +606,9 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       <Button
                         type="button"
                         onClick={() => handleAddItinForMember(member.id)}
-                        className="w-full lg:w-auto h-11 px-6 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white rounded-lg font-semibold shadow-md hover:shadow-lg transition-all text-sm md:text-base"
+                        className="w-full md:w-auto h-12 md:h-11 px-8 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-base shadow-sm transition-colors"
                       >
-                        <DollarSign className="w-4 h-4 mr-2" />
+                        <DollarSign className="w-5 h-5 mr-2" />
                         Add to Order
                       </Button>
                     )}
