@@ -561,34 +561,68 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                 </div>
 
                 {/* ITIN Card */}
-                {!member.itinAdded && (
-                  <Button
-                    type="button"
-                    onClick={() => handleAddItinForMember(member.id)}
-                    variant="outline"
-                    className="w-full border-[#ff0d13] text-[#ff0d13] hover:bg-[#ff0d13] hover:text-white transition-colors h-10 md:h-11 text-sm md:text-base"
-                  >
-                    <DollarSign className="w-4 h-4 mr-2" />
-                    Add ITIN Service ($149)
-                  </Button>
-                )}
+                {!member.ssn && (
+                  <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden mt-6">
+                    <div className="p-4 md:p-6 space-y-4">
+                      <div className="flex flex-col lg:flex-row justify-between gap-4">
+                        <div className="flex-1 space-y-3">
+                          <h3 className="text-lg font-semibold text-slate-900">
+                            ITIN Application for {member.name || `Member ${index + 1}`}
+                          </h3>
 
-                {member.itinAdded && (
-                  <div className="p-3 md:p-4 rounded-lg bg-green-50 border border-green-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                    <div className="flex items-center gap-2">
-                      <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                      <span className="text-sm font-medium text-green-900">ITIN Service Added ($149)</span>
+                          <p className="text-sm text-slate-600">
+                            Need an ITIN to open bank accounts or file taxes? We handle the complete process for you.
+                          </p>
+
+                          <ul className="space-y-2 text-sm text-slate-700">
+                            <li className="flex items-start gap-2">
+                              <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                              Document checklist & review
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                              Form W-7 preparation
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                              Application guidance & submission
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-3">
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-red-600">$149.00</div>
+                            <div className="text-xs text-slate-500">per application</div>
+                          </div>
+
+                          {member.itinAdded ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="border-red-300 text-red-600 bg-transparent hover:bg-red-50"
+                              onClick={() => handleRemoveItinForMember(member.id)}
+                            >
+                              <X className="w-4 h-4 mr-2" /> Remove
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90"
+                              onClick={() => handleAddItinForMember(member.id)}
+                            >
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              Add to Order
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-slate-100 text-xs text-slate-500 flex items-center gap-2">
+                        <Upload className="w-4 h-4" />
+                        Processing time: 6–8 weeks after IRS receives your file
+                      </div>
                     </div>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleRemoveItinForMember(member.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-100 h-8 px-3 text-sm w-full sm:w-auto"
-                    >
-                      <X className="w-4 h-4 mr-1" />
-                      Remove
-                    </Button>
                   </div>
                 )}
               </div>
