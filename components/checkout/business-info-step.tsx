@@ -70,6 +70,14 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
     const newErrors: Record<string, string> = {}
     if (!data.businessName) newErrors.businessName = "Business name is required"
 
+    if (!data.businessCategory) newErrors.businessCategory = "Business category is required"
+
+    if (!data.businessDescription || !data.businessDescription.trim()) {
+      newErrors.businessDescription = "Business description is required"
+    } else if (data.businessDescription.trim().length < 20) {
+      newErrors.businessDescription = "Please provide at least 20 characters"
+    }
+
     if (data.businessWebsite && data.businessWebsite.trim()) {
       const urlPattern = /^(https?:\/\/)?([\da-z.-]+)\.([a-z.]{2,6})([/\w .-]*)*\/?$/
       if (!urlPattern.test(data.businessWebsite.trim())) {
@@ -157,6 +165,7 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
               ))}
             </SelectContent>
           </Select>
+          {errors.businessCategory && <p className="text-xs text-red-600 mt-1">{errors.businessCategory}</p>}
         </div>
 
         <div className="space-y-2 md:space-y-3">
@@ -170,7 +179,10 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
             onChange={(e) => updateData({ businessDescription: e.target.value })}
             className="min-h-[100px] md:min-h-[120px] border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg text-sm md:text-base resize-none"
           />
-          <p className="text-xs md:text-sm text-slate-500">Provide a brief overview of your business activities</p>
+          {errors.businessDescription && <p className="text-xs text-red-600 mt-1">{errors.businessDescription}</p>}
+          <p className="text-xs md:text-sm text-slate-500">
+            Provide a brief overview of your business activities (minimum 20 characters)
+          </p>
         </div>
       </form>
 
