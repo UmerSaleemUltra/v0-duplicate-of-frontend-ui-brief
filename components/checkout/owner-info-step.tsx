@@ -646,7 +646,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
             type="button"
             variant="outline"
             onClick={onBack}
-            className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 border-slate-300 hover:bg-slate-50 text-sm md:text-base order-2 sm:order-1 bg-transparent"
+            className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 border-slate-300 hover:bg-slate-50 text-sm md:text-base order-2 sm:order-1 bg-transparent cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
@@ -656,7 +656,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
             type="button"
             onClick={handleSubmit}
             disabled={Object.values(uploadingPassports).some((uploading) => uploading)}
-            className="w-full sm:flex-1 h-11 md:h-12 px-6 md:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-sm md:text-base order-1 sm:order-2 cursor-pointer"
+            className="w-full sm:w-auto sm:px-8 h-11 md:h-12 px-6 md:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-sm md:text-base order-1 sm:order-2 cursor-pointer"
           >
             Next
             <ArrowRight className="w-4 h-4 ml-2" />

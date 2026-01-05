@@ -416,7 +416,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
                     <span className="text-sm text-slate-500">Country</span>
                     <span className="text-sm font-medium text-slate-900">{member.country || "US"}</span>
                   </div>
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-4 py-2 border-b border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4 py-2 border-b border-slate-100">
                     <span className="text-sm text-slate-500 flex-shrink-0">Address</span>
                     <span className="text-sm font-medium text-slate-900 sm:text-right break-words">
                       {member.address || "N/A"}
@@ -648,7 +648,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           variant="outline"
           onClick={onBack}
           disabled={isCreatingCompany}
-          className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 border-slate-300 hover:bg-slate-50 text-sm md:text-base order-2 sm:order-1 bg-transparent"
+          className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 border-slate-300 hover:bg-slate-50 text-sm md:text-base order-2 sm:order-1 bg-transparent cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Edit
@@ -657,7 +657,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         <Button
           onClick={handleProceedToPayment}
           disabled={isCreatingCompany}
-          className="w-full sm:flex-1 h-11 md:h-12 px-6 md:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-sm md:text-base order-1 sm:order-2 cursor-pointer"
+          className="w-full sm:w-auto sm:px-8 h-11 md:h-12 px-6 md:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-sm md:text-base order-1 sm:order-2 cursor-pointer"
         >
           {isCreatingCompany ? (
             <>
