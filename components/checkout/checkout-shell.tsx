@@ -48,7 +48,7 @@ export function CheckoutShell({
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50 overflow-x-hidden max-w-full w-full gap-0">
+    <div className="min-h-screen flex bg-gray-50 overflow-x-hidden w-screen">
       <aside
         className={`fixed lg:sticky top-0 h-screen z-50
           w-64 lg:w-64 xl:w-72 flex-shrink-0
@@ -132,7 +132,7 @@ export function CheckoutShell({
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-screen min-w-0 overflow-x-hidden max-w-full">
+      <div className="flex-1 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
         <div
           className="lg:hidden sticky top-0 z-30 
             h-14 sm:h-16 px-4 sm:px-5
@@ -166,7 +166,7 @@ export function CheckoutShell({
           <div className="w-10 sm:w-11" />
         </div>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0 overflow-x-hidden max-w-full">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0 overflow-x-hidden">
           <div className="max-w-6xl mx-auto w-full">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 overflow-x-hidden max-w-full">
               <div className="flex justify-end mb-4">
