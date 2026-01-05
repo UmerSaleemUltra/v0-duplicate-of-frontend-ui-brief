@@ -40,7 +40,18 @@ const PACKAGES = [
     id: "starter",
     name: "Starter",
     price: 149,
-    features: ["Articles of Organization", "Registered Agent (1 year)", "Operating Agreement", "EIN Application"],
+    features: [
+      { name: "Articles of Organization", included: true },
+      { name: "Registered Agent (1 year)", included: true },
+      { name: "Operating Agreement", included: true },
+      { name: "EIN Application", included: true },
+      { name: "Expedited Filing", included: false },
+      { name: "Banking Resolution", included: false },
+      { name: "Compliance Calendar", included: false },
+      { name: "Priority Support", included: false },
+      { name: "Annual Report Service", included: false },
+      { name: "Reseller Certificate", included: false },
+    ],
     includesResellerCert: false,
   },
   {
@@ -48,13 +59,16 @@ const PACKAGES = [
     name: "Advanced",
     price: 249,
     features: [
-      "Everything in Starter",
-      "Expedited Filing",
-      "Banking Resolution",
-      "Compliance Calendar",
-      "Priority Support",
-      "Annual Report Service",
-      "Reseller Certificate Included",
+      { name: "Articles of Organization", included: true },
+      { name: "Registered Agent (1 year)", included: true },
+      { name: "Operating Agreement", included: true },
+      { name: "EIN Application", included: true },
+      { name: "Expedited Filing", included: true },
+      { name: "Banking Resolution", included: true },
+      { name: "Compliance Calendar", included: true },
+      { name: "Priority Support", included: true },
+      { name: "Annual Report Service", included: true },
+      { name: "Reseller Certificate", included: true },
     ],
     includesResellerCert: true,
   },
@@ -201,9 +215,18 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                 </div>
                 <ul className="space-y-2.5">
                   {pkg.features.map((feature, i) => (
-                    <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                      <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
-                      <span>{feature}</span>
+                    <li
+                      key={i}
+                      className={`text-sm flex items-start gap-2 ${
+                        feature.included ? "text-slate-700" : "text-slate-400"
+                      }`}
+                    >
+                      <Check
+                        className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
+                          feature.included ? "text-[#ff0d13]" : "text-slate-300"
+                        }`}
+                      />
+                      <span>{feature.name}</span>
                     </li>
                   ))}
                 </ul>
