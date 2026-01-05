@@ -402,45 +402,51 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       </div>
 
       {paymentMethod === "bank_transfer" && (
-        <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
+        <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6 space-y-4 overflow-hidden">
           <div className="flex items-start gap-3">
             <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
               <Lock className="w-5 h-5 text-white" />
             </div>
-            <div className="flex-1">
-              <h4 className="font-semibold text-slate-900 mb-1">Bank Account Details</h4>
-              <p className="text-sm text-slate-600">Please use these details to complete your payment</p>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-slate-900 mb-1 text-sm md:text-base">Bank Account Details</h4>
+              <p className="text-xs md:text-sm text-slate-600 break-words">
+                Please use these details to complete your payment
+              </p>
             </div>
           </div>
 
-          <div className="bg-slate-50 rounded-lg p-5 border border-slate-200 space-y-3">
-            <div className="flex items-center justify-between py-2 border-b border-slate-200">
-              <span className="text-sm text-slate-600">Bank Name</span>
-              <span className="font-semibold text-slate-900">United Bank Limited (UBL)</span>
+          <div className="bg-slate-50 rounded-lg p-3 md:p-5 border border-slate-200 space-y-3 overflow-hidden">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200">
+              <span className="text-xs md:text-sm text-slate-600">Bank Name</span>
+              <span className="font-semibold text-slate-900 text-sm md:text-base break-words">
+                United Bank Limited (UBL)
+              </span>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-slate-200">
-              <span className="text-sm text-slate-600">Account Title</span>
-              <span className="font-semibold text-slate-900">BUZZ FILING</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200">
+              <span className="text-xs md:text-sm text-slate-600">Account Title</span>
+              <span className="font-semibold text-slate-900 text-sm md:text-base break-words">BUZZ FILING</span>
             </div>
 
-            <div className="flex items-center justify-between py-2 border-b border-slate-200">
-              <span className="text-sm text-slate-600">Account Number</span>
-              <span className="font-semibold text-slate-900">1176314943776</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200">
+              <span className="text-xs md:text-sm text-slate-600">Account Number</span>
+              <span className="font-semibold text-slate-900 text-sm md:text-base break-all">1176314943776</span>
             </div>
 
-            <div className="flex items-center justify-between py-2">
-              <span className="text-sm text-slate-600">IBAN</span>
-              <span className="font-semibold text-slate-900">PK22UNIL0109000314943776</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2">
+              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">IBAN</span>
+              <span className="font-semibold text-slate-900 text-sm md:text-base break-all">
+                PK22UNIL0109000314943776
+              </span>
             </div>
           </div>
 
-          <div className="p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
+          <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
             <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
               <Upload className="w-4 h-4 text-white" />
             </div>
-            <div className="text-sm flex-1">
-              <p className="text-red-900">
+            <div className="text-xs md:text-sm flex-1 min-w-0">
+              <p className="text-red-900 break-words leading-relaxed">
                 <span className="font-semibold">Important:</span> After making the payment, please upload a screenshot
                 with transaction details. This helps us process your order faster.
               </p>
@@ -496,13 +502,18 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
               )}
 
               {receiptFile && (
-                <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
-                  <div className="flex items-center gap-2">
-                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center">
+                <div className="flex items-center justify-between gap-2 md:gap-3 p-3 rounded-lg bg-green-50 border border-green-200 overflow-hidden">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
                       <CheckCircle2 className="w-4 h-4 text-white" />
                     </div>
-                    <div>
-                      <span className="text-sm font-semibold text-green-900 block">{receiptFile.name}</span>
+                    <div className="min-w-0 flex-1">
+                      <span
+                        className="text-xs md:text-sm font-semibold text-green-900 block truncate max-w-full"
+                        title={receiptFile.name}
+                      >
+                        {receiptFile.name}
+                      </span>
                       <span className="text-xs text-slate-600">({(receiptFile.size / 1024).toFixed(2)} KB)</span>
                     </div>
                   </div>
@@ -511,7 +522,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
                     variant="ghost"
                     size="sm"
                     onClick={handleRemoveReceipt}
-                    className="h-8 w-8 p-0 hover:bg-red-100 rounded-full cursor-pointer"
+                    className="h-8 w-8 p-0 hover:bg-red-100 rounded-full cursor-pointer flex-shrink-0"
                   >
                     <Upload className="w-4 h-4 text-red-600" />
                   </Button>
