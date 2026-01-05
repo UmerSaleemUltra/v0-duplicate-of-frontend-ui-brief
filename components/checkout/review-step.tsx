@@ -352,7 +352,9 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         <div className="space-y-2 md:space-y-3">
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Company Name</span>
-            <span className="text-sm font-medium text-slate-900 break-words">{formData?.businessName || "N/A"}</span>
+            <span className="text-sm font-medium text-slate-900 break-words max-w-full sm:text-right">
+              {formData?.businessName || "N/A"}
+            </span>
           </div>
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Company Ending</span>
@@ -367,13 +369,17 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           {formData?.businessWebsite && (
             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
               <span className="text-sm text-slate-700">Website</span>
-              <span className="text-sm font-medium text-slate-900 break-all">{formData.businessWebsite}</span>
+              <span className="text-sm font-medium text-slate-900 break-words max-w-full overflow-hidden text-right">
+                {formData.businessWebsite}
+              </span>
             </div>
           )}
           {formData?.businessDescription && (
             <div className="flex flex-col py-2 border-b border-slate-100 gap-2">
               <span className="text-sm text-slate-700">Business Description</span>
-              <span className="text-sm text-slate-900 leading-relaxed">{formData.businessDescription}</span>
+              <span className="text-sm text-slate-900 leading-relaxed break-words max-w-full">
+                {formData.businessDescription}
+              </span>
             </div>
           )}
         </div>
@@ -413,7 +419,9 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
                   {member.email && (
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
                       <span className="text-sm text-slate-500">Email</span>
-                      <span className="text-sm font-medium text-slate-900 break-all">{member.email}</span>
+                      <span className="text-sm font-medium text-slate-900 break-words max-w-full overflow-hidden">
+                        {member.email}
+                      </span>
                     </div>
                   )}
                   {member.phone && (
@@ -422,17 +430,16 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
                       <span className="text-sm font-medium text-slate-900">{member.phone}</span>
                     </div>
                   )}
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4 py-2 border-b border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-4 py-2 border-b border-slate-100">
                     <span className="text-sm text-slate-500 flex-shrink-0">Address</span>
-                    <span className="text-sm font-medium text-slate-900 sm:text-right break-words">
+                    <span className="text-sm font-medium text-slate-900 sm:text-right break-words max-w-full">
                       {member.address || "N/A"}
                       {(member.city || member.state || member.zip) && (
-                        <>
-                          <br />
-                          {member.city || ""}
-                          {member.city && (member.state || member.zip) ? ", " : ""}
-                          {member.state || ""} {member.zip || ""}
-                        </>
+                        <span className="block mt-1">
+                          {[member.city, [member.state, member.zip].filter(Boolean).join(" ")]
+                            .filter(Boolean)
+                            .join(", ")}
+                        </span>
                       )}
                     </span>
                   </div>
@@ -463,7 +470,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
 
       <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 md:mb-6">
-          <h2 className="text-base md:text-lg font-semibold text-slate-900 break-words">
+          <h2 className="text-base md:text-lg font-semibold text-slate-900 break-words max-w-full leading-tight">
             {formData?.state || "N/A"} {formData?.packageType === "starter" ? "Starter" : "Advanced"} Package
           </h2>
           <Button
@@ -647,7 +654,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
               <p className="text-xs text-slate-600 mt-0.5">One-time payment</p>
             </div>
             <div className="text-left sm:text-right">
-              <p className="text-2xl md:text-3xl font-bold text-slate-900">${total}</p>
+              <p className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">${total}</p>
             </div>
           </div>
         </div>
@@ -659,7 +666,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           variant="outline"
           onClick={onBack}
           disabled={isCreatingCompany}
-          className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 border-slate-300 hover:bg-slate-50 text-sm md:text-base order-2 sm:order-1 bg-transparent cursor-pointer"
+          className="w-full sm:w-auto h-12 px-6 border-slate-300 hover:bg-slate-50 text-base order-2 sm:order-1 bg-transparent cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 mr-2" />
           Back to Edit
@@ -668,7 +675,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         <Button
           onClick={handleProceedToPayment}
           disabled={isCreatingCompany}
-          className="w-full sm:w-auto sm:px-8 h-11 md:h-12 px-6 md:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-sm md:text-base order-1 sm:order-2 cursor-pointer"
+          className="w-full sm:flex-1 h-12 px-6 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-base order-1 sm:order-2 cursor-pointer"
         >
           {isCreatingCompany ? (
             <>
