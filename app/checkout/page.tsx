@@ -488,17 +488,6 @@ export default function CheckoutPage() {
   }
 
   const renderStep = () => {
-    if (!data || !isInitialized) {
-      return (
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#880000] mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading checkout...</p>
-          </div>
-        </div>
-      )
-    }
-
     switch (currentStep) {
       case 0:
         return <AccountStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />

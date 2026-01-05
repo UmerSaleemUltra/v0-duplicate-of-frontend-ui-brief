@@ -48,20 +48,6 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
     }
   }, [phone])
 
-  if (!data) {
-    console.log("[v0] AccountStep - data is undefined, showing loader")
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#880000] mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading...</p>
-        </div>
-      </div>
-    )
-  }
-
-  console.log("[v0] AccountStep - rendering with data:", data)
-
   const validate = () => {
     const newErrors: Record<string, string> = {}
 
@@ -306,14 +292,14 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
             onClick={onBack}
             variant="outline"
             disabled={isCreatingUser}
-            className="w-full sm:w-auto px-8 h-12 font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
+            className="w-full sm:w-auto px-10 h-14 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
           >
             <ArrowLeft className="mr-2 w-5 h-5" /> Back
           </Button>
           <Button
             type="submit"
             disabled={isCreatingUser}
-            className="w-full sm:flex-1 h-12 px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
+            className="w-full sm:flex-1 h-14 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
           >
             {isCreatingUser ? (
               <>

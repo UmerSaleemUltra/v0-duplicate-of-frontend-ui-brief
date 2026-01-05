@@ -1,19 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import {
-  ArrowRight,
-  ArrowLeft,
-  Building2,
-  Users,
-  MapPin,
-  Globe,
-  FileText,
-  Shield,
-  Edit2,
-  User,
-  X,
-  Loader2,
-} from "lucide-react"
+import { ArrowRight, ArrowLeft, Building2, Users, MapPin, Globe, FileText, Shield, Edit2, User, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { CheckoutData } from "@/app/checkout/page"
 import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/local-storage"
@@ -666,7 +653,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           variant="outline"
           onClick={onBack}
           disabled={isCreatingCompany}
-          className="w-full sm:w-auto px-8 h-12 font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
+          className="w-full sm:w-auto px-10 h-14 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Edit
@@ -675,13 +662,10 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         <Button
           onClick={handleProceedToPayment}
           disabled={isCreatingCompany}
-          className="w-full sm:flex-1 h-12 px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
+          className="w-full sm:flex-1 h-14 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
         >
           {isCreatingCompany ? (
-            <>
-              <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-              Creating Company...
-            </>
+            <>Creating Company...</>
           ) : (
             <>
               Proceed to Payment

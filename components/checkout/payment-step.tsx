@@ -580,32 +580,32 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       )}
 
       {/* Navigation Buttons */}
-      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 md:pt-6">
+      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
         <Button
           type="button"
           variant="outline"
           onClick={onBack}
           disabled={isSubmitting}
-          className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 border-slate-300 hover:bg-slate-50 text-sm md:text-base order-2 sm:order-1 bg-transparent cursor-pointer"
+          className="w-full sm:w-auto px-10 h-14 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" />
+          <ArrowLeft className="w-5 h-5 mr-2" />
           Back
         </Button>
 
         <Button
           type="submit"
           disabled={isSubmitting || !isPaymentValid}
-          className="w-full sm:w-auto sm:px-8 h-11 md:h-12 px-6 md:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2 cursor-pointer"
+          className="w-full sm:flex-1 h-14 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>
-              <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full mr-2" />
+              <div className="animate-spin h-5 w-5 border-2 border-white/30 border-t-white rounded-full mr-2" />
               Processing...
             </>
           ) : (
             <>
               Complete Payment
-              <ArrowRight className="w-4 h-4 ml-2" />
+              <ArrowRight className="w-5 h-5 ml-2" />
             </>
           )}
         </Button>
