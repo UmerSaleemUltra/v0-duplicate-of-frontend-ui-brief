@@ -541,7 +541,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           type="button"
           variant="outline"
           onClick={onBack}
-          className="w-full sm:w-auto h-11 md:h-12 gap-2 border-slate-300 hover:bg-slate-50 font-semibold bg-transparent cursor-pointer text-sm md:text-base"
+          className="w-full sm:w-auto px-6 h-11 md:h-12 gap-2 border-slate-300 hover:bg-slate-50 font-semibold bg-transparent cursor-pointer text-sm md:text-base"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -549,7 +549,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         <Button
           type="submit"
           disabled={!isPaymentValid || isSubmitting}
-          className="w-full sm:w-auto flex-1 h-11 md:h-12 gap-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold cursor-pointer text-sm md:text-base"
+          className="w-full sm:w-auto sm:px-8 h-11 md:h-12 gap-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold cursor-pointer text-sm md:text-base"
         >
           {isSubmitting ? (
             <>

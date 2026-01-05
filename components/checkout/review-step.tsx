@@ -637,7 +637,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           variant="outline"
           size="lg"
           disabled={isCreatingCompany}
-          className="flex-1 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 cursor-pointer"
+          className="w-full sm:w-auto px-6 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4 mr-2" /> Back to Edit
         </Button>
@@ -645,7 +645,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           onClick={handleProceedToPayment}
           size="lg"
           disabled={isCreatingCompany}
-          className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white font-semibold transition-all cursor-pointer disabled:opacity-50"
+          className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white font-semibold transition-all cursor-pointer disabled:opacity-50"
         >
           {isCreatingCompany ? (
             <>

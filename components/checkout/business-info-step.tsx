@@ -184,7 +184,7 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
         </Button>
         <Button
           onClick={handleSubmit}
-          className="w-full sm:w-auto flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 md:h-12 text-sm md:text-base font-medium rounded-lg px-5 flex items-center justify-center cursor-pointer"
+          className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 md:h-12 text-sm md:text-base font-medium rounded-lg flex items-center justify-center cursor-pointer"
         >
           Next <ArrowRight className="ml-2 w-4 h-4" />
         </Button>

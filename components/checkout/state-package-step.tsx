@@ -236,13 +236,13 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
         <Button
           onClick={onBack}
           variant="outline"
-          className="w-full sm:w-auto h-11 md:h-12 cursor-pointer bg-transparent text-sm md:text-base"
+          className="w-full sm:w-auto px-6 h-11 md:h-12 cursor-pointer bg-transparent text-sm md:text-base"
         >
           <ArrowLeft className="mr-2 w-4 h-4" /> Previous
         </Button>
         <Button
           onClick={handleSubmit}
-          className="w-full sm:w-auto flex-1 h-11 md:h-12 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer text-sm md:text-base"
+          className="w-full sm:w-auto sm:px-8 h-11 md:h-12 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer text-sm md:text-base"
         >
           Next <ArrowRight className="ml-2 w-4 h-4" />
         </Button>

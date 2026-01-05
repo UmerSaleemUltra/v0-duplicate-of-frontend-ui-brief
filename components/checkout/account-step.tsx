@@ -315,7 +315,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
           <Button
             type="submit"
             disabled={isCreatingUser}
-            className="w-full sm:w-auto flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 md:h-12 text-sm md:text-base font-medium rounded-lg px-4 cursor-pointer"
+            className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 md:h-12 text-sm md:text-base font-medium rounded-lg cursor-pointer"
           >
             {isCreatingUser ? (
               <>

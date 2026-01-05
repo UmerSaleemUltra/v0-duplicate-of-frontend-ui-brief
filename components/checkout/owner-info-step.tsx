@@ -650,15 +650,19 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
       {/* Navigation */}
       <div className="flex flex-col sm:flex-row gap-3 pt-6">
-        <Button onClick={onBack} variant="outline" type="button" className="w-full sm:w-auto bg-transparent">
+        <Button
+          onClick={onBack}
+          variant="outline"
+          type="button"
+          className="w-full sm:w-auto px-6 h-11 md:h-12 bg-transparent cursor-pointer"
+        >
           <ArrowLeft className="mr-2 w-4 h-4" />
           Back
         </Button>
-
         <Button
           onClick={() => handleSubmit()}
           type="button"
-          className="w-full sm:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white"
+          className="w-full sm:w-auto sm:px-8 h-11 md:h-12 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white cursor-pointer"
         >
           Next
           <ArrowRight className="ml-2 w-4 h-4" />
