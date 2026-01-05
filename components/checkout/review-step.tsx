@@ -13,6 +13,7 @@ import {
   Edit2,
   User,
   X,
+  Loader2,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { CheckoutData } from "@/app/checkout/page"
@@ -250,43 +251,45 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
   }
 
   return (
-    <div className="space-y-6 pb-10">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 mb-2">Review Your Business Details</h1>
-        <p className="text-slate-700">Please review your company formation order to ensure everything is correct.</p>
+    <div className="space-y-4 md:space-y-6 pb-6 md:pb-10">
+      <div className="space-y-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Review Your Business Details</h1>
+        <p className="text-sm md:text-base text-slate-700 leading-relaxed">
+          Please review your company formation order to ensure everything is correct.
+        </p>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-all">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4">
+        <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-5 hover:shadow-md transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
               <MapPin className="w-5 h-5 text-slate-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-slate-600 mb-0.5">State</p>
-              <p className="font-semibold text-slate-900">{formData?.state || "N/A"}</p>
+              <p className="font-semibold text-slate-900 truncate">{formData?.state || "N/A"}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-all">
+        <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-5 hover:shadow-md transition-all">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
               <Building2 className="w-5 h-5 text-slate-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-slate-500 mb-0.5">Entity Type</p>
-              <p className="font-semibold text-slate-900">{formData?.entityType || "LLC"}</p>
+              <p className="font-semibold text-slate-900 truncate">{formData?.entityType || "LLC"}</p>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-5 hover:shadow-md transition-all">
+        <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-5 hover:shadow-md transition-all sm:col-span-2 lg:col-span-1">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center">
+            <div className="w-10 h-10 rounded-lg bg-slate-100 flex items-center justify-center flex-shrink-0">
               <Users className="w-5 h-5 text-slate-600" />
             </div>
-            <div>
+            <div className="min-w-0">
               <p className="text-xs text-slate-500 mb-0.5">Members</p>
               <p className="font-semibold text-slate-900">{formData?.members?.length || 0} member(s)</p>
             </div>
@@ -294,70 +297,72 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-slate-900">General Information</h2>
+      <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6">
+          <h2 className="text-base md:text-lg font-semibold text-slate-900">General Information</h2>
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer"
+            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer h-9 px-3 self-start sm:self-auto"
             onClick={onBack}
           >
             <Edit2 className="w-4 h-4 mr-1" />
             Edit
           </Button>
         </div>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center py-2 border-b border-slate-100">
+        <div className="space-y-2 md:space-y-3">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">State</span>
             <span className="text-sm font-medium text-slate-900">{formData?.state || "N/A"}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
             <span className="text-sm text-slate-500">Entity Type</span>
             <span className="text-sm font-medium text-slate-900">{formData?.entityType || "LLC"}</span>
           </div>
-          <div className="flex justify-between items-center py-2">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2">
             <span className="text-sm text-slate-700">Members</span>
             <span className="text-sm font-medium text-slate-900">{formData?.members?.length || 0}</span>
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-slate-900">Company Information</h2>
+      <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6">
+          <h2 className="text-base md:text-lg font-semibold text-slate-900">Company Information</h2>
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer"
+            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer h-9 px-3 self-start sm:self-auto"
             onClick={onBack}
           >
             <Edit2 className="w-4 h-4 mr-1" />
             Edit
           </Button>
         </div>
-        <div className="space-y-3">
-          <div className="flex justify-between items-center py-2 border-b border-slate-100">
+        <div className="space-y-2 md:space-y-3">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Company Name</span>
-            <span className="text-sm font-medium text-slate-900">{formData?.businessName || "N/A"}</span>
+            <span className="text-sm font-medium text-slate-900 break-words">{formData?.businessName || "N/A"}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Company Ending</span>
             <span className="text-sm font-medium text-slate-900">{formData?.entityType || "LLC"}</span>
           </div>
-          <div className="flex justify-between items-center py-2 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Industry</span>
-            <span className="text-sm font-medium text-slate-900">{formData?.businessCategory || "General"}</span>
+            <span className="text-sm font-medium text-slate-900 break-words text-right">
+              {formData?.businessCategory || "General"}
+            </span>
           </div>
           {formData?.businessWebsite && (
-            <div className="flex justify-between items-center py-2 border-b border-slate-100">
+            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
               <span className="text-sm text-slate-700">Website</span>
-              <span className="text-sm font-medium text-slate-900">{formData.businessWebsite}</span>
+              <span className="text-sm font-medium text-slate-900 break-all">{formData.businessWebsite}</span>
             </div>
           )}
           {formData?.businessDescription && (
-            <div className="flex flex-col py-2 border-b border-slate-100">
-              <span className="text-sm text-slate-700 mb-2">Business Description</span>
+            <div className="flex flex-col py-2 border-b border-slate-100 gap-2">
+              <span className="text-sm text-slate-700">Business Description</span>
               <span className="text-sm text-slate-900 leading-relaxed">{formData.businessDescription}</span>
             </div>
           )}
@@ -365,70 +370,76 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
       </div>
 
       {validMembers.length > 0 && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-lg font-semibold text-slate-900">Member Information</h2>
+        <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 md:mb-6">
+            <h2 className="text-base md:text-lg font-semibold text-slate-900">Member Information</h2>
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5"
+              className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 h-9 px-3 self-start sm:self-auto"
               onClick={onBack}
             >
               <Edit2 className="w-4 h-4 mr-1" />
               Edit
             </Button>
           </div>
-          <div className="space-y-6">
+          <div className="space-y-4 md:space-y-6">
             {validMembers.map((member, index) => (
-              <div key={member.id} className={`${index > 0 ? "pt-6 border-t border-slate-200" : ""}`}>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+              <div key={member.id} className={`${index > 0 ? "pt-4 md:pt-6 border-t border-slate-200" : ""}`}>
+                <div className="flex items-center gap-3 mb-3 md:mb-4">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                     <User className="w-5 h-5 text-[#ffffff]" />
                   </div>
-                  <div>
-                    <p className="font-semibold text-slate-900">{member.name || "Member"}</p>
+                  <div className="min-w-0">
+                    <p className="font-semibold text-slate-900 truncate">{member.name || "Member"}</p>
                     <p className="text-xs text-slate-500">Member {index + 1}</p>
                   </div>
                 </div>
-                <div className="space-y-3 ml-12">
-                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                <div className="space-y-2 md:space-y-3 pl-0 sm:pl-13">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
                     <span className="text-sm text-slate-500">Full Name</span>
-                    <span className="text-sm font-medium text-slate-900">{member.name || "N/A"}</span>
+                    <span className="text-sm font-medium text-slate-900 break-words">{member.name || "N/A"}</span>
                   </div>
                   {member.email && (
-                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
                       <span className="text-sm text-slate-500">Email</span>
-                      <span className="text-sm font-medium text-slate-900">{member.email}</span>
+                      <span className="text-sm font-medium text-slate-900 break-all">{member.email}</span>
                     </div>
                   )}
                   {member.phone && (
-                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
                       <span className="text-sm text-slate-500">Phone</span>
                       <span className="text-sm font-medium text-slate-900">{member.phone}</span>
                     </div>
                   )}
-                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
                     <span className="text-sm text-slate-500">Country</span>
                     <span className="text-sm font-medium text-slate-900">{member.country || "US"}</span>
                   </div>
-                  <div className="flex justify-between items-start py-2 border-b border-slate-100">
-                    <span className="text-sm text-slate-500">Address</span>
-                    <span className="text-sm font-medium text-slate-900 text-right max-w-xs">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1 sm:gap-4 py-2 border-b border-slate-100">
+                    <span className="text-sm text-slate-500 flex-shrink-0">Address</span>
+                    <span className="text-sm font-medium text-slate-900 sm:text-right break-words">
                       {member.address || "N/A"}
-                      <br />
-                      {member.city || ""}, {member.state || ""} {member.zip || ""}
+                      {(member.city || member.state || member.zip) && (
+                        <>
+                          <br />
+                          {member.city || ""}
+                          {member.city && (member.state || member.zip) ? ", " : ""}
+                          {member.state || ""} {member.zip || ""}
+                        </>
+                      )}
                     </span>
                   </div>
-                  <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
                     <span className="text-sm text-slate-500">SSN/ITIN</span>
                     <span className="text-sm font-medium text-slate-900">{maskSSN(member.ssn)}</span>
                   </div>
                   {member.passportFile && (
-                    <div className="flex justify-between items-center py-2 border-b border-slate-100">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
                       <span className="text-sm text-slate-500">Passport Document</span>
                       <div className="flex items-center gap-2">
-                        <FileText className="w-4 h-4 text-[#ff0d13]" />
-                        <span className="text-sm font-medium text-slate-900">{member.passportFile.name}</span>
+                        <FileText className="w-4 h-4 text-[#ff0d13] flex-shrink-0" />
+                        <span className="text-sm font-medium text-slate-900 truncate">{member.passportFile.name}</span>
                       </div>
                     </div>
                   )}
@@ -439,7 +450,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-lg font-semibold text-slate-900">
             {formData?.state || "N/A"} {formData?.packageType === "starter" ? "Starter" : "Advanced"} Package
@@ -447,7 +458,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer"
+            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer h-9 px-3 self-start sm:self-auto"
             onClick={onBack}
           >
             <Edit2 className="w-4 h-4 mr-1" />
@@ -471,13 +482,13 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
       </div>
 
       {(membersWithItin.length > 0 || hasResellerCert || websitePrice > 0) && (
-        <div className="bg-white rounded-xl border border-slate-200 p-6">
+        <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-lg font-semibold text-slate-900">Add-ons (one-time)</h2>
             <Button
               variant="ghost"
               size="sm"
-              className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer"
+              className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer h-9 px-3 self-start sm:self-auto"
               onClick={onBack}
             >
               <Edit2 className="w-4 h-4 mr-1" />
@@ -570,7 +581,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-slate-200 p-6">
+      <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
         <div className="space-y-4">
           <div className="flex items-center justify-between pb-4 border-b border-slate-200">
             <div>
@@ -631,30 +642,32 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Navigation Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 md:pt-6">
         <Button
-          onClick={onBack}
           variant="outline"
-          size="lg"
+          onClick={onBack}
           disabled={isCreatingCompany}
-          className="w-full sm:w-auto px-6 border border-neutral-200 bg-white hover:bg-neutral-50 text-neutral-700 cursor-pointer"
+          className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 border-slate-300 hover:bg-slate-50 text-sm md:text-base order-2 sm:order-1 bg-transparent"
         >
-          <ArrowLeft className="w-4 h-4 mr-2" /> Back to Edit
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Edit
         </Button>
+
         <Button
           onClick={handleProceedToPayment}
-          size="lg"
           disabled={isCreatingCompany}
-          className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white font-semibold transition-all cursor-pointer disabled:opacity-50"
+          className="w-full sm:flex-1 h-11 md:h-12 px-6 md:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-sm md:text-base order-1 sm:order-2 cursor-pointer"
         >
           {isCreatingCompany ? (
             <>
-              <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full mr-2" />
-              Saving...
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+              Creating Company...
             </>
           ) : (
             <>
-              Proceed to Payment <ArrowRight className="w-4 h-4 ml-2" />
+              Proceed to Payment
+              <ArrowRight className="w-4 h-4 ml-2" />
             </>
           )}
         </Button>

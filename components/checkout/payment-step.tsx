@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare, Loader2 } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare } from "lucide-react"
 import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
 
@@ -268,9 +268,9 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const PKR_RATE = pkrRate || 1
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-8 md:space-y-10">
-      <div className="space-y-2 md:space-y-3">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-900 tracking-tight">Secure Payment</h1>
+    <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8 pb-6 md:pb-10">
+      <div className="space-y-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Secure Payment</h1>
         <p className="text-sm md:text-base text-slate-700 leading-relaxed">
           Complete your payment via WhatsApp to finalize your business formation order.
         </p>
@@ -278,7 +278,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
       <div className="space-y-3 md:space-y-4">
         <h2 className="text-sm md:text-base font-semibold text-slate-900">Select Payment Method</h2>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 md:gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
           <button
             type="button"
             onClick={() => setPaymentMethod("already_paid")}
@@ -289,17 +289,19 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
             }`}
           >
             {paymentMethod === "already_paid" && (
-              <div className="absolute top-3 right-3 md:top-4 md:right-4 w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+              <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
                 <CheckCircle2 className="w-4 h-4 text-white" />
               </div>
             )}
-            <div className="flex items-start gap-3 md:gap-4">
+            <div className="flex items-start gap-3">
               <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm md:text-base font-semibold text-slate-900 mb-1">Already Paid</h3>
-                <p className="text-xs md:text-sm text-slate-600">Partial Payment Made or Will be made on WhatsApp</p>
+                <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+                  Partial Payment Made or Will be made on WhatsApp
+                </p>
               </div>
             </div>
           </button>
@@ -314,34 +316,38 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
             }`}
           >
             {paymentMethod === "bank_transfer" && (
-              <div className="absolute top-3 right-3 md:top-4 md:right-4 w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+              <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
                 <Building2 className="w-4 h-4 text-white" />
               </div>
             )}
-            <div className="flex items-start gap-3 md:gap-4">
+            <div className="flex items-start gap-3">
               <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <Building2 className="w-5 h-5 md:w-6 md:h-6 text-white" />
               </div>
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm md:text-base font-semibold text-slate-900 mb-1">Make Payment</h3>
-                <p className="text-xs md:text-sm text-slate-600">View bank details, make payment, and upload receipt</p>
+                <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+                  View bank details, make payment, and upload receipt
+                </p>
               </div>
             </div>
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
-        <h3 className="font-semibold text-slate-900">Payment Summary</h3>
-        <div className="space-y-3">
-          <div className="flex items-center justify-between py-2.5 border-b border-slate-200">
-            <span className="text-slate-700">
+      <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6 space-y-3 md:space-y-4">
+        <h3 className="text-base md:text-lg font-semibold text-slate-900">Payment Summary</h3>
+        <div className="space-y-2 md:space-y-3">
+          <div className="flex items-center justify-between gap-4 py-2 md:py-2.5 border-b border-slate-200">
+            <span className="text-sm md:text-base text-slate-700 leading-relaxed">
               {data.state} {data.packageType === "starter" ? "Starter" : "Advance"} Package
             </span>
-            <div className="text-right">
-              <span className="font-semibold text-slate-900">${packageWithStateFee.toFixed(2)}</span>
+            <div className="text-right flex-shrink-0">
+              <span className="font-semibold text-slate-900 text-sm md:text-base">
+                ${packageWithStateFee.toFixed(2)}
+              </span>
               {pkrRate && (
-                <p className="text-sm text-slate-500">
+                <p className="text-xs md:text-sm text-slate-500">
                   {Math.round(packageWithStateFee * pkrRate).toLocaleString()} PKR
                 </p>
               )}
@@ -350,38 +356,47 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
           {data.addons && data.addons.length > 0 ? (
             data.addons.map((addon, index) => (
-              <div key={index} className="flex items-center justify-between py-2.5 border-b border-slate-200">
-                <span className="text-slate-700">{getAddonName(addon)}</span>
-                <div className="text-right">
-                  <span className="font-semibold text-slate-900">${addon.price || 0}</span>
+              <div
+                key={index}
+                className="flex items-center justify-between gap-4 py-2 md:py-2.5 border-b border-slate-200"
+              >
+                <span className="text-sm md:text-base text-slate-700 leading-relaxed break-words">
+                  {getAddonName(addon)}
+                </span>
+                <div className="text-right flex-shrink-0">
+                  <span className="font-semibold text-slate-900 text-sm md:text-base">${addon.price || 0}</span>
                   {pkrRate && addon.price && (
-                    <p className="text-sm text-slate-500">{Math.round(addon.price * pkrRate).toLocaleString()} PKR</p>
+                    <p className="text-xs md:text-sm text-slate-500">
+                      {Math.round(addon.price * pkrRate).toLocaleString()} PKR
+                    </p>
                   )}
                 </div>
               </div>
             ))
           ) : addonsTotal > 0 ? (
-            <div className="flex items-center justify-between py-2.5 border-b border-slate-200">
-              <span className="text-slate-700">Add-ons</span>
-              <div className="text-right">
-                <span className="font-semibold text-slate-900">${addonsTotal.toFixed(2)}</span>
+            <div className="flex items-center justify-between gap-4 py-2 md:py-2.5 border-b border-slate-200">
+              <span className="text-sm md:text-base text-slate-700">Add-ons</span>
+              <div className="text-right flex-shrink-0">
+                <span className="font-semibold text-slate-900 text-sm md:text-base">${addonsTotal.toFixed(2)}</span>
                 {pkrRate && (
-                  <p className="text-sm text-slate-500">{Math.round(addonsTotal * pkrRate).toLocaleString()} PKR</p>
+                  <p className="text-xs md:text-sm text-slate-500">
+                    {Math.round(addonsTotal * pkrRate).toLocaleString()} PKR
+                  </p>
                 )}
               </div>
             </div>
           ) : null}
 
-          <div className="p-4 md:p-6 bg-slate-50 border-t border-slate-200">
-            <div className="flex items-center justify-between">
+          <div className="p-4 md:p-6 bg-slate-50 border-t border-slate-200 rounded-lg">
+            <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm md:text-base font-semibold text-slate-900">Total Amount</p>
                 <p className="text-xs md:text-sm text-slate-600 mt-0.5">One-time payment</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl md:text-3xl font-bold text-slate-900">${calculateTotal()}</p>
+                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900">${calculateTotal()}</p>
                 <p className="text-xs md:text-sm text-slate-600 mt-0.5">
-                  {Math.round(calculateTotal() * PKR_RATE).toLocaleString()} PKR
+                  {Math.round(Number.parseFloat(calculateTotal()) * PKR_RATE).toLocaleString()} PKR
                 </p>
               </div>
             </div>
@@ -511,58 +526,66 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         </div>
       )}
 
-      {(paymentMethod === "already_paid" || paymentMethod === "bank_transfer") && (
+      {paymentMethod === "already_paid" && (
         <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="whatsappNumber" className="text-sm font-semibold text-slate-900">
-            WhatsApp Number {paymentMethod === "already_paid" ? "(Used to Contact Us)" : ""}
+          <Label htmlFor="whatsapp-phone" className="text-sm md:text-base font-semibold text-slate-900">
+            WhatsApp Number (Used to Contact Us)
           </Label>
           <div className="relative">
-            <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+            <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
             <Input
-              id="whatsappNumber"
+              id="whatsapp-phone"
               type="tel"
-              placeholder="Enter your WhatsApp phone number"
+              placeholder="+92 300 1234567"
               value={whatsappPhone}
               onChange={handlePhoneChange}
-              className="pl-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
+              className="pl-10 md:pl-11 h-11 md:h-12 text-sm md:text-base"
             />
           </div>
           {errors.whatsappNumber && <p className="text-xs md:text-sm text-red-600">{errors.whatsappNumber}</p>}
-          <p className="text-xs md:text-sm text-slate-600">
-            {paymentMethod === "already_paid"
-              ? "The number you used to discuss payment with our team"
-              : "We'll contact you via WhatsApp at this number to confirm your payment"}
+          <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+            Enter the WhatsApp number you used to discuss payment with our team
           </p>
         </div>
       )}
 
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
+      {/* Navigation Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 md:pt-6">
         <Button
           type="button"
           variant="outline"
           onClick={onBack}
-          className="w-full sm:w-auto px-6 h-11 md:h-12 gap-2 border-slate-300 hover:bg-slate-50 font-semibold bg-transparent cursor-pointer text-sm md:text-base"
+          disabled={isSubmitting}
+          className="w-full sm:w-auto h-11 md:h-12 px-6 md:px-8 border-slate-300 hover:bg-slate-50 text-sm md:text-base order-2 sm:order-1 bg-transparent"
         >
-          <ArrowLeft className="w-4 h-4" />
+          <ArrowLeft className="w-4 h-4 mr-2" />
           Back
         </Button>
+
         <Button
           type="submit"
-          disabled={!isPaymentValid || isSubmitting}
-          className="w-full sm:w-auto sm:px-8 h-11 md:h-12 gap-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold cursor-pointer text-sm md:text-base"
+          disabled={isSubmitting || !isPaymentValid}
+          className="w-full sm:flex-1 h-11 md:h-12 px-6 md:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-sm md:text-base disabled:opacity-50 disabled:cursor-not-allowed order-1 sm:order-2 cursor-pointer"
         >
           {isSubmitting ? (
             <>
-              <Loader2 className="w-4 h-4 animate-spin" />
+              <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full mr-2" />
               Processing...
             </>
           ) : (
             <>
-              Complete Payment <ArrowRight className="w-4 h-4" />
+              Complete Payment
+              <ArrowRight className="w-4 h-4 ml-2" />
             </>
           )}
         </Button>
       </div>
+
+      {showValidationError && !isPaymentValid && (
+        <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200">
+          <p className="text-xs md:text-sm text-red-900 leading-relaxed">{getValidationMessage()}</p>
+        </div>
+      )}
     </form>
   )
 }
