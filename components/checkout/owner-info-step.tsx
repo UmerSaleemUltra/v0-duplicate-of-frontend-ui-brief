@@ -514,29 +514,31 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
                   {/* Uploaded File */}
                   {member.passportFile && (
-                    <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-                      <div className="flex items-start justify-between gap-2">
-                        <div className="flex-1 min-w-0">
-                          <span
-                            className="text-sm font-medium text-green-700 block truncate"
+                    <div className="p-2.5 md:p-3 rounded-lg bg-green-50 border border-green-200">
+                      <div className="flex items-start gap-2">
+                        {/* Filename and status text - takes available space and truncates properly */}
+                        <div className="flex-1 min-w-0 overflow-hidden">
+                          <p
+                            className="text-sm font-medium text-green-700 truncate break-all"
                             title={member.passportFile.name}
                           >
                             {member.passportFile.name}
-                          </span>
-                          <span className="text-xs text-green-600 block mt-1">
+                          </p>
+                          <p className="text-xs text-green-600 mt-0.5 leading-tight break-words">
                             Ready to upload after company creation
-                          </span>
+                          </p>
                         </div>
 
+                        {/* Remove button - fixed width, won't shrink */}
                         <Button
                           type="button"
                           variant="ghost"
                           size="sm"
                           onClick={() => handleRemovePassport(member.id)}
-                          className="text-red-600 hover:bg-red-50 flex-shrink-0 h-8 px-2"
+                          className="text-red-600 hover:bg-red-50 flex-shrink-0 h-7 w-7 md:h-8 md:w-auto md:px-2 p-0"
                         >
                           <X className="w-4 h-4" />
-                          <span className="ml-1 hidden sm:inline">Remove</span>
+                          <span className="ml-1 hidden md:inline">Remove</span>
                         </Button>
                       </div>
                     </div>
@@ -615,41 +617,41 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
               </div>
             </div>
           ))}
+      </form>
 
-        {/* Add Member Button */}
+      {/* Add Member Button */}
+      <Button
+        type="button"
+        onClick={addMember}
+        variant="outline"
+        className="w-full border-slate-300 hover:bg-slate-50 h-11 md:h-12 text-sm md:text-base font-medium bg-transparent"
+      >
+        <Plus className="w-4 h-4 md:w-5 md:h-5 mr-2" />
+        Add Another Member
+      </Button>
+
+      {/* Navigation Buttons */}
+      <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 md:pt-6">
         <Button
           type="button"
-          onClick={addMember}
           variant="outline"
-          className="w-full border-slate-300 hover:bg-slate-50 h-11 md:h-12 text-sm md:text-base font-medium bg-transparent"
+          onClick={onBack}
+          className="w-full sm:w-auto h-11 px-6 sm:px-8 border-slate-300 hover:bg-slate-50 text-base order-2 sm:order-1 bg-transparent cursor-pointer"
         >
-          <Plus className="w-4 h-4 md:w-5 md:h-5 mr-2" />
-          Add Another Member
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
         </Button>
 
-        {/* Navigation Buttons */}
-        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 md:pt-6">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onBack}
-            className="w-full sm:w-auto h-11 px-6 sm:px-8 border-slate-300 hover:bg-slate-50 text-base order-2 sm:order-1 bg-transparent cursor-pointer"
-          >
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back
-          </Button>
-
-          <Button
-            type="button"
-            onClick={handleSubmit}
-            disabled={Object.values(uploadingPassports).some((uploading) => uploading)}
-            className="w-full sm:w-auto sm:px-8 h-11 px-6 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-base order-1 sm:order-2 cursor-pointer"
-          >
-            Next
-            <ArrowRight className="w-4 h-4 ml-2" />
-          </Button>
-        </div>
-      </form>
+        <Button
+          type="button"
+          onClick={handleSubmit}
+          disabled={Object.values(uploadingPassports).some((uploading) => uploading)}
+          className="w-full sm:w-auto sm:px-8 h-11 px-6 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-base order-1 sm:order-2 cursor-pointer"
+        >
+          Next
+          <ArrowRight className="w-4 h-4 ml-2" />
+        </Button>
+      </div>
     </div>
   )
 }
