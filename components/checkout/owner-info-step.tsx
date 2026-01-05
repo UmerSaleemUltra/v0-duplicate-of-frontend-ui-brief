@@ -1,6 +1,4 @@
 "use client"
-
-import type React from "react"
 import { useState, useMemo, useEffect } from "react"
 import {
   ArrowRight,
@@ -162,8 +160,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault()
+  const handleSubmit = () => {
     console.log("[v0] Owner info form submitted")
     console.log("[v0] Members:", data.members)
     console.log("[v0] Validating...")
@@ -171,7 +168,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     const hasUploading = Object.values(uploadingPassports).some((uploading) => uploading)
     if (hasUploading) {
       console.log("[v0] Passport upload in progress, please wait...")
-      alert("Please wait for passport uploads to complete before proceeding.")
       return
     }
 
@@ -180,10 +176,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       onNext()
     } else {
       console.log("[v0] Validation failed, errors:", errors)
-      const firstError = Object.values(errors)[0]
-      if (firstError) {
-        alert(firstError)
-      }
     }
   }
 
@@ -231,13 +223,13 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     }
 
     if (!data.userId) {
-      alert("User ID is missing. Please complete the account setup first.")
+      console.error("[v0] User ID is missing")
       return
     }
 
     const member = data.members.find((m) => m.id === memberId)
     if (!member) {
-      alert("Member not found. Please refresh and try again.")
+      console.error("[v0] Member not found")
       return
     }
 
@@ -291,12 +283,8 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         passportUrl: result.data?.fileUrl || result.url,
         passportId: result.data?.id, // Store the database ID for future reference
       })
-
-      alert("Passport uploaded successfully!")
     } catch (error) {
       console.error("[v0] Error uploading passport:", error)
-      const errorMessage = error instanceof Error ? error.message : "Failed to upload passport. Please try again."
-      alert(errorMessage)
     } finally {
       setUploadingPassports((prev) => {
         const n = { ...prev }

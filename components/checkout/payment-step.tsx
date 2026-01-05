@@ -90,7 +90,8 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       }
       const phoneDigits = whatsappPhone.replace(/\D/g, "")
       if (phoneDigits.length < 10) {
-        alert("Please enter a valid phone number with at least 10 digits")
+        setErrors({ whatsappNumber: "Please enter a valid phone number with at least 10 digits" })
+        setShowValidationError(true)
         return
       }
     } else {
@@ -111,7 +112,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
     if (!companyDataStr) {
       console.error("[v0] No company data found in localStorage")
-      alert("Company data not found. Please go back and complete the review step.")
       return
     }
 
@@ -120,7 +120,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
     if (!companyData.data?.id) {
       console.error("[v0] No company ID found in company data")
-      alert("Company ID not found. Please go back and complete the review step.")
       return
     }
 
@@ -171,7 +170,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       // Success - user will be redirected by handlePaymentSubmit in checkout page
     } catch (error) {
       console.error("[v0] Payment submission error:", error)
-      alert(error instanceof Error ? error.message : "Failed to process payment. Please try again.")
     } finally {
       setIsSubmitting(false)
     }
@@ -217,7 +215,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
       if (result.success) {
         setReceiptUrl(result.data.url)
-        alert("Receipt uploaded successfully!")
       } else {
         setUploadError(result.error || "Failed to upload receipt")
       }
