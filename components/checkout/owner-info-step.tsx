@@ -608,7 +608,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
           type="button"
           variant="outline"
           onClick={onBack}
-          className="w-full sm:w-1/2 px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
+          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back
@@ -617,7 +617,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         <Button
           type="button"
           onClick={handleSubmit}
-          className="w-full sm:w-1/2 h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
+          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
         >
           Next
           <ArrowRight className="w-5 h-5 ml-2" />

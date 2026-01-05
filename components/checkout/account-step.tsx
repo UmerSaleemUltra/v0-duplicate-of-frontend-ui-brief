@@ -292,14 +292,14 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
             onClick={onBack}
             variant="outline"
             disabled={isCreatingUser}
-            className="w-full sm:w-1/2 px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
+            className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
           >
             <ArrowLeft className="mr-2 w-5 h-5" /> Back
           </Button>
           <Button
             type="submit"
             disabled={isCreatingUser}
-            className="w-full sm:w-1/2 h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
+            className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
           >
             {isCreatingUser ? (
               <>
