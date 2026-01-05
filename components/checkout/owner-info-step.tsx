@@ -1,6 +1,4 @@
 "use client"
-
-import type React from "react"
 import { useState, useMemo, useEffect } from "react"
 import {
   ArrowRight,
@@ -55,6 +53,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
   useEffect(() => {
     return () => {
+      // Cleanup all blob URLs when component unmounts
       Object.values(passportPreviews).forEach((url) => {
         if (url) URL.revokeObjectURL(url)
       })
@@ -140,6 +139,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     }
     ;(data.members || []).forEach((member, index) => {
       if (!member.name) newErrors[`member${index}Name`] = "Name is required"
+
       if (!member.address) newErrors[`member${index}Address`] = "Address is required"
       if (!member.city) newErrors[`member${index}City`] = "City is required"
       if (!member.state) newErrors[`member${index}State`] = "State/Province is required"
@@ -154,9 +154,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e?: React.FormEvent) => {
-    if (e) e.preventDefault()
-
+  const handleSubmit = () => {
     const hasUploading = Object.values(uploadingPassports).some((uploading) => uploading)
     if (hasUploading) {
       return
@@ -186,19 +184,6 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     }
 
     updateMember(memberId, { itinAdded: true })
-  }
-
-  const handleRemoveItinForMember = (memberId: string) => {
-    const itinAddonId = `itin-${memberId}`
-    const currentAddons = data.addons || []
-    const updatedAddons = currentAddons.filter((a) => a.id !== itinAddonId)
-
-    updateData({
-      addons: updatedAddons,
-      addonsTotal: Math.max(0, (data.addonsTotal || 0) - 149),
-    })
-
-    updateMember(memberId, { itinAdded: false })
   }
 
   const handlePassportUpload = async (memberId: string, file: File | null) => {
@@ -248,7 +233,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
             formData.append("companyId", companyData.id)
           }
         } catch (e) {
-          console.log("No company data yet")
+          // No company data yet
         }
       }
 
@@ -309,23 +294,39 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     return countries.find((c) => c.isoCode === isoCode)?.name || "Select a country"
   }
 
+  const handleRemoveItinForMember = (memberId: string) => {
+    const itinAddonId = `itin-${memberId}`
+    const currentAddons = data.addons || []
+    const updatedAddons = currentAddons.filter((a) => a.id !== itinAddonId)
+
+    updateData({
+      addons: updatedAddons,
+      addonsTotal: Math.max(0, (data.addonsTotal || 0) - 149),
+    })
+
+    updateMember(memberId, { itinAdded: false })
+  }
+
   return (
-    <div className="space-y-6 md:space-y-8 pb-6 md:pb-8">
+    <div className="space-y-6 md:space-y-8 pb-6 md:pb-10">
       <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-950">Member Information</h1>
-        <p className="text-sm md:text-base text-slate-600">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-950 tracking-tight">Member Information</h1>
+        <p className="text-sm md:text-base text-slate-500 max-w-2xl leading-relaxed">
           Add all members or owners of the business. At least one must be designated as the Responsible Person.
         </p>
 
-        {errors.responsiblePerson && <p className="text-xs text-red-600 mt-2">{errors.responsiblePerson}</p>}
+        {errors.responsiblePerson && (
+          <p className="text-xs text-red-600 mt-3 font-medium">{errors.responsiblePerson}</p>
+        )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
         {(data.members || [])
           .filter((m) => m)
           .map((member, index) => (
-            <div key={member.id} className="space-y-5">
-              <div className="p-4 md:p-6 rounded-lg border border-slate-200 bg-white space-y-5">
+            <div key={member.id} className="space-y-4">
+              <div className="p-4 md:p-6 rounded-lg border border-slate-200 bg-white space-y-4 md:space-y-5">
+                {/* Member Header */}
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <h3 className="text-base md:text-lg font-semibold text-slate-900">Member {index + 1}</h3>
 
@@ -343,31 +344,33 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   )}
                 </div>
 
+                {/* Responsible Person */}
                 <div className="p-3 md:p-4 rounded-lg border border-slate-200 bg-slate-50">
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-start gap-2">
                     <Checkbox
                       id={`responsible-${member.id}`}
                       checked={member.isResponsiblePerson}
                       onCheckedChange={(c) => toggleResponsiblePerson(member.id, c as boolean)}
                       disabled={data.members?.length === 1}
-                      className="data-[state=checked]:bg-[#ff0d13] data-[state=checked]:border-[#ff0d13]"
+                      className="data-[state=checked]:bg-[#ff0d13] data-[state=checked]:border-[#ff0d13] mt-0.5"
                     />
                     <label
                       htmlFor={`responsible-${member.id}`}
-                      className="text-xs md:text-sm font-medium text-slate-900 cursor-pointer"
+                      className="text-xs md:text-sm font-medium text-slate-900 cursor-pointer leading-relaxed"
                     >
                       Responsible Person / Authorized Person
                     </label>
                   </div>
-                  <p className="text-xs text-slate-600 mt-2">
+                  <p className="text-xs text-slate-600 mt-2 ml-6">
                     {data.members?.length === 1
                       ? "As the only member, you are automatically the responsible person."
                       : "Person authorized to represent the company"}
                   </p>
                 </div>
 
+                {/* Full Name */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-900">Full Legal Name</Label>
+                  <Label className="text-sm font-semibold text-slate-900">Full Legal Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
                     <Input
@@ -382,8 +385,9 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   )}
                 </div>
 
+                {/* Address */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-900">Home Address</Label>
+                  <Label className="text-sm font-semibold text-slate-900">Home Address</Label>
                   <Input
                     placeholder="House 123, Street 4, F-7 Markaz"
                     value={member.address}
@@ -395,9 +399,10 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   )}
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* City / State */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-900">City</Label>
+                    <Label className="text-sm font-semibold text-slate-900">City</Label>
                     <Input
                       placeholder="Islamabad"
                       value={member.city}
@@ -410,7 +415,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-900">State / Province</Label>
+                    <Label className="text-sm font-semibold text-slate-900">State / Province</Label>
                     <Input
                       placeholder="Punjab"
                       value={member.state}
@@ -423,9 +428,10 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                {/* Country / ZIP */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-900">Country</Label>
+                    <Label className="text-sm font-semibold text-slate-900">Country</Label>
 
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
@@ -457,7 +463,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   </div>
 
                   <div className="space-y-2">
-                    <Label className="text-sm font-medium text-slate-900">ZIP Code</Label>
+                    <Label className="text-sm font-semibold text-slate-900">ZIP Code</Label>
                     <Input
                       placeholder="44000"
                       value={member.zip}
@@ -470,8 +476,9 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   </div>
                 </div>
 
+                {/* SSN / ITIN */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-900">SSN or ITIN (optional)</Label>
+                  <Label className="text-sm font-semibold text-slate-900">SSN or ITIN (optional)</Label>
                   <div className="relative">
                     <Shield className="absolute left-3 w-4 h-4 md:w-5 md:h-5 top-1/2 -translate-y-1/2 text-slate-400" />
                     <Input
@@ -482,166 +489,152 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       className="pl-10 h-10 md:h-11 text-sm md:text-base"
                     />
                   </div>
-                  <p className="text-xs text-slate-600 flex items-start gap-2 mt-1">
-                    <Check className="w-3 h-3 md:w-4 md:h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                    Your information is encrypted and secure.
+                  <p className="text-xs text-slate-600 flex items-start gap-2">
+                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
+                    Your information is encrypted & secure.
                   </p>
                 </div>
 
+                {/* Passport Upload */}
                 <div className="space-y-2">
-                  <Label className="text-sm font-medium text-slate-900">
+                  <Label className="text-sm font-semibold text-slate-900">
                     Passport <span className="text-red-600">*</span>
                   </Label>
 
-                  {member.passportUrl || passportPreviews[member.id] ? (
-                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 p-3 border border-slate-200 rounded-lg bg-slate-50">
-                      <div className="flex items-center gap-2 flex-1 min-w-0">
-                        <Check className="w-5 h-5 text-green-600 flex-shrink-0" />
-                        <span className="text-sm text-slate-700 truncate">
-                          {member.passportFile?.name || "Passport uploaded"}
-                        </span>
+                  <div className="relative">
+                    <Upload className="absolute left-3 w-4 h-4 md:w-5 md:h-5 top-1/2 -translate-y-1/2 text-slate-400" />
+                    <Input
+                      id={`passport-${member.id}`}
+                      type="file"
+                      accept="image/*,.pdf"
+                      onChange={(e) => handlePassportUpload(member.id, e.target.files?.[0] || null)}
+                      className="pl-10 h-10 md:h-11 file:text-sm file:font-medium"
+                    />
+                  </div>
+
+                  {/* Uploaded File */}
+                  {member.passportFile && (
+                    <div className="p-3 rounded-lg bg-green-50 border border-green-200 flex items-center justify-between">
+                      <div className="flex flex-col">
+                        <span className="text-sm font-medium text-green-700 truncate">{member.passportFile.name}</span>
+                        <span className="text-xs text-green-600">Ready to upload after company creation</span>
                       </div>
+
                       <Button
                         type="button"
                         variant="ghost"
                         size="sm"
                         onClick={() => handleRemovePassport(member.id)}
-                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-3 text-sm w-full sm:w-auto"
+                        className="text-red-600 hover:bg-red-50"
                       >
                         <X className="w-4 h-4 mr-1" />
                         Remove
                       </Button>
                     </div>
-                  ) : (
-                    <div className="relative">
-                      <Upload className="absolute left-3 w-4 h-4 md:w-5 md:h-5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none" />
-                      <Input
-                        id={`passport-${member.id}`}
-                        type="file"
-                        accept="image/*,.pdf"
-                        onChange={(e) => handlePassportUpload(member.id, e.target.files?.[0] || null)}
-                        disabled={uploadingPassports[member.id]}
-                        className="pl-10 h-10 md:h-11 text-sm md:text-base cursor-pointer file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100"
-                      />
-                    </div>
-                  )}
-
-                  {uploadingPassports[member.id] && (
-                    <p className="text-xs text-blue-600 flex items-center gap-2">
-                      <span className="inline-block w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" />
-                      Uploading...
-                    </p>
                   )}
 
                   {errors[`member${index}Passport`] && (
                     <p className="text-xs text-red-600">{errors[`member${index}Passport`]}</p>
                   )}
                 </div>
-              </div>
 
-              <div className="p-5 md:p-6 rounded-lg border border-red-200 bg-red-50/50">
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-6">
-                  {/* Left: Icon, Title, and Price */}
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="w-10 h-10 md:w-12 md:h-12 rounded-full bg-red-600 flex items-center justify-center">
-                      <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-white" />
+                {/* ITIN Card */}
+                {!member.ssn && (
+                  <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden mt-6">
+                    <div className="p-4 md:p-6 space-y-4">
+                      <div className="flex flex-col lg:flex-row justify-between gap-4">
+                        <div className="flex-1 space-y-3">
+                          <h3 className="text-lg font-semibold text-slate-900">
+                            ITIN Application for {member.name || `Member ${index + 1}`}
+                          </h3>
+
+                          <p className="text-sm text-slate-600">
+                            Need an ITIN to open bank accounts or file taxes? We handle the complete process for you.
+                          </p>
+
+                          <ul className="space-y-2 text-sm text-slate-700">
+                            <li className="flex items-start gap-2">
+                              <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                              Document checklist & review
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                              Form W-7 preparation
+                            </li>
+                            <li className="flex items-start gap-2">
+                              <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                              Application guidance & submission
+                            </li>
+                          </ul>
+                        </div>
+
+                        <div className="flex flex-col items-end gap-3">
+                          <div className="text-right">
+                            <div className="text-2xl font-bold text-red-600">$149.00</div>
+                            <div className="text-xs text-slate-500">per application</div>
+                          </div>
+
+                          {member.itinAdded ? (
+                            <Button
+                              type="button"
+                              variant="outline"
+                              className="border-red-300 text-red-600 bg-transparent hover:bg-red-50"
+                              onClick={() => handleRemoveItinForMember(member.id)}
+                            >
+                              <X className="w-4 h-4 mr-2" /> Remove
+                            </Button>
+                          ) : (
+                            <Button
+                              type="button"
+                              className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90"
+                              onClick={() => handleAddItinForMember(member.id)}
+                            >
+                              <DollarSign className="w-4 h-4 mr-2" />
+                              Add to Order
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-slate-100 text-xs text-slate-500 flex items-center gap-2">
+                        <Upload className="w-4 h-4" />
+                        Processing time: 6–8 weeks after IRS receives your file
+                      </div>
                     </div>
-                    <div className="flex flex-col md:flex-row md:items-baseline md:gap-2">
-                      <h4 className="text-base md:text-lg font-bold text-slate-900">Add ITIN Service</h4>
-                      <span className="text-xl md:text-2xl font-bold text-red-600">$149</span>
-                    </div>
                   </div>
-
-                  {/* Center: Description and Features (only on mobile, hidden on desktop in favor of right side) */}
-                  <div className="space-y-3 md:hidden">
-                    <p className="text-sm text-slate-700">
-                      Need an ITIN for this member? We'll handle the entire application process for you.
-                    </p>
-
-                    <ul className="space-y-2">
-                      {[
-                        "Complete ITIN application preparation",
-                        "IRS submission handling",
-                        "Status tracking and updates",
-                      ].map((feature) => (
-                        <li key={feature} className="flex items-start gap-2 text-sm text-slate-700">
-                          <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Center: Description and Features (desktop only) */}
-                  <div className="hidden md:block flex-1 space-y-3">
-                    <p className="text-sm text-slate-700">
-                      Need an ITIN for this member? We'll handle the entire application process for you.
-                    </p>
-
-                    <ul className="space-y-1.5">
-                      {[
-                        "Complete ITIN application preparation",
-                        "IRS submission handling",
-                        "Status tracking and updates",
-                      ].map((feature) => (
-                        <li key={feature} className="flex items-start gap-2 text-sm text-slate-700">
-                          <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                          <span>{feature}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-
-                  {/* Right: Button */}
-                  <div className="flex-shrink-0 w-full md:w-auto">
-                    {member.itinAdded ? (
-                      <Button
-                        type="button"
-                        onClick={() => handleRemoveItinForMember(member.id)}
-                        className="w-full md:w-auto h-12 md:h-11 px-8 bg-white text-red-600 border-2 border-red-600 hover:bg-red-50 rounded-lg font-semibold text-base"
-                      >
-                        Remove from Order
-                      </Button>
-                    ) : (
-                      <Button
-                        type="button"
-                        onClick={() => handleAddItinForMember(member.id)}
-                        className="w-full md:w-auto h-12 md:h-11 px-8 bg-red-600 hover:bg-red-700 text-white rounded-lg font-semibold text-base shadow-sm transition-colors"
-                      >
-                        <DollarSign className="w-5 h-5 mr-2" />
-                        Add to Order
-                      </Button>
-                    )}
-                  </div>
-                </div>
+                )}
               </div>
             </div>
           ))}
 
+        {/* Add Member Button */}
         <Button
           type="button"
-          variant="outline"
           onClick={addMember}
-          className="w-full h-11 border-2 border-dashed border-slate-300 hover:border-slate-400 hover:bg-slate-50 text-slate-700 font-medium rounded-lg bg-transparent"
+          variant="outline"
+          className="w-full border-slate-300 hover:bg-slate-50 h-11 md:h-12 text-sm md:text-base font-medium bg-transparent"
         >
-          <Plus className="w-5 h-5 mr-2" />
+          <Plus className="w-4 h-4 md:w-5 md:h-5 mr-2" />
           Add Another Member
         </Button>
 
-        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-4">
+        {/* Navigation Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4 md:pt-6">
           <Button
             type="button"
             variant="outline"
             onClick={onBack}
-            className="h-11 px-6 w-full sm:w-auto border-slate-300 hover:bg-slate-50 text-slate-700 font-medium rounded-lg order-2 sm:order-1 bg-transparent"
+            className="w-full sm:w-auto h-11 px-6 sm:px-8 border-slate-300 hover:bg-slate-50 text-base order-2 sm:order-1 bg-transparent cursor-pointer"
           >
             <ArrowLeft className="w-4 h-4 mr-2" />
             Back
           </Button>
 
           <Button
-            type="submit"
-            className="h-11 px-8 w-full sm:w-auto bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-white font-semibold rounded-lg shadow-md hover:shadow-lg transition-all order-1 sm:order-2"
+            type="button"
+            onClick={handleSubmit}
+            disabled={Object.values(uploadingPassports).some((uploading) => uploading)}
+            className="w-full sm:w-auto sm:px-8 h-11 px-6 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white font-semibold text-base order-1 sm:order-2 cursor-pointer"
           >
             Next
             <ArrowRight className="w-4 h-4 ml-2" />
