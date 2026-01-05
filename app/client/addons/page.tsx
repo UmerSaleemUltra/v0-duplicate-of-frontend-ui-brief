@@ -19,7 +19,7 @@ export default function ClientAddonsPage() {
   const { selectedCompanyId } = useSelectedCompany()
   const [addons, setAddons] = useState<Addon[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [hasAdvancedPackage, setHasAdvancedPackage] = useState(false)
+  const [hasAdvancePackage, setHasAdvancePackage] = useState(false)
   const [isLoadingAddons, setIsLoadingAddons] = useState(true)
 
   const loadAddons = async () => {
@@ -58,12 +58,12 @@ export default function ClientAddonsPage() {
         const company = companyResponse.data
 
         if (company) {
-          const hasAdvanced =
+          const hasAdvance =
             company.packageType?.toLowerCase() === "advanced" ||
             company.items?.some(
               (item: any) => item.category === "package" && item.name?.toLowerCase().includes("advanced"),
             )
-          setHasAdvancedPackage(hasAdvanced)
+          setHasAdvancePackage(hasAdvance)
         }
       } catch (error) {
         // Error handled silently
@@ -99,7 +99,7 @@ export default function ClientAddonsPage() {
   }
 
   const isAddonDisabled = (addon: Addon) => {
-    return hasAdvancedPackage && isResellerCertificate(addon.name)
+    return hasAdvancePackage && isResellerCertificate(addon.name)
   }
 
   const handleBuyAddon = (addonId: string, addon: Addon) => {

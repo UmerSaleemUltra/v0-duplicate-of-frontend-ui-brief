@@ -53,7 +53,7 @@ export const metadata: Metadata = {
         },
         {
           "@type": "Offer",
-          name: "Advanced Package - Complete Business Setup",
+          name: "Advance Package - Complete Business Setup",
           price: "599",
           priceCurrency: "USD",
           description: "Complete business formation with EIN, BOI filing, and premium support",

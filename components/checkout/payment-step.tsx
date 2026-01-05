@@ -151,7 +151,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       addonsTotal: addonsTotal,
       items: [
         {
-          name: `${data.state} ${data.packageType === "starter" ? "Starter" : "Advanced"} Package`,
+          name: `${data.state} ${data.packageType === "starter" ? "Starter" : "Advance"} Package`,
           price: packageWithStateFee,
           quantity: 1,
         },
@@ -339,7 +339,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         <div className="space-y-3">
           <div className="flex items-center justify-between py-2.5 border-b border-slate-200">
             <span className="text-slate-700">
-              {data.state} {data.packageType === "starter" ? "Starter" : "Advanced"} Package
+              {data.state} {data.packageType === "starter" ? "Starter" : "Advance"} Package
             </span>
             <div className="text-right">
               <span className="font-semibold text-slate-900">${packageWithStateFee.toFixed(2)}</span>

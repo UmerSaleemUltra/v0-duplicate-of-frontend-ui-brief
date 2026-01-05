@@ -55,7 +55,7 @@ const PACKAGES = [
   },
   {
     id: "advanced",
-    name: "Advanced",
+    name: "Advance",
     price: 249,
     features: [
       { name: "Everything in Starter Package", included: true },
