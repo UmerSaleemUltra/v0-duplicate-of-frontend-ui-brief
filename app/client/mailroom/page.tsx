@@ -5,7 +5,6 @@ import { Mail, Eye, Search, FileText, Building2, User, Download } from "lucide-r
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { useState, useEffect } from "react"
 import type { MailItem } from "@/lib/types"
 import { useSelectedCompany } from "@/lib/company-context"
@@ -116,6 +115,7 @@ export default function MailroomPage() {
         link.href = attachment.fileUrl
         link.download = attachment.name
         link.target = "_blank"
+        link.rel = "noopener noreferrer"
         document.body.appendChild(link)
         link.click()
         document.body.removeChild(link)
@@ -147,9 +147,11 @@ export default function MailroomPage() {
     }
 
     try {
-      setViewingDocument({
-        url: mail.attachments[0].fileUrl,
-        name: mail.attachments[0].name,
+      window.open(mail.attachments[0].fileUrl, "_blank", "noopener,noreferrer")
+
+      toast({
+        title: "Document Opened",
+        description: "Document opened in a new tab",
       })
     } catch (error) {
       console.error("[v0] View error:", error)
@@ -321,24 +323,6 @@ export default function MailroomPage() {
           )}
         </div>
       </div>
-
-      <Dialog open={!!viewingDocument} onOpenChange={(open) => !open && setViewingDocument(null)}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-hidden">
-          <DialogHeader>
-            <DialogTitle>Document Viewer</DialogTitle>
-            <DialogDescription>{viewingDocument?.name}</DialogDescription>
-          </DialogHeader>
-          <div className="flex-1 overflow-auto">
-            {viewingDocument && (
-              <iframe
-                src={viewingDocument.url}
-                className="w-full h-[70vh] rounded-lg border border-slate-200"
-                title="Document Viewer"
-              />
-            )}
-          </div>
-        </DialogContent>
-      </Dialog>
     </ClientShell>
   )
 }

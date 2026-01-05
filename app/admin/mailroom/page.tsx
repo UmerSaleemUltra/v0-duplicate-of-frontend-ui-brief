@@ -284,6 +284,7 @@ export default function AdminMailroomPage() {
           link.href = attachment.fileUrl
           link.download = attachment.name
           link.target = "_blank"
+          link.rel = "noopener noreferrer"
           document.body.appendChild(link)
           link.click()
           document.body.removeChild(link)

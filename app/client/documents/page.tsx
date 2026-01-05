@@ -5,7 +5,6 @@ import { ClientShell } from "@/components/client/client-shell"
 import { FileText, Download, Eye, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
 import { useEffect, useState } from "react"
 import { useSelectedCompany } from "@/lib/company-context"
 import { useToast } from "@/hooks/use-toast"
@@ -153,10 +152,12 @@ export default function DocumentsPage() {
   const handleView = async (doc: any) => {
     try {
       if (doc.fileUrls && doc.fileUrls.length > 1) {
-        setSelectedDoc({
-          ...doc,
-          url: doc.fileUrls[0].url,
-          allFiles: doc.fileUrls,
+        // Open first file in new tab
+        window.open(doc.fileUrls[0].url, "_blank", "noopener,noreferrer")
+
+        toast({
+          title: "Document Opened",
+          description: `Opened ${doc.fileUrls[0].name}. ${doc.fileUrls.length - 1} more file(s) available for download.`,
         })
       } else {
         const fileUrl = doc.fileUrl
@@ -168,7 +169,12 @@ export default function DocumentsPage() {
           })
           return
         }
-        setSelectedDoc({ ...doc, url: fileUrl })
+        window.open(fileUrl, "_blank", "noopener,noreferrer")
+
+        toast({
+          title: "Document Opened",
+          description: "Document opened in a new tab",
+        })
       }
     } catch (error) {
       console.error("View error:", error)
@@ -307,49 +313,9 @@ export default function DocumentsPage() {
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Ready</Badge>
                     <div className="flex gap-2">
-                      <Dialog>
-                        <DialogTrigger asChild>
-                          <Button variant="ghost" className="h-10 w-10 p-0" onClick={() => handleView(doc)}>
-                            <Eye className="w-4 h-4" />
-                          </Button>
-                        </DialogTrigger>
-                        <DialogContent className="max-w-4xl max-h-[90vh]">
-                          <DialogHeader>
-                            <DialogTitle>
-                              {selectedDoc?.name || selectedDoc?.title || "Document Preview"}
-                              {selectedDoc?.allFiles && selectedDoc.allFiles.length > 1 && (
-                                <div className="mt-2">
-                                  <select
-                                    className="text-sm border rounded px-2 py-1"
-                                    onChange={(e) => {
-                                      const fileIndex = Number.parseInt(e.target.value)
-                                      setSelectedDoc({
-                                        ...selectedDoc,
-                                        url: selectedDoc.allFiles[fileIndex].url,
-                                      })
-                                    }}
-                                  >
-                                    {selectedDoc.allFiles.map((file: any, idx: number) => (
-                                      <option key={idx} value={idx}>
-                                        {file.name}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </div>
-                              )}
-                            </DialogTitle>
-                          </DialogHeader>
-                          <div className="overflow-auto max-h-[70vh]">
-                            {selectedDoc?.url && (
-                              <iframe
-                                src={selectedDoc.url}
-                                className="w-full h-[600px] border-0"
-                                title={selectedDoc.name || selectedDoc.title}
-                              />
-                            )}
-                          </div>
-                        </DialogContent>
-                      </Dialog>
+                      <Button variant="ghost" className="h-10 w-10 p-0" onClick={() => handleView(doc)}>
+                        <Eye className="w-4 h-4" />
+                      </Button>
                       <Button variant="ghost" className="h-10 w-10 p-0" onClick={() => handleDownload(doc)}>
                         <Download className="w-4 h-4" />
                       </Button>
