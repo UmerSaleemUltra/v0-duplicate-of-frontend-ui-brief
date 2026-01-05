@@ -175,7 +175,7 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
             placeholder="Describe what your business does..."
             value={data.businessDescription || ""}
             onChange={(e) => updateData({ businessDescription: e.target.value })}
-            className="min-h-[100px] border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg resize-none"
+            className="w-full min-h-[100px] max-h-[200px] border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg resize-y overflow-y-auto"
           />
           {errors.businessDescription && <p className="text-xs text-red-600">{errors.businessDescription}</p>}
           <p className="text-xs text-slate-500">
@@ -184,13 +184,13 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
         </div>
       </form>
 
-      <div className="flex flex-col sm:flex-row gap-3 pt-4">
-        <Button onClick={onBack} variant="outline" className="w-full sm:w-auto px-6 h-11 cursor-pointer bg-transparent">
+      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
+        <Button onClick={onBack} variant="outline" className="w-full sm:w-auto px-6 h-12 cursor-pointer bg-transparent">
           <ArrowLeft className="mr-2 w-4 h-4" /> Back
         </Button>
         <Button
           onClick={handleSubmit}
-          className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 cursor-pointer"
+          className="w-full sm:flex-1 sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-12 cursor-pointer"
         >
           Next <ArrowRight className="ml-2 w-4 h-4" />
         </Button>

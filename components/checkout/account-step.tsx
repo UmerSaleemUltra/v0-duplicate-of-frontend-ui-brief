@@ -301,19 +301,19 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4">
           <Button
             onClick={onBack}
             variant="outline"
             disabled={isCreatingUser}
-            className="w-full sm:w-auto px-6 h-11 cursor-pointer bg-transparent"
+            className="w-full sm:w-auto px-6 h-12 cursor-pointer bg-transparent"
           >
             <ArrowLeft className="mr-2 w-4 h-4" /> Back
           </Button>
           <Button
             type="submit"
             disabled={isCreatingUser}
-            className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 cursor-pointer"
+            className="w-full sm:flex-1 sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-12 cursor-pointer"
           >
             {isCreatingUser ? (
               <>

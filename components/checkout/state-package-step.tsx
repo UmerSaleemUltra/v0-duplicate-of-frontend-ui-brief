@@ -126,7 +126,7 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
               key={entity.id}
               type="button"
               onClick={() => updateData({ entityType: entity.id })}
-              className={`w-full text-left p-5 rounded-lg border-2 transition-all ${
+              className={`w-full text-left p-4 sm:p-5 rounded-lg border-2 transition-all overflow-hidden ${
                 data.entityType === entity.id
                   ? "border-[#ff0d13] bg-[#fff5f5]"
                   : "border-slate-200 bg-white hover:border-slate-300"
@@ -139,9 +139,9 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                   onChange={() => updateData({ entityType: entity.id })}
                   className="w-5 h-5 text-[#ff0d13] accent-[#ff0d13] mt-0.5 flex-shrink-0 cursor-pointer"
                 />
-                <div className="flex-1">
+                <div className="flex-1 min-w-0">
                   <div className="flex flex-wrap items-center gap-2 mb-2">
-                    <h3 className="text-base font-semibold text-slate-900">{entity.name}</h3>
+                    <h3 className="text-base font-semibold text-slate-900 break-words">{entity.name}</h3>
                   </div>
                   <div className="flex flex-wrap gap-2 mb-3">
                     {entity.badges.map((badge) => (
@@ -161,11 +161,11 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                     {entity.features.map((feature, i) => (
                       <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
                         <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
-                        <span>{feature}</span>
+                        <span className="break-words">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <p className="text-sm text-slate-600 pt-3 border-t border-slate-100">
+                  <p className="text-sm text-slate-600 pt-3 border-t border-slate-100 break-words">
                     <span className="font-medium text-slate-900">Best for:</span> {entity.bestFor}
                   </p>
                 </div>
@@ -186,14 +186,14 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                 key={pkg.id}
                 type="button"
                 onClick={() => updateData({ packageType: pkg.id })}
-                className={`p-5 rounded-lg border-2 cursor-pointer transition-all text-left min-h-[420px] flex flex-col ${
+                className={`p-4 sm:p-5 rounded-lg border-2 cursor-pointer transition-all text-left flex flex-col overflow-hidden ${
                   data.packageType === pkg.id
                     ? "border-[#ff0d13] bg-[#fff5f5]"
                     : "border-slate-200 bg-white hover:border-slate-300"
                 }`}
               >
                 <div className="flex items-start justify-between gap-3 mb-3">
-                  <h3 className="text-lg font-semibold text-slate-900">{pkg.name}</h3>
+                  <h3 className="text-lg font-semibold text-slate-900 break-words">{pkg.name}</h3>
                   {data.packageType === pkg.id && (
                     <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                       <Check className="w-4 h-4 text-white" />
@@ -201,8 +201,8 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                   )}
                 </div>
                 <div className="mb-4">
-                  <div className="text-3xl font-bold text-[#ff0d13]">${total}</div>
-                  <div className="text-sm text-slate-600 mt-1">
+                  <div className="text-2xl sm:text-3xl font-bold text-[#ff0d13]">${total}</div>
+                  <div className="text-xs sm:text-sm text-slate-600 mt-1 break-words">
                     {data.state ? "Total (includes state fees)" : "Base price + state fees"}
                   </div>
                 </div>
@@ -219,7 +219,7 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                           feature.included ? "text-[#ff0d13]" : "text-slate-300"
                         }`}
                       />
-                      <span>{feature.name}</span>
+                      <span className="break-words">{feature.name}</span>
                     </li>
                   ))}
                 </ul>
@@ -230,13 +230,13 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
         {errors.packageType && <p className="text-sm text-[#ff0d13]">{errors.packageType}</p>}
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-slate-100">
-        <Button onClick={onBack} variant="outline" className="w-full sm:w-auto px-6 h-11 cursor-pointer bg-transparent">
+      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-4 border-t border-slate-100">
+        <Button onClick={onBack} variant="outline" className="w-full sm:w-auto px-6 h-12 cursor-pointer bg-transparent">
           <ArrowLeft className="mr-2 w-4 h-4" /> Previous
         </Button>
         <Button
           onClick={handleSubmit}
-          className="w-full sm:w-auto sm:px-8 h-11 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer"
+          className="w-full sm:flex-1 sm:px-8 h-12 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer"
         >
           Next <ArrowRight className="ml-2 w-4 h-4" />
         </Button>
