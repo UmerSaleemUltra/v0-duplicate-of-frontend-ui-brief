@@ -101,19 +101,17 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
   }
 
   return (
-    <div className="space-y-8 md:space-y-12">
-      <div className="space-y-2 md:space-y-3">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-950 tracking-tight">
-          Business Information
-        </h1>
-        <p className="text-sm md:text-base text-slate-500 max-w-2xl leading-relaxed">
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-950">Business Information</h1>
+        <p className="text-sm text-slate-600">
           Tell us about your business. This information will appear on your formation documents.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
-        <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="businessName" className="text-sm font-semibold text-slate-900">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="businessName" className="text-sm font-medium text-slate-900">
             Business Name
           </Label>
           <div className="relative">
@@ -123,15 +121,15 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
               placeholder="Acme Corporation LLC"
               value={data.businessName}
               onChange={(e) => updateData({ businessName: e.target.value })}
-              className="pl-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
+              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg"
             />
           </div>
-          {errors.businessName && <p className="text-xs text-red-600 mt-1">{errors.businessName}</p>}
-          <p className="text-xs md:text-sm text-slate-500">Include LLC or Inc in business name </p>
+          {errors.businessName && <p className="text-xs text-red-600">{errors.businessName}</p>}
+          <p className="text-xs text-slate-500">Include LLC or Inc in business name</p>
         </div>
 
-        <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="businessWebsite" className="text-sm font-semibold text-slate-900">
+        <div className="space-y-2">
+          <Label htmlFor="businessWebsite" className="text-sm font-medium text-slate-900">
             Business Website <span className="text-slate-400 font-normal">(Optional)</span>
           </Label>
           <div className="relative">
@@ -142,19 +140,19 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
               placeholder="www.example.com"
               value={data.businessWebsite || ""}
               onChange={(e) => updateData({ businessWebsite: e.target.value })}
-              className="pl-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
+              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg"
             />
           </div>
-          {errors.businessWebsite && <p className="text-xs text-red-600 mt-1">{errors.businessWebsite}</p>}
-          <p className="text-xs md:text-sm text-slate-500">Your business website or online presence</p>
+          {errors.businessWebsite && <p className="text-xs text-red-600">{errors.businessWebsite}</p>}
+          <p className="text-xs text-slate-500">Your business website or online presence</p>
         </div>
 
-        <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="businessCategory" className="text-sm font-semibold text-slate-900">
+        <div className="space-y-2">
+          <Label htmlFor="businessCategory" className="text-sm font-medium text-slate-900">
             Business Category
           </Label>
           <Select value={data.businessCategory} onValueChange={(value) => updateData({ businessCategory: value })}>
-            <SelectTrigger className="h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base">
+            <SelectTrigger className="h-11 border-slate-200 bg-white text-slate-900 rounded-lg">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -165,11 +163,11 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
               ))}
             </SelectContent>
           </Select>
-          {errors.businessCategory && <p className="text-xs text-red-600 mt-1">{errors.businessCategory}</p>}
+          {errors.businessCategory && <p className="text-xs text-red-600">{errors.businessCategory}</p>}
         </div>
 
-        <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="businessDescription" className="text-sm font-semibold text-slate-900">
+        <div className="space-y-2">
+          <Label htmlFor="businessDescription" className="text-sm font-medium text-slate-900">
             Business Description
           </Label>
           <Textarea
@@ -177,26 +175,22 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
             placeholder="Describe what your business does..."
             value={data.businessDescription || ""}
             onChange={(e) => updateData({ businessDescription: e.target.value })}
-            className="min-h-[100px] md:min-h-[120px] border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg text-sm md:text-base resize-none"
+            className="min-h-[100px] border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg resize-none"
           />
-          {errors.businessDescription && <p className="text-xs text-red-600 mt-1">{errors.businessDescription}</p>}
-          <p className="text-xs md:text-sm text-slate-500">
+          {errors.businessDescription && <p className="text-xs text-red-600">{errors.businessDescription}</p>}
+          <p className="text-xs text-slate-500">
             Provide a brief overview of your business activities (minimum 20 characters)
           </p>
         </div>
       </form>
 
-      <div className="flex flex-col sm:flex-row gap-3 pt-6">
-        <Button
-          onClick={onBack}
-          variant="outline"
-          className="w-full sm:w-auto px-6 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 font-medium text-sm md:text-base rounded-lg cursor-pointer"
-        >
+      <div className="flex flex-col sm:flex-row gap-3 pt-4">
+        <Button onClick={onBack} variant="outline" className="w-full sm:w-auto px-6 h-11 cursor-pointer bg-transparent">
           <ArrowLeft className="mr-2 w-4 h-4" /> Back
         </Button>
         <Button
           onClick={handleSubmit}
-          className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 md:h-12 text-sm md:text-base font-medium rounded-lg flex items-center justify-center cursor-pointer"
+          className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 cursor-pointer"
         >
           Next <ArrowRight className="ml-2 w-4 h-4" />
         </Button>

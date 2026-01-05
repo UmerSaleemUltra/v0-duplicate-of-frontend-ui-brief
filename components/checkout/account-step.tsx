@@ -207,38 +207,36 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
   }
 
   return (
-    <div className="space-y-8 md:space-y-12">
-      <div className="space-y-2 md:space-y-3">
-        <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-slate-950 tracking-tight">
-          Create Your Account
-        </h1>
-        <p className="text-sm md:text-base text-slate-700 max-w-2xl leading-relaxed">
+    <div className="space-y-6">
+      <div className="space-y-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-950">Create Your Account</h1>
+        <p className="text-sm text-slate-600">
           Set up your account to track your formation progress and manage your business.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5 md:space-y-6">
-        <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="name" className="text-sm font-semibold text-slate-900">
+      <form onSubmit={handleSubmit} className="space-y-5">
+        <div className="space-y-2">
+          <Label htmlFor="name" className="text-sm font-medium text-slate-900">
             Full Name
           </Label>
           <div className="relative">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 pointer-events-none" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             <Input
               id="name"
               type="text"
               placeholder="John Doe"
               value={data.name || ""}
               onChange={(e) => handleNameChange(e.target.value)}
-              className="pl-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
+              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg"
             />
           </div>
-          {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
-          <p className="text-xs md:text-sm text-slate-700">Your full legal name</p>
+          {errors.name && <p className="text-xs text-red-600">{errors.name}</p>}
+          <p className="text-xs text-slate-500">Your full legal name</p>
         </div>
 
-        <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="phone" className="text-sm font-semibold text-slate-900">
+        <div className="space-y-2">
+          <Label htmlFor="phone" className="text-sm font-medium text-slate-900">
             Phone Number
           </Label>
           <PhoneInput
@@ -248,42 +246,42 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
             international
             withCountryCallingCode
           />
-          {errors.phone && <p className="text-xs text-red-600 mt-1">{errors.phone}</p>}
-          <p className="text-xs md:text-sm text-slate-700">We'll use this to contact you about your order</p>
+          {errors.phone && <p className="text-xs text-red-600">{errors.phone}</p>}
+          <p className="text-xs text-slate-500">We'll use this to contact you about your order</p>
         </div>
 
-        <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="email" className="text-sm font-semibold text-slate-900">
+        <div className="space-y-2">
+          <Label htmlFor="email" className="text-sm font-medium text-slate-900">
             Email Address
           </Label>
           <div className="relative">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 pointer-events-none" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
               value={data.email || ""}
               onChange={(e) => handleEmailChange(e.target.value)}
-              className="pl-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
+              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg"
             />
           </div>
-          {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
-          <p className="text-xs md:text-sm text-slate-700">We'll send order updates to this email</p>
+          {errors.email && <p className="text-xs text-red-600">{errors.email}</p>}
+          <p className="text-xs text-slate-500">We'll send order updates to this email</p>
         </div>
 
-        <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="password" className="text-sm font-semibold text-slate-900">
+        <div className="space-y-2">
+          <Label htmlFor="password" className="text-sm font-medium text-slate-900">
             Password
           </Label>
           <div className="relative">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 pointer-events-none" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="At least 8 characters"
               value={data.password || ""}
               onChange={(e) => handlePasswordChange(e.target.value)}
-              className="pl-10 pr-10 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm md:text-base"
+              className="pl-10 pr-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg"
             />
             <button
               type="button"
@@ -293,29 +291,29 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
-          {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
-          <p className="text-xs md:text-sm text-slate-700">Choose a strong password to secure your account</p>
+          {errors.password && <p className="text-xs text-red-600">{errors.password}</p>}
+          <p className="text-xs text-slate-500">Choose a strong password to secure your account</p>
         </div>
 
         {errors.submit && (
-          <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200">
-            <p className="text-xs md:text-sm text-red-600 font-medium">{errors.submit}</p>
+          <div className="p-3 rounded-lg bg-red-50 border border-red-200">
+            <p className="text-sm text-red-600">{errors.submit}</p>
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-3 pt-6">
+        <div className="flex flex-col sm:flex-row gap-3 pt-4">
           <Button
             onClick={onBack}
             variant="outline"
             disabled={isCreatingUser}
-            className="w-full sm:w-auto px-6 h-11 md:h-12 border border-slate-200 bg-white text-slate-900 font-medium text-sm md:text-base rounded-lg cursor-pointer"
+            className="w-full sm:w-auto px-6 h-11 cursor-pointer bg-transparent"
           >
             <ArrowLeft className="mr-2 w-4 h-4" /> Back
           </Button>
           <Button
             type="submit"
             disabled={isCreatingUser}
-            className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 md:h-12 text-sm md:text-base font-medium rounded-lg cursor-pointer"
+            className="w-full sm:w-auto sm:px-8 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-11 cursor-pointer"
           >
             {isCreatingUser ? (
               <>
