@@ -65,9 +65,9 @@ export function CheckoutShell({
             <Image
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling"
-              width={180}
-              height={72}
-              className="w-[150px] sm:w-[170px] lg:w-[180px] h-auto"
+              width={300}
+              height={120}
+              className="w-[180px] sm:w-[220px] lg:w-[260px] xl:w-[300px] h-auto"
               priority
             />
           </Link>
