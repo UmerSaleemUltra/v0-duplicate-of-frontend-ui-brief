@@ -516,18 +516,18 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         <div className="bg-white rounded-lg border border-slate-200 p-6">
           <div className="space-y-2">
             <Label htmlFor="whatsapp-phone" className="text-sm font-semibold text-slate-900">
-              WhatsApp Phone Number
+              WhatsApp Number (Used to Contact Us)
             </Label>
             <Input
               id="whatsapp-phone"
               type="tel"
-              placeholder="Enter your WhatsApp phone number"
+              placeholder="Enter your WhatsApp number"
               value={whatsappPhone}
               onChange={handlePhoneChange}
               className="h-11 border-slate-300 focus:border-[#ff0d13] focus:ring-[#ff0d13]"
             />
             <p className="text-sm text-slate-600">
-              We'll contact you via WhatsApp at this number to confirm your payment
+              Provide the WhatsApp number you used or will use to discuss payment with our team
             </p>
           </div>
         </div>
