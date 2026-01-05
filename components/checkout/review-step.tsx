@@ -204,6 +204,9 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           userId: formData.userId,
           packageType: formData.packageType,
           status: "pending",
+          businessCategory: formData.businessCategory,
+          businessWebsite: formData.businessWebsite,
+          businessDescription: formData.businessDescription,
           members: validMembers.map((m) => ({
             name: m.name || `${m.firstName} ${m.lastName}`,
             email: m.email,
