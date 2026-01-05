@@ -6,7 +6,6 @@ import type { CheckoutData } from "@/app/checkout/page"
 import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/local-storage"
 import { useToast } from "@/hooks/use-toast"
 import { STATE_FEES } from "@/lib/constants"
-import { authService } from "@/lib/auth"
 
 type ReviewStepProps = {
   formData?: CheckoutData
@@ -126,14 +125,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
       return
     }
 
-    setIsCreatingCompany(true)
-
     try {
-      const token = authService.getToken()
-      if (!token) {
-        throw new Error("Authentication required. Please log in.")
-      }
-
       // Prepare addons array with all selected add-ons
       const addons: any[] = []
 
@@ -177,73 +169,20 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         })
       }
 
-      console.log("[v0] Creating company with data:", {
-        userId: formData.userId,
-        businessName: formData.businessName,
-        state: formData.state,
-        entityType: formData.entityType,
-      })
-
-      // Create company in database
-      const companyResponse = await fetch("/api/companies", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          name: formData.businessName,
-          state: formData.state,
-          type: formData.entityType,
-          userId: formData.userId,
-          packageType: formData.packageType,
-          status: "pending",
-          businessCategory: formData.businessCategory,
-          businessWebsite: formData.businessWebsite,
-          businessDescription: formData.businessDescription,
-          members: validMembers.map((m) => ({
-            name: m.name || `${m.firstName} ${m.lastName}`,
-            email: m.email,
-            phone: m.phone,
-            address: m.address,
-            city: m.city,
-            state: m.state,
-            zip: m.zip,
-            country: m.country,
-            ssn: m.ssn,
-            dateOfBirth: m.dateOfBirth,
-            isResponsiblePerson: m.isResponsiblePerson,
-          })),
-        }),
-      })
-
-      if (!companyResponse.ok) {
-        const errorData = await companyResponse.json()
-        throw new Error(errorData.error || "Failed to create company")
-      }
-
-      const companyData = await companyResponse.json()
-      console.log("[v0] Company created successfully:", companyData)
-
-      // Store company data in localStorage for payment step
-      localStorage.setItem("companyData", JSON.stringify(companyData))
-
       toast({
         title: "Success",
-        description: "Company information saved successfully",
+        description: "Order information saved successfully",
       })
 
       // Proceed to payment
       onNext()
     } catch (error) {
-      console.error("[v0] Error creating company:", error)
+      console.error("Error updating checkout data:", error)
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to save company information",
+        description: error instanceof Error ? error.message : "Failed to save order information",
         variant: "destructive",
       })
-    } finally {
-      setIsCreatingCompany(false)
     }
   }
 
@@ -660,18 +599,12 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         </Button>
 
         <Button
+          type="button"
           onClick={handleProceedToPayment}
-          disabled={isCreatingCompany}
           className="w-full sm:flex-1 h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
         >
-          {isCreatingCompany ? (
-            <>Creating Company...</>
-          ) : (
-            <>
-              Proceed to Payment
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </>
-          )}
+          Next
+          <ArrowRight className="w-5 h-5 ml-2" />
         </Button>
       </div>
     </div>
