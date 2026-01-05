@@ -388,14 +388,11 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center text-white font-bold">
               {userInitials}
             </div>
-            <div>
-              <span className="text-sm font-medium text-slate-700">{userName}</span>
-              {isAdminView && (
-                <Badge variant="outline" className="ml-2 text-[10px] bg-yellow-50 text-yellow-700 border-yellow-200">
-                  Admin View
-                </Badge>
-              )}
-            </div>
+            {isAdminView && (
+              <Badge variant="outline" className="text-[10px] bg-yellow-50 text-yellow-700 border-yellow-200">
+                Admin View
+              </Badge>
+            )}
           </div>
           <div className="flex items-center gap-2">
             <Button
