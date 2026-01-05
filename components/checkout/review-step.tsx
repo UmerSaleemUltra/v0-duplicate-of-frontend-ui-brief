@@ -438,11 +438,16 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
                     <span className="text-sm font-medium text-slate-900">{maskSSN(member.ssn)}</span>
                   </div>
                   {member.passportFile && (
-                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
-                      <span className="text-sm text-slate-500">Passport Document</span>
-                      <div className="flex items-center gap-2">
+                    <div className="flex flex-col sm:flex-row sm:justify-between gap-2 sm:gap-4 py-2 border-b border-slate-100">
+                      <span className="text-sm text-slate-500 flex-shrink-0">Passport Document</span>
+                      <div className="flex items-center gap-2 min-w-0">
                         <FileText className="w-4 h-4 text-[#ff0d13] flex-shrink-0" />
-                        <span className="text-sm font-medium text-slate-900 truncate">{member.passportFile.name}</span>
+                        <span
+                          className="text-sm font-medium text-slate-900 truncate max-w-[200px] sm:max-w-xs"
+                          title={member.passportFile.name}
+                        >
+                          {member.passportFile.name}
+                        </span>
                       </div>
                     </div>
                   )}
@@ -454,8 +459,8 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
       )}
 
       <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-lg font-semibold text-slate-900">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 mb-4 md:mb-6">
+          <h2 className="text-base md:text-lg font-semibold text-slate-900 break-words">
             {formData?.state || "N/A"} {formData?.packageType === "starter" ? "Starter" : "Advanced"} Package
           </h2>
           <Button
@@ -468,17 +473,19 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
             Edit
           </Button>
         </div>
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
               <Package className="w-6 h-6 text-[#ffffff]" />
             </div>
-            <div>
-              <p className="font-semibold text-slate-900 capitalize">{formData?.packageType || "starter"} Package</p>
-              <p className="text-sm text-slate-700">Formation service + state filing included</p>
+            <div className="min-w-0 flex-1">
+              <p className="font-semibold text-slate-900 capitalize truncate">
+                {formData?.packageType || "starter"} Package
+              </p>
+              <p className="text-sm text-slate-700 break-words">Formation service + state filing included</p>
             </div>
           </div>
-          <div className="text-right">
+          <div className="text-left sm:text-right flex-shrink-0">
             <p className="text-2xl font-bold text-slate-900">${subtotal}</p>
           </div>
         </div>
@@ -502,18 +509,18 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
             {membersWithItin.map((member, index) => (
               <div
                 key={member.id}
-                className="flex items-center justify-between p-4 rounded-lg border border-slate-200 bg-slate-50"
+                className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50"
               >
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                     <FileText className="w-5 h-5 text-white" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-slate-900">ITIN Application</p>
-                    <p className="text-xs text-slate-700">For {member.name || "Member"}</p>
+                    <p className="text-xs text-slate-700 truncate">For {member.name || "Member"}</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between sm:justify-end gap-3">
                   <span className="text-lg font-bold text-[#ff0d13]">$149</span>
                   <Button
                     variant="ghost"
@@ -527,23 +534,23 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
               </div>
             ))}
             {hasResellerCert && !resellerCertIncluded && (
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 bg-slate-50">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                     <Shield className="w-5 h-5 text-white" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-slate-900">Reseller Certificate</p>
                     <p className="text-xs text-slate-700">Sales tax exemption for e-commerce</p>
                   </div>
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center justify-between sm:justify-end gap-3">
                   <span className="text-lg font-bold text-green-600">$99</span>
                   <Button
                     variant="ghost"
                     size="sm"
                     onClick={handleRemoveResellerCert}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0 cursor-pointer"
                   >
                     <X className="w-4 h-4" />
                   </Button>
@@ -552,32 +559,36 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
             )}
 
             {resellerCertIncluded && (
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 bg-slate-50">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-emerald-200 bg-emerald-50">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
                     <Shield className="w-5 h-5 text-white" />
                   </div>
-                  <div>
-                    <p className="font-medium text-emerald-600">Reseller Certificate (Included)</p>
-                    <p className="text-xs text-emerald-600">Sales tax exemption for e-commerce</p>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-emerald-900">Reseller Certificate</p>
+                    <p className="text-xs text-emerald-700">Included with Advanced Package</p>
                   </div>
                 </div>
-                <span className="text-lg font-bold text-emerald-600">$0</span>
+                <div className="text-left sm:text-right flex-shrink-0">
+                  <span className="text-lg font-bold text-emerald-600">$0</span>
+                </div>
               </div>
             )}
 
             {websitePrice > 0 && (
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 bg-slate-50">
-                <div className="flex items-center gap-3 flex-1">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                     <Globe className="w-5 h-5 text-white" />
                   </div>
-                  <div>
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-slate-900">Business Website</p>
-                    <p className="text-xs text-slate-700">Professional website design</p>
+                    <p className="text-xs text-slate-700">Professional website setup</p>
                   </div>
                 </div>
-                <span className="text-lg font-bold text-[#ff0d13]">${websitePrice}</span>
+                <div className="flex items-center justify-between sm:justify-end gap-3">
+                  <span className="text-lg font-bold text-[#ff0d13]">${websitePrice}</span>
+                </div>
               </div>
             )}
           </div>
@@ -586,60 +597,60 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
 
       <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
         <div className="space-y-4">
-          <div className="flex items-center justify-between pb-4 border-b border-slate-200">
-            <div>
-              <span className="text-sm text-slate-700">Formation Package</span>
-              <p className="text-xs text-slate-500 mt-0.5">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-slate-200">
+            <div className="min-w-0 flex-1">
+              <span className="text-sm text-slate-700 block">Formation Package</span>
+              <p className="text-xs text-slate-500 mt-0.5 break-words">
                 {formData?.state || "N/A"} {formData?.packageType === "starter" ? "Starter" : "Advanced"} Package
               </p>
             </div>
-            <span className="text-sm font-medium text-slate-900">${subtotal}</span>
+            <span className="text-sm font-medium text-slate-900 flex-shrink-0">${subtotal}</span>
           </div>
 
           {addonsTotal > 0 && (
             <>
-              <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-slate-200">
                 <span className="text-sm font-semibold text-slate-700">Add-ons</span>
-                <span className="text-sm font-medium text-slate-900">${addonsTotal}</span>
+                <span className="text-sm font-medium text-slate-900 flex-shrink-0">${addonsTotal}</span>
               </div>
 
               {itinPrice > 0 && (
-                <div className="flex items-center justify-between pl-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pl-4">
                   <span className="text-xs text-slate-600">ITIN Applications ({membersWithItin.length})</span>
-                  <span className="text-xs font-medium text-slate-700">${itinPrice}</span>
+                  <span className="text-xs font-medium text-slate-700 flex-shrink-0">${itinPrice}</span>
                 </div>
               )}
 
               {resellerCertPrice > 0 && (
-                <div className="flex items-center justify-between pl-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pl-4">
                   <span className="text-xs text-slate-600">Reseller Certificate</span>
-                  <span className="text-xs font-medium text-slate-700">${resellerCertPrice}</span>
+                  <span className="text-xs font-medium text-slate-700 flex-shrink-0">${resellerCertPrice}</span>
                 </div>
               )}
 
               {resellerCertIncluded && (
-                <div className="flex items-center justify-between pl-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pl-4">
                   <span className="text-xs text-emerald-600">Reseller Certificate (Included)</span>
-                  <span className="text-xs font-medium text-emerald-600">$0</span>
+                  <span className="text-xs font-medium text-emerald-600 flex-shrink-0">$0</span>
                 </div>
               )}
 
               {websitePrice > 0 && (
-                <div className="flex items-center justify-between pl-4">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pl-4">
                   <span className="text-xs text-slate-600">Business Website</span>
-                  <span className="text-xs font-medium text-slate-700">${websitePrice}</span>
+                  <span className="text-xs font-medium text-slate-700 flex-shrink-0">${websitePrice}</span>
                 </div>
               )}
             </>
           )}
 
-          <div className="flex items-center justify-between pt-4 border-t-2 border-slate-300">
-            <div>
-              <p className="text-lg font-semibold text-slate-900">Grand Total</p>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t-2 border-slate-300">
+            <div className="min-w-0">
+              <p className="text-base md:text-lg font-semibold text-slate-900">Grand Total</p>
               <p className="text-xs text-slate-600 mt-0.5">One-time payment</p>
             </div>
-            <div className="text-right">
-              <p className="text-3xl font-bold text-slate-900">${total}</p>
+            <div className="text-left sm:text-right">
+              <p className="text-2xl md:text-3xl font-bold text-slate-900">${total}</p>
             </div>
           </div>
         </div>
