@@ -550,10 +550,10 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                 {/* ITIN Card */}
                 {!member.ssn && (
                   <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden mt-6">
-                    <div className="p-4 md:p-6 space-y-4">
+                    <div className="p-3 md:p-6 space-y-4">
                       <div className="flex flex-col gap-4">
                         <div className="space-y-3">
-                          <h3 className="text-lg md:text-xl font-semibold text-slate-900 break-words">
+                          <h3 className="text-base md:text-xl font-semibold text-slate-900 break-words">
                             ITIN Application for {member.name || `Member ${index + 1}`}
                           </h3>
 
@@ -577,28 +577,28 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                           </ul>
                         </div>
 
-                        <div className="flex flex-col items-center gap-3 pt-3 border-t border-slate-100 md:border-0 md:pt-0 md:flex-row md:justify-between md:items-center">
+                        <div className="flex flex-col items-center gap-3 pt-3 md:flex-row md:justify-between md:items-center">
                           <div className="text-center md:text-left">
-                            <div className="text-3xl md:text-2xl font-bold text-red-600">$149.00</div>
-                            <div className="text-sm text-slate-500">per application</div>
+                            <div className="text-2xl md:text-2xl font-bold text-red-600">$149.00</div>
+                            <div className="text-xs md:text-sm text-slate-500">per application</div>
                           </div>
 
                           {member.itinAdded ? (
                             <Button
                               type="button"
                               variant="outline"
-                              className="w-full md:w-auto border-red-300 text-red-600 bg-transparent hover:bg-red-50 py-6 md:py-2"
+                              className="w-full md:w-auto border-red-300 text-red-600 bg-transparent hover:bg-red-50 h-10 md:h-9 text-sm"
                               onClick={() => handleRemoveItinForMember(member.id)}
                             >
-                              <X className="w-5 h-5 md:w-4 md:h-4 mr-2" /> Remove from Order
+                              <X className="w-4 h-4 mr-2" /> Remove from Order
                             </Button>
                           ) : (
                             <Button
                               type="button"
-                              className="w-full md:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 py-6 md:py-2 text-base md:text-sm"
+                              className="w-full md:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 h-10 md:h-9 text-sm"
                               onClick={() => handleAddItinForMember(member.id)}
                             >
-                              <DollarSign className="w-5 h-5 md:w-4 md:h-4 mr-2" />
+                              <DollarSign className="w-4 h-4 mr-2" />
                               Add to Order
                             </Button>
                           )}
@@ -606,8 +606,8 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       </div>
 
                       <div className="pt-4 border-t border-slate-100 text-xs md:text-sm text-slate-500 flex items-center gap-2">
-                        <Upload className="w-4 h-4" />
-                        Processing time: 6–8 weeks after IRS receives your file
+                        <Upload className="w-4 h-4 flex-shrink-0" />
+                        <span className="break-words">Processing time: 6–8 weeks after IRS receives your file</span>
                       </div>
                     </div>
                   </div>
