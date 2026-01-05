@@ -18,6 +18,8 @@ import {
   HashIcon,
   FileBarChart,
   LogOut,
+  Briefcase,
+  Users,
 } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -552,6 +554,14 @@ export default function ClientDashboard() {
     }
   }
 
+  // Define hasMailingAddress for conditional rendering
+  const hasMailingAddress =
+    company?.mailingAddress &&
+    company.mailingAddress.street &&
+    company.mailingAddress.city &&
+    company.mailingAddress.state &&
+    company.mailingAddress.zip
+
   return (
     <ClientShell>
       <TooltipProvider>
@@ -779,56 +789,61 @@ export default function ClientDashboard() {
           {/* Company Information Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             {/* Business Details Card */}
-            <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg shadow-red-500/20">
-                  <Building2 className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <h2 className="text-xl font-semibold text-slate-900">Business Details</h2>
-                  <p className="text-sm text-slate-600">Complete business information</p>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                <div className="space-y-2">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Business Category</p>
-                  <p className="text-sm font-medium text-slate-900">
-                    {company?.businessCategory || <span className="text-slate-400">Not provided</span>}
-                  </p>
+            {(company?.businessCategory ||
+              company?.businessWebsite ||
+              company?.businessDescription ||
+              company?.packageType) && (
+              <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+                <div className="flex items-center gap-3 mb-6">
+                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
+                    <Briefcase className="w-5 h-5 text-white" />
+                  </div>
+                  <div>
+                    <h2 className="text-lg font-semibold text-slate-900">Business Details</h2>
+                    <p className="text-xs text-slate-600">Complete business details from registration</p>
+                  </div>
                 </div>
 
-                <div className="space-y-2">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Business Website</p>
-                  {company?.businessWebsite ? (
-                    <a
-                      href={company.businessWebsite}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-[#ff0d13] hover:underline break-all"
-                    >
-                      {company.businessWebsite}
-                    </a>
-                  ) : (
-                    <p className="text-sm text-slate-400">Not provided</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {company?.businessCategory && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Business Category</p>
+                      <p className="text-sm font-medium text-slate-900">{company.businessCategory}</p>
+                    </div>
+                  )}
+
+                  {company?.businessWebsite && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Business Website</p>
+                      <a
+                        href={company.businessWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-[#ff0d13] hover:underline break-all"
+                      >
+                        {company.businessWebsite}
+                      </a>
+                    </div>
+                  )}
+
+                  {company?.packageType && (
+                    <div className="space-y-2">
+                      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Package Type</p>
+                      <p className="text-sm font-medium text-slate-900 capitalize">{company.packageType}</p>
+                    </div>
+                  )}
+
+                  {company?.businessDescription && (
+                    <div className="sm:col-span-2 lg:col-span-3 space-y-2">
+                      <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">
+                        Business Description
+                      </p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{company.businessDescription}</p>
+                    </div>
                   )}
                 </div>
-
-                <div className="space-y-2">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Package Type</p>
-                  <p className="text-sm font-medium text-slate-900 capitalize">
-                    {company?.packageType || <span className="text-slate-400">Starter</span>}
-                  </p>
-                </div>
-
-                <div className="sm:col-span-2 lg:col-span-3 space-y-2">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Business Description</p>
-                  <p className="text-sm text-slate-700 leading-relaxed">
-                    {company?.businessDescription || <span className="text-slate-400">No description provided</span>}
-                  </p>
-                </div>
               </div>
-            </div>
+            )}
 
             {/* Company Details Card */}
             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
@@ -922,7 +937,7 @@ export default function ClientDashboard() {
             )}
 
             {/* Mailing Address Card */}
-            {company?.mailingAddress && (
+            {hasMailingAddress && (
               <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
                 <div className="flex items-center gap-3 mb-6">
                   <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
@@ -950,6 +965,96 @@ export default function ClientDashboard() {
               </div>
             )}
           </div>
+
+          {company?.members && company.members.length > 0 && (
+            <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
+                  <Users className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-lg font-semibold text-slate-900">Members & Owners</h2>
+                  <p className="text-xs text-slate-600">Company members and ownership information</p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                {company.members.map((member: any, index: number) => (
+                  <div
+                    key={index}
+                    className="border border-slate-200 rounded-xl p-5 hover:shadow-md transition-all duration-300"
+                  >
+                    <div className="flex items-start justify-between mb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center text-white font-semibold shadow-md shadow-red-500/20">
+                          {member.name?.charAt(0) || "M"}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-slate-900">{member.name || "Member"}</p>
+                          {member.isResponsiblePerson && (
+                            <span className="inline-block mt-1 px-2 py-0.5 text-xs font-medium bg-red-100 text-[#ff0d13] rounded-full">
+                              Responsible Person
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                      {member.email && (
+                        <div className="space-y-1">
+                          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Email</p>
+                          <p className="text-sm text-slate-900">{member.email}</p>
+                        </div>
+                      )}
+
+                      {member.phone && (
+                        <div className="space-y-1">
+                          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Phone</p>
+                          <p className="text-sm text-slate-900">{member.phone}</p>
+                        </div>
+                      )}
+
+                      {member.ssn && (
+                        <div className="space-y-1">
+                          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">SSN/ITIN</p>
+                          <p className="text-sm text-slate-900">{member.ssn}</p>
+                        </div>
+                      )}
+
+                      {member.dateOfBirth && (
+                        <div className="space-y-1">
+                          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Date of Birth</p>
+                          <p className="text-sm text-slate-900">{member.dateOfBirth}</p>
+                        </div>
+                      )}
+
+                      {(member.address || member.city || member.state || member.zip) && (
+                        <div className="sm:col-span-2 space-y-1">
+                          <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Address</p>
+                          <p className="text-sm text-slate-900 leading-relaxed">
+                            {member.address && (
+                              <>
+                                {member.address}
+                                <br />
+                              </>
+                            )}
+                            {(member.city || member.state || member.zip) && (
+                              <>
+                                {[member.city, member.state, member.zip].filter(Boolean).join(", ")}
+                                <br />
+                              </>
+                            )}
+                            {member.country && member.country !== "US" && <>{member.country}</>}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
             <div className="flex items-center gap-3 mb-6">
