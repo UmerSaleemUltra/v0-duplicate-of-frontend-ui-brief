@@ -101,58 +101,58 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 overflow-hidden">
       <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-950">Business Information</h1>
-        <p className="text-sm text-slate-600">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-950 break-words">Business Information</h1>
+        <p className="text-sm text-slate-600 break-words">
           Tell us about your business. This information will appear on your formation documents.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div className="space-y-2">
+      <form onSubmit={handleSubmit} className="space-y-5 overflow-hidden">
+        <div className="space-y-2 overflow-hidden">
           <Label htmlFor="businessName" className="text-sm font-medium text-slate-900">
             Business Name
           </Label>
-          <div className="relative">
-            <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <div className="relative overflow-hidden">
+            <Building className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
             <Input
               id="businessName"
               placeholder="Acme Corporation LLC"
               value={data.businessName}
               onChange={(e) => updateData({ businessName: e.target.value })}
-              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg"
+              className="pl-9 sm:pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
             />
           </div>
-          {errors.businessName && <p className="text-xs text-red-600">{errors.businessName}</p>}
-          <p className="text-xs text-slate-500">Include LLC or Inc in business name</p>
+          {errors.businessName && <p className="text-xs text-red-600 break-words">{errors.businessName}</p>}
+          <p className="text-xs text-slate-500 break-words">Include LLC or Inc in business name</p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-hidden">
           <Label htmlFor="businessWebsite" className="text-sm font-medium text-slate-900">
             Business Website <span className="text-slate-400 font-normal">(Optional)</span>
           </Label>
-          <div className="relative">
-            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+          <div className="relative overflow-hidden">
+            <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400" />
             <Input
               id="businessWebsite"
               type="url"
               placeholder="www.example.com"
               value={data.businessWebsite || ""}
               onChange={(e) => updateData({ businessWebsite: e.target.value })}
-              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg"
+              className="pl-9 sm:pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
             />
           </div>
-          {errors.businessWebsite && <p className="text-xs text-red-600">{errors.businessWebsite}</p>}
-          <p className="text-xs text-slate-500">Your business website or online presence</p>
+          {errors.businessWebsite && <p className="text-xs text-red-600 break-words">{errors.businessWebsite}</p>}
+          <p className="text-xs text-slate-500 break-words">Your business website or online presence</p>
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-hidden">
           <Label htmlFor="businessCategory" className="text-sm font-medium text-slate-900">
             Business Category
           </Label>
           <Select value={data.businessCategory} onValueChange={(value) => updateData({ businessCategory: value })}>
-            <SelectTrigger className="h-11 border-slate-200 bg-white text-slate-900 rounded-lg">
+            <SelectTrigger className="h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full">
               <SelectValue placeholder="Select category" />
             </SelectTrigger>
             <SelectContent>
@@ -163,10 +163,10 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
               ))}
             </SelectContent>
           </Select>
-          {errors.businessCategory && <p className="text-xs text-red-600">{errors.businessCategory}</p>}
+          {errors.businessCategory && <p className="text-xs text-red-600 break-words">{errors.businessCategory}</p>}
         </div>
 
-        <div className="space-y-2">
+        <div className="space-y-2 overflow-hidden">
           <Label htmlFor="businessDescription" className="text-sm font-medium text-slate-900">
             Business Description
           </Label>
@@ -177,8 +177,10 @@ export function BusinessInfoStep({ data, updateData, onNext, onBack }: BusinessI
             onChange={(e) => updateData({ businessDescription: e.target.value })}
             className="w-full min-h-[100px] max-h-[200px] border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg resize-y overflow-y-auto"
           />
-          {errors.businessDescription && <p className="text-xs text-red-600">{errors.businessDescription}</p>}
-          <p className="text-xs text-slate-500">
+          {errors.businessDescription && (
+            <p className="text-xs text-red-600 break-words">{errors.businessDescription}</p>
+          )}
+          <p className="text-xs text-slate-500 break-words">
             Provide a brief overview of your business activities (minimum 20 characters)
           </p>
         </div>

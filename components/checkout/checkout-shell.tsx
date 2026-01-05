@@ -48,7 +48,7 @@ export function CheckoutShell({
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50 overflow-x-hidden max-w-full w-full">
+    <div className="min-h-screen flex bg-gray-50 overflow-x-hidden max-w-full w-full gap-0">
       <aside
         className={`fixed lg:sticky top-0 h-screen z-50
           w-64 lg:w-64 xl:w-72 flex-shrink-0

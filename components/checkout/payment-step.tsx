@@ -22,6 +22,22 @@ function calculateRenewalDate(): string {
   return date.toISOString()
 }
 
+function truncateFilename(filename: string, maxLength = 20): string {
+  const words = filename.split(" ")
+  let truncatedFilename = ""
+  let currentLength = 0
+
+  for (const word of words) {
+    if (currentLength + word.length + 1 > maxLength) {
+      break
+    }
+    truncatedFilename += word + " "
+    currentLength += word.length + 1
+  }
+
+  return truncatedFilename.trim() + (truncatedFilename !== filename ? "..." : "")
+}
+
 export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const router = useRouter()
   const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "already_paid">("already_paid")
@@ -502,17 +518,17 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
               )}
 
               {receiptFile && (
-                <div className="flex items-center justify-between gap-2 md:gap-3 p-3 rounded-lg bg-green-50 border border-green-200 overflow-hidden">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <div className="w-8 h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle2 className="w-4 h-4 text-white" />
+                <div className="flex items-center justify-between gap-2 md:gap-3 p-3 rounded-lg bg-green-50 border border-green-200 overflow-hidden min-w-0">
+                  <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
+                    <div className="w-8 h-8 sm:w-8 sm:h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
+                      <CheckCircle2 className="w-4 h-4 sm:w-4 sm:h-4 text-white" />
                     </div>
-                    <div className="min-w-0 flex-1">
+                    <div className="min-w-0 flex-1 overflow-hidden">
                       <span
-                        className="text-xs md:text-sm font-semibold text-green-900 block truncate max-w-full"
+                        className="text-xs sm:text-sm font-semibold text-green-900 block break-words line-clamp-1"
                         title={receiptFile.name}
                       >
-                        {receiptFile.name}
+                        {truncateFilename(receiptFile.name)}
                       </span>
                       <span className="text-xs text-slate-600">({(receiptFile.size / 1024).toFixed(2)} KB)</span>
                     </div>
@@ -522,9 +538,9 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
                     variant="ghost"
                     size="sm"
                     onClick={handleRemoveReceipt}
-                    className="h-8 w-8 p-0 hover:bg-red-100 rounded-full cursor-pointer flex-shrink-0"
+                    className="h-8 w-8 sm:h-8 sm:w-8 p-0 hover:bg-red-100 rounded-full cursor-pointer flex-shrink-0"
                   >
-                    <Upload className="w-4 h-4 text-red-600" />
+                    <Upload className="w-4 h-4 sm:w-4 sm:h-4 text-red-600" />
                   </Button>
                 </div>
               )}
