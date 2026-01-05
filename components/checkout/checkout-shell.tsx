@@ -48,7 +48,7 @@ export function CheckoutShell({
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50 overflow-x-hidden w-screen">
+    <div className="min-h-screen flex bg-gray-50 overflow-x-hidden w-full max-w-full">
       <aside
         className={`fixed lg:sticky top-0 h-screen z-50
           w-64 lg:w-64 xl:w-72 flex-shrink-0
@@ -167,7 +167,7 @@ export function CheckoutShell({
         </div>
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0 overflow-x-hidden">
-          <div className="max-w-6xl mx-auto w-full">
+          <div className="max-w-5xl mx-auto w-full">
             <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 overflow-x-hidden max-w-full">
               <div className="flex justify-end mb-4">
                 <Button onClick={handleSaveProgress} variant="outline" className="gap-2 text-sm bg-transparent">
