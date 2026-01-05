@@ -50,7 +50,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const [pkrRate, setPkrRate] = useState<number | null>(null)
   const [isLoadingRate, setIsLoadingRate] = useState(true)
   const [showValidationError, setShowValidationError] = useState(false)
-  const [errors, setErrors] = useState({ whatsappNumber: "" })
+  const [errors, setErrors] = useState({ whatsappNumber: "", submit: "" })
 
   useEffect(() => {
     async function convertUSDtoPKR() {
@@ -118,74 +118,135 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     }
 
     setShowValidationError(false)
-
-    console.log("[v0] Starting payment submission...")
-    console.log("[v0] whatsappPhone:", whatsappPhone)
-    console.log("[v0] receiptUrl:", receiptUrl)
-
-    const companyDataStr = localStorage.getItem("companyData")
-    console.log("[v0] companyDataStr:", companyDataStr)
-
-    if (!companyDataStr) {
-      console.error("[v0] No company data found in localStorage")
-      return
-    }
-
-    const companyData = JSON.parse(companyDataStr)
-    console.log("[v0] companyData:", companyData)
-
-    if (!companyData.data?.id) {
-      console.error("[v0] No company ID found in company data")
-      return
-    }
-
-    const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
-    const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
-    const packageWithStateFee = packagePrice + stateFilingFee
-
-    const addonsTotal =
-      data.addonsTotal ||
-      (Array.isArray(data.addons) ? data.addons.reduce((sum, addon) => sum + (addon.price || 0), 0) : 0)
-    const totalAmount = packageWithStateFee + addonsTotal
-
-    console.log("[v0] Payment step - state:", data.state)
-    console.log("[v0] Payment step - packagePrice:", packagePrice)
-    console.log("[v0] Payment step - stateFilingFee:", stateFilingFee)
-    console.log("[v0] Payment step - packageWithStateFee:", packageWithStateFee)
-    console.log("[v0] Payment step - totalAmount:", totalAmount)
-    console.log("[v0] Payment step - addons data:", data.addons)
-    console.log("[v0] Payment step - addonsTotal:", addonsTotal)
-
     setIsSubmitting(true)
 
-    const orderData = {
-      companyId: companyData.data.id,
-      companyName: data.businessName,
-      type: `${data.entityType.toUpperCase()} Formation`,
-      amount: totalAmount,
-      total: totalAmount,
-      packagePrice: packagePrice,
-      addonsTotal: addonsTotal,
-      items: [
-        {
-          name: `${data.state} ${data.packageType === "starter" ? "Starter" : "Advance"} Package`,
-          price: packageWithStateFee,
-          quantity: 1,
-        },
-      ],
-      purchasedAddons: data.addons || [],
-      paymentMethod: paymentMethod,
-      whatsappPhone: whatsappPhone ? (whatsappPhone.startsWith("+") ? whatsappPhone : `+${whatsappPhone}`) : null,
-      receiptUrl: receiptUrl || null,
-    }
-
-    console.log("[v0] Order data:", orderData)
-
     try {
-      await onSubmit(orderData)
-      // Success - user will be redirected by handlePaymentSubmit in checkout page
+      if (paymentMethod === "already_paid") {
+        if (!whatsappPhone.trim()) {
+          setErrors({ whatsappNumber: "Please provide your phone number to proceed" })
+          setShowValidationError(true)
+          return
+        }
+        const phoneDigits = whatsappPhone.replace(/\D/g, "")
+        if (phoneDigits.length < 10) {
+          setErrors({ whatsappNumber: "Please enter a valid phone number with at least 10 digits" })
+          setShowValidationError(true)
+          return
+        }
+      } else {
+        if (!receiptUrl) {
+          setShowValidationError(true)
+          return
+        }
+      }
+
+      setShowValidationError(false)
+      setIsSubmitting(true)
+
+      const token = localStorage.getItem("authToken")
+      if (!token) {
+        throw new Error("Authentication required")
+      }
+
+      // Upload passports from IndexedDB first
+      const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
+      const updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", "")
+
+      // Create company
+      const companyResponse = await fetch("/api/companies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          name: data.businessName,
+          type: data.entityType,
+          state: data.state,
+          address: {
+            street: data.businessAddress,
+            city: data.businessCity,
+            state: data.state,
+            zip: data.businessZip,
+          },
+          businessCategory: data.businessCategory || "",
+          businessDescription: data.businessDescription || "",
+          businessWebsite: data.businessWebsite || "",
+          packageType: data.packageType,
+          members: updatedMembers,
+          purchasedAddons: data.addons || [],
+        }),
+      })
+
+      if (!companyResponse.ok) {
+        const errorData = await companyResponse.json()
+        throw new Error(errorData.error || "Failed to create company")
+      }
+
+      const companyResult = await companyResponse.json()
+      const companyId = companyResult.data.id
+
+      // Update members with companyId for passport association
+      const finalMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", companyId)
+
+      // Calculate pricing
+      const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
+      const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
+      const packageWithStateFee = packagePrice + stateFilingFee
+      const addonsTotal =
+        data.addonsTotal ||
+        (Array.isArray(data.addons) ? data.addons.reduce((sum, addon) => sum + (addon.price || 0), 0) : 0)
+      const totalAmount = packageWithStateFee + addonsTotal
+
+      const orderData = {
+        companyId: companyId,
+        companyName: data.businessName,
+        type: `${data.entityType.toUpperCase()} Formation`,
+        amount: totalAmount,
+        total: totalAmount,
+        packagePrice: packagePrice,
+        packageType: data.packageType,
+        stateFilingFee: stateFilingFee,
+        addonsTotal: addonsTotal,
+        items: [
+          {
+            name: `${data.state} ${data.packageType === "starter" ? "Starter" : "Advance"} Package`,
+            price: packageWithStateFee,
+            quantity: 1,
+          },
+        ],
+        purchasedAddons: data.addons || [],
+        paymentMethod: paymentMethod,
+        whatsappPhone: whatsappPhone ? (whatsappPhone.startsWith("+") ? whatsappPhone : `+${whatsappPhone}`) : null,
+        receiptUrl: receiptUrl || null,
+        members: finalMembers,
+      }
+
+      const orderResponse = await fetch("/api/orders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(orderData),
+      })
+
+      if (!orderResponse.ok) {
+        const errorData = await orderResponse.json()
+        throw new Error(errorData.error || "Failed to create order")
+      }
+
+      const orderResult = await orderResponse.json()
+
+      // Clear checkout data
+      localStorage.removeItem("checkoutData")
+      localStorage.removeItem("checkoutStep")
+
+      // Redirect to dashboard
+      window.location.href = "/client/dashboard"
     } catch (error) {
-      console.error("[v0] Payment submission error:", error)
+      console.error("Payment submission error:", error)
+      setErrors({ submit: error instanceof Error ? error.message : "Failed to process payment" })
     } finally {
       setIsSubmitting(false)
     }
@@ -586,7 +647,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           variant="outline"
           onClick={onBack}
           disabled={isSubmitting}
-          className="w-full sm:w-auto px-10 h-14 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
+          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back
@@ -595,7 +656,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         <Button
           type="submit"
           disabled={isSubmitting || !isPaymentValid}
-          className="w-full sm:flex-1 h-14 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full sm:flex-1 h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
         >
           {isSubmitting ? (
             <>
@@ -614,6 +675,12 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       {showValidationError && (
         <div className="p-3 rounded-lg bg-red-50 border border-red-200 overflow-hidden">
           <p className="text-sm text-red-600 break-words leading-relaxed">{getValidationMessage()}</p>
+        </div>
+      )}
+
+      {errors.submit && (
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200 overflow-hidden">
+          <p className="text-sm text-red-600 break-words leading-relaxed">{errors.submit}</p>
         </div>
       )}
     </form>

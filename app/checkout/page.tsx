@@ -16,7 +16,6 @@ import {
   getSavedStep,
 } from "@/lib/checkout-storage"
 import { authService } from "@/lib/auth"
-import { uploadPassportsFromIndexedDB } from "@/lib/upload-passports-from-indexeddb"
 
 export type Member = {
   id: string
@@ -437,54 +436,7 @@ export default function CheckoutPage() {
   }
 
   const handlePaymentSubmit = async (orderData: any) => {
-    try {
-      console.log("[v0] Submitting order from checkout page:", orderData)
-
-      const token = authService.getToken()
-      if (!token) {
-        throw new Error("Authentication required. Please log in to complete your order.")
-      }
-
-      console.log("[v0] Uploading passports from IndexedDB...")
-      const updatedMembers = await uploadPassportsFromIndexedDB(
-        data.members || [],
-        data.userId || "",
-        orderData.companyId,
-      )
-      console.log("[v0] Passports uploaded successfully")
-
-      const orderDataWithPassports = {
-        ...orderData,
-        members: updatedMembers,
-      }
-
-      const response = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(orderDataWithPassports),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || "Failed to create order")
-      }
-
-      const result = await response.json()
-      console.log("[v0] Order created successfully:", result)
-
-      // Clear checkout data after successful order
-      localStorage.removeItem("checkoutData")
-      localStorage.removeItem("checkoutStep")
-
-      // Redirect to dashboard
-      window.location.href = "/client/dashboard"
-    } catch (error) {
-      console.error("[v0] Error submitting order:", error)
-      throw error
-    }
+    // The payment step will create company, upload passports, create order, and redirect
   }
 
   const renderStep = () => {
