@@ -470,10 +470,9 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         </div>
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="min-w-0 flex-1">
-            <p className="font-semibold text-base md:text-lg text-slate-900 capitalize break-words">
-              {formData?.packageType || "starter"} Package
+            <p className="text-sm md:text-base text-slate-700 break-words leading-relaxed">
+              Formation service + state filing included
             </p>
-            <p className="text-sm text-slate-700 break-words mt-1">Formation service + state filing included</p>
           </div>
           <div className="text-left sm:text-right flex-shrink-0">
             <p className="text-2xl md:text-3xl font-bold text-slate-900">${subtotal}</p>
