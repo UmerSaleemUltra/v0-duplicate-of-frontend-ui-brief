@@ -778,6 +778,58 @@ export default function ClientDashboard() {
 
           {/* Company Information Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Business Details Card */}
+            <div className="lg:col-span-3 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg shadow-red-500/20">
+                  <Building2 className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-semibold text-slate-900">Business Details</h2>
+                  <p className="text-sm text-slate-600">Complete business information</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Business Category</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {company?.businessCategory || <span className="text-slate-400">Not provided</span>}
+                  </p>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Business Website</p>
+                  {company?.businessWebsite ? (
+                    <a
+                      href={company.businessWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm font-medium text-[#ff0d13] hover:underline break-all"
+                    >
+                      {company.businessWebsite}
+                    </a>
+                  ) : (
+                    <p className="text-sm text-slate-400">Not provided</p>
+                  )}
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Package Type</p>
+                  <p className="text-sm font-medium text-slate-900 capitalize">
+                    {company?.packageType || <span className="text-slate-400">Starter</span>}
+                  </p>
+                </div>
+
+                <div className="sm:col-span-2 lg:col-span-3 space-y-2">
+                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide">Business Description</p>
+                  <p className="text-sm text-slate-700 leading-relaxed">
+                    {company?.businessDescription || <span className="text-slate-400">No description provided</span>}
+                  </p>
+                </div>
+              </div>
+            </div>
+
             {/* Company Details Card */}
             <div className="lg:col-span-2 bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
               <div className="flex items-center gap-3 mb-6">
