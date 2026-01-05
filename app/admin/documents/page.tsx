@@ -46,6 +46,13 @@ export default function DocumentsPage() {
 
   useEffect(() => {
     loadData()
+
+    const intervalId = setInterval(() => {
+      loadData()
+    }, 10000) // Refresh every 10 seconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId)
   }, [])
 
   const loadData = async () => {
