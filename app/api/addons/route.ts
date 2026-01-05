@@ -149,3 +149,126 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export async function PUT(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get("authorization")
+    if (!authHeader) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+    }
+
+    const decoded = await verifyToken(authHeader.replace("Bearer ", ""))
+    if (decoded.role !== "admin") {
+      return NextResponse.json({ success: false, error: "Forbidden - Admin access required" }, { status: 403 })
+    }
+
+    const body = await request.json()
+    const { id, ...updateFields } = body
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: "Missing addon ID" }, { status: 400 })
+    }
+
+    const { db } = await connectDB()
+    const { ObjectId } = await import("mongodb")
+
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, error: "Invalid addon ID format" }, { status: 400 })
+    }
+
+    const updateData: any = {
+      updatedAt: new Date(),
+    }
+
+    if (updateFields.name !== undefined) updateData.name = updateFields.name
+    if (updateFields.description !== undefined) updateData.description = updateFields.description
+    if (updateFields.price !== undefined) updateData.price = Number(updateFields.price)
+    if (updateFields.category !== undefined) updateData.category = updateFields.category
+    if (updateFields.isActive !== undefined) updateData.isActive = updateFields.isActive
+    if (updateFields.icon !== undefined) updateData.icon = updateFields.icon
+    if (updateFields.features !== undefined) updateData.features = updateFields.features
+
+    const result = await db
+      .collection("addons")
+      .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
+
+    if (!result) {
+      return NextResponse.json({ success: false, error: "Addon not found" }, { status: 404 })
+    }
+
+    broadcast("addon_updated", {
+      id: result._id.toString(),
+      name: result.name,
+      isActive: result.isActive,
+    })
+
+    const response = NextResponse.json({
+      success: true,
+      data: { addon: { ...result, id: result._id.toString(), _id: undefined } },
+      message: "Addon updated successfully",
+    })
+    addSecurityHeaders(response)
+    return response
+  } catch (error) {
+    console.log("[v0] API Error in PUT /api/addons:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to update addon",
+      },
+      { status: 500 },
+    )
+  }
+}
+
+export async function DELETE(request: NextRequest) {
+  try {
+    const authHeader = request.headers.get("authorization")
+    if (!authHeader) {
+      return NextResponse.json({ success: false, error: "Unauthorized" }, { status: 401 })
+    }
+
+    const decoded = await verifyToken(authHeader.replace("Bearer ", ""))
+    if (decoded.role !== "admin") {
+      return NextResponse.json({ success: false, error: "Forbidden - Admin access required" }, { status: 403 })
+    }
+
+    const { searchParams } = new URL(request.url)
+    const id = searchParams.get("id")
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: "Missing addon ID" }, { status: 400 })
+    }
+
+    const { db } = await connectDB()
+    const { ObjectId } = await import("mongodb")
+
+    if (!ObjectId.isValid(id)) {
+      return NextResponse.json({ success: false, error: "Invalid addon ID format" }, { status: 400 })
+    }
+
+    const result = await db.collection("addons").deleteOne({ _id: new ObjectId(id) })
+
+    if (result.deletedCount === 0) {
+      return NextResponse.json({ success: false, error: "Addon not found" }, { status: 404 })
+    }
+
+    broadcast("addon_deleted", { id })
+
+    const response = NextResponse.json({
+      success: true,
+      message: "Addon deleted successfully",
+    })
+    addSecurityHeaders(response)
+    return response
+  } catch (error) {
+    console.log("[v0] API Error in DELETE /api/addons:", error)
+    return NextResponse.json(
+      {
+        success: false,
+        error: "Failed to delete addon",
+      },
+      { status: 500 },
+    )
+  }
+}
