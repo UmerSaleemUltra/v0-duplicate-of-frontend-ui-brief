@@ -135,6 +135,12 @@ export default function DocumentsPage() {
       formData.append("type", selectedDocType)
       formData.append("category", "general")
 
+      console.log("[v0] Uploading document...", {
+        title: documentTitle,
+        type: selectedDocType,
+        files: selectedFiles.length,
+      })
+
       const response = await fetch("/api/documents", {
         method: "POST",
         headers: {
@@ -146,6 +152,8 @@ export default function DocumentsPage() {
       if (!response.ok) {
         throw new Error("Upload failed")
       }
+
+      console.log("[v0] Document uploaded successfully, refreshing list...")
 
       // Create notification
       try {
@@ -169,7 +177,9 @@ export default function DocumentsPage() {
           },
           token,
         )
-      } catch (notifError) {}
+      } catch (notifError) {
+        console.log("[v0] Failed to create notification:", notifError)
+      }
 
       toast({
         title: "Document Uploaded",
@@ -180,12 +190,15 @@ export default function DocumentsPage() {
       })
 
       await loadData()
+      console.log("[v0] Document list refreshed")
+
       setSelectedCompany("")
       setSelectedDocType("")
       setDocumentTitle("")
       setSelectedFiles([])
       setUploadModalOpen(false)
     } catch (error) {
+      console.error("[v0] Upload error:", error)
       toast({
         title: "Upload Failed",
         description: "Failed to upload document. Please try again.",
