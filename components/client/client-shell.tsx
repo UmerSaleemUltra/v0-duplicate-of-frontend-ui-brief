@@ -384,17 +384,8 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex-1 flex flex-col min-w-0">
         <div className="sticky top-0 z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center text-white font-bold">
-              {userInitials}
-            </div>
-            {isAdminView && (
-              <Badge variant="outline" className="text-[10px] bg-yellow-50 text-yellow-700 border-yellow-200">
-                Admin View
-              </Badge>
-            )}
-          </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2">{/* Avatar and badge removed */}</div>
+          <div className="flex items-center gap-2 ml-auto">
             <Button
               variant="ghost"
               size="icon"
