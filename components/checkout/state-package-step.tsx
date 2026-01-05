@@ -186,7 +186,7 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                 key={pkg.id}
                 type="button"
                 onClick={() => updateData({ packageType: pkg.id })}
-                className={`p-6 rounded-lg border-2 cursor-pointer transition-all text-left shadow-sm hover:shadow-md ${
+                className={`p-6 rounded-lg border-2 cursor-pointer transition-all text-left shadow-sm hover:shadow-md min-h-[480px] flex flex-col ${
                   data.packageType === pkg.id
                     ? "border-[#ff0d13] bg-[#fff5f5]"
                     : "border-slate-200 bg-white hover:border-slate-300"
@@ -206,7 +206,7 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                     {data.state ? "Total (includes state fees)" : "Base price + state fees"}
                   </div>
                 </div>
-                <ul className="space-y-2.5">
+                <ul className="space-y-2.5 flex-1">
                   {pkg.features.map((feature, i) => (
                     <li
                       key={i}
