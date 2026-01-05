@@ -377,7 +377,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       First Name <span className="text-red-600">*</span>
                     </Label>
                     <Input
-                      placeholder="John"
+                      placeholder="Muhammad"
                       value={member.firstName}
                       onChange={(e) => updateMember(member.id, { firstName: e.target.value })}
                       className="h-10 md:h-11 text-sm md:text-base"
@@ -392,7 +392,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       Last Name <span className="text-red-600">*</span>
                     </Label>
                     <Input
-                      placeholder="Doe"
+                      placeholder="Ahmed Khan"
                       value={member.lastName}
                       onChange={(e) => updateMember(member.id, { lastName: e.target.value })}
                       className="h-10 md:h-11 text-sm md:text-base"
@@ -425,7 +425,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       SSN/ITIN <span className="text-red-600">*</span>
                     </Label>
                     <Input
-                      placeholder="***-**-8637"
+                      placeholder="XXXXX-XXXXXXX-X"
                       value={member.ssn}
                       onChange={(e) => updateMember(member.id, { ssn: e.target.value })}
                       className="h-10 md:h-11 text-sm md:text-base"
@@ -444,7 +444,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   </Label>
                   <Input
                     type="tel"
-                    placeholder="+1 (555) 000-0000"
+                    placeholder="+92 300 1234567"
                     value={member.phone}
                     onChange={(e) => updateMember(member.id, { phone: e.target.value })}
                     className="h-10 md:h-11 text-sm md:text-base"
@@ -460,7 +460,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                     Street Address <span className="text-red-600">*</span>
                   </Label>
                   <Input
-                    placeholder="123 Main St, Apt 4B"
+                    placeholder="House 123, Street 4, F-7 Markaz"
                     value={member.address}
                     onChange={(e) => updateMember(member.id, { address: e.target.value })}
                     className="h-10 md:h-11 text-sm md:text-base"
@@ -488,7 +488,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   <div className="space-y-2">
                     <Label className="text-sm font-semibold text-slate-900">State / Province</Label>
                     <Input
-                      placeholder="Punjab"
+                      placeholder="Islamabad"
                       value={member.state}
                       onChange={(e) => updateMember(member.id, { state: e.target.value })}
                       className="h-10 md:h-11 text-sm md:text-base"
@@ -616,78 +616,60 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                   )}
                 </div>
 
-                {/* ITIN Addon Card */}
-                {data.selectedState === "Wyoming" && (
-                  <div className="p-4 md:p-6 rounded-lg border-2 border-red-100 bg-red-50/50 hover:border-red-200 transition-all duration-200">
-                    <div className="flex flex-col gap-4">
-                      <div className="flex flex-col lg:flex-row justify-between gap-4">
-                        <div className="flex-1 space-y-3">
-                          <h3 className="text-base md:text-lg font-semibold text-slate-900">
-                            ITIN Application for {member.firstName || `Member ${index + 1}`}
-                          </h3>
+                {/* ITIN Upsell Card - New cleaner design */}
+                <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden mt-4 md:mt-6">
+                  <div className="p-4 md:p-6 space-y-4">
+                    <div className="flex flex-col lg:flex-row justify-between gap-4 lg:gap-6">
+                      <div className="flex-1 space-y-3">
+                        <h3 className="text-base md:text-lg font-semibold text-slate-900">
+                          ITIN Application for{" "}
+                          {member.firstName && member.lastName
+                            ? `${member.firstName} ${member.lastName}`
+                            : `Member ${index + 1}`}
+                        </h3>
 
-                          <p className="text-sm text-slate-600">
-                            Need an ITIN to open bank accounts or file taxes? We handle the complete process for you.
-                          </p>
+                        <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
+                          Need an ITIN to open bank accounts or file taxes? We handle the complete process for you.
+                        </p>
 
-                          <ul className="space-y-2 text-xs md:text-sm text-slate-700">
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                              <span className="break-words">Document checklist & review</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                              <span className="break-words">Form W-7 preparation</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
-                              <span className="break-words">Application guidance & submission</span>
-                            </li>
-                          </ul>
-                        </div>
-
-                        <div className="flex flex-col items-start lg:items-end gap-3">
-                          <div className="text-left lg:text-right">
-                            <div className="text-xl md:text-2xl font-bold text-red-600">$149.00</div>
-                            <p className="text-xs md:text-sm text-slate-600 mt-1">One-time fee</p>
-                          </div>
-
-                          <Button
-                            type="button"
-                            variant={member.itinAddon ? "default" : "outline"}
-                            onClick={() => toggleItinAddon(member.id)}
-                            className={`w-full lg:w-auto h-10 md:h-11 px-4 md:px-6 text-sm md:text-base ${
-                              member.itinAddon
-                                ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 text-white"
-                                : "border-red-600 text-red-600 hover:bg-red-50"
-                            }`}
-                          >
-                            {member.itinAddon ? (
-                              <>
-                                <Check className="w-4 h-4 mr-2" />
-                                Added
-                              </>
-                            ) : (
-                              <>
-                                <DollarSign className="w-4 h-4 mr-2" />
-                                Add ITIN Service
-                              </>
-                            )}
-                          </Button>
-                        </div>
+                        <ul className="space-y-2 text-xs md:text-sm text-slate-700">
+                          <li className="flex items-start gap-2">
+                            <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                            <span>Document checklist & review</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                            <span>Form W-7 preparation</span>
+                          </li>
+                          <li className="flex items-start gap-2">
+                            <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                            <span>Application guidance & submission</span>
+                          </li>
+                        </ul>
                       </div>
 
-                      {member.itinAddon && (
-                        <div className="pt-3 border-t border-red-200">
-                          <p className="text-xs md:text-sm text-green-700 font-medium flex items-center gap-2">
-                            <Check className="w-4 h-4" />
-                            ITIN service added - Processing time: 6-8 weeks
-                          </p>
+                      <div className="flex flex-col items-start lg:items-end gap-3">
+                        <div className="text-left lg:text-right">
+                          <div className="text-xl md:text-2xl font-bold text-red-600">$149.00</div>
+                          <div className="text-xs text-slate-500">per application</div>
                         </div>
-                      )}
+
+                        <Button
+                          type="button"
+                          onClick={() => toggleItinAddon(member.id)}
+                          className={`w-full sm:w-auto px-6 h-10 md:h-11 text-sm md:text-base font-semibold rounded-lg transition-all ${
+                            member.itinAddon
+                              ? "bg-white border-2 border-red-600 text-red-600 hover:bg-red-50"
+                              : "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:from-[#660000] hover:to-[#cc0a0f]"
+                          }`}
+                        >
+                          <DollarSign className="w-4 h-4 mr-2" />
+                          {member.itinAddon ? "Remove from Order" : "Add to Order"}
+                        </Button>
+                      </div>
                     </div>
                   </div>
-                )}
+                </div>
               </div>
             </div>
           ))}
