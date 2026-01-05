@@ -5,7 +5,6 @@ import {
   ArrowLeft,
   Building2,
   Users,
-  Package,
   MapPin,
   Globe,
   FileText,
@@ -415,10 +414,6 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
                       <span className="text-sm font-medium text-slate-900">{member.phone}</span>
                     </div>
                   )}
-                  <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
-                    <span className="text-sm text-slate-500">Country</span>
-                    <span className="text-sm font-medium text-slate-900">{member.country || "US"}</span>
-                  </div>
                   <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-4 py-2 border-b border-slate-100">
                     <span className="text-sm text-slate-500 flex-shrink-0">Address</span>
                     <span className="text-sm font-medium text-slate-900 sm:text-right break-words">
@@ -473,20 +468,15 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
             Edit
           </Button>
         </div>
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div className="flex items-center gap-3 flex-1 min-w-0">
-            <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-              <Package className="w-6 h-6 text-[#ffffff]" />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="font-semibold text-slate-900 capitalize truncate">
-                {formData?.packageType || "starter"} Package
-              </p>
-              <p className="text-sm text-slate-700 break-words">Formation service + state filing included</p>
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="font-semibold text-base md:text-lg text-slate-900 capitalize break-words">
+              {formData?.packageType || "starter"} Package
+            </p>
+            <p className="text-sm text-slate-700 break-words mt-1">Formation service + state filing included</p>
           </div>
           <div className="text-left sm:text-right flex-shrink-0">
-            <p className="text-2xl font-bold text-slate-900">${subtotal}</p>
+            <p className="text-2xl md:text-3xl font-bold text-slate-900">${subtotal}</p>
           </div>
         </div>
       </div>
