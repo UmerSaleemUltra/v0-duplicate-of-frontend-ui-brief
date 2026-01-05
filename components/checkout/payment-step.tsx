@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare, X } from "lucide-react"
 import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
 
@@ -393,7 +393,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
                 <span className="font-semibold text-slate-900 text-sm md:text-base">${addonsTotal.toFixed(2)}</span>
                 {pkrRate && (
                   <p className="text-xs md:text-sm text-slate-500">
-                    {Math.round(addonsTotal * pkrRate).toLocaleString()} PKR
+                    {Math.round(Number.parseFloat(calculateTotal()) * PKR_RATE).toLocaleString()} PKR
                   </p>
                 )}
               </div>
@@ -432,36 +432,36 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           </div>
 
           <div className="bg-slate-50 rounded-lg p-3 md:p-5 border border-slate-200 space-y-3 overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200">
-              <span className="text-xs md:text-sm text-slate-600">Bank Name</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
+              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Bank Name</span>
               <span className="font-semibold text-slate-900 text-sm md:text-base break-words">
                 United Bank Limited (UBL)
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200">
-              <span className="text-xs md:text-sm text-slate-600">Account Title</span>
-              <span className="font-semibold text-slate-900 text-sm md:text-base break-words">BUZZ FILING</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
+              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Account Title</span>
+              <span className="font-semibold text-slate-900 text-sm md:text-base">BUZZ FILING</span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200">
-              <span className="text-xs md:text-sm text-slate-600">Account Number</span>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
+              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Account Number</span>
               <span className="font-semibold text-slate-900 text-sm md:text-base break-all">1176314943776</span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 overflow-hidden">
               <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">IBAN</span>
-              <span className="font-semibold text-slate-900 text-sm md:text-base break-all">
+              <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all max-w-full">
                 PK22UNIL0109000314943776
               </span>
             </div>
           </div>
 
-          <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-              <Upload className="w-4 h-4 text-white" />
+          <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2 sm:gap-3 overflow-hidden">
+            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+              <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
             </div>
-            <div className="text-xs md:text-sm flex-1 min-w-0">
+            <div className="text-xs sm:text-sm flex-1 min-w-0">
               <p className="text-red-900 break-words leading-relaxed">
                 <span className="font-semibold">Important:</span> After making the payment, please upload a screenshot
                 with transaction details. This helps us process your order faster.
@@ -469,7 +469,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
             </div>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-2 overflow-hidden">
             <Label htmlFor="receipt-upload" className="text-sm font-semibold text-slate-900">
               Upload Payment Receipt
             </Label>
@@ -485,91 +485,97 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
                 />
                 <label
                   htmlFor="receipt-upload"
-                  className={`flex items-center justify-center gap-2 h-12 px-6 rounded-lg font-semibold transition-all ${
+                  className={`flex items-center justify-center gap-2 h-11 sm:h-12 px-4 sm:px-6 rounded-lg font-semibold transition-all text-sm sm:text-base ${
                     isUploadingReceipt || receiptFile
                       ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                      : "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 cursor-pointer"
+                      : "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white cursor-pointer hover:from-[#990000] hover:to-[#ff1a1a]"
                   }`}
                 >
                   {isUploadingReceipt ? (
                     <>
-                      <div className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full" />
-                      Uploading...
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
+                      <span className="hidden sm:inline">Uploading...</span>
+                      <span className="sm:hidden">Upload...</span>
                     </>
                   ) : receiptFile ? (
                     <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      Receipt Uploaded
+                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline">Receipt Uploaded</span>
+                      <span className="sm:hidden">Uploaded</span>
                     </>
                   ) : (
                     <>
-                      <Upload className="w-4 h-4" />
-                      Choose Receipt File
+                      <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <span className="hidden sm:inline">Choose Receipt File</span>
+                      <span className="sm:hidden">Choose File</span>
                     </>
                   )}
                 </label>
               </div>
 
-              {uploadError && (
-                <div className="p-3 rounded-lg bg-red-50 border border-red-200 flex items-center gap-2">
-                  <Upload className="w-4 h-4 text-red-600 flex-shrink-0" />
-                  <p className="text-sm text-red-900">{uploadError}</p>
+              {receiptFile && (
+                <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-green-50 border border-green-200 rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm font-medium text-green-700 truncate" title={receiptFile.name}>
+                      {truncateFilename(receiptFile.name, 15)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveReceipt}
+                    className="text-red-600 hover:text-red-700 flex-shrink-0 p-1"
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
                 </div>
               )}
 
-              {receiptFile && (
-                <div className="flex items-center justify-between gap-2 md:gap-3 p-3 rounded-lg bg-green-50 border border-green-200 overflow-hidden min-w-0">
-                  <div className="flex items-center gap-2 min-w-0 flex-1 overflow-hidden">
-                    <div className="w-8 h-8 sm:w-8 sm:h-8 rounded-full bg-green-500 flex items-center justify-center flex-shrink-0">
-                      <CheckCircle2 className="w-4 h-4 sm:w-4 sm:h-4 text-white" />
-                    </div>
-                    <div className="min-w-0 flex-1 overflow-hidden">
-                      <span
-                        className="text-xs sm:text-sm font-semibold text-green-900 block break-words line-clamp-1"
-                        title={receiptFile.name}
-                      >
-                        {truncateFilename(receiptFile.name)}
-                      </span>
-                      <span className="text-xs text-slate-600">({(receiptFile.size / 1024).toFixed(2)} KB)</span>
-                    </div>
-                  </div>
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    onClick={handleRemoveReceipt}
-                    className="h-8 w-8 sm:h-8 sm:w-8 p-0 hover:bg-red-100 rounded-full cursor-pointer flex-shrink-0"
-                  >
-                    <Upload className="w-4 h-4 sm:w-4 sm:h-4 text-red-600" />
-                  </Button>
-                </div>
+              {uploadError && (
+                <p className="text-xs sm:text-sm text-red-600 break-words leading-relaxed">{uploadError}</p>
               )}
-              <p className="text-xs text-slate-500">Supported formats: PNG, JPG, WEBP (max. 5MB)</p>
+
+              <p className="text-xs text-slate-500 break-words leading-relaxed">
+                Supported formats: PNG, JPG, WEBP (max. 5MB)
+              </p>
             </div>
           </div>
         </div>
       )}
 
       {paymentMethod === "already_paid" && (
-        <div className="space-y-2 md:space-y-3">
-          <Label htmlFor="whatsapp-phone" className="text-sm md:text-base font-semibold text-slate-900">
-            WhatsApp Number (Used to Contact Us)
-          </Label>
-          <div className="relative">
-            <MessageSquare className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
+        <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6 space-y-4 overflow-hidden">
+          <div className="flex items-start gap-3">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+              <MessageSquare className="w-5 h-5 text-white" />
+            </div>
+            <div className="flex-1 min-w-0">
+              <h4 className="font-semibold text-slate-900 mb-1 text-sm md:text-base">Contact Information</h4>
+              <p className="text-xs md:text-sm text-slate-600 break-words leading-relaxed">
+                Please provide your phone number to confirm your order
+              </p>
+            </div>
+          </div>
+
+          <div className="space-y-2 overflow-hidden">
+            <Label htmlFor="whatsapp-phone" className="text-sm font-medium text-slate-900">
+              Phone Number (WhatsApp)
+            </Label>
             <Input
               id="whatsapp-phone"
               type="tel"
               placeholder="+92 300 1234567"
               value={whatsappPhone}
               onChange={handlePhoneChange}
-              className="pl-10 md:pl-11 h-11 md:h-12 text-sm md:text-base"
+              className="h-11 text-sm md:text-base w-full"
             />
+            {errors.whatsappNumber && (
+              <p className="text-xs text-red-600 break-words leading-relaxed">{errors.whatsappNumber}</p>
+            )}
+            <p className="text-xs text-slate-500 break-words leading-relaxed">
+              We'll contact you on WhatsApp to process your order
+            </p>
           </div>
-          {errors.whatsappNumber && <p className="text-xs md:text-sm text-red-600">{errors.whatsappNumber}</p>}
-          <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-            Enter the WhatsApp number you used to discuss payment with our team
-          </p>
         </div>
       )}
 
@@ -605,9 +611,9 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         </Button>
       </div>
 
-      {showValidationError && !isPaymentValid && (
-        <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200">
-          <p className="text-xs md:text-sm text-red-900 leading-relaxed">{getValidationMessage()}</p>
+      {showValidationError && (
+        <div className="p-3 rounded-lg bg-red-50 border border-red-200 overflow-hidden">
+          <p className="text-sm text-red-600 break-words leading-relaxed">{getValidationMessage()}</p>
         </div>
       )}
     </form>

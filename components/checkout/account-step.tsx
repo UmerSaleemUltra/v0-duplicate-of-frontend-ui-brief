@@ -207,10 +207,10 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
   }
 
   return (
-    <div className="space-y-6 overflow-hidden">
+    <div className="space-y-6 overflow-hidden max-w-full">
       <div className="space-y-2">
         <h1 className="text-2xl md:text-3xl font-bold text-slate-950 break-words">Create Your Account</h1>
-        <p className="text-sm text-slate-600 break-words">
+        <p className="text-sm text-slate-600 break-words leading-relaxed">
           Set up your account to track your formation progress and manage your business.
         </p>
       </div>
@@ -221,14 +221,14 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
             Full Name
           </Label>
           <div className="relative overflow-hidden">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 pointer-events-none" />
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             <Input
               id="name"
               type="text"
               placeholder="John Doe"
               value={data.name || ""}
               onChange={(e) => handleNameChange(e.target.value)}
-              className="pl-9 sm:pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
+              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
             />
           </div>
           {errors.name && <p className="text-xs text-red-600 break-words">{errors.name}</p>}
@@ -255,14 +255,14 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
             Email Address
           </Label>
           <div className="relative overflow-hidden">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 pointer-events-none" />
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
               value={data.email || ""}
               onChange={(e) => handleEmailChange(e.target.value)}
-              className="pl-9 sm:pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
+              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
             />
           </div>
           {errors.email && <p className="text-xs text-red-600 break-words">{errors.email}</p>}
@@ -274,21 +274,21 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
             Password
           </Label>
           <div className="relative overflow-hidden">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-slate-400 pointer-events-none" />
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="At least 8 characters"
               value={data.password || ""}
               onChange={(e) => handlePasswordChange(e.target.value)}
-              className="pl-9 sm:pl-10 pr-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
+              className="pl-10 pr-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
             />
             <button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600 cursor-pointer"
             >
-              {showPassword ? <EyeOff className="w-4 h-4 sm:w-5 sm:h-5" /> : <Eye className="w-4 h-4 sm:w-5 sm:h-5" />}
+              {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
           {errors.password && <p className="text-xs text-red-600 break-words">{errors.password}</p>}
@@ -297,7 +297,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
 
         {errors.submit && (
           <div className="p-3 rounded-lg bg-red-50 border border-red-200 overflow-hidden">
-            <p className="text-sm text-red-600 break-words">{errors.submit}</p>
+            <p className="text-sm text-red-600 break-words leading-relaxed">{errors.submit}</p>
           </div>
         )}
 
