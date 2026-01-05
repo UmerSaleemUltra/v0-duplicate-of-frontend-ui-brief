@@ -281,7 +281,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           <button
             type="button"
             onClick={() => setPaymentMethod("already_paid")}
-            className={`relative p-5 rounded-lg border-2 transition-all text-left ${
+            className={`relative p-5 rounded-lg border-2 transition-all text-left cursor-pointer ${
               paymentMethod === "already_paid"
                 ? "border-[#ff0d13] bg-red-50"
                 : "border-slate-200 hover:border-slate-300 bg-white"
@@ -289,13 +289,13 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           >
             {paymentMethod === "already_paid" && (
               <div className="absolute top-4 right-4">
-                <div className="w-6 h-6 rounded-full bg-[#ff0d13] flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
                   <CheckCircle2 className="w-4 h-4 text-white" />
                 </div>
               </div>
             )}
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#ff0d13] flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <CheckCircle2 className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
@@ -308,7 +308,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           <button
             type="button"
             onClick={() => setPaymentMethod("bank_transfer")}
-            className={`relative p-5 rounded-lg border-2 transition-all text-left ${
+            className={`relative p-5 rounded-lg border-2 transition-all text-left cursor-pointer ${
               paymentMethod === "bank_transfer"
                 ? "border-[#ff0d13] bg-red-50"
                 : "border-slate-200 hover:border-slate-300 bg-white"
@@ -316,13 +316,13 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           >
             {paymentMethod === "bank_transfer" && (
               <div className="absolute top-4 right-4">
-                <div className="w-6 h-6 rounded-full bg-[#ff0d13] flex items-center justify-center">
+                <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
                   <CheckCircle2 className="w-4 h-4 text-white" />
                 </div>
               </div>
             )}
             <div className="flex items-start gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#ff0d13] flex items-center justify-center flex-shrink-0">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <Lock className="w-5 h-5 text-white" />
               </div>
               <div className="flex-1">
@@ -393,7 +393,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       {paymentMethod === "bank_transfer" && (
         <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-4">
           <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-[#ff0d13] flex items-center justify-center flex-shrink-0">
+            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
               <Lock className="w-5 h-5 text-white" />
             </div>
             <div className="flex-1">
@@ -425,7 +425,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           </div>
 
           <div className="p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-3">
-            <div className="w-8 h-8 rounded-full bg-[#ff0d13] flex items-center justify-center flex-shrink-0">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
               <Upload className="w-4 h-4 text-white" />
             </div>
             <div className="text-sm flex-1">
@@ -452,10 +452,10 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
                 />
                 <label
                   htmlFor="receipt-upload"
-                  className={`flex items-center justify-center gap-2 h-12 px-6 rounded-lg font-semibold transition-all cursor-pointer ${
+                  className={`flex items-center justify-center gap-2 h-12 px-6 rounded-lg font-semibold transition-all ${
                     isUploadingReceipt || receiptFile
                       ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                      : "bg-[#ff0d13] text-white hover:bg-[#d81c20]"
+                      : "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 cursor-pointer"
                   }`}
                 >
                   {isUploadingReceipt ? (
@@ -500,7 +500,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
                     variant="ghost"
                     size="sm"
                     onClick={handleRemoveReceipt}
-                    className="h-8 w-8 p-0 hover:bg-red-100 rounded-full"
+                    className="h-8 w-8 p-0 hover:bg-red-100 rounded-full cursor-pointer"
                   >
                     <Upload className="w-4 h-4 text-red-600" />
                   </Button>
@@ -538,7 +538,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           type="button"
           variant="outline"
           onClick={onBack}
-          className="h-11 gap-2 border-slate-300 hover:bg-slate-50 font-semibold bg-transparent"
+          className="h-11 gap-2 border-slate-300 hover:bg-slate-50 font-semibold bg-transparent cursor-pointer"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -546,7 +546,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         <Button
           type="submit"
           disabled={!isPaymentValid || isSubmitting}
-          className="flex-1 h-11 gap-2 bg-[#ff0d13] text-white hover:bg-[#d81c20] disabled:opacity-50 disabled:cursor-not-allowed font-semibold"
+          className="flex-1 h-11 gap-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed font-semibold cursor-pointer"
         >
           {isSubmitting ? (
             <>
