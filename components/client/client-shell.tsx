@@ -253,43 +253,45 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto min-h-0">
-          {NAV_ITEMS.map((item) => {
-            const Icon = item.icon
-            const isActive = pathname === item.href
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`
-                  flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium min-h-[44px]
-                  ${
-                    isActive
-                      ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
-                      : "text-white/80 hover:bg-white/10 hover:text-white"
-                  }
-                `}
-                onClick={() => setSidebarOpen(false)}
-              >
-                <div className="flex items-center gap-2.5">
-                  <Icon className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-sm">{item.label}</span>
-                </div>
-                {isActive && <ChevronRight className="w-4 h-4 flex-shrink-0" />}
-              </Link>
-            )
-          })}
-        </nav>
+        <div className="flex-1 flex flex-col min-h-0">
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+            {NAV_ITEMS.map((item) => {
+              const Icon = item.icon
+              const isActive = pathname === item.href
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  className={`
+                    flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium min-h-[44px]
+                    ${
+                      isActive
+                        ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                        : "text-white/80 hover:bg-white/10 hover:text-white"
+                    }
+                  `}
+                  onClick={() => setSidebarOpen(false)}
+                >
+                  <div className="flex items-center gap-2.5">
+                    <Icon className="w-5 h-5 flex-shrink-0" />
+                    <span className="text-sm">{item.label}</span>
+                  </div>
+                  {isActive && <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+                </Link>
+              )
+            })}
+          </nav>
 
-        <div className="p-3 border-t border-white/10 flex-shrink-0 bg-gradient-to-r from-[#880000] to-[#ff0d13] mt-auto">
-          <Button
-            variant="ghost"
-            onClick={handleLogout}
-            className="w-full justify-start text-white/80 hover:bg-white/10 hover:text-white h-11 transition-all duration-200 text-sm"
-          >
-            <LogOut className="w-5 h-5 mr-2.5 flex-shrink-0" />
-            {isAdminView ? "Exit Admin Mode" : "Sign Out"}
-          </Button>
+          <div className="p-3 border-t border-white/10 flex-shrink-0">
+            <Button
+              variant="ghost"
+              onClick={handleLogout}
+              className="w-full justify-start text-white/80 hover:bg-white/10 hover:text-white h-11 transition-all duration-200 text-sm"
+            >
+              <LogOut className="w-5 h-5 mr-2.5 flex-shrink-0" />
+              {isAdminView ? "Exit Admin Mode" : "Sign Out"}
+            </Button>
+          </div>
         </div>
       </aside>
 
