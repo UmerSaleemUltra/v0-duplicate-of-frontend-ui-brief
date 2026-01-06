@@ -1,6 +1,6 @@
 "use client"
 
-import { Bell, Check, FileText, Mail, Package, Receipt } from "lucide-react"
+import { Bell, Check, FileText, Mail, Package, Receipt, RefreshCw } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
@@ -77,15 +77,7 @@ export function NotificationDropdown() {
 
     const interval = setInterval(loadNotifications, 30000)
 
-    const handleRefresh = () => {
-      loadNotifications()
-    }
-    window.addEventListener("client-dashboard-refresh", handleRefresh)
-
-    return () => {
-      clearInterval(interval)
-      window.removeEventListener("client-dashboard-refresh", handleRefresh)
-    }
+    return () => clearInterval(interval)
   }, [selectedCompany])
 
   const unreadCount = notifications.filter((n) => !n.read && !n.isRead).length
@@ -132,6 +124,12 @@ export function NotificationDropdown() {
     return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`
   }
 
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await loadNotifications()
+    setTimeout(() => setIsRefreshing(false), 500)
+  }
+
   if (loading) {
     return (
       <Button variant="ghost" size="icon" className="relative h-10 w-10">
@@ -159,12 +157,24 @@ export function NotificationDropdown() {
             <h3 className="font-semibold text-sm sm:text-base text-slate-900">Notifications</h3>
             {unreadCount > 0 && <p className="text-xs text-slate-600">{unreadCount} unread</p>}
           </div>
-          {notifications.length > 0 && unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-8 text-xs px-2 sm:px-3">
-              <Check className="w-3 h-3 sm:mr-1" />
-              <span className="hidden sm:inline">Mark all read</span>
+          <div className="flex items-center gap-2">
+            {notifications.length > 0 && unreadCount > 0 && (
+              <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-8 text-xs px-2 sm:px-3">
+                <Check className="w-3 h-3 sm:mr-1" />
+                <span className="hidden sm:inline">Mark all read</span>
+              </Button>
+            )}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+              className="h-8 text-xs px-2 sm:px-3"
+            >
+              <RefreshCw className={`w-3 h-3 sm:mr-1 ${isRefreshing ? "animate-spin" : ""}`} />
+              <span className="hidden sm:inline">Refresh</span>
             </Button>
-          )}
+          </div>
         </div>
 
         {/* Notifications List */}
