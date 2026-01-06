@@ -2241,19 +2241,15 @@ export default function OrderDetailPage() {
                         </Badge>
                       </div>
                       <div className="text-right">
-                        <p className="text-xs text-slate-600 mb-1">Formation Date</p>
+                        <p className="text-xs text-slate-600 mb-1">Order Date</p>
                         <p className="text-sm font-medium text-slate-900">
-                          {company.formationDate
-                            ? new Date(company.formationDate).toLocaleDateString("en-US", {
+                          {order?.createdAt
+                            ? new Date(order.createdAt).toLocaleDateString("en-US", {
                                 year: "numeric",
                                 month: "long",
                                 day: "numeric",
                               })
-                            : new Date(company.createdAt).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })}
+                            : "Not set"}
                         </p>
                       </div>
                     </div>

@@ -222,6 +222,30 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       updatedAt: new Date().toISOString(),
     }
 
+    if (body.status === "completed" && order.companyId) {
+      try {
+        const companyIdObj =
+          typeof order.companyId === "string" && ObjectId.isValid(order.companyId)
+            ? new ObjectId(order.companyId)
+            : order.companyId
+
+        if (companyIdObj) {
+          await db.collection("companies").updateOne(
+            { _id: companyIdObj },
+            {
+              $set: {
+                status: "completed",
+                updatedAt: new Date().toISOString(),
+              },
+            },
+          )
+          console.log("[v0] Company status updated to completed")
+        }
+      } catch (error) {
+        console.log("[v0] Error updating company status:", error)
+      }
+    }
+
     const result = await db
       .collection("orders")
       .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
