@@ -421,9 +421,24 @@ export default function CheckoutPage() {
 
   const nextStep = () => {
     const isAuth = authService.isAuthenticated()
+    const token = authService.getToken()
+    const user = authService.getCurrentUser()
 
+    console.log(
+      "[v0] Navigation - Current step:",
+      currentStep,
+      "Is Auth:",
+      isAuth,
+      "Has Token:",
+      !!token,
+      "Has User:",
+      !!user,
+    )
+
+    // Only check auth when moving FROM Owner Info (step 3) to Review (step 4)
+    // or FROM Review (step 4) to Payment (step 5)
     if ((currentStep === 3 || currentStep === 4) && !isAuth) {
-      // If trying to go from Owner Info to Review, or Review to Payment, check auth
+      console.log("[v0] Auth check failed, redirecting to account step")
       setCurrentStep(0)
       saveCheckoutStep(0)
       window.scrollTo(0, 0)
@@ -432,6 +447,7 @@ export default function CheckoutPage() {
 
     if (currentStep < STEPS.length - 1) {
       const newStep = currentStep + 1
+      console.log("[v0] Moving to step:", newStep)
       setCurrentStep(newStep)
       saveCheckoutStep(newStep)
       window.scrollTo(0, 0)
@@ -441,6 +457,7 @@ export default function CheckoutPage() {
   const prevStep = () => {
     if (currentStep > 0) {
       const newStep = currentStep - 1
+      console.log("[v0] Moving to step:", newStep)
       setCurrentStep(newStep)
       saveCheckoutStep(newStep)
       window.scrollTo(0, 0)
