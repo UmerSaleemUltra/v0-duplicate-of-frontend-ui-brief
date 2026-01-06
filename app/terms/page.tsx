@@ -235,7 +235,7 @@ export default function TermsPage() {
                 <p className="font-semibold">Buzz Filing</p>
                 <p>Email: hello@buzzfiling.com</p>
                 <p>Phone: +1 (302) 209-8440</p>
-                <p>Website: www.buzzfiling.com</p>
+                <p>Website: https://v0-frontend-ui-brief.vercel.app</p>
               </div>
 
               <p className="text-gray-700 leading-relaxed font-semibold mt-6">
