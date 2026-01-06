@@ -48,30 +48,29 @@ export function CheckoutShell({
   }
 
   return (
-    <div className="min-h-screen flex bg-gray-50 overflow-x-hidden w-full max-w-full">
+    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50">
       <aside
-        className={`fixed lg:sticky top-0 h-screen z-50
-          w-64 lg:w-64 xl:w-72 flex-shrink-0
+        className={`fixed lg:relative top-0 left-0 h-screen z-50
+          w-72 lg:w-80 xl:w-96 flex-shrink-0
           bg-gradient-to-r from-[#880000] to-[#ff0d13]
           text-white shadow-2xl
-          transition-transform duration-300 ease-in-out overflow-y-auto scrollbar-hide
+          transition-transform duration-300 ease-in-out overflow-y-auto
           ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
-        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <div className="p-5 lg:p-6 xl:p-7">
-          <Link href="/" className="block mb-8 lg:mb-10">
+        <div className="p-6 lg:p-8">
+          <Link href="/" className="block mb-10">
             <Image
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling"
               width={300}
               height={120}
-              className="w-[180px] lg:w-[220px] xl:w-[260px] h-auto"
+              className="w-48 lg:w-56 xl:w-64 h-auto"
               priority
             />
           </Link>
 
-          <div className="space-y-4 lg:space-y-5">
+          <div className="space-y-5 lg:space-y-6">
             {steps.map((step, index) => {
               const isCurrentStep = index === currentStep
               const isPastStep = index < currentStep
@@ -87,9 +86,9 @@ export function CheckoutShell({
                         : "opacity-60 scale-95"
                   }`}
                 >
-                  <div className="flex items-start gap-3">
+                  <div className="flex items-start gap-3 lg:gap-4">
                     <div
-                      className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm lg:text-base transition-all duration-300 ${
+                      className={`w-10 h-10 lg:w-11 lg:h-11 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-base transition-all duration-300 ${
                         isPastStep
                           ? "bg-white/25 text-white backdrop-blur-sm"
                           : isCurrentStep
@@ -98,19 +97,19 @@ export function CheckoutShell({
                       }`}
                       aria-current={isCurrentStep ? "step" : undefined}
                     >
-                      {isPastStep ? <Check className="w-5 h-5 text-white" /> : index + 1}
+                      {isPastStep ? <Check className="w-5 h-5 lg:w-6 lg:h-6 text-white" /> : index + 1}
                     </div>
 
                     <div className="flex-1 pt-0.5 min-w-0">
                       <h3
-                        className={`font-semibold text-sm lg:text-base mb-0.5 transition-colors duration-300 break-words ${
+                        className={`font-semibold text-base lg:text-lg mb-1 transition-colors duration-300 ${
                           isCurrentStep ? "text-white" : isPastStep ? "text-white/95" : "text-white/60"
                         }`}
                       >
                         {step}
                       </h3>
                       <p
-                        className={`text-xs lg:text-sm leading-relaxed transition-colors duration-300 break-words ${
+                        className={`text-sm lg:text-base leading-relaxed transition-colors duration-300 ${
                           isCurrentStep ? "text-white/95" : "text-white/75"
                         }`}
                       >
@@ -132,17 +131,16 @@ export function CheckoutShell({
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-screen min-w-0 overflow-x-hidden">
+      <div className="flex-1 flex flex-col min-h-screen w-full lg:w-auto">
         <div
           className="lg:hidden sticky top-0 z-30 
-            h-14 sm:h-16 px-4 sm:px-5
+            h-16 px-4
             flex items-center justify-between 
-            bg-white border-b border-gray-200
-            transition-all duration-300 ease-in-out"
+            bg-white border-b border-gray-200"
         >
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl 
+            className="flex items-center justify-center w-11 h-11 rounded-xl 
               bg-gradient-to-r from-[#880000] to-[#ff0d13] 
               hover:shadow-lg hover:scale-105 active:scale-95
               transition-all duration-200 ease-in-out
@@ -158,17 +156,17 @@ export function CheckoutShell({
               alt="BuzzFiling"
               width={160}
               height={100}
-              className="w-[130px] sm:w-[150px] md:w-[160px] h-auto"
+              className="w-36 sm:w-40 h-auto"
               priority
             />
           </Link>
 
-          <div className="w-10 sm:w-11" />
+          <div className="w-11" />
         </div>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 w-full min-w-0 overflow-x-hidden">
-          <div className="max-w-5xl mx-auto w-full">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8 overflow-x-hidden max-w-full">
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 w-full">
+          <div className="max-w-6xl mx-auto w-full">
+            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8">
               <div className="flex justify-end mb-4">
                 <Button onClick={handleSaveProgress} variant="outline" className="gap-2 text-sm bg-transparent">
                   <Save className="w-4 h-4" />
