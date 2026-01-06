@@ -145,7 +145,7 @@ export default function CheckoutPage() {
     if (savedStep !== null && savedStep >= 0) {
       setCurrentStep(savedStep)
     } else {
-      setCurrentStep(0) // Always start at Account step
+      setCurrentStep(0)
       saveCheckoutStep(0)
     }
 
@@ -430,8 +430,7 @@ export default function CheckoutPage() {
           addonsTotal: newData.addonsTotal,
         })
       } catch (saveError) {
-        console.error("[v0] Error saving checkout data:", saveError)
-        // Continue execution even if save fails
+        console.error("Error saving checkout data:", saveError)
       }
 
       return { ...newData, members: finalMembers }
@@ -462,7 +461,7 @@ export default function CheckoutPage() {
   }
 
   const handlePaymentSubmit = async (orderData: any) => {
-    // The payment step will create company, upload passports, create order, and redirect
+    // This function is a placeholder - all logic is in PaymentStep component
   }
 
   const renderStep = () => {

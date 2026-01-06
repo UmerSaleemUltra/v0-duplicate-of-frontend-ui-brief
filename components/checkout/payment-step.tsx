@@ -56,11 +56,10 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const [errors, setErrors] = useState({ whatsappNumber: "", submit: "" })
 
   useEffect(() => {
-    const token = authService.getToken()
     const savedData = getCheckoutData()
     const hasCheckoutData = savedData && savedData.account?.email
 
-    if (!token && !hasCheckoutData) {
+    if (!hasCheckoutData) {
       toast({
         title: "Authentication Required",
         description: "Please complete the account step first before proceeding to payment.",
@@ -116,33 +115,49 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
+    console.log("=== STARTING CHECKOUT FLOW ===")
+    console.log("Step 1: Validating payment information...")
+
     if (paymentMethod === "already_paid") {
       if (!whatsappPhone.trim()) {
-        setErrors({ whatsappNumber: "Please provide your phone number to proceed" })
+        setErrors({ ...errors, whatsappNumber: "Please provide your phone number to proceed" })
         setShowValidationError(true)
+        console.log("❌ Validation failed: WhatsApp phone number is required")
         return
       }
       const phoneDigits = whatsappPhone.replace(/\D/g, "")
       if (phoneDigits.length < 10) {
-        setErrors({ whatsappNumber: "Please enter a valid phone number with at least 10 digits" })
+        setErrors({ ...errors, whatsappNumber: "Please enter a valid phone number with at least 10 digits" })
         setShowValidationError(true)
+        console.log("❌ Validation failed: Invalid phone number format")
         return
       }
     } else {
       if (!receiptUrl) {
         setShowValidationError(true)
+        console.log("❌ Validation failed: Payment receipt is required")
         return
       }
     }
 
+    console.log("✅ Payment information validated")
     setShowValidationError(false)
     setIsSubmitting(true)
 
     try {
+      console.log("\n=== STEP 1: CREATING ACCOUNT ===")
       let token = authService.getToken()
 
       if (!token) {
+        console.log("No existing token found, creating new account...")
+        console.log("Account details:", {
+          name: data.name,
+          email: data.email,
+          phone: data.phone,
+        })
+
         if (!data.email || !data.password || !data.name || !data.phone) {
+          console.log("❌ Account information incomplete")
           throw new Error("Account information is incomplete. Please go back and complete the account step.")
         }
 
@@ -155,56 +170,78 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
         if (!signupResult.success) {
           const errorMessage = signupResult.error || "Failed to create account"
+          console.log("❌ Signup failed:", errorMessage)
 
-          // If account exists, try to login
           if (
             errorMessage.toLowerCase().includes("already exists") ||
             errorMessage.toLowerCase().includes("duplicate")
           ) {
+            console.log("Account exists, attempting login...")
             const loginResult = await authService.login({
               email: data.email,
               password: data.password,
             })
 
             if (!loginResult.success) {
+              console.log("❌ Login failed:", loginResult.error)
               throw new Error(
                 "An account with this email already exists but the password is incorrect. Please go back to the account step and verify your credentials.",
               )
             }
 
             token = authService.getToken()
+            console.log("✅ Login successful")
           } else {
             throw new Error(errorMessage)
           }
         } else {
           token = authService.getToken()
+          console.log("✅ Account created successfully")
         }
 
         if (!token) {
+          console.log("❌ Authentication failed after account creation")
           throw new Error("Failed to authenticate after account creation. Please try again.")
         }
+      } else {
+        console.log("✅ Using existing authentication token")
       }
+
+      console.log("\n=== STEP 2: UPLOADING PASSPORTS ===")
+      console.log(`Found ${data.members?.length || 0} members to process`)
 
       const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
 
       let updatedMembers
       try {
         updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", "")
+        console.log("✅ Passports uploaded successfully")
+        console.log("Updated members:", updatedMembers)
 
         const missingPassports = updatedMembers.filter((m) => !m.passportUrl && !m.passportKey)
         if (missingPassports.length > 0) {
+          console.log("❌ Some passports failed to upload:", missingPassports)
           throw new Error(
             "Some passport files could not be uploaded. If you're in incognito/private mode, please use normal browsing mode and try again.",
           )
         }
       } catch (uploadError) {
-        console.error("Passport upload error:", uploadError)
+        console.error("❌ Passport upload error:", uploadError)
         throw new Error(
           uploadError instanceof Error && uploadError.message.includes("incognito")
             ? uploadError.message
             : "Failed to upload passport files. Please ensure you're not in incognito/private mode and try again.",
         )
       }
+
+      console.log("\n=== STEP 3: CREATING COMPANY ===")
+      console.log("Company details:", {
+        name: data.businessName,
+        type: data.entityType,
+        state: data.state,
+        packageType: data.packageType,
+        membersCount: updatedMembers.length,
+      })
 
       const companyResponse = await fetch("/api/companies", {
         method: "POST",
@@ -233,16 +270,20 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
       if (!companyResponse.ok) {
         const errorData = await companyResponse.json()
+        console.log("❌ Company creation failed:", errorData.error)
         throw new Error(errorData.error || "Failed to create company")
       }
 
       const companyResult = await companyResponse.json()
       const companyId = companyResult.data.id
+      console.log("✅ Company created successfully with ID:", companyId)
 
-      // Update members with companyId for passport association
+      console.log("Updating members with company ID...")
       const finalMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", companyId)
+      console.log("✅ Members updated with company association")
 
-      // Calculate pricing
+      console.log("\n=== STEP 4: CREATING ORDER ===")
+
       const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
       const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
       const packageWithStateFee = packagePrice + stateFilingFee
@@ -250,6 +291,13 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         data.addonsTotal ||
         (Array.isArray(data.addons) ? data.addons.reduce((sum, addon) => sum + (addon.price || 0), 0) : 0)
       const totalAmount = packageWithStateFee + addonsTotal
+
+      console.log("Order pricing:", {
+        packagePrice,
+        stateFilingFee,
+        addonsTotal,
+        totalAmount,
+      })
 
       const orderData = {
         companyId: companyId,
@@ -275,6 +323,8 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         members: finalMembers,
       }
 
+      console.log("Creating order with data:", orderData)
+
       const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -286,20 +336,26 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
       if (!orderResponse.ok) {
         const errorData = await orderResponse.json()
+        console.log("❌ Order creation failed:", errorData.error)
         throw new Error(errorData.error || "Failed to create order")
       }
 
       const orderResult = await orderResponse.json()
+      console.log("✅ Order created successfully:", orderResult)
 
-      // Clear checkout data
+      console.log("\n=== CLEANING UP ===")
+      console.log("Clearing checkout data from localStorage...")
       localStorage.removeItem("checkoutData")
       localStorage.removeItem("checkoutStep")
+      console.log("✅ Checkout data cleared")
 
-      // Redirect to dashboard
+      console.log("\n=== CHECKOUT COMPLETED SUCCESSFULLY ===")
+      console.log("Redirecting to dashboard...")
+
       window.location.href = "/client/dashboard"
     } catch (error) {
-      console.error("Payment submission error:", error)
-      setErrors({ submit: error instanceof Error ? error.message : "Failed to process payment" })
+      console.error("❌ Payment submission error:", error)
+      setErrors({ ...errors, submit: error instanceof Error ? error.message : "Failed to process payment" })
     } finally {
       setIsSubmitting(false)
     }
