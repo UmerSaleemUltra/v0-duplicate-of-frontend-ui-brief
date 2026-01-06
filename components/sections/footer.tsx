@@ -108,7 +108,7 @@ export default function Footer() {
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <p className="text-white text-sm">© {new Date().getFullYear()} Buzz Filing. All rights reserved.</p>
             <div className="flex items-center gap-6">
-              <a href="#" className="text-white hover:text-white/80">
+              <a href="http://www.youtube.com/@BuzzFiling" className="text-white hover:text-white/80">
                 <Youtube className="w-6 h-6" />
               </a>
               <a href="https://www.facebook.com/BuzzFiling/" className="text-white hover:text-white/80">
