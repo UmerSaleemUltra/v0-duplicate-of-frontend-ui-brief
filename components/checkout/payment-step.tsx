@@ -11,6 +11,7 @@ import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
 import { authService } from "@/lib/auth"
 import { toast } from "@/components/ui/use-toast"
+import { getCheckoutData } from "@/lib/checkout-storage"
 
 interface PaymentStepProps {
   data: any
@@ -56,13 +57,15 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
   useEffect(() => {
     const token = authService.getToken()
-    if (!token) {
+    const savedData = getCheckoutData()
+    const hasCheckoutData = savedData && savedData.account?.email
+
+    if (!token && !hasCheckoutData) {
       toast({
         title: "Authentication Required",
         description: "Please complete the account step first before proceeding to payment.",
         variant: "destructive",
       })
-      // Redirect back to checkout to restart from account step
       setTimeout(() => {
         window.location.href = "/checkout"
       }, 1500)
@@ -138,6 +141,11 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     setIsSubmitting(true)
 
     try {
+      const token = authService.getToken()
+      if (!token) {
+        throw new Error("Authentication required. Please complete the account step first.")
+      }
+
       // Upload passports from IndexedDB first
       const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
 
@@ -145,7 +153,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       try {
         updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", "")
 
-        // Verify that all members have passport files uploaded
         const missingPassports = updatedMembers.filter((m) => !m.passportUrl && !m.passportKey)
         if (missingPassports.length > 0) {
           throw new Error(
@@ -159,11 +166,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
             ? uploadError.message
             : "Failed to upload passport files. Please ensure you're not in incognito/private mode and try again.",
         )
-      }
-
-      const token = authService.getToken()
-      if (!token) {
-        throw new Error("Authentication required. Please complete the account step first.")
       }
 
       // Create company

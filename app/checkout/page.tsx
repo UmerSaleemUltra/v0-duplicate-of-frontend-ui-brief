@@ -423,17 +423,7 @@ export default function CheckoutPage() {
     const savedData = getCheckoutData()
     const hasCheckoutData = savedData && savedData.account?.email && savedData.state?.state
 
-    // Allow proceeding if user has checkout data OR is authenticated
     const canProceed = authService.isAuthenticated() || hasCheckoutData
-
-    console.log(
-      "[v0] Navigation - Current step:",
-      currentStep,
-      "Has checkout data:",
-      !!hasCheckoutData,
-      "Can proceed:",
-      canProceed,
-    )
 
     // Only block if trying to access review or payment WITHOUT any data
     if ((currentStep === 3 || currentStep === 4) && !canProceed) {
