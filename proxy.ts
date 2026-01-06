@@ -8,10 +8,50 @@ export async function proxy(request: NextRequest) {
     const ip = request.ip || request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
     const url = new URL(request.url)
 
+    if (request.method === "OPTIONS") {
+      const response = new NextResponse(null, { status: 200 })
+
+      // Add CORS headers for preflight
+      const origin = request.headers.get("origin")
+      const allowedOrigins = [
+        "https://buzzfiling.com",
+        "https://www.buzzfiling.com",
+        "http://localhost:3000",
+        "http://localhost:3001",
+      ]
+
+      if (origin && allowedOrigins.includes(origin)) {
+        response.headers.set("Access-Control-Allow-Origin", origin)
+      }
+
+      response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, PATCH, OPTIONS")
+      response.headers.set(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization, X-Requested-With, Accept, Origin",
+      )
+      response.headers.set("Access-Control-Allow-Credentials", "true")
+      response.headers.set("Access-Control-Max-Age", "86400")
+
+      return addSecurityHeaders(response)
+    }
+
     const ddosResult = await checkDDoS(request)
 
     if (url.pathname === "/blocked") {
       const response = NextResponse.next()
+      const origin = request.headers.get("origin")
+      const allowedOrigins = [
+        "https://buzzfiling.com",
+        "https://www.buzzfiling.com",
+        "http://localhost:3000",
+        "http://localhost:3001",
+      ]
+
+      if (origin && allowedOrigins.includes(origin)) {
+        response.headers.set("Access-Control-Allow-Origin", origin)
+        response.headers.set("Access-Control-Allow-Credentials", "true")
+      }
+
       return addSecurityHeaders(response)
     }
 
@@ -51,6 +91,24 @@ export async function proxy(request: NextRequest) {
         return NextResponse.redirect(blockedUrl, 307)
       }
 
+      const origin = request.headers.get("origin")
+      const allowedOrigins = [
+        "https://buzzfiling.com",
+        "https://www.buzzfiling.com",
+        "http://localhost:3000",
+        "http://localhost:3001",
+      ]
+
+      const headers: Record<string, string> = {
+        "X-Security-Block": "true",
+        "X-Blocked-IP": ip,
+      }
+
+      if (origin && allowedOrigins.includes(origin)) {
+        headers["Access-Control-Allow-Origin"] = origin
+        headers["Access-Control-Allow-Credentials"] = "true"
+      }
+
       return NextResponse.json(
         {
           error: ddosResult.reason || "Access denied",
@@ -66,16 +124,26 @@ export async function proxy(request: NextRequest) {
         },
         {
           status: 403,
-          headers: {
-            "X-Security-Block": "true",
-            "X-Blocked-IP": ip,
-          },
+          headers,
         },
       )
     }
 
-    // Continue with the request and apply security headers
     const response = NextResponse.next()
+
+    const origin = request.headers.get("origin")
+    const allowedOrigins = [
+      "https://buzzfiling.com",
+      "https://www.buzzfiling.com",
+      "http://localhost:3000",
+      "http://localhost:3001",
+    ]
+
+    if (origin && allowedOrigins.includes(origin)) {
+      response.headers.set("Access-Control-Allow-Origin", origin)
+      response.headers.set("Access-Control-Allow-Credentials", "true")
+    }
+
     return addSecurityHeaders(response)
   } catch (error) {
     console.error("[SECURITY] Middleware error:", error)

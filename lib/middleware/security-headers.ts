@@ -8,7 +8,7 @@ export function addSecurityHeaders(response: NextResponse): NextResponse {
   response.headers.set("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
   response.headers.set(
     "Content-Security-Policy",
-    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; frame-src 'self' https://www.youtube.com https://youtube.com; connect-src 'self' https://buzzfiling.com https://*.buzzfiling.com https://*.blob.vercel-storage.com;",
+    "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: https: blob:; font-src 'self' data:; frame-src 'self' https://www.youtube.com https://youtube.com; connect-src 'self' https://buzzfiling.com https://www.buzzfiling.com https://*.buzzfiling.com https://*.blob.vercel-storage.com;",
   )
 
   return response
