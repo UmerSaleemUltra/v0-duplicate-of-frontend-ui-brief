@@ -2,7 +2,8 @@
 
 import { cache } from "./cache"
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_APP_URL || "https://buzzfiling.com"
+// Empty string means use relative URLs, which automatically match the current origin
+const API_BASE_URL = ""
 
 interface RequestOptions {
   method?: "GET" | "POST" | "PUT" | "DELETE" | "PATCH"
@@ -65,7 +66,7 @@ export class ApiClient {
       config.body = isFormData ? body : JSON.stringify(body)
     }
 
-    const response = await fetch(`${API_BASE_URL}/api${endpoint}`, config)
+    const response = await fetch(`/api${endpoint}`, config)
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({
