@@ -2276,7 +2276,7 @@ export default function OrderDetailPage() {
                   <div>
                     <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
                       <Building2 className="w-4 h-4" />
-                      Business Information
+                      Business Details
                     </h3>
                     <div className="grid md:grid-cols-2 gap-4">
                       <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
@@ -2303,6 +2303,23 @@ export default function OrderDetailPage() {
                           {company.packageType || "Starter"}
                         </Badge>
                       </div>
+                      {company.businessWebsite && (
+                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                          <p className="text-xs text-slate-600 mb-1">Business Website</p>
+                          <a
+                            href={
+                              company.businessWebsite.startsWith("http")
+                                ? company.businessWebsite
+                                : `https://${company.businessWebsite}`
+                            }
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-sm font-medium text-blue-600 hover:underline"
+                          >
+                            {company.businessWebsite}
+                          </a>
+                        </div>
+                      )}
                     </div>
                     {company.businessDescription && (
                       <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200">
