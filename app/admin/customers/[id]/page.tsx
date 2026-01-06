@@ -599,6 +599,67 @@ export default function CustomerDetailPage() {
                     </Button>
                   </div>
                 )}
+
+                {/* Package Type */}
+                {company.packageType && (
+                  <div className="mt-4 pt-4 border-t border-slate-200">
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-xs text-slate-500 font-semibold uppercase mb-1">Package Type</p>
+                        <p className="text-sm font-medium text-slate-900 capitalize">{company.packageType}</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Business Category */}
+                {company.businessCategory && (
+                  <div className={!company.packageType ? "mt-4 pt-4 border-t border-slate-200" : ""}>
+                    <div>
+                      <p className="text-xs text-slate-500 font-semibold uppercase mb-1">Business Category</p>
+                      <p className="text-sm text-slate-900">{company.businessCategory}</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Business Website */}
+                {company.businessWebsite && (
+                  <div
+                    className={
+                      !company.packageType && !company.businessCategory ? "mt-4 pt-4 border-t border-slate-200" : "mt-3"
+                    }
+                  >
+                    <div>
+                      <p className="text-xs text-slate-500 font-semibold uppercase mb-1">Business Website</p>
+                      <a
+                        href={company.businessWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-primary hover:underline break-all"
+                      >
+                        {company.businessWebsite}
+                      </a>
+                    </div>
+                  </div>
+                )}
+
+                {/* Business Description */}
+                {company.businessDescription && (
+                  <div
+                    className={
+                      !company.packageType && !company.businessCategory && !company.businessWebsite
+                        ? "mt-4 pt-4 border-t border-slate-200"
+                        : "mt-3"
+                    }
+                  >
+                    <div>
+                      <p className="text-xs text-slate-500 font-semibold uppercase mb-1">Business Description</p>
+                      <p className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap">
+                        {company.businessDescription}
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
