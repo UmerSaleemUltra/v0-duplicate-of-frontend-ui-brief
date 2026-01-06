@@ -10,7 +10,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSq
 import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
 import { toast } from "@/components/ui/use-toast"
-import { getCheckoutData, saveCheckoutData } from "@/lib/checkout-storage"
+import { getCheckoutData, saveCheckoutData, clearCheckoutData } from "@/lib/checkout-storage"
 
 interface PaymentStepProps {
   data: any
@@ -53,6 +53,21 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const [isLoadingRate, setIsLoadingRate] = useState(true)
   const [showValidationError, setShowValidationError] = useState(false)
   const [errors, setErrors] = useState({ whatsappNumber: "", submit: "" })
+  const [uploadProgress, setUploadProgress] = useState<{
+    isUploading: boolean
+    currentFile: string
+    currentStep: string
+    totalFiles: number
+    completedFiles: number
+    progress: number
+  }>({
+    isUploading: false,
+    currentFile: "",
+    currentStep: "",
+    totalFiles: 0,
+    completedFiles: 0,
+    progress: 0,
+  })
 
   useEffect(() => {
     const savedData = getCheckoutData()
@@ -115,6 +130,14 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     e.preventDefault()
     setErrors({})
     setIsSubmitting(true)
+    setUploadProgress({
+      isUploading: false,
+      currentFile: "",
+      currentStep: "",
+      totalFiles: 0,
+      completedFiles: 0,
+      progress: 0,
+    })
 
     try {
       console.log("=== STARTING CHECKOUT FLOW ===")
@@ -152,6 +175,13 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       let token = authService.getToken()
 
       if (!token) {
+        setUploadProgress((prev) => ({
+          ...prev,
+          isUploading: true,
+          currentStep: "Creating account...",
+          progress: 10,
+        }))
+
         console.log("\n[v0] === STEP 1: CREATING ACCOUNT ===")
         console.log("[v0] No existing token found, creating new account...")
 
@@ -194,6 +224,12 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         saveCheckoutData(data)
       } else {
         console.log("[v0] ✅ User already authenticated with token")
+        setUploadProgress((prev) => ({
+          ...prev,
+          isUploading: true,
+          currentStep: "Preparing passport uploads...",
+          progress: 20,
+        }))
       }
 
       if (!data.userId) {
@@ -205,17 +241,53 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       console.log("\n[v0] === STEP 2: UPLOADING PASSPORTS ===")
       console.log(`[v0] Found ${data.members?.length || 0} members to process`)
 
-      const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
+      const totalFiles = data.members?.length || 0
+      setUploadProgress((prev) => ({
+        ...prev,
+        currentStep: "Uploading passports...",
+        totalFiles,
+        completedFiles: 0,
+        progress: 30,
+      }))
+
+      const { uploadPassportsWithProgress } = await import("@/lib/upload-passports-from-indexeddb")
 
       let updatedMembers
       try {
-        updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId, "")
+        updatedMembers = await uploadPassportsWithProgress(
+          data.members || [],
+          data.userId,
+          "",
+          (completed, total, fileName) => {
+            const progressPercent = 30 + Math.floor((completed / total) * 40)
+            setUploadProgress((prev) => ({
+              ...prev,
+              currentFile: fileName,
+              completedFiles: completed,
+              totalFiles: total,
+              progress: progressPercent,
+            }))
+          },
+        )
+
+        setUploadProgress((prev) => ({
+          ...prev,
+          currentStep: "All passports uploaded successfully",
+          progress: 70,
+        }))
+
         console.log("[v0] ✅ All passports uploaded successfully")
         console.log("[v0] Updated members with passport URLs:", updatedMembers)
       } catch (uploadError) {
         console.error("[v0] ❌ Passport upload error:", uploadError)
         throw uploadError
       }
+
+      setUploadProgress((prev) => ({
+        ...prev,
+        currentStep: "Creating company...",
+        progress: 75,
+      }))
 
       console.log("\n=== STEP 3: CREATING COMPANY ===")
       console.log("Company details:", {
@@ -261,8 +333,28 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       const companyId = companyResult.data.id
       console.log("✅ Company created successfully with ID:", companyId)
 
+      setUploadProgress((prev) => ({
+        ...prev,
+        currentStep: "Company created successfully",
+        progress: 85,
+      }))
+
       console.log("Updating members with company ID...")
-      const finalMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", companyId)
+      const finalMembers = await uploadPassportsWithProgress(
+        data.members || [],
+        data.userId || "",
+        companyId,
+        (completed, total, fileName) => {
+          const progressPercent = 75 + Math.floor((completed / total) * 25)
+          setUploadProgress((prev) => ({
+            ...prev,
+            currentFile: fileName,
+            completedFiles: completed,
+            totalFiles: total,
+            progress: progressPercent,
+          }))
+        },
+      )
       console.log("✅ Members updated with company association")
 
       console.log("\n=== STEP 4: CREATING ORDER ===")
@@ -308,6 +400,12 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
       console.log("Creating order with data:", orderData)
 
+      setUploadProgress((prev) => ({
+        ...prev,
+        currentStep: "Creating order...",
+        progress: 90,
+      }))
+
       const orderResponse = await fetch("/api/orders", {
         method: "POST",
         headers: {
@@ -326,21 +424,36 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       const orderResult = await orderResponse.json()
       console.log("✅ Order created successfully:", orderResult)
 
+      setUploadProgress((prev) => ({
+        ...prev,
+        currentStep: "Order completed! Redirecting...",
+        progress: 100,
+      }))
+
       console.log("\n=== CLEANING UP ===")
       console.log("Clearing checkout data from localStorage...")
-      localStorage.removeItem("checkoutData")
-      localStorage.removeItem("checkoutStep")
+      clearCheckoutData()
       console.log("✅ Checkout data cleared")
 
       console.log("\n=== CHECKOUT COMPLETED SUCCESSFULLY ===")
       console.log("Redirecting to dashboard...")
 
-      window.location.href = "/client/dashboard"
-    } catch (error) {
-      console.error("❌ Payment submission error:", error)
-      setErrors({ ...errors, submit: error instanceof Error ? error.message : "Failed to process payment" })
+      router.push("/dashboard")
+    } catch (error: any) {
+      console.error("❌ Error during checkout:", error)
+      setErrors({ ...errors, submit: error.message || "An error occurred during checkout" })
     } finally {
       setIsSubmitting(false)
+      setTimeout(() => {
+        setUploadProgress({
+          isUploading: false,
+          currentFile: "",
+          currentStep: "",
+          totalFiles: 0,
+          completedFiles: 0,
+          progress: 0,
+        })
+      }, 2000)
     }
   }
 
@@ -761,17 +874,31 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         </Button>
       </div>
 
-      {showValidationError && (
-        <div className="p-3 rounded-lg bg-red-50 border border-red-200 overflow-hidden">
-          <p className="text-sm text-red-600 break-words leading-relaxed">{getValidationMessage()}</p>
+      {uploadProgress.isUploading && (
+        <div className="mt-4 space-y-3 rounded-lg border border-border bg-muted/50 p-4">
+          <div className="flex items-center justify-between text-sm">
+            <span className="font-medium text-foreground">{uploadProgress.currentStep}</span>
+            <span className="text-muted-foreground">{uploadProgress.progress}%</span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full bg-primary transition-all duration-300 ease-out"
+              style={{ width: `${uploadProgress.progress}%` }}
+            />
+          </div>
+
+          {/* Current file being uploaded */}
+          {uploadProgress.currentFile && (
+            <div className="text-xs text-muted-foreground">
+              Uploading: {uploadProgress.currentFile} ({uploadProgress.completedFiles}/{uploadProgress.totalFiles})
+            </div>
+          )}
         </div>
       )}
 
-      {errors.submit && (
-        <div className="p-3 rounded-lg bg-red-50 border border-red-200 overflow-hidden">
-          <p className="text-sm text-red-600 break-words leading-relaxed">{errors.submit}</p>
-        </div>
-      )}
+      {errors.submit && <p className="text-sm text-destructive">{errors.submit}</p>}
     </form>
   )
 }

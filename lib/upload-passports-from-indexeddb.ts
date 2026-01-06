@@ -129,3 +129,129 @@ export async function uploadPassportsFromIndexedDB(
     throw error
   }
 }
+
+export async function uploadPassportsWithProgress(
+  members: Member[],
+  userId: string,
+  companyId?: string,
+  onProgress?: (completed: number, total: number, fileName: string) => void,
+): Promise<Member[]> {
+  console.log("\n[v0] === PASSPORT UPLOAD PROCESS START ===")
+  console.log("[v0] Members to process:", members.length)
+  console.log("[v0] User ID:", userId)
+  console.log("[v0] Company ID:", companyId || "none (pre-account creation)")
+
+  try {
+    const storedFiles = await getAllFilesFromIndexedDB()
+    console.log(`[v0] Retrieved ${storedFiles.length} stored files`)
+
+    if (storedFiles.length === 0) {
+      console.log("[v0] ⚠️ No files found in storage")
+      return members
+    }
+
+    const updatedMembers: Member[] = []
+    const failedUploads: { member: Member; error: string }[] = []
+    let completedCount = 0
+
+    for (let index = 0; index < members.length; index++) {
+      const member = members[index]
+      console.log(`\n[v0] Processing member ${index + 1}/${members.length}:`, member.name)
+
+      const storedFile = storedFiles.find((sf) => sf.id === member.passportIndexedDBId)
+
+      if (!storedFile) {
+        console.log(`[v0] ⚠️ No stored file found for member ${member.name}`)
+        updatedMembers.push(member)
+        continue
+      }
+
+      if (onProgress) {
+        onProgress(completedCount, members.length, storedFile.file.name)
+      }
+
+      console.log(`[v0] Found file for ${member.name}:`, {
+        fileName: storedFile.file.name,
+        fileSize: storedFile.file.size,
+        fileType: storedFile.file.type,
+      })
+
+      try {
+        if (!userId || userId === "undefined" || userId === "null") {
+          console.error(`[v0] ❌ Invalid userId for member ${member.name}`)
+          throw new Error("Invalid userId - account must be created first")
+        }
+
+        const formData = new FormData()
+        formData.append("file", storedFile.file)
+        formData.append("userId", userId)
+
+        if (companyId && companyId !== "undefined" && companyId !== "null") {
+          formData.append("companyId", companyId)
+        }
+
+        formData.append("memberId", member.id || `member_${index}`)
+        formData.append("memberName", member.name || "Unknown Member")
+
+        console.log(`[v0] Uploading passport for ${member.name}...`)
+
+        const response = await fetch("/api/passports/upload", {
+          method: "POST",
+          body: formData,
+        })
+
+        const responseText = await response.text()
+        let result
+
+        try {
+          result = JSON.parse(responseText)
+        } catch (e) {
+          console.error(`[v0] ❌ Failed to parse response for ${member.name}:`, responseText)
+          throw new Error(`Server returned invalid JSON: ${responseText}`)
+        }
+
+        if (!response.ok) {
+          console.error(`[v0] ❌ Upload failed for ${member.name}:`, result)
+          throw new Error(result.error || `Upload failed with status ${response.status}`)
+        }
+
+        console.log(`[v0] ✅ Passport uploaded successfully for ${member.name}`)
+
+        updatedMembers.push({
+          ...member,
+          passportKey: result.data?.fileUrl || result.url,
+          passportUrl: result.data?.fileUrl || result.url,
+          passportId: result.data?.id,
+        })
+
+        completedCount++
+        if (onProgress) {
+          onProgress(completedCount, members.length, storedFile.file.name)
+        }
+      } catch (error) {
+        console.error(`[v0] ❌ Error uploading passport for ${member.name}:`, error)
+        failedUploads.push({
+          member,
+          error: error instanceof Error ? error.message : "Unknown error",
+        })
+        updatedMembers.push(member)
+      }
+    }
+
+    console.log(`\n[v0] Upload complete: ${completedCount}/${members.length} successful`)
+
+    if (failedUploads.length > 0) {
+      console.error("[v0] ❌ Failed uploads:", failedUploads)
+      throw new Error(`Failed to upload ${failedUploads.length} passport(s). Please check the console for details.`)
+    }
+
+    await clearAllFilesFromIndexedDB()
+    console.log("[v0] ✅ Storage cleared after successful upload")
+
+    console.log("[v0] === PASSPORT UPLOAD PROCESS COMPLETE ===\n")
+    return updatedMembers
+  } catch (error) {
+    console.error("[v0] ❌ Fatal error in passport upload process:", error)
+    throw error
+  }
+}
