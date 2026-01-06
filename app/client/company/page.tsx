@@ -242,7 +242,6 @@ export default function CompanyPage() {
     companyData.ein !== "Not Yet Assigned" &&
     companyData.ein !== "Pending" &&
     companyData.ein !== "Not provided" &&
-    companyData.ein.trim() !== "" &&
     !companyData.ein.includes("PENDING") &&
     !companyData.ein.includes("pending")
 
@@ -351,8 +350,6 @@ export default function CompanyPage() {
                 <div className="font-medium text-slate-900 text-sm sm:text-base">{documentCount} items</div>
               </div>
             </div>
-           
-           
           </div>
         </div>
 
@@ -427,7 +424,7 @@ export default function CompanyPage() {
                     key={member.id}
                     className="p-4 sm:p-6 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200 space-y-4"
                   >
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 mb-1">
                           <div className="font-medium text-slate-900 text-sm sm:text-base">{member.name}</div>
@@ -438,10 +435,6 @@ export default function CompanyPage() {
                           )}
                         </div>
                         <div className="text-xs sm:text-sm text-slate-600">Member</div>
-                      </div>
-                      <div className="text-left sm:text-right">
-                        <div className="font-medium text-slate-900 text-sm sm:text-base">{member.ownership}</div>
-                        <div className="text-xs sm:text-sm text-slate-600">Ownership</div>
                       </div>
                     </div>
 
