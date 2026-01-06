@@ -306,6 +306,11 @@ export default function CheckoutPage() {
     }
   }, [])
 
+  useEffect(() => {
+    const isAuth = authService.isAuthenticated()
+    setIsAuthenticated(isAuth)
+  }, [currentStep])
+
   const updateData = (updates: Partial<CheckoutData>) => {
     setData((prev) => {
       const newData = { ...prev, ...updates }
@@ -415,6 +420,16 @@ export default function CheckoutPage() {
   }
 
   const nextStep = () => {
+    const isAuth = authService.isAuthenticated()
+
+    if ((currentStep === 3 || currentStep === 4) && !isAuth) {
+      // If trying to go from Owner Info to Review, or Review to Payment, check auth
+      setCurrentStep(0)
+      saveCheckoutStep(0)
+      window.scrollTo(0, 0)
+      return
+    }
+
     if (currentStep < STEPS.length - 1) {
       const newStep = currentStep + 1
       setCurrentStep(newStep)
@@ -437,13 +452,6 @@ export default function CheckoutPage() {
   }
 
   const renderStep = () => {
-    if ((currentStep === 4 || currentStep === 5) && !isAuthenticated) {
-      // Redirect to account step if trying to access review or payment without auth
-      setCurrentStep(0)
-      saveCheckoutStep(0)
-      return <AccountStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
-    }
-
     switch (currentStep) {
       case 0:
         return <AccountStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
