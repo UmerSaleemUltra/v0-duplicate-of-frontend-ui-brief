@@ -11,9 +11,46 @@ export interface StoredFile {
   memberIndex: number
 }
 
+export const isIndexedDBAvailable = (): boolean => {
+  try {
+    return typeof indexedDB !== "undefined" && indexedDB !== null
+  } catch {
+    return false
+  }
+}
+
+export const testIndexedDB = async (): Promise<boolean> => {
+  if (!isIndexedDBAvailable()) return false
+
+  try {
+    const testDB = await new Promise<IDBDatabase>((resolve, reject) => {
+      const request = indexedDB.open("test_db", 1)
+      request.onerror = () => reject(request.error)
+      request.onsuccess = () => resolve(request.result)
+      request.onupgradeneeded = (event) => {
+        const db = (event.target as IDBOpenDBRequest).result
+        if (!db.objectStoreNames.contains("test_store")) {
+          db.createObjectStore("test_store")
+        }
+      }
+    })
+
+    testDB.close()
+    indexedDB.deleteDatabase("test_db")
+    return true
+  } catch {
+    return false
+  }
+}
+
 // Initialize IndexedDB
 export const initDB = (): Promise<IDBDatabase> => {
   return new Promise((resolve, reject) => {
+    if (!isIndexedDBAvailable()) {
+      reject(new Error("IndexedDB is not available (possibly in incognito/private mode)"))
+      return
+    }
+
     const request = indexedDB.open(DB_NAME, DB_VERSION)
 
     request.onerror = () => reject(request.error)
@@ -30,6 +67,10 @@ export const initDB = (): Promise<IDBDatabase> => {
 
 // Save file to IndexedDB
 export const saveFileToIndexedDB = async (file: File, memberIndex: number): Promise<string> => {
+  if (!isIndexedDBAvailable()) {
+    throw new Error("IndexedDB is not available. Please disable incognito/private mode.")
+  }
+
   const db = await initDB()
   const id = `passport_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`
   const preview = URL.createObjectURL(file)

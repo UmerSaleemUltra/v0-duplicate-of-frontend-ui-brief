@@ -122,36 +122,33 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     setIsSubmitting(true)
 
     try {
-      if (paymentMethod === "already_paid") {
-        if (!whatsappPhone.trim()) {
-          setErrors({ whatsappNumber: "Please provide your phone number to proceed" })
-          setShowValidationError(true)
-          return
-        }
-        const phoneDigits = whatsappPhone.replace(/\D/g, "")
-        if (phoneDigits.length < 10) {
-          setErrors({ whatsappNumber: "Please enter a valid phone number with at least 10 digits" })
-          setShowValidationError(true)
-          return
-        }
-      } else {
-        if (!receiptUrl) {
-          setShowValidationError(true)
-          return
-        }
-      }
+      // Upload passports from IndexedDB first
+      const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
 
-      setShowValidationError(false)
-      setIsSubmitting(true)
+      let updatedMembers
+      try {
+        updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", "")
+
+        // Verify that all members have passport files uploaded
+        const missingPassports = updatedMembers.filter((m) => !m.passportUrl && !m.passportKey)
+        if (missingPassports.length > 0) {
+          throw new Error(
+            "Some passport files could not be uploaded. If you're in incognito/private mode, please use normal browsing mode and try again.",
+          )
+        }
+      } catch (uploadError) {
+        console.error("Passport upload error:", uploadError)
+        throw new Error(
+          uploadError instanceof Error && uploadError.message.includes("incognito")
+            ? uploadError.message
+            : "Failed to upload passport files. Please ensure you're not in incognito/private mode and try again.",
+        )
+      }
 
       const token = authService.getToken()
       if (!token) {
         throw new Error("Authentication required. Please complete the account step first.")
       }
-
-      // Upload passports from IndexedDB first
-      const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
-      const updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", "")
 
       // Create company
       const companyResponse = await fetch("/api/companies", {

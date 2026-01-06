@@ -21,7 +21,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Country } from "country-state-city"
 import type { CheckoutData, Member } from "@/app/checkout/page"
-import { saveFileToIndexedDB, deleteFileFromIndexedDB } from "@/lib/indexeddb"
+import { saveFileToIndexedDB, deleteFileFromIndexedDB, isIndexedDBAvailable } from "@/lib/indexeddb"
 
 type OwnerInfoStepProps = {
   data: CheckoutData
@@ -194,6 +194,15 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     }
 
     try {
+      if (!isIndexedDBAvailable()) {
+        setErrors((prev) => ({
+          ...prev,
+          [`member${data.members?.findIndex((m) => m.id === memberId)}Passport`]:
+            "Cannot upload files in incognito/private mode. Please use normal browsing mode.",
+        }))
+        return
+      }
+
       // Save file to IndexedDB
       const memberIndex = data.members?.findIndex((m) => m.id === memberId) ?? 0
       const indexedDBId = await saveFileToIndexedDB(file, memberIndex)
@@ -207,8 +216,22 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         passportFile: file,
         passportIndexedDBId: indexedDBId,
       })
+
+      setErrors((prev) => {
+        const newErrors = { ...prev }
+        delete newErrors[`member${memberIndex}Passport`]
+        return newErrors
+      })
     } catch (error) {
       console.error("Error saving passport to IndexedDB:", error)
+      const memberIndex = data.members?.findIndex((m) => m.id === memberId) ?? 0
+      setErrors((prev) => ({
+        ...prev,
+        [`member${memberIndex}Passport`]:
+          error instanceof Error && error.message.includes("incognito")
+            ? "Cannot upload files in incognito/private mode. Please use normal browsing mode."
+            : "Failed to upload passport. Please try again.",
+      }))
     }
   }
 
