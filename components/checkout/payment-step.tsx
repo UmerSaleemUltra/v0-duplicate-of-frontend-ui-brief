@@ -433,9 +433,9 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   return (
     <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8 pb-6 md:pb-10">
       <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Secure Payment</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Complete Payment</h1>
         <p className="text-sm md:text-base text-slate-700 leading-relaxed">
-          Complete your payment via WhatsApp to finalize your business formation order.
+         Choose a payment option below to continue your business setup.
         </p>
       </div>
 
