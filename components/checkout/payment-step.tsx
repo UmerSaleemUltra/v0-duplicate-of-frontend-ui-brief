@@ -673,35 +673,37 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
                 </label>
               </div>
 
-              {receiptFile && (
-                <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-green-50 border border-green-200 rounded-lg overflow-hidden">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm font-medium text-green-700 truncate" title={receiptFile.name}>
-                      {truncateFilename(receiptFile.name, 15)}
-                    </span>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleRemoveReceipt}
-                    className="text-red-600 hover:text-red-700 flex-shrink-0 p-1"
-                  >
-                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </div>
-              )}
+             {receiptFile?.name && (
+  <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-green-50 border border-green-200 rounded-lg overflow-hidden">
+    <div className="flex items-center gap-2 min-w-0 flex-1">
+      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+      <span
+        className="text-xs sm:text-sm font-medium text-green-700 truncate"
+        title={receiptFile.name}
+      >
+        {truncateFilename(receiptFile.name, 15)}
+      </span>
+    </div>
+    <button
+      type="button"
+      onClick={handleRemoveReceipt}
+      className="text-red-600 hover:text-red-700 flex-shrink-0 p-1"
+    >
+      <X className="w-4 h-4 sm:w-5 sm:h-5" />
+    </button>
+  </div>
+)}
 
-              {uploadError && (
-                <p className="text-xs sm:text-sm text-red-600 break-words leading-relaxed">{uploadError}</p>
-              )}
+{uploadError && (
+  <p className="text-xs sm:text-sm text-red-600 break-words leading-relaxed">
+    {uploadError}
+  </p>
+)}
 
-              <p className="text-xs text-slate-500 break-words leading-relaxed">
-                Supported formats: PNG, JPG, WEBP (max. 5MB)
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
+<p className="text-xs text-slate-500 break-words leading-relaxed">
+  Supported formats: PNG, JPG, WEBP (max. 5MB)
+</p>
+
 
       {paymentMethod === "already_paid" && (
         <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6 space-y-4 overflow-hidden">
