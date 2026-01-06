@@ -444,13 +444,10 @@ export default function CheckoutPage() {
   }
 
   const nextStep = () => {
-    const savedData = getCheckoutData()
-    const hasCheckoutData = savedData && savedData.account?.email && savedData.state?.state
+    const isAuth = authService.isAuthenticated()
 
-    const canProceed = authService.isAuthenticated() || hasCheckoutData
-
-    // Only block if trying to access review or payment WITHOUT any data
-    if ((currentStep === 3 || currentStep === 4) && !canProceed) {
+    // If trying to proceed beyond account step without authentication, redirect to account instantly
+    if (currentStep >= 0 && !isAuth) {
       setCurrentStep(0)
       saveCheckoutStep(0)
       window.scrollTo(0, 0)
