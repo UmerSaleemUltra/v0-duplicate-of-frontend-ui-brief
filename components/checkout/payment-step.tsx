@@ -9,6 +9,7 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare, X } from "lucide-react"
 import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
+import { authService } from "@/lib/auth"
 
 interface PaymentStepProps {
   data: any
@@ -143,9 +144,9 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       setShowValidationError(false)
       setIsSubmitting(true)
 
-      const token = localStorage.getItem("authToken")
+      const token = authService.getToken()
       if (!token) {
-        throw new Error("Authentication required")
+        throw new Error("Authentication required. Please complete the account step first.")
       }
 
       // Upload passports from IndexedDB first
