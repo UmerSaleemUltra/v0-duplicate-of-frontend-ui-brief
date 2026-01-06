@@ -2,7 +2,7 @@
 
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ClientShell } from "@/components/client/client-shell"
-import { FileText, Download, Eye, RefreshCw } from "lucide-react"
+import { FileText, Download, Eye } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { useEffect, useState } from "react"
@@ -18,12 +18,22 @@ export default function DocumentsPage() {
   const [documents, setDocuments] = useState<any[]>([])
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
-  const [refreshing, setRefreshing] = useState(false)
 
   useEffect(() => {
     if (selectedCompanyId) {
       loadDocuments()
     }
+  }, [selectedCompanyId])
+
+  useEffect(() => {
+    const handleRefresh = () => {
+      if (selectedCompanyId) {
+        loadDocuments()
+      }
+    }
+
+    window.addEventListener("client-dashboard-refresh", handleRefresh)
+    return () => window.removeEventListener("client-dashboard-refresh", handleRefresh)
   }, [selectedCompanyId])
 
   const loadDocuments = async () => {
@@ -61,16 +71,6 @@ export default function DocumentsPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  const handleRefresh = async () => {
-    setRefreshing(true)
-    await loadDocuments()
-    setRefreshing(false)
-    toast({
-      title: "Documents Refreshed",
-      description: "Document list has been updated.",
-    })
   }
 
   const handleDownload = async (doc: any) => {
@@ -209,26 +209,14 @@ export default function DocumentsPage() {
   return (
     <ClientShell>
       <div className="space-y-8">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
-              <FileText className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-semibold">Documents</h1>
-              <p className="text-slate-600 text-sm sm:text-base">Access and manage your business documents</p>
-            </div>
+        <div className="flex items-center gap-3">
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
+            <FileText className="w-6 h-6 text-white" />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={refreshing}
-            className="gap-2 bg-transparent"
-          >
-            <RefreshCw className={`w-4 h-4 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold">Documents</h1>
+            <p className="text-slate-600 text-sm sm:text-base">Access and manage your business documents</p>
+          </div>
         </div>
 
         <div className="grid md:grid-cols-2 gap-6">
@@ -261,18 +249,14 @@ export default function DocumentsPage() {
           <h2 className="text-lg font-semibold mb-4">Your Documents</h2>
           {loading ? (
             <div className="text-center py-12">
-              <RefreshCw className="w-16 h-16 text-slate-300 mx-auto mb-4 animate-spin" />
+              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
               <p className="text-slate-600">Loading documents...</p>
             </div>
           ) : documents.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <p className="text-slate-600 mb-2">No documents yet</p>
-              <p className="text-sm text-slate-500">Documents uploaded by admin will appear here</p>
-              <Button variant="outline" size="sm" onClick={handleRefresh} className="mt-4 gap-2 bg-transparent">
-                <RefreshCw className="w-4 h-4" />
-                Check for Updates
-              </Button>
+              <p className="text-sm text-slate-500">Documents uploaded by admin will appear here automatically</p>
             </div>
           ) : (
             <div className="space-y-3">

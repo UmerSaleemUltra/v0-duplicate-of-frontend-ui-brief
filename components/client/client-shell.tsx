@@ -19,7 +19,6 @@ import {
   Settings,
   FileText,
   ShieldAlert,
-  RefreshCw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -49,7 +48,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [userInitials, setUserInitials] = useState("U")
   const [userName, setUserName] = useState("")
   const [isAdminView, setIsAdminView] = useState(false)
-  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -116,6 +114,20 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     loadCompanies()
   }, [])
 
+  useEffect(() => {
+    const handleFocus = () => {
+      // Auto-refresh when user returns to the tab
+      if (document.visibilityState === "visible") {
+        console.log("[v0] Tab focused, auto-refreshing data")
+        // Trigger a custom event that child components can listen to
+        window.dispatchEvent(new Event("client-dashboard-refresh"))
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleFocus)
+    return () => document.removeEventListener("visibilitychange", handleFocus)
+  }, [])
+
   const handleSelectCompany = (company: any) => {
     console.log("[v0] Switching to company:", company.id, company.name)
     setSelectedCompanyId(company.id)
@@ -174,11 +186,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     }
   }
 
-  const handleRefreshPage = () => {
-    setIsRefreshing(true)
-    window.location.reload()
-  }
-
   return (
     <div className="min-h-screen flex bg-background">
       <aside
@@ -231,16 +238,16 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 group backdrop-blur-sm min-h-[44px]"
             aria-label="Select company"
           >
-            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 overflow-hidden">
               <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0 shadow-lg">
                 <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white" />
               </div>
-              <div className="flex-1 min-w-0 text-left">
-                <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-0.5">Current Company</p>
+              <div className="flex-1 min-w-0 text-left overflow-hidden">
+                <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-0.5 truncate">Current Company</p>
                 <BusinessNameDisplay
                   name={selectedCompany?.name || "No company"}
                   maxLength={18}
-                  className="text-xs sm:text-sm font-semibold text-white"
+                  className="text-xs sm:text-sm font-semibold text-white truncate"
                   truncateMode="smart"
                 />
               </div>
@@ -294,7 +301,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         className="lg:hidden fixed top-4 left-4 z-50 p-2.5 sm:p-3 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 rounded-lg transition-all duration-200 shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
         aria-label={sidebarOpen ? "Close menu" : "Open menu"}
       >
-        {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        <Menu className="w-5 h-5" />
       </button>
 
       {/* Mobile Overlay */}
@@ -383,20 +390,10 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       </Dialog>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="sticky top-0 z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">{/* Avatar and badge removed */}</div>
-          <div className="flex items-center gap-2 ml-auto">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleRefreshPage}
-              disabled={isRefreshing}
-              className="relative h-10 w-10"
-              title="Refresh page"
-            >
-              <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
-            </Button>
-            <NotificationDropdown />
+        <div className="sticky top-0 z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex items-center justify-end">
+            {/* NotificationDropdown is conditionally rendered based on specific pages */}
+            {pathname.includes("/client/dashboard") && <NotificationDropdown />}
           </div>
         </div>
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full bg-white">{children}</main>

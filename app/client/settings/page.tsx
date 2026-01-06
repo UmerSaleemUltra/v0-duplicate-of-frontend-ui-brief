@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User, Lock, Info, Calendar, Hash, CheckCircle2 } from "lucide-react"
+import { User, Lock, Info, Calendar, Hash, CheckCircle2, Copy } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -333,12 +333,33 @@ export default function ClientSettingsPage() {
               </span>
             </div>
 
-            <div className="flex items-center justify-between py-3">
-              <div className="flex items-center gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 gap-2">
+              <div className="flex items-center gap-3 flex-shrink-0">
                 <Hash className="w-5 h-5 text-slate-400" />
                 <span className="text-sm font-medium text-slate-700">Account ID</span>
               </div>
-              <span className="text-sm text-slate-600 font-mono">{currentUser?.id || "USR-2024-001234"}</span>
+              <div className="flex items-center gap-2 sm:justify-end">
+                <span
+                  className="text-sm text-slate-600 font-mono break-all sm:truncate sm:max-w-[200px] md:max-w-[280px] lg:max-w-full"
+                  title={currentUser?.id || "USR-2024-001234"}
+                >
+                  {currentUser?.id || "USR-2024-001234"}
+                </span>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-7 w-7 p-0 flex-shrink-0"
+                  onClick={() => {
+                    navigator.clipboard.writeText(currentUser?.id || "USR-2024-001234")
+                    toast({
+                      title: "Copied!",
+                      description: "Account ID copied to clipboard",
+                    })
+                  }}
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </Button>
+              </div>
             </div>
           </div>
         </div>
