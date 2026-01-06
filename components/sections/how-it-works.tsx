@@ -31,7 +31,9 @@ const steps = [
 
 const HowItWorks = () => {
   return (
-    <section className="py-16 md:py-20 lg:py-24 relative overflow-hidden">
+    <section 
+      id="process"
+     className="py-16 md:py-20 lg:py-24 relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]" />
 
       {/* Pattern Overlay */}
