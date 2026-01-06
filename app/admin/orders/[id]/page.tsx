@@ -2187,9 +2187,7 @@ export default function OrderDetailPage() {
                   addons.map((addon: any, index: number) => {
                     const isObject = typeof addon === "object" && addon !== null
                     const addonName = isObject
-                      ? addon.memberName
-                        ? `${addon.name} - ${addon.memberName}`
-                        : addon.name
+                      ? addon.name || getAddonName(addon.serviceId || addon.id || "")
                       : getAddonName(addon)
                     const addonPrice = isObject ? addon.price : 0
                     const serviceId = isObject ? addon.serviceId : addon

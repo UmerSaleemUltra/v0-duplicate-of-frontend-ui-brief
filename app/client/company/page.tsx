@@ -549,12 +549,7 @@ export default function CompanyPage() {
 
             <div className="grid sm:grid-cols-2 gap-3">
               {companyData.purchasedAddons.map((addon: any, index: number) => {
-                const addonName =
-                  typeof addon === "string"
-                    ? addon
-                    : addon.memberName
-                      ? `${addon.name} - ${addon.memberName}`
-                      : addon.name || "Unknown Add-on"
+                const addonName = typeof addon === "string" ? addon : addon.name || "Unknown Add-on"
 
                 const addonPrice = typeof addon === "object" && addon.price ? `$${addon.price}` : ""
 
