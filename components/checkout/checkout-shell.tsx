@@ -54,12 +54,13 @@ export function CheckoutShell({
           w-72 lg:w-80 xl:w-96 flex-shrink-0
           bg-gradient-to-r from-[#880000] to-[#ff0d13]
           text-white shadow-2xl
-          transition-transform duration-300 ease-in-out overflow-y-auto
+          transition-transform duration-300 ease-in-out
+          flex flex-col
           ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
       >
-        <div className="p-6 lg:p-8">
-          <Link href="/" className="block mb-10">
+        <div className="flex-shrink-0 p-6 lg:p-8 pb-4 lg:pb-6">
+          <Link href="/" className="block">
             <Image
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling"
@@ -69,8 +70,10 @@ export function CheckoutShell({
               priority
             />
           </Link>
+        </div>
 
-          <div className="space-y-5 lg:space-y-6">
+        <div className="flex-1 overflow-y-auto px-6 lg:px-8 pb-6 lg:pb-8">
+          <div className="space-y-4 lg:space-y-5">
             {steps.map((step, index) => {
               const isCurrentStep = index === currentStep
               const isPastStep = index < currentStep
