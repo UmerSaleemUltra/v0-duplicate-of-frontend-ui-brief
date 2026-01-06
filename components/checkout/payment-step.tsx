@@ -9,9 +9,8 @@ import { Label } from "@/components/ui/label"
 import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare, X } from "lucide-react"
 import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
-import { authService } from "@/lib/auth"
 import { toast } from "@/components/ui/use-toast"
-import { getCheckoutData } from "@/lib/checkout-storage"
+import { getCheckoutData, saveCheckoutData } from "@/lib/checkout-storage"
 
 interface PaymentStepProps {
   data: any
@@ -114,124 +113,108 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-
-    console.log("=== STARTING CHECKOUT FLOW ===")
-    console.log("Step 1: Validating payment information...")
-
-    if (paymentMethod === "already_paid") {
-      if (!whatsappPhone.trim()) {
-        setErrors({ ...errors, whatsappNumber: "Please provide your phone number to proceed" })
-        setShowValidationError(true)
-        console.log("❌ Validation failed: WhatsApp phone number is required")
-        return
-      }
-      const phoneDigits = whatsappPhone.replace(/\D/g, "")
-      if (phoneDigits.length < 10) {
-        setErrors({ ...errors, whatsappNumber: "Please enter a valid phone number with at least 10 digits" })
-        setShowValidationError(true)
-        console.log("❌ Validation failed: Invalid phone number format")
-        return
-      }
-    } else {
-      if (!receiptUrl) {
-        setShowValidationError(true)
-        console.log("❌ Validation failed: Payment receipt is required")
-        return
-      }
-    }
-
-    console.log("✅ Payment information validated")
-    setShowValidationError(false)
+    setErrors({})
     setIsSubmitting(true)
 
     try {
-      console.log("\n=== STEP 1: CREATING ACCOUNT ===")
+      console.log("=== STARTING CHECKOUT FLOW ===")
+      console.log("Step 1: Validating payment information...")
+
+      if (paymentMethod === "already_paid") {
+        if (!whatsappPhone.trim()) {
+          setErrors({ ...errors, whatsappNumber: "Please provide your phone number to proceed" })
+          setShowValidationError(true)
+          console.log("❌ Validation failed: WhatsApp phone number is required")
+          return
+        }
+        const phoneDigits = whatsappPhone.replace(/\D/g, "")
+        if (phoneDigits.length < 10) {
+          setErrors({ ...errors, whatsappNumber: "Please enter a valid phone number with at least 10 digits" })
+          setShowValidationError(true)
+          console.log("❌ Validation failed: Invalid phone number format")
+          return
+        }
+      } else {
+        if (!receiptUrl) {
+          setShowValidationError(true)
+          console.log("❌ Validation failed: Payment receipt is required")
+          return
+        }
+      }
+
+      console.log("✅ Payment information validated")
+      setShowValidationError(false)
+
+      console.log("\n[v0] === PAYMENT SUBMISSION START ===")
+      console.log("[v0] Checkout data:", data)
+
+      const { authService } = await import("@/lib/auth")
       let token = authService.getToken()
 
       if (!token) {
-        console.log("No existing token found, creating new account...")
-        console.log("Account details:", {
-          name: data.name,
-          email: data.email,
-          phone: data.phone,
+        console.log("\n[v0] === STEP 1: CREATING ACCOUNT ===")
+        console.log("[v0] No existing token found, creating new account...")
+
+        if (!data.email || !data.password) {
+          throw new Error("Email and password are required to create an account")
+        }
+
+        const signupResponse = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email: data.email,
+            password: data.password,
+            name: data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : data.email,
+            phone: data.phone || "",
+          }),
         })
 
-        if (!data.email || !data.password || !data.name || !data.phone) {
-          console.log("❌ Account information incomplete")
-          throw new Error("Account information is incomplete. Please go back and complete the account step.")
+        const signupResult = await signupResponse.json()
+
+        if (!signupResponse.ok) {
+          console.error("[v0] ❌ Account creation failed:", signupResult)
+          throw new Error(signupResult.error || "Failed to create account")
         }
 
-        const signupResult = await authService.signup({
-          name: data.name,
-          email: data.email,
-          password: data.password,
-          phone: data.phone,
+        console.log("[v0] ✅ Account created successfully")
+        console.log("[v0] User ID:", signupResult.userId)
+        console.log("[v0] Token received:", signupResult.token ? "Yes" : "No")
+
+        authService.setToken(signupResult.token, {
+          id: signupResult.userId,
+          email: signupResult.email,
+          name: signupResult.name,
         })
 
-        if (!signupResult.success) {
-          const errorMessage = signupResult.error || "Failed to create account"
-          console.log("❌ Signup failed:", errorMessage)
+        data.userId = signupResult.userId
+        token = signupResult.token
 
-          if (
-            errorMessage.toLowerCase().includes("already exists") ||
-            errorMessage.toLowerCase().includes("duplicate")
-          ) {
-            console.log("Account exists, attempting login...")
-            const loginResult = await authService.login({
-              email: data.email,
-              password: data.password,
-            })
-
-            if (!loginResult.success) {
-              console.log("❌ Login failed:", loginResult.error)
-              throw new Error(
-                "An account with this email already exists but the password is incorrect. Please go back to the account step and verify your credentials.",
-              )
-            }
-
-            token = authService.getToken()
-            console.log("✅ Login successful")
-          } else {
-            throw new Error(errorMessage)
-          }
-        } else {
-          token = authService.getToken()
-          console.log("✅ Account created successfully")
-        }
-
-        if (!token) {
-          console.log("❌ Authentication failed after account creation")
-          throw new Error("Failed to authenticate after account creation. Please try again.")
-        }
+        // Save updated data to localStorage
+        saveCheckoutData(data)
       } else {
-        console.log("✅ Using existing authentication token")
+        console.log("[v0] ✅ User already authenticated with token")
       }
 
-      console.log("\n=== STEP 2: UPLOADING PASSPORTS ===")
-      console.log(`Found ${data.members?.length || 0} members to process`)
+      if (!data.userId) {
+        throw new Error("User ID is missing - account creation may have failed")
+      }
+
+      console.log("[v0] Proceeding with userId:", data.userId)
+
+      console.log("\n[v0] === STEP 2: UPLOADING PASSPORTS ===")
+      console.log(`[v0] Found ${data.members?.length || 0} members to process`)
 
       const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
 
       let updatedMembers
       try {
-        updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", "")
-        console.log("✅ Passports uploaded successfully")
-        console.log("Updated members:", updatedMembers)
-
-        const missingPassports = updatedMembers.filter((m) => !m.passportUrl && !m.passportKey)
-        if (missingPassports.length > 0) {
-          console.log("❌ Some passports failed to upload:", missingPassports)
-          throw new Error(
-            "Some passport files could not be uploaded. If you're in incognito/private mode, please use normal browsing mode and try again.",
-          )
-        }
+        updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId, "")
+        console.log("[v0] ✅ All passports uploaded successfully")
+        console.log("[v0] Updated members with passport URLs:", updatedMembers)
       } catch (uploadError) {
-        console.error("❌ Passport upload error:", uploadError)
-        throw new Error(
-          uploadError instanceof Error && uploadError.message.includes("incognito")
-            ? uploadError.message
-            : "Failed to upload passport files. Please ensure you're not in incognito/private mode and try again.",
-        )
+        console.error("[v0] ❌ Passport upload error:", uploadError)
+        throw uploadError
       }
 
       console.log("\n=== STEP 3: CREATING COMPANY ===")
