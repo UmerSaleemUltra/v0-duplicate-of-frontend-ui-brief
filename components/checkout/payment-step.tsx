@@ -10,6 +10,7 @@ import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSq
 import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
 import { authService } from "@/lib/auth"
+import { toast } from "@/components/ui/use-toast"
 
 interface PaymentStepProps {
   data: any
@@ -52,6 +53,21 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const [isLoadingRate, setIsLoadingRate] = useState(true)
   const [showValidationError, setShowValidationError] = useState(false)
   const [errors, setErrors] = useState({ whatsappNumber: "", submit: "" })
+
+  useEffect(() => {
+    const token = authService.getToken()
+    if (!token) {
+      toast({
+        title: "Authentication Required",
+        description: "Please complete the account step first before proceeding to payment.",
+        variant: "destructive",
+      })
+      // Redirect back to checkout to restart from account step
+      setTimeout(() => {
+        window.location.href = "/checkout"
+      }, 1500)
+    }
+  }, [toast])
 
   useEffect(() => {
     async function convertUSDtoPKR() {

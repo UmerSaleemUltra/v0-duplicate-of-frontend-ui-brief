@@ -118,6 +118,26 @@ export default function CompanyPage() {
             setDocumentCount(0)
           }
 
+          let orderDate = new Date(selectedComp.createdAt).toLocaleDateString("en-US", {
+            month: "long",
+            day: "numeric",
+            year: "numeric",
+          })
+
+          // If we have the actual order, use its date
+          if (ordersResponse.status === "fulfilled") {
+            const allOrders = ordersResponse.value.data || ordersResponse.value.orders || []
+            const companyOrder = allOrders.find((order: any) => order.companyId === selectedCompanyId)
+            if (companyOrder) {
+              setOrderDetails(companyOrder)
+              orderDate = new Date(companyOrder.createdAt).toLocaleDateString("en-US", {
+                month: "long",
+                day: "numeric",
+                year: "numeric",
+              })
+            }
+          }
+
           setCompanyData({
             businessName: selectedComp.name || "Your Company",
             businessCategory: selectedComp.businessCategory || "Not yet",
@@ -127,17 +147,7 @@ export default function CompanyPage() {
             state: selectedComp.state || "Not yet",
             entityType: selectedComp.entityType || "LLC",
             packageType: selectedComp.packageType || "starter",
-            formationDate: selectedComp.formationDate
-              ? new Date(selectedComp.formationDate).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                })
-              : new Date(selectedComp.createdAt).toLocaleDateString("en-US", {
-                  month: "long",
-                  day: "numeric",
-                  year: "numeric",
-                }),
+            orderDate: orderDate,
             ein: selectedComp.ein || "Not yet",
             businessId: selectedComp.businessId || "BIZ-PENDING",
             selectedServices: selectedComp.services || [],
@@ -153,16 +163,6 @@ export default function CompanyPage() {
             },
             itin: selectedComp.itin,
           })
-
-          if (ordersResponse.status === "fulfilled") {
-            const allOrders = ordersResponse.value.data || ordersResponse.value.orders || []
-            const companyOrder = allOrders.find((order: any) => order.companyId === selectedCompanyId)
-            if (companyOrder) {
-              setOrderDetails(companyOrder)
-            }
-          } else {
-            console.error("[v0] Orders fetch error:", ordersResponse.reason)
-          }
         } else {
           setError("Company not found")
         }
@@ -308,8 +308,8 @@ export default function CompanyPage() {
                 <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-xs sm:text-sm text-slate-600 mb-1">Formation Date</div>
-                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.formationDate}</div>
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Order Date</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.orderDate}</div>
               </div>
             </div>
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
@@ -523,11 +523,9 @@ export default function CompanyPage() {
               <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
                 <span className="text-slate-600 text-sm sm:text-base">Service Period</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base">
-                  {companyData.formationDate} -{" "}
+                  {companyData.orderDate} -{" "}
                   {new Date(
-                    new Date(companyData.formationDate).setFullYear(
-                      new Date(companyData.formationDate).getFullYear() + 1,
-                    ),
+                    new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
                   ).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
                 </span>
               </div>

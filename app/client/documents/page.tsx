@@ -208,77 +208,79 @@ export default function DocumentsPage() {
 
   return (
     <ClientShell>
-      <div className="space-y-8">
+      <div className="space-y-6 md:space-y-8">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
-            <FileText className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg flex-shrink-0">
+            <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold">Documents</h1>
-            <p className="text-slate-600 text-sm sm:text-base">Access and manage your business documents</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Documents</h1>
+            <p className="text-slate-600 text-xs sm:text-sm md:text-base">Access and manage your business documents</p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-8 transition-shadow duration-200 hover:shadow-lg">
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
-                <FileText className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div>
-                <div className="text-2xl font-semibold text-slate-900">{documents.length}</div>
-                <div className="text-sm text-slate-600">Total Documents</div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xl sm:text-2xl font-semibold text-slate-900">{documents.length}</div>
+                <div className="text-xs sm:text-sm text-slate-600">Total Documents</div>
               </div>
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-8 transition-shadow duration-200 hover:shadow-lg">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
-                <Download className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
+                <Download className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div>
-                <div className="text-2xl font-semibold text-slate-900">{completedDocs.length}</div>
-                <div className="text-sm text-slate-600">Ready to Download</div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xl sm:text-2xl font-semibold text-slate-900">{completedDocs.length}</div>
+                <div className="text-xs sm:text-sm text-slate-600">Ready to Download</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-lg font-semibold mb-4">Your Documents</h2>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Your Documents</h2>
           {loading ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-              <p className="text-slate-600">Loading documents...</p>
+              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
+              <p className="text-slate-600 text-sm sm:text-base">Loading documents...</p>
             </div>
           ) : documents.length === 0 ? (
             <div className="text-center py-12">
-              <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-600 mb-2">No documents yet</p>
-              <p className="text-sm text-slate-500">Documents uploaded by admin will appear here automatically</p>
+              <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-600 mb-2 text-sm sm:text-base">No documents yet</p>
+              <p className="text-xs sm:text-sm text-slate-500">
+                Documents uploaded by admin will appear here automatically
+              </p>
             </div>
           ) : (
             <div className="space-y-3">
               {documents.map((doc) => (
                 <div
                   key={doc.id}
-                  className="p-4 rounded-lg bg-slate-50 flex items-center justify-between hover:bg-slate-100 transition-all duration-200"
+                  className="p-3 sm:p-4 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-slate-100 transition-all duration-200"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                      <FileText className="w-5 h-5 text-white" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
+                      <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-slate-900 truncate">
+                      <div className="font-medium text-slate-900 truncate text-sm sm:text-base">
                         {doc.title || doc.name || "Untitled Document"}
                         {doc.fileCount && doc.fileCount > 1 && (
-                          <Badge variant="secondary" className="ml-2">
+                          <Badge variant="secondary" className="ml-2 text-xs">
                             {doc.fileCount} files
                           </Badge>
                         )}
                       </div>
-                      <div className="text-sm text-slate-600">
+                      <div className="text-xs sm:text-sm text-slate-600 break-words">
                         {doc.type || doc.category || "Document"} •{" "}
                         {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"} •{" "}
                         {doc.fileSize
@@ -288,20 +290,24 @@ export default function DocumentsPage() {
                             : "N/A"}
                       </div>
                       {doc.fileUrls && doc.fileUrls.length > 1 && (
-                        <div className="text-xs text-slate-500 mt-1">
+                        <div className="text-xs text-slate-500 mt-1 truncate">
                           Files: {doc.fileUrls.map((f: any) => f.name).join(", ")}
                         </div>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Ready</Badge>
+                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 self-end sm:self-center">
+                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Ready</Badge>
                     <div className="flex gap-2">
-                      <Button variant="ghost" className="h-10 w-10 p-0" onClick={() => handleView(doc)}>
-                        <Eye className="w-4 h-4" />
+                      <Button variant="ghost" className="h-8 w-8 sm:h-10 sm:w-10 p-0" onClick={() => handleView(doc)}>
+                        <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
-                      <Button variant="ghost" className="h-10 w-10 p-0" onClick={() => handleDownload(doc)}>
-                        <Download className="w-4 h-4" />
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 sm:h-10 sm:w-10 p-0"
+                        onClick={() => handleDownload(doc)}
+                      >
+                        <Download className="w-3 h-3 sm:w-4 sm:h-4" />
                       </Button>
                     </div>
                   </div>

@@ -80,7 +80,6 @@ const STEPS = ["Account", "State & Package", "Business Info", "Owner Info", "Rev
 
 export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(0)
-  const [isInitialized, setIsInitialized] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [data, setData] = useState<CheckoutData>({
     email: "",
@@ -305,8 +304,6 @@ export default function CheckoutPage() {
         })
       }
     }
-
-    setIsInitialized(true)
   }, [])
 
   const updateData = (updates: Partial<CheckoutData>) => {
@@ -440,6 +437,13 @@ export default function CheckoutPage() {
   }
 
   const renderStep = () => {
+    if (currentStep === 5 && !isAuthenticated) {
+      // Redirect to account step if trying to access payment without auth
+      setCurrentStep(0)
+      saveCheckoutStep(0)
+      return <AccountStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
+    }
+
     switch (currentStep) {
       case 0:
         return <AccountStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />

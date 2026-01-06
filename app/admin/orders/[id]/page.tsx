@@ -1567,17 +1567,6 @@ export default function OrderDetailPage() {
             <p className="text-slate-600 mt-1">Order ID: {order.id}</p>
           </div>
         </div>
-        <div className="flex gap-3">
-          <Button
-            variant="outline"
-            className="h-10 gap-2 bg-transparent"
-            onClick={handleViewCompanyDetails}
-            disabled={!company || !company.id}
-          >
-            <Eye className="w-4 h-4" />
-            View Company Details
-          </Button>
-        </div>
       </div>
 
       <div className="grid lg:grid-cols-3 gap-8">
@@ -2662,7 +2651,7 @@ export default function OrderDetailPage() {
                 <div className="flex items-center justify-between">
                   <span className="text-sm text-slate-600">Order Date</span>
                   <span className="text-sm font-medium text-slate-900">
-                    {new Date(order.createdAt).toLocaleDateString()}
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "Not set"}
                   </span>
                 </div>
                 <div className="flex items-center justify-between">
