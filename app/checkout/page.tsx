@@ -437,8 +437,8 @@ export default function CheckoutPage() {
   }
 
   const renderStep = () => {
-    if (currentStep === 5 && !isAuthenticated) {
-      // Redirect to account step if trying to access payment without auth
+    if ((currentStep === 4 || currentStep === 5) && !isAuthenticated) {
+      // Redirect to account step if trying to access review or payment without auth
       setCurrentStep(0)
       saveCheckoutStep(0)
       return <AccountStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
