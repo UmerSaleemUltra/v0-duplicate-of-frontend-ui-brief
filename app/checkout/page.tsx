@@ -307,9 +307,28 @@ export default function CheckoutPage() {
   }, [])
 
   useEffect(() => {
-    const isAuth = authService.isAuthenticated()
-    setIsAuthenticated(isAuth)
-  }, [currentStep])
+    const checkAuth = () => {
+      const isAuth = authService.isAuthenticated()
+      setIsAuthenticated(isAuth)
+    }
+
+    // Initial check
+    checkAuth()
+
+    // Listen for storage events (if user logs in/out in another tab)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === "token" || e.key === "user") {
+        checkAuth()
+      }
+    }
+
+    window.addEventListener("storage", handleStorageChange)
+
+    // Cleanup listener on unmount
+    return () => {
+      window.removeEventListener("storage", handleStorageChange)
+    }
+  }, []) // Removed race condition: useEffect with currentStep dependency caused stale state
 
   const updateData = (updates: Partial<CheckoutData>) => {
     setData((prev) => {
@@ -417,6 +436,11 @@ export default function CheckoutPage() {
 
       return { ...newData, members: finalMembers }
     })
+
+    if (updates.userId || updates.email) {
+      const isAuth = authService.isAuthenticated()
+      setIsAuthenticated(isAuth)
+    }
   }
 
   const nextStep = () => {
@@ -427,7 +451,6 @@ export default function CheckoutPage() {
 
     // Only block if trying to access review or payment WITHOUT any data
     if ((currentStep === 3 || currentStep === 4) && !canProceed) {
-      console.log("[v0] No checkout data or auth, redirecting to account step")
       setCurrentStep(0)
       saveCheckoutStep(0)
       window.scrollTo(0, 0)
