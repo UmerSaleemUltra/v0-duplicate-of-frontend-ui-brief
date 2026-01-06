@@ -463,7 +463,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
               <div className="flex-1 min-w-0">
                 <h3 className="text-sm md:text-base font-semibold text-slate-900 mb-1">Already Paid</h3>
                 <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-                  Partial Payment Made or Will be made on WhatsApp
+                  Partial payment made / will be made via WhatsApp
                 </p>
               </div>
             </div>
@@ -702,7 +702,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
             <div className="flex-1 min-w-0">
               <h4 className="font-semibold text-slate-900 mb-1 text-sm md:text-base">Contact Information</h4>
               <p className="text-xs md:text-sm text-slate-600 break-words leading-relaxed">
-                Please provide your phone number to confirm your order
+                Please provide your Whatsapp number to confirm your order
               </p>
             </div>
           </div>
