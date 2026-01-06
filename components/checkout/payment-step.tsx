@@ -116,8 +116,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    console.log("[v0] handleSubmit called")
-
     if (paymentMethod === "already_paid") {
       if (!whatsappPhone.trim()) {
         setErrors({ whatsappNumber: "Please provide your phone number to proceed" })
@@ -371,9 +369,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     data.addonsTotal ||
     (Array.isArray(data.addons) ? data.addons.reduce((sum, addon) => sum + (addon.price || 0), 0) : 0)
   const totalAmount = packageWithStateFee + addonsTotal
-
-  console.log("[v0] Payment step - addons data:", data.addons)
-  console.log("[v0] Payment step - addonsTotal:", addonsTotal)
 
   const isPaymentValid = paymentMethod === "already_paid" ? whatsappPhone.trim() !== "" : receiptUrl !== ""
 

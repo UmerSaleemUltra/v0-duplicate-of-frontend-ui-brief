@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { PhoneInput } from "./phone-input"
 import type { CheckoutData } from "@/app/page"
-import { authService } from "@/lib/auth"
 
 type AccountStepProps = {
   data: CheckoutData
@@ -34,7 +33,6 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPassword, setShowPassword] = useState(false)
   const [phone, setPhone] = useState<string>("")
-  const [isCreatingUser, setIsCreatingUser] = useState(false)
 
   useEffect(() => {
     if (data?.phone) {
@@ -90,65 +88,19 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
       return
     }
 
-    setIsCreatingUser(true)
+    // Save the data to localStorage and proceed to next step
+    updateData({
+      phone: phone,
+      name: data.name,
+      email: data.email,
+      password: data.password,
+    })
 
-    try {
-      const signupResult = await authService.signup({
-        name: data.name,
-        email: data.email,
-        password: data.password,
-        phone: phone,
-      })
+    // Clear any previous errors
+    setErrors({})
 
-      if (!signupResult.success) {
-        const errorMessage = signupResult.error || "Failed to create account"
-
-        if (errorMessage.toLowerCase().includes("already exists") || errorMessage.toLowerCase().includes("duplicate")) {
-          try {
-            const loginResult = await authService.login({
-              email: data.email,
-              password: data.password,
-            })
-
-            if (!loginResult.success) {
-              throw new Error(
-                "An account with this email already exists. The password you entered is incorrect. Please enter the correct password or use a different email.",
-              )
-            }
-
-            updateData({
-              phone: phone,
-              name: data.name,
-              email: data.email,
-              password: data.password,
-              userId: loginResult.user?.id,
-            })
-
-            onNext()
-            return
-          } catch (loginError) {
-            throw loginError
-          }
-        }
-
-        throw new Error(errorMessage)
-      }
-
-      updateData({
-        phone: phone,
-        name: data.name,
-        email: data.email,
-        password: data.password,
-        userId: signupResult.user?.id,
-      })
-
-      onNext()
-    } catch (error) {
-      console.error("Error during signup:", error)
-      setErrors({ submit: error instanceof Error ? error.message : "Failed to create account" })
-    } finally {
-      setIsCreatingUser(false)
-    }
+    // Proceed to next step
+    onNext()
   }
 
   const handleNameChange = (value: string) => {
@@ -279,26 +231,15 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
           <Button
             onClick={onBack}
             variant="outline"
-            disabled={isCreatingUser}
             className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
           >
             <ArrowLeft className="mr-2 w-5 h-5" /> Back
           </Button>
           <Button
             type="submit"
-            disabled={isCreatingUser}
             className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
           >
-            {isCreatingUser ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2" />
-                Creating Account...
-              </>
-            ) : (
-              <>
-                Next <ArrowRight className="ml-2 w-5 h-5" />
-              </>
-            )}
+            Next <ArrowRight className="ml-2 w-5 h-5" />
           </Button>
         </div>
       </form>

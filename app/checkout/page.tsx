@@ -446,7 +446,6 @@ export default function CheckoutPage() {
   const nextStep = () => {
     if (currentStep < STEPS.length - 1) {
       const newStep = currentStep + 1
-      console.log("[v0] Moving to step:", newStep)
       setCurrentStep(newStep)
       saveCheckoutStep(newStep)
       window.scrollTo(0, 0)
@@ -456,7 +455,6 @@ export default function CheckoutPage() {
   const prevStep = () => {
     if (currentStep > 0) {
       const newStep = currentStep - 1
-      console.log("[v0] Moving to step:", newStep)
       setCurrentStep(newStep)
       saveCheckoutStep(newStep)
       window.scrollTo(0, 0)
