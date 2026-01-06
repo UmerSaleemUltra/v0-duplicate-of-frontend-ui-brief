@@ -554,7 +554,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm md:text-base font-semibold text-slate-900">Total Amount</p>
-                <p className="text-xs md:text-sm text-slate-600 mt-0.5">One-time payment</p>
+            
               </div>
               <div className="text-right">
                 <p className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900">${calculateTotal()}</p>
@@ -589,23 +589,33 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
-              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Account Title</span>
-              <span className="font-semibold text-slate-900 text-sm md:text-base">BUZZ FILING</span>
-            </div>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
+  <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">
+    Account Title
+  </span>
+  <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
+    BUZZ FILING
+  </span>
+</div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
-              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Account Number</span>
-              <span className="font-semibold text-slate-900 text-sm md:text-base break-all">1176314943776</span>
-            </div>
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
+  <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">
+    Account Number
+  </span>
+  <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
+    1176314943776
+  </span>
+</div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 overflow-hidden">
-              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">IBAN</span>
-              <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all max-w-full">
-                PK22UNIL0109000314943776
-              </span>
-            </div>
-          </div>
+<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 overflow-hidden">
+  <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">
+    IBAN
+  </span>
+  <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
+    PK22UNIL0109000314943776
+  </span>
+</div>
+
 
           <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2 sm:gap-3 overflow-hidden">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
