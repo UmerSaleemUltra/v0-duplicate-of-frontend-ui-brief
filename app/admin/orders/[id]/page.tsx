@@ -50,6 +50,7 @@ import {
   MapPin,
   Trash2,
   MessageCircle,
+  Settings,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -1987,18 +1988,11 @@ export default function OrderDetailPage() {
                       href={order.paymentInfo.receiptUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm text-blue-600 hover:text-blue-700 hover:underline"
+                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
                     >
                       <CreditCard className="w-4 h-4" />
-                      View Receipt Image
+                      View Receipt
                     </a>
-                    <div className="mt-2 border border-slate-200 rounded-lg overflow-hidden">
-                      <img
-                        src={order.paymentInfo.receiptUrl || "/placeholder.svg"}
-                        alt="Payment Receipt"
-                        className="w-full h-auto max-w-md"
-                      />
-                    </div>
                   </div>
                 )}
                 {/* WhatsApp phone number display */}
@@ -2406,53 +2400,58 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Admin Actions Card */}
           <Card className="bg-white border-slate-200">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900">Admin Actions</CardTitle>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Admin Actions
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
             </CardHeader>
             <CardContent className="space-y-2">
               <Button
                 variant="outline"
-                className="w-full h-10 justify-start gap-2 bg-transparent"
+                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-slate-50 text-slate-700"
                 onClick={() => setRegisteredAgentDialogOpen(true)}
-                disabled={agentUpdating || !company} // Disable if updating or company not loaded
+                disabled={agentUpdating || !company}
               >
                 <UserCheck className="w-4 h-4" />
-                Assign Registered Agent
+                <span className="font-medium">Assign Registered Agent</span>
               </Button>
               <Button
                 variant="outline"
-                className="w-full h-10 justify-start gap-2 bg-transparent"
+                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-slate-50 text-slate-700"
                 onClick={() => setMailingAddressDialogOpen(true)}
-                disabled={addressUpdating || !company} // Disable if updating or company not loaded
+                disabled={addressUpdating || !company}
               >
                 <MapPin className="w-4 h-4" />
-                Assign Mailing Address
+                <span className="font-medium">Assign Mailing Address</span>
               </Button>
               <Button
                 variant="outline"
-                className="w-full h-10 justify-start gap-2 bg-transparent"
+                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-slate-50 text-slate-700"
                 onClick={() => {
                   setUploadDocDialogOpen(true)
-                  setUploadDocType("general") // Default type
+                  setUploadDocType("general")
                 }}
-                disabled={docUploading || !company} // Disable if updating or company not loaded
+                disabled={docUploading || !company}
               >
                 <Upload className="w-4 h-4" />
-                Upload Document
+                <span className="font-medium">Upload Document</span>
               </Button>
               <Button
                 variant="outline"
-                className="w-full h-10 justify-start gap-2 bg-transparent"
+                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-slate-50 text-slate-700"
                 onClick={() => setMilestonesDialogOpen(true)}
                 disabled={milestoneUpdating}
               >
                 <FileCheck className="w-4 h-4" />
-                Manage Milestones
+                <span className="font-medium">Manage Milestones</span>
               </Button>
               <Button
                 variant="outline"
-                className="w-full h-10 justify-start gap-2 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
                 onClick={() => {
                   // DEPRECATED: Invoice download is no longer supported.
                   toast({
@@ -2465,16 +2464,16 @@ export default function OrderDetailPage() {
                 disabled={deleting}
               >
                 <Download className="w-4 h-4" />
-                Download Invoice
+                <span className="font-medium">Download Invoice</span>
               </Button>
               <Button
                 variant="outline"
-                className="w-full h-10 justify-start gap-2 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
+                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
                 onClick={() => setDeleteDialogOpen(true)}
                 disabled={deleting}
               >
                 {deleting ? "Deleting..." : <Trash2 className="w-4 h-4" />}
-                Delete Order
+                <span className="font-medium">{deleting ? "Deleting..." : "Delete Order"}</span>
               </Button>
             </CardContent>
           </Card>
