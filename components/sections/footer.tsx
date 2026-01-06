@@ -111,19 +111,19 @@ export default function Footer() {
               <a href="#" className="text-white hover:text-white/80">
                 <Youtube className="w-6 h-6" />
               </a>
-              <a href="#" className="text-white hover:text-white/80">
+              <a href="https://www.facebook.com/BuzzFiling/" className="text-white hover:text-white/80">
                 <Facebook className="w-6 h-6" />
               </a>
-              <a href="#" className="text-white hover:text-white/80">
+              <a href="https://www.linkedin.com/company/buzzfiling/" className="text-white hover:text-white/80">
                 <Linkedin className="w-6 h-6" />
               </a>
-              <a href="#" className="text-white hover:text-white/80">
+              <a href="https://www.instagram.com/buzzfiling/" className="text-white hover:text-white/80">
                 <Instagram className="w-6 h-6" />
               </a>
             </div>
           </div>
           <p className="text-white text-sm mt-4 text-center md:text-left">
-            BuzzFiling is a technology company. We are not a law firm, nor can we offer official legal advice.
+            Buzz Filing is a technology company. We are not a law firm, nor can we offer official legal advice.
           </p>
         </div>
       </div>
