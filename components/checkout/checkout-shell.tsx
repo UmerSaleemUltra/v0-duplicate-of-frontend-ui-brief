@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { Check, Menu, X, Save } from "lucide-react"
+import { Check, Menu, X, Save } from 'lucide-react'
 import Link from "next/link"
 import { useState } from "react"
 import type { CheckoutData } from "@/app/checkout/page"
@@ -14,18 +14,9 @@ type CheckoutShellProps = {
   currentStep: number
   data: CheckoutData
   children: React.ReactNode
-  isAuthenticated?: boolean
-  originalStep?: number
 }
 
-export function CheckoutShell({
-  steps,
-  currentStep,
-  data,
-  children,
-  isAuthenticated = false,
-  originalStep = 0,
-}: CheckoutShellProps) {
+export function CheckoutShell({ steps, currentStep, data, children }: CheckoutShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string>("")
 
@@ -41,88 +32,82 @@ export function CheckoutShell({
   const handleSaveProgress = () => {
     const result = saveProgress()
     setSaveMessage(result.message)
-
+    
     setTimeout(() => {
       setSaveMessage("")
     }, 3000)
   }
 
   return (
-    <div className="min-h-screen flex flex-col lg:flex-row bg-gray-50">
+    <div className="min-h-screen flex bg-gray-50">
+      {/* Sidebar — made narrower */}
       <aside
-        className={`fixed lg:relative top-0 left-0 h-screen z-50
-          w-72 lg:w-80 xl:w-96 flex-shrink-0
+        className={`fixed lg:sticky top-0 h-screen z-50
+          w-64 sm:w-72 lg:w-64 xl:w-72
           bg-gradient-to-r from-[#880000] to-[#ff0d13]
           text-white shadow-2xl
-          transition-transform duration-300 ease-in-out
-          flex flex-col
+          transition-transform duration-300 ease-in-out overflow-y-auto scrollbar-hide
           ${mobileMenuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
         `}
+        style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        <div className="flex-shrink-0 p-6 lg:p-8 pb-4 lg:pb-6">
-          <Link href="/" className="block">
+        <div className="p-5 sm:p-6 lg:p-7">
+          <Link href="/" className="block mb-8 lg:mb-10">
             <Image
               src="/images/buzz-filing-logo-white.png"
               alt="BuzzFiling"
-              width={300}
-              height={120}
-              className="w-48 lg:w-56 xl:w-64 h-auto"
+              width={180}
+              height={72}
+              className="w-[150px] sm:w-[170px] lg:w-[180px] h-auto"
               priority
             />
           </Link>
-        </div>
 
-        <div className="flex-1 overflow-y-auto px-6 lg:px-8 pb-6 lg:pb-8">
           <div className="space-y-4 lg:space-y-5">
-            {steps.map((step, index) => {
-              const isCurrentStep = index === currentStep
-              const isPastStep = index < currentStep
+            {steps.map((step, index) => (
+              <div
+                key={step}
+                className={`transition-all duration-300 ${
+                  index === currentStep
+                    ? "opacity-100 scale-100"
+                    : index < currentStep
+                    ? "opacity-90 scale-[0.98]"
+                    : "opacity-60 scale-95"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div
+                    className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-sm lg:text-base transition-all duration-300 ${
+                      index < currentStep
+                        ? "bg-white/25 text-white backdrop-blur-sm"
+                        : index === currentStep
+                        ? "bg-white text-[#ff0d13] ring-4 ring-white/40 shadow-xl scale-110"
+                        : "bg-white/10 text-white/60 backdrop-blur-sm"
+                    }`}
+                    aria-current={index === currentStep ? "step" : undefined}
+                  >
+                    {index < currentStep ? <Check className="w-5 h-5 text-white" /> : index + 1}
+                  </div>
 
-              return (
-                <div
-                  key={step}
-                  className={`transition-all duration-300 ${
-                    isCurrentStep
-                      ? "opacity-100 scale-100"
-                      : isPastStep
-                        ? "opacity-90 scale-[0.98]"
-                        : "opacity-60 scale-95"
-                  }`}
-                >
-                  <div className="flex items-start gap-3 lg:gap-4">
-                    <div
-                      className={`w-10 h-10 lg:w-11 lg:h-11 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-base transition-all duration-300 ${
-                        isPastStep
-                          ? "bg-white/25 text-white backdrop-blur-sm"
-                          : isCurrentStep
-                            ? "bg-white text-[#ff0d13] ring-4 ring-white/40 shadow-xl scale-110"
-                            : "bg-white/10 text-white/60 backdrop-blur-sm"
+                  <div className="flex-1 pt-0.5">
+                    <h3
+                      className={`font-semibold text-sm lg:text-base mb-0.5 transition-colors duration-300 ${
+                        index === currentStep ? "text-white" : index < currentStep ? "text-white/95" : "text-white/60"
                       }`}
-                      aria-current={isCurrentStep ? "step" : undefined}
                     >
-                      {isPastStep ? <Check className="w-5 h-5 lg:w-6 lg:h-6 text-white" /> : index + 1}
-                    </div>
-
-                    <div className="flex-1 pt-0.5 min-w-0">
-                      <h3
-                        className={`font-semibold text-base lg:text-lg mb-1 transition-colors duration-300 ${
-                          isCurrentStep ? "text-white" : isPastStep ? "text-white/95" : "text-white/60"
-                        }`}
-                      >
-                        {step}
-                      </h3>
-                      <p
-                        className={`text-sm lg:text-base leading-relaxed transition-colors duration-300 ${
-                          isCurrentStep ? "text-white/95" : "text-white/75"
-                        }`}
-                      >
-                        {stepDescriptions[index]}
-                      </p>
-                    </div>
+                      {step}
+                    </h3>
+                    <p
+                      className={`text-xs lg:text-sm leading-relaxed transition-colors duration-300 ${
+                        index === currentStep ? "text-white/95" : "text-white/75"
+                      }`}
+                    >
+                      {stepDescriptions[index]}
+                    </p>
                   </div>
                 </div>
-              )
-            })}
+              </div>
+            ))}
           </div>
         </div>
       </aside>
@@ -134,16 +119,18 @@ export function CheckoutShell({
         />
       )}
 
-      <div className="flex-1 flex flex-col min-h-screen w-full lg:w-auto">
+      {/* Main Content */}
+      <div className="flex-1 flex flex-col min-h-screen">
         <div
           className="lg:hidden sticky top-0 z-30 
-            h-16 px-4
+            h-14 sm:h-16 px-4 sm:px-5
             flex items-center justify-between 
-            bg-white border-b border-gray-200"
+            bg-white border-b border-gray-200
+            transition-all duration-300 ease-in-out"
         >
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="flex items-center justify-center w-11 h-11 rounded-xl 
+            className="flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl 
               bg-gradient-to-r from-[#880000] to-[#ff0d13] 
               hover:shadow-lg hover:scale-105 active:scale-95
               transition-all duration-200 ease-in-out
@@ -159,32 +146,34 @@ export function CheckoutShell({
               alt="BuzzFiling"
               width={160}
               height={100}
-              className="w-36 sm:w-40 h-auto"
+              className="w-[130px] sm:w-[150px] md:w-[160px] h-auto"
               priority
             />
           </Link>
 
-          <div className="w-11" />
+          <div className="w-10 sm:w-11" />
         </div>
 
-        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 w-full">
-          <div className="max-w-6xl mx-auto w-full">
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 sm:p-6 lg:p-8">
-              <div className="flex justify-end mb-4">
-                <Button onClick={handleSaveProgress} variant="outline" className="gap-2 text-sm bg-transparent">
-                  <Save className="w-4 h-4" />
-                  Save Progress
-                </Button>
-              </div>
-
-              {saveMessage && (
-                <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200">
-                  <p className="text-sm text-green-700">{saveMessage}</p>
-                </div>
-              )}
-
-              {children}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 max-w-7xl w-full mx-auto">
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-7 lg:p-8">
+            <div className="flex justify-end mb-4">
+              <Button
+                onClick={handleSaveProgress}
+                variant="outline"
+                className="gap-2 text-sm"
+              >
+                <Save className="w-4 h-4" />
+                Save Progress
+              </Button>
             </div>
+            
+            {saveMessage && (
+              <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200">
+                <p className="text-sm text-green-700">{saveMessage}</p>
+              </div>
+            )}
+
+            {children}
           </div>
         </main>
       </div>
