@@ -8,7 +8,7 @@ import time
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://v0-frontend-ui-brief.vercel.app"  # UPDATE THIS
+BASE_URL = "https://buzzfiling.com"  # Production domain
 LOGIN_ENDPOINT = f"{BASE_URL}/api/auth/login"
 TEST_EMAIL = "test@example.com"
 FAILED_ATTEMPTS = 15

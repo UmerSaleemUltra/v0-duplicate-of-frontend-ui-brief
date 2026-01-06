@@ -9,7 +9,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://v0-frontend-ui-brief.vercel.app"  # UPDATE THIS
+BASE_URL = "https://buzzfiling.com"  # Production domain
 TOTAL_REQUESTS = 1000
 CONCURRENT_THREADS = 50
 

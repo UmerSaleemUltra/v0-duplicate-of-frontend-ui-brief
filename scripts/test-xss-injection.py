@@ -7,7 +7,7 @@ import requests
 from datetime import datetime
 
 # Configuration
-BASE_URL = "https://v0-frontend-ui-brief.vercel.app"  # UPDATE THIS
+BASE_URL = "https://buzzfiling.com"  # Production domain
 TEST_ENDPOINTS = [
     "/api/contact",
     "/api/auth/login",

@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       createdAt: new Date().toISOString(),
     })
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://v0-frontend-ui-brief.vercel.app"
+    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://buzzfiling.com"
 
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}&userId=${user._id.toString()}`
 
