@@ -93,7 +93,6 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
     setIsCreatingUser(true)
 
     try {
-      console.log("[v0] Attempting to sign up user with authService...")
       const signupResult = await authService.signup({
         name: data.name,
         email: data.email,
@@ -104,10 +103,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
       if (!signupResult.success) {
         const errorMessage = signupResult.error || "Failed to create account"
 
-        // If the email already exists, attempt to login with provided credentials
         if (errorMessage.toLowerCase().includes("already exists") || errorMessage.toLowerCase().includes("duplicate")) {
-          console.log("[v0] Account exists, attempting to login instead...")
-
           try {
             const loginResult = await authService.login({
               email: data.email,
@@ -120,9 +116,6 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               )
             }
 
-            console.log("[v0] Existing user logged in successfully")
-            console.log("[v0] User data:", loginResult.user)
-
             updateData({
               phone: phone,
               name: data.name,
@@ -131,7 +124,6 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               userId: loginResult.user?.id,
             })
 
-            console.log("[v0] Account step completed (existing user), moving to next step")
             onNext()
             return
           } catch (loginError) {
@@ -142,9 +134,6 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
         throw new Error(errorMessage)
       }
 
-      console.log("[v0] User signed up successfully, auth token saved in cookies")
-      console.log("[v0] User data:", signupResult.user)
-
       updateData({
         phone: phone,
         name: data.name,
@@ -153,10 +142,9 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
         userId: signupResult.user?.id,
       })
 
-      console.log("[v0] Account step completed, moving to next step")
       onNext()
     } catch (error) {
-      console.error("[v0] Error during signup:", error)
+      console.error("Error during signup:", error)
       setErrors({ submit: error instanceof Error ? error.message : "Failed to create account" })
     } finally {
       setIsCreatingUser(false)

@@ -444,16 +444,6 @@ export default function CheckoutPage() {
   }
 
   const nextStep = () => {
-    const isAuth = authService.isAuthenticated()
-
-    // If trying to proceed beyond account step without authentication, redirect to account instantly
-    if (currentStep >= 0 && !isAuth) {
-      setCurrentStep(0)
-      saveCheckoutStep(0)
-      window.scrollTo(0, 0)
-      return
-    }
-
     if (currentStep < STEPS.length - 1) {
       const newStep = currentStep + 1
       console.log("[v0] Moving to step:", newStep)

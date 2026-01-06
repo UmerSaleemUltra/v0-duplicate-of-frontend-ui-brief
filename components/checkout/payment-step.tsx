@@ -141,12 +141,52 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
     setIsSubmitting(true)
 
     try {
-      const token = authService.getToken()
+      let token = authService.getToken()
+
       if (!token) {
-        throw new Error("Authentication required. Please complete the account step first.")
+        if (!data.email || !data.password || !data.name || !data.phone) {
+          throw new Error("Account information is incomplete. Please go back and complete the account step.")
+        }
+
+        const signupResult = await authService.signup({
+          name: data.name,
+          email: data.email,
+          password: data.password,
+          phone: data.phone,
+        })
+
+        if (!signupResult.success) {
+          const errorMessage = signupResult.error || "Failed to create account"
+
+          // If account exists, try to login
+          if (
+            errorMessage.toLowerCase().includes("already exists") ||
+            errorMessage.toLowerCase().includes("duplicate")
+          ) {
+            const loginResult = await authService.login({
+              email: data.email,
+              password: data.password,
+            })
+
+            if (!loginResult.success) {
+              throw new Error(
+                "An account with this email already exists but the password is incorrect. Please go back to the account step and verify your credentials.",
+              )
+            }
+
+            token = authService.getToken()
+          } else {
+            throw new Error(errorMessage)
+          }
+        } else {
+          token = authService.getToken()
+        }
+
+        if (!token) {
+          throw new Error("Failed to authenticate after account creation. Please try again.")
+        }
       }
 
-      // Upload passports from IndexedDB first
       const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
 
       let updatedMembers
@@ -168,7 +208,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         )
       }
 
-      // Create company
       const companyResponse = await fetch("/api/companies", {
         method: "POST",
         headers: {
