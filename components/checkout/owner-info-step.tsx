@@ -493,7 +493,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                 {/* Passport Upload */}
                 <div className="space-y-2">
                   <Label className="text-sm font-semibold text-slate-900">
-                    Passport <span className="text-red-600">*</span>
+                    Passport / National ID Card <span className="text-red-600">*</span>
                   </Label>
 
                   <div className="relative">
