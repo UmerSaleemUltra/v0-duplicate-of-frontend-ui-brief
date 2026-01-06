@@ -420,25 +420,24 @@ export default function CheckoutPage() {
   }
 
   const nextStep = () => {
-    const isAuth = authService.isAuthenticated()
-    const token = authService.getToken()
-    const user = authService.getCurrentUser()
+    const savedData = getCheckoutData()
+    const hasCheckoutData = savedData && savedData.account?.email && savedData.state?.state
+
+    // Allow proceeding if user has checkout data OR is authenticated
+    const canProceed = authService.isAuthenticated() || hasCheckoutData
 
     console.log(
       "[v0] Navigation - Current step:",
       currentStep,
-      "Is Auth:",
-      isAuth,
-      "Has Token:",
-      !!token,
-      "Has User:",
-      !!user,
+      "Has checkout data:",
+      !!hasCheckoutData,
+      "Can proceed:",
+      canProceed,
     )
 
-    // Only check auth when moving FROM Owner Info (step 3) to Review (step 4)
-    // or FROM Review (step 4) to Payment (step 5)
-    if ((currentStep === 3 || currentStep === 4) && !isAuth) {
-      console.log("[v0] Auth check failed, redirecting to account step")
+    // Only block if trying to access review or payment WITHOUT any data
+    if ((currentStep === 3 || currentStep === 4) && !canProceed) {
+      console.log("[v0] No checkout data or auth, redirecting to account step")
       setCurrentStep(0)
       saveCheckoutStep(0)
       window.scrollTo(0, 0)
