@@ -253,7 +253,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto min-h-0">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -281,7 +281,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-white/10 flex-shrink-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+        <div className="p-3 border-t border-white/10 flex-shrink-0 bg-gradient-to-r from-[#880000] to-[#ff0d13] mt-auto">
           <Button
             variant="ghost"
             onClick={handleLogout}
