@@ -86,8 +86,8 @@ export default function CompanyPage() {
               id: m._id?.toString() || m.id || `member-${idx + 1}`,
               storageKey: m.id || m.memberId || `member-${idx + 1}`,
               name: fullName,
-              email: m.email || "Not yet",
-              phone: m.phone || "Not yet",
+              email: m.email || "",
+              phone: m.phone || "",
               address: m.address || "Not yet",
               city: m.city || "Not yet",
               state: m.state || "Not yet",
@@ -439,14 +439,18 @@ export default function CompanyPage() {
                     </div>
 
                     <div className="grid sm:grid-cols-2 gap-3 pt-3 border-t border-slate-200">
-                      <div>
-                        <div className="text-xs text-slate-600 mb-1">Email</div>
-                        <div className="text-sm text-slate-900">{member.email}</div>
-                      </div>
-                      <div>
-                        <div className="text-xs text-slate-600 mb-1">Phone</div>
-                        <div className="text-sm text-slate-900">{member.phone}</div>
-                      </div>
+                      {member.email && (
+                        <div>
+                          <div className="text-xs text-slate-600 mb-1">Email</div>
+                          <div className="text-sm text-slate-900">{member.email}</div>
+                        </div>
+                      )}
+                      {member.phone && (
+                        <div>
+                          <div className="text-xs text-slate-600 mb-1">Phone</div>
+                          <div className="text-sm text-slate-900">{member.phone}</div>
+                        </div>
+                      )}
                       <div>
                         <div className="text-xs text-slate-600 mb-1">SSN/ITIN</div>
                         <div className="text-sm text-slate-900 ">{member.ssn}</div>

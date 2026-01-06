@@ -1392,6 +1392,164 @@ export default function OrderDetailPage() {
     }
   }
 
+  const generateInvoice = () => {
+    if (!order) return
+
+    const invoiceHTML = `
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Invoice - ${order.orderId}</title>
+  <style>
+    body { font-family: Arial, sans-serif; max-width: 800px; margin: 40px auto; padding: 20px; }
+    .header { text-align: center; margin-bottom: 40px; }
+    .header h1 { color: #880000; margin: 0; }
+    .info-section { margin-bottom: 30px; }
+    .info-section h2 { color: #333; border-bottom: 2px solid #880000; padding-bottom: 10px; }
+    .info-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+    .info-item { padding: 10px; background: #f5f5f5; border-radius: 5px; }
+    .info-label { font-weight: bold; color: #666; font-size: 12px; }
+    .info-value { color: #333; margin-top: 5px; }
+    .status { display: inline-block; padding: 5px 15px; border-radius: 20px; font-size: 12px; font-weight: bold; }
+    .status-paid { background: #d4edda; color: #155724; }
+    .status-pending { background: #fff3cd; color: #856404; }
+    .footer { margin-top: 50px; text-align: center; color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>INVOICE</h1>
+    <p style="color: #666;">Order ID: ${order.id}</p>
+    <p style="color: #666;">Date: ${new Date(order.createdAt).toLocaleDateString()}</p>
+  </div>
+
+  <div class="info-section">
+    <h2>Customer Information</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Customer Name</div>
+        <div class="info-value">${customer?.name || order.email || "N/A"}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Email</div>
+        <div class="info-value">${customer?.email || order.email || "N/A"}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Phone</div>
+        <div class="info-value">${customer?.phone || "N/A"}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Payment Status</div>
+        <div class="info-value">
+          <span class="status ${order?.paymentInfo?.status === "paid" ? "status-paid" : "status-pending"}">
+            ${order?.paymentInfo?.status?.toUpperCase() || "PENDING"}
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h2>Business Details</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Business Name</div>
+        <div class="info-value">${company?.name || "N/A"}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">State</div>
+        <div class="info-value">${company?.state || "N/A"}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Business Category</div>
+        <div class="info-value">${company?.businessCategory || "N/A"}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Package Type</div>
+        <div class="info-value">${
+          company?.packageType
+            ? company.packageType
+                .split("-")
+                .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                .join(" ")
+            : "N/A"
+        }</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="info-section">
+    <h2>Payment Details</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="info-label">Base Price</div>
+        <div class="info-value">$${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">Add-ons</div>
+        <div class="info-value">$${(order?.pricing?.addonsTotal || (order?.selectedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) || 0).toFixed(2)}</div>
+      </div>
+      <div class="info-item">
+        <div class="info-label">State Fee</div>
+        <div class="info-value">$${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}</div>
+      </div>
+      <div class="info-item" style="background: #880000; color: white;">
+        <div class="info-label" style="color: #fff;">Total Amount</div>
+        <div class="info-value" style="color: #fff; font-size: 20px; font-weight: bold;">$${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}</div>
+      </div>
+    </div>
+  </div>
+
+  ${
+    addons && addons.length > 0
+      ? `
+  <div class="info-section">
+    <h2>Selected Add-ons</h2>
+    <ul style="list-style: none; padding: 0;">
+      ${addons
+        .map((addon: any) => {
+          const isObject = typeof addon === "object" && addon !== null
+          const addonName = isObject ? addon.name : getAddonName(addon)
+          const addonPrice = isObject ? addon.price : 0
+          return `
+        <li style="padding: 10px; background: #f5f5f5; margin-bottom: 10px; border-radius: 5px;">
+          <strong>${addonName}</strong>
+          ${addonPrice ? ` - $${addonPrice.toFixed(2)}` : ""}
+        </li>
+      `
+        })
+        .join("")}
+    </ul>
+  </div>
+  `
+      : ""
+  }
+
+  <div class="footer">
+    <p>Thank you for your business!</p>
+    <p>For questions, please contact support.</p>
+  </div>
+</body>
+</html>
+    `
+
+    const blob = new Blob([invoiceHTML], { type: "text/html" })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement("a")
+    link.href = url
+    link.download = `Invoice-${order.id}.html`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+
+    toast({
+      title: "Invoice Downloaded",
+      description: "Invoice has been downloaded as an HTML file.",
+    })
+  }
+
   return (
     <div className="space-y-8">
       {/* Header */}
@@ -2453,13 +2611,7 @@ export default function OrderDetailPage() {
                 variant="outline"
                 className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
                 onClick={() => {
-                  // DEPRECATED: Invoice download is no longer supported.
-                  toast({
-                    title: "Feature Removed",
-                    description:
-                      "Invoice download has been removed from the system. Order details are available on this page.",
-                    variant: "default",
-                  })
+                  generateInvoice()
                 }}
                 disabled={deleting}
               >
