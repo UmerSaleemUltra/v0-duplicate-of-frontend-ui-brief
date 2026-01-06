@@ -7,7 +7,6 @@ import {
   Bell,
   MapPin,
   Clock,
-  MoreVertical,
   Copy,
   Check,
   CheckCircle2,
@@ -596,8 +595,18 @@ export default function ClientDashboard() {
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
                   <Image src="/images/design-mode/us.png" alt="US Flag" width={24} height={16} className="rounded" />
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2">
-                  <MoreVertical className="w-4 h-4 text-slate-400" />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-8 w-8 -mr-2 -mt-2"
+                  onClick={() => handleCopy(businessName, setCopied)}
+                  title="Copy business name"
+                >
+                  {copied ? (
+                    <Check className="w-4 h-4 text-green-600" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                  )}
                 </Button>
               </div>
               <div className="space-y-1">
@@ -687,9 +696,6 @@ export default function ClientDashboard() {
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
                   <Bell className="w-6 h-6 text-slate-600" />
                 </div>
-                <Button variant="ghost" size="icon" className="h-8 w-8 -mr-2 -mt-2">
-                  <MoreVertical className="w-4 h-4 text-slate-400" />
-                </Button>
               </div>
               <div className="space-y-2">
                 <p className="text-xs text-slate-500 font-medium">Service Status</p>

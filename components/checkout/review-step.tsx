@@ -28,14 +28,6 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
   const [isCreatingCompany, setIsCreatingCompany] = useState(false)
 
   useEffect(() => {
-    console.log("[v0] ReviewStep formData:", {
-      hasFormData: !!formData,
-      state: formData?.state,
-      businessName: formData?.businessName,
-      packageType: formData?.packageType,
-      members: formData?.members?.length,
-    })
-
     const loadPassports = async () => {
       const passports: Record<string, PassportData | null> = {}
       const validMembers = Array.isArray(formData?.members)
@@ -45,16 +37,13 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           )
         : []
 
-      console.log("[v0] Loading passports for", validMembers.length, "members")
-
       for (const member of validMembers) {
         if (member.passportFile || member.passportUrl) {
           try {
             const passport = await getPassport(member.id)
             passports[member.id] = passport
-            console.log("[v0] Loaded passport for member:", member.id)
           } catch (error) {
-            console.error("[v0] Error loading passport for member:", member.id, error)
+            console.error("Error loading passport for member:", member.id, error)
           }
         }
       }
@@ -72,8 +61,6 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           m != null && typeof m === "object" && m.id != null && typeof m.id === "string" && m.id.length > 0,
       )
     : []
-
-  console.log("[v0] ReviewStep - Valid members count:", validMembers.length)
 
   const membersWithItin = validMembers.filter((m) => m.itinAdded === true)
   const isAdvancedPackage = formData?.packageType === "advanced"

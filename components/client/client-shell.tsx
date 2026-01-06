@@ -196,14 +196,10 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
           text-white 
           transition-transform duration-300 ease-in-out
           ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-          flex flex-col overflow-y-auto scrollbar-hide
+          flex flex-col
         `}
-        style={{
-          scrollbarWidth: "none",
-          msOverflowStyle: "none",
-        }}
       >
-        <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+        <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between flex-shrink-0">
           <Link href="/client/dashboard" className="flex items-center flex-1 min-w-0">
             <Image
               src="/images/buzz-filing-logo-white.png"
@@ -224,7 +220,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         </div>
 
         {isAdminView && (
-          <div className="px-4 py-3 bg-yellow-500/20 border-b border-white/10">
+          <div className="px-4 py-3 bg-yellow-500/20 border-b border-white/10 flex-shrink-0">
             <div className="flex items-center gap-2 text-xs text-white">
               <ShieldAlert className="w-4 h-4" />
               <span className="font-medium">Admin View Mode</span>
@@ -233,7 +229,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
           </div>
         )}
 
-        <div className="px-4 py-3 border-b border-white/10">
+        <div className="px-4 py-3 border-b border-white/10 flex-shrink-0">
           <button
             onClick={() => setCompanyModalOpen(true)}
             className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 group backdrop-blur-sm min-h-[44px]"
@@ -257,7 +253,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
           </button>
         </div>
 
-        <nav className="flex-1 p-3 space-y-1 overflow-y-auto scrollbar-hide">
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
           {NAV_ITEMS.map((item) => {
             const Icon = item.icon
             const isActive = pathname === item.href
@@ -285,7 +281,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
           })}
         </nav>
 
-        <div className="p-3 border-t border-white/10">
+        <div className="p-3 border-t border-white/10 flex-shrink-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
           <Button
             variant="ghost"
             onClick={handleLogout}
