@@ -19,6 +19,7 @@ import {
   Settings,
   FileText,
   ShieldAlert,
+  RefreshCw,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -48,6 +49,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [userInitials, setUserInitials] = useState("U")
   const [userName, setUserName] = useState("")
   const [isAdminView, setIsAdminView] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -186,11 +188,18 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     }
   }
 
+  const handleSidebarRefresh = async () => {
+    setIsRefreshing(true)
+    console.log("[v0] Manual refresh triggered from sidebar")
+    window.dispatchEvent(new Event("client-dashboard-refresh"))
+    setTimeout(() => setIsRefreshing(false), 500)
+  }
+
   return (
     <div className="min-h-screen flex bg-background">
       <aside
         className={`
-          w-64 sm:w-72 lg:w-64 fixed lg:sticky left-0 top-0 h-screen z-40
+          w-64 sm:w-72 lg:w-64 fixed lg:relative left-0 top-0 h-screen lg:h-auto z-40
           bg-gradient-to-r from-[#880000] to-[#ff0d13]
           text-white 
           transition-transform duration-300 ease-in-out
@@ -213,13 +222,23 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
               priority
             />
           </Link>
-          <button
-            onClick={() => setSidebarOpen(false)}
-            className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors duration-200 flex-shrink-0 ml-2"
-            aria-label="Close sidebar"
-          >
-            <X className="w-4 h-4 text-white" />
-          </button>
+          <div className="flex items-center gap-1 flex-shrink-0 ml-2">
+            <button
+              onClick={handleSidebarRefresh}
+              disabled={isRefreshing}
+              className="hidden lg:flex p-2 hover:bg-white/10 rounded-lg transition-colors duration-200"
+              aria-label="Refresh dashboard"
+            >
+              <RefreshCw className={`w-4 h-4 text-white ${isRefreshing ? "animate-spin" : ""}`} />
+            </button>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors duration-200"
+              aria-label="Close sidebar"
+            >
+              <X className="w-4 h-4 text-white" />
+            </button>
+          </div>
         </div>
 
         {isAdminView && (
@@ -390,7 +409,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       </Dialog>
 
       <div className="flex-1 flex flex-col min-w-0">
-        <div className="sticky top-0 z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+        <div className="bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
           <div className="flex items-center justify-end">
             {/* NotificationDropdown is conditionally rendered based on specific pages */}
             {pathname.includes("/client/dashboard") && <NotificationDropdown />}
