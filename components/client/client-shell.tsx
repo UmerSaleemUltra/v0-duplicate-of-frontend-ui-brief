@@ -389,7 +389,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             <Button
               variant="ghost"
               onClick={handleLogout}
-              className="w-full justify-start text-white/80 hover:bg-white/10 hover:text-white h-11 transition-all duration-200 text-sm"
+              className="w-full justify-start text-white/80 hover:bg-white/10 hover:text-white h-11 transition-all duration-200 text-sm font-normal"
             >
               <LogOut className="w-5 h-5 mr-2.5 flex-shrink-0" />
               {isAdminView ? "Exit Admin Mode" : "Sign Out"}
@@ -493,7 +493,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
       <div className="flex-1 flex flex-col min-w-0">
         <div className="z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-          <div className="flex items-center justify-end gap-3">
+          <div className="flex items-center justify-end gap-2">
             <Button
               variant="ghost"
               size="icon"
@@ -501,7 +501,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                 setIsRefreshing(true)
                 console.log("[v0] Manual refresh triggered")
                 window.dispatchEvent(new Event("client-dashboard-refresh"))
-                // Show loading state for visual feedback
                 setTimeout(() => {
                   setIsRefreshing(false)
                 }, 1500)
@@ -512,8 +511,17 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             >
               <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
-            {/* NotificationDropdown is conditionally rendered based on specific pages */}
             {pathname.includes("/client/dashboard") && <NotificationDropdown />}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLogout}
+              className="h-10 w-10 hover:bg-red-50 hover:text-red-600"
+              aria-label={isAdminView ? "Exit admin mode" : "Logout"}
+              title={isAdminView ? "Exit Admin Mode" : "Logout"}
+            >
+              <LogOut className="w-5 h-5" />
+            </Button>
           </div>
         </div>
         <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full bg-white">{children}</main>
