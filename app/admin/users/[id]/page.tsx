@@ -339,41 +339,45 @@ export default function UserDetailPage() {
   const userDocuments = documents
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" onClick={() => router.back()}>
+        <Button variant="ghost" size="icon" className="hover:bg-slate-100" onClick={() => router.back()}>
           <ArrowLeft className="h-5 w-5" />
         </Button>
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">{user.name}</h1>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+            {user.name}
+          </h1>
           <p className="text-muted-foreground mt-1">{user.email}</p>
         </div>
       </div>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>User Information</CardTitle>
+      <Card className="shadow-lg border-slate-200">
+        <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
+          <CardTitle className="text-xl font-semibold">User Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <Label className="text-muted-foreground">Name</Label>
-              <p className="font-medium">{user.name}</p>
+        <CardContent className="space-y-6 p-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
+              <p className="font-semibold text-lg text-slate-900">{user.name}</p>
             </div>
-            <div>
-              <Label className="text-muted-foreground">Email</Label>
-              <p className="font-medium">{user.email}</p>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Email Address</Label>
+              <p className="font-semibold text-lg text-slate-900">{user.email}</p>
             </div>
-            <div>
-              <Label className="text-muted-foreground">Phone</Label>
-              <p className="font-medium">{user.phone || "Not provided"}</p>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Phone Number</Label>
+              <p className="font-semibold text-lg text-slate-900">{user.phone || "Not provided"}</p>
             </div>
-            <div>
-              <Label className="text-muted-foreground">Status</Label>
+            <div className="space-y-2">
+              <Label className="text-sm font-medium text-muted-foreground">Account Status</Label>
               <Badge
                 variant="outline"
                 className={
-                  user.status === "active" ? "bg-brand/10 text-brand border-brand/20" : "bg-muted text-muted-foreground"
+                  user.status === "active"
+                    ? "bg-green-50 text-green-700 border-green-200 font-medium px-3 py-1"
+                    : "bg-amber-50 text-amber-700 border-amber-200 font-medium px-3 py-1"
                 }
               >
                 {user.status}
@@ -381,8 +385,11 @@ export default function UserDetailPage() {
             </div>
           </div>
 
-          <div className="pt-4 border-t">
-            <Button onClick={() => setShowPasswordDialog(true)}>
+          <div className="pt-6 border-t">
+            <Button
+              onClick={() => setShowPasswordDialog(true)}
+              className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+            >
               <Lock className="h-4 w-4 mr-2" />
               Change Password
             </Button>
@@ -390,27 +397,35 @@ export default function UserDetailPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Companies ({companies.length})</CardTitle>
+      <Card className="shadow-lg border-slate-200">
+        <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
+          <CardTitle className="text-xl font-semibold">Companies ({companies.length})</CardTitle>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-6">
           <div className="space-y-4">
             {companies.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No companies found for this user</p>
             ) : (
               companies.map((company) => (
-                <div key={company.id} className="border rounded-lg p-4 space-y-3">
+                <div
+                  key={company.id}
+                  className="border-2 border-slate-200 rounded-xl p-5 space-y-4 hover:border-slate-300 transition-colors bg-gradient-to-br from-white to-slate-50"
+                >
                   <div className="flex items-center justify-between">
                     <div>
-                      <h3 className="font-semibold">{company.name}</h3>
-                      <p className="text-sm text-muted-foreground">
+                      <h3 className="font-bold text-lg text-slate-900">{company.name}</h3>
+                      <p className="text-sm text-slate-600 mt-1">
                         {company.entityType} • {company.state}
                       </p>
                     </div>
                     <div className="flex gap-2">
                       {editingCompany === company.id ? (
-                        <Button size="sm" onClick={() => handleSaveCompany(company.id)} disabled={savingCompany}>
+                        <Button
+                          size="sm"
+                          onClick={() => handleSaveCompany(company.id)}
+                          disabled={savingCompany}
+                          className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                        >
                           {savingCompany ? (
                             <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                           ) : (
@@ -419,13 +434,18 @@ export default function UserDetailPage() {
                           Save
                         </Button>
                       ) : (
-                        <Button size="sm" variant="outline" onClick={() => handleEditCompany(company)}>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => handleEditCompany(company)}
+                          className="border-2"
+                        >
                           <Edit className="h-4 w-4 mr-2" />
                           Edit IDs
                         </Button>
                       )}
                       <Link href={`/admin/customers/${company.id}`}>
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" className="border-2 bg-transparent">
                           View Details
                         </Button>
                       </Link>
@@ -485,28 +505,42 @@ export default function UserDetailPage() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Orders</CardTitle>
-            <FileText className="h-4 w-4 text-muted-foreground" />
+        <Card className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 bg-gradient-to-br from-purple-50 to-purple-100">
+            <CardTitle className="text-base font-semibold">Total Orders</CardTitle>
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
+              <FileText className="h-5 w-5 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{userOrders.length}</div>
-            <Link href="/admin/orders" className="text-xs text-muted-foreground hover:underline">
-              View all orders
+          <CardContent className="pt-6">
+            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent">
+              {userOrders.length}
+            </div>
+            <Link
+              href="/admin/orders"
+              className="text-sm text-purple-600 hover:underline mt-2 inline-block font-medium"
+            >
+              View all orders →
             </Link>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Documents</CardTitle>
-            <Mail className="h-4 w-4 text-muted-foreground" />
+        <Card className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 bg-gradient-to-br from-blue-50 to-blue-100">
+            <CardTitle className="text-base font-semibold">Total Documents</CardTitle>
+            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
+              <Mail className="h-5 w-5 text-white" />
+            </div>
           </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{userDocuments.length}</div>
-            <Link href="/admin/documents" className="text-xs text-muted-foreground hover:underline">
-              View all documents
+          <CardContent className="pt-6">
+            <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+              {userDocuments.length}
+            </div>
+            <Link
+              href="/admin/documents"
+              className="text-sm text-blue-600 hover:underline mt-2 inline-block font-medium"
+            >
+              View all documents →
             </Link>
           </CardContent>
         </Card>

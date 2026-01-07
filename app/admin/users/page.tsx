@@ -361,87 +361,97 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 p-4 md:p-6 lg:p-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-          <p className="text-muted-foreground mt-1">Manage users, companies, and access control</p>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+            User Management
+          </h1>
+          <p className="text-muted-foreground mt-2">Manage users, companies, and access control</p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <div className="glass-card p-6 rounded-2xl border border-white/10">
+        <div className="glass-card p-6 rounded-2xl border border-white/10 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Users</p>
-              <p className="text-2xl font-bold mt-1">{users.length}</p>
+              <p className="text-sm font-medium text-muted-foreground">Total Users</p>
+              <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+                {users.length}
+              </p>
             </div>
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-              <UserPlus className="h-6 w-6 text-white" />
+            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
+              <UserPlus className="h-7 w-7 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-2xl border border-white/10">
+        <div className="glass-card p-6 rounded-2xl border border-white/10 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Active Users</p>
-              <p className="text-2xl font-bold mt-1">{users.filter((u) => u.status === "active").length}</p>
+              <p className="text-sm font-medium text-muted-foreground">Active Users</p>
+              <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
+                {users.filter((u) => u.status === "active").length}
+              </p>
             </div>
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-              <UserPlus className="h-6 w-6 text-white" />
+            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
+              <UserPlus className="h-7 w-7 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-2xl border border-white/10">
+        <div className="glass-card p-6 rounded-2xl border border-white/10 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Total Companies</p>
-              <p className="text-2xl font-bold mt-1">{companies.length}</p>
+              <p className="text-sm font-medium text-muted-foreground">Total Companies</p>
+              <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
+                {companies.length}
+              </p>
             </div>
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-              <Building2 className="h-6 w-6 text-white" />
+            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
+              <Building2 className="h-7 w-7 text-white" />
             </div>
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-2xl border border-white/10">
+        <div className="glass-card p-6 rounded-2xl border border-white/10 hover:shadow-lg transition-shadow">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-sm text-muted-foreground">Pending Users</p>
-              <p className="text-2xl font-bold mt-1">{users.filter((u) => u.status === "pending").length}</p>
+              <p className="text-sm font-medium text-muted-foreground">Pending Users</p>
+              <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-amber-600 to-amber-700 bg-clip-text text-transparent">
+                {users.filter((u) => u.status === "pending").length}
+              </p>
             </div>
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-              <UserPlus className="h-6 w-6 text-white" />
+            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg">
+              <UserPlus className="h-7 w-7 text-white" />
             </div>
           </div>
         </div>
       </div>
 
-      <div className="glass-card p-6 rounded-2xl border border-white/10">
+      <div className="glass-card p-4 rounded-2xl border border-white/10">
         <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search users by name or email..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-background/50"
+            className="pl-12 h-12 bg-background/50 text-base"
           />
         </div>
       </div>
 
-      <div className="glass-card rounded-2xl border border-white/10 overflow-hidden">
+      <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-lg">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-muted/50 border-b border-white/10">
+            <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
               <tr>
-                <th className="text-left p-4 font-medium text-sm">User</th>
-                <th className="text-left p-4 font-medium text-sm">Email</th>
-                <th className="text-left p-4 font-medium text-sm">Status</th>
-                <th className="text-left p-4 font-medium text-sm">Companies</th>
-                <th className="text-left p-4 font-medium text-sm">Orders</th>
-                <th className="text-left p-4 font-medium text-sm">Actions</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700">User</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700">Email</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700">Status</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700">Companies</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700">Orders</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -457,23 +467,23 @@ export default function UsersPage() {
                   const userOrders = getUserOrders(user.id)
 
                   return (
-                    <tr key={user.id} className="border-b border-white/5 hover:bg-muted/30 transition-colors">
+                    <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-all">
                       <td className="p-4">
                         <div>
-                          <p className="font-medium">{user.name}</p>
-                          <p className="text-sm text-muted-foreground">{user.phone || "No phone"}</p>
+                          <p className="font-semibold text-slate-900">{user.name}</p>
+                          <p className="text-sm text-slate-500">{user.phone || "No phone"}</p>
                         </div>
                       </td>
                       <td className="p-4">
-                        <span className="text-sm">{user.email}</span>
+                        <span className="text-sm text-slate-700">{user.email}</span>
                       </td>
                       <td className="p-4">
                         <Badge
                           variant="outline"
                           className={
                             user.status === "active"
-                              ? "bg-brand/10 text-brand border-brand/20"
-                              : "bg-muted text-muted-foreground"
+                              ? "bg-green-50 text-green-700 border-green-200 font-medium"
+                              : "bg-amber-50 text-amber-700 border-amber-200 font-medium"
                           }
                         >
                           {user.status}
@@ -481,27 +491,31 @@ export default function UsersPage() {
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <Building2 className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{userCompanies.length}</span>
+                          <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                            <Building2 className="h-4 w-4 text-blue-600" />
+                          </div>
+                          <span className="text-sm font-medium">{userCompanies.length}</span>
                         </div>
                       </td>
                       <td className="p-4">
                         <div className="flex items-center gap-2">
-                          <FileText className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-sm">{userOrders.length}</span>
+                          <div className="h-8 w-8 rounded-lg bg-purple-50 flex items-center justify-center">
+                            <FileText className="h-4 w-4 text-purple-600" />
+                          </div>
+                          <span className="text-sm font-medium">{userOrders.length}</span>
                         </div>
                       </td>
                       <td className="p-4">
                         <div className="flex gap-2">
                           <Link href={`/admin/users/${user.id}`}>
-                            <Button size="sm" variant="ghost" className="h-8 px-3">
+                            <Button size="sm" variant="ghost" className="h-9 px-3 hover:bg-slate-100">
                               View
                             </Button>
                           </Link>
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 w-8 p-0"
+                            className="h-9 w-9 p-0 hover:bg-slate-100"
                             onClick={() => handleEditUser(user)}
                           >
                             <Edit className="h-4 w-4" />
@@ -509,7 +523,7 @@ export default function UsersPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 w-8 p-0"
+                            className="h-9 w-9 p-0 hover:bg-slate-100"
                             onClick={() => handleOpenPasswordModal(user)}
                             title="Change Password"
                           >
@@ -518,7 +532,7 @@ export default function UsersPage() {
                           <Button
                             size="sm"
                             variant="ghost"
-                            className="h-8 w-8 p-0"
+                            className="h-9 w-9 p-0 hover:bg-slate-100"
                             onClick={() => handleLoginAsUser(user)}
                             title="Login as User"
                           >

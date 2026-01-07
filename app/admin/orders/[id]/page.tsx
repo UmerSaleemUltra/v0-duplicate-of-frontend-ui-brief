@@ -49,6 +49,7 @@ import {
   Trash2,
   MessageCircle,
   Settings,
+  Plus,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -123,6 +124,7 @@ export default function OrderDetailPage() {
   const [uploadDocDialogOpen, setUploadDocDialogOpen] = useState(false)
   const [milestonesDialogOpen, setMilestonesDialogOpen] = useState(false)
   const [customMilestoneDialogOpen, setCustomMilestoneDialogOpen] = useState(false)
+  const [addMilestoneDialogOpen, setAddMilestoneDialogOpen] = useState(false) // New state for Add Milestone dialog
 
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
@@ -542,7 +544,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           orders: updatedOrders,
         }),
       })
@@ -614,7 +616,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           milestones: optimisticMilestones,
         }),
       })
@@ -725,7 +727,7 @@ export default function OrderDetailPage() {
             Authorization: `Bearer ${authService.getToken()}`,
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ milestones: updatedMilestones }),
+          body: JSON.JSONstringify({ milestones: updatedMilestones }),
         })
 
         if (milestoneUpdateResponse.ok) {
@@ -791,7 +793,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           registeredAgent: {
             name: agentForm.name.trim(),
             company: agentForm.company.trim(),
@@ -897,7 +899,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           mailingAddress: {
             street: mailingAddress.street.trim(),
             city: mailingAddress.city.trim(),
@@ -961,7 +963,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           ein: einValue.trim(),
           milestones: {
             ...milestones,
@@ -1018,7 +1020,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           itin: itinValue.trim(),
           // ITIN assignment doesn't directly correspond to a core milestone,
           // but could be tied to a custom one if needed.
@@ -1072,7 +1074,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           businessId: businessIdValue.trim(),
           milestones: {
             ...milestones,
@@ -1128,7 +1130,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           [field]: input.value,
         }),
       })
@@ -1341,7 +1343,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           ein: null,
           milestones: {
             ...milestones,
@@ -1391,7 +1393,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           itin: null,
         }),
       })
@@ -1436,7 +1438,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.stringify({
+        body: JSON.JSONstringify({
           businessId: null,
           milestones: {
             ...milestones,
@@ -2241,101 +2243,7 @@ export default function OrderDetailPage() {
                     )}
                   </div>
 
-                  {/* Members & Owners */}
-                  {company.members && company.members.length > 0 && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        <Users className="w-4 h-4" />
-                        Members & Owners
-                      </h3>
-                      <div className="space-y-3">
-                        {company.members.map((member: any, index: number) => {
-                          const passport = passportDocuments.find(
-                            (p: any) =>
-                              p.memberId === member.id ||
-                              p.memberName === `${member.firstName} ${member.lastName}` ||
-                              p.memberName === `${member.firstName} ${member.middleName} ${member.lastName}`,
-                          )
-
-                          const fullName =
-                            member.name ||
-                            [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ") ||
-                            "N/A"
-
-                          const extractFilename = (url: string) => {
-                            if (!url) return "Passport Document"
-                            try {
-                              const urlParts = url.split("/")
-                              const filename = urlParts[urlParts.length - 1]
-                              // Decode URL encoding and clean up
-                              return decodeURIComponent(filename)
-                                .replace(/^passports\//, "")
-                                .replace(/-[a-zA-Z0-9]{10,}\.pdf$/, ".pdf")
-                            } catch {
-                              return "Passport Document"
-                            }
-                          }
-
-                          return (
-                            <div key={index} className="p-4 border border-slate-200 rounded-lg">
-                              <div className="flex items-start justify-between mb-3">
-                                <div className="space-y-1">
-                                  <h4 className="font-medium text-slate-900">{fullName}</h4>
-                                  {member.isResponsiblePerson && (
-                                    <Badge variant="secondary" className="text-xs">
-                                      Responsible Person
-                                    </Badge>
-                                  )}
-                                </div>
-                              </div>
-
-                              <div className="mt-3 p-3 bg-slate-50 rounded-lg">
-                                <p className="text-sm text-slate-700">
-                                  {member.address}
-                                  {member.city && `, ${member.city}`}
-                                  {member.state && `, ${member.state}`}
-                                  {member.zip && ` ${member.zip}`}
-                                </p>
-                              </div>
-
-                              {passport ? (
-                                <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                                  <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-2">
-                                      <FileText className="w-4 h-4 text-blue-600" />
-                                      <span className="text-sm font-medium text-slate-900">
-                                        {extractFilename(passport.fileName || passport.fileUrl || "")}
-                                      </span>
-                                    </div>
-                                    {passport.fileUrl && (
-                                      <Button
-                                        variant="ghost"
-                                        size="sm"
-                                        onClick={() => window.open(passport.fileUrl, "_blank")}
-                                        className="h-7 text-xs"
-                                      >
-                                        <Eye className="w-3 h-3 mr-1" />
-                                        View
-                                      </Button>
-                                    )}
-                                  </div>
-                                  {passport.uploadedAt && (
-                                    <p className="text-xs text-slate-500 mt-2">
-                                      Uploaded: {new Date(passport.uploadedAt).toLocaleDateString()}
-                                    </p>
-                                  )}
-                                </div>
-                              ) : (
-                                <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                                  <p className="text-sm text-amber-800">No passport document uploaded</p>
-                                </div>
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    </div>
-                  )}
+                  {/* Members & Owners - THIS SECTION IS REMOVED AS PER UPDATES */}
                 </div>
               ) : (
                 <p className="text-sm text-slate-600">No checkout data available</p>
@@ -2397,63 +2305,82 @@ export default function OrderDetailPage() {
           </Card>
 
           {/* Admin Actions Card */}
-          <Card className="bg-white border-slate-200">
-            <CardHeader className="pb-3">
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                 <Settings className="w-5 h-5" />
                 Admin Actions
               </CardTitle>
               <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
             </CardHeader>
-            <CardContent className="space-y-2">
-              <Button
-                variant="outline"
-                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-slate-50 text-slate-700"
-                onClick={() => setRegisteredAgentDialogOpen(true)}
-                disabled={agentUpdating || !company}
-              >
-                <UserCheck className="w-4 h-4" />
-                <span className="font-medium">Assign Registered Agent</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-slate-50 text-slate-700"
-                onClick={() => setMailingAddressDialogOpen(true)}
-                disabled={addressUpdating || !company}
-              >
-                <MapPin className="w-4 h-4" />
-                <span className="font-medium">Assign Mailing Address</span>
-              </Button>
-              {/* Upload Document button removed */}
-              <Button
-                variant="outline"
-                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-slate-50 text-slate-700"
-                onClick={() => setMilestonesDialogOpen(true)}
-                disabled={milestoneUpdating}
-              >
-                <FileCheck className="w-4 h-4" />
-                <span className="font-medium">Manage Milestones</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-                onClick={() => {
-                  generateInvoice()
-                }}
-                disabled={deleting}
-              >
-                <Download className="w-4 h-4" />
-                <span className="font-medium">Download Invoice</span>
-              </Button>
-              <Button
-                variant="outline"
-                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-                onClick={() => setDeleteDialogOpen(true)}
-                disabled={deleting}
-              >
-                {deleting ? "Deleting..." : <Trash2 className="w-4 h-4" />}
-                <span className="font-medium">{deleting ? "Deleting..." : "Delete Order"}</span>
-              </Button>
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <Button
+                  onClick={() => setAddMilestoneDialogOpen(true)}
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Milestone
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setRegisteredAgentDialogOpen(true)}
+                  disabled={agentUpdating || !company}
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span className="font-medium">Assign Registered Agent</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMailingAddressDialogOpen(true)}
+                  disabled={addressUpdating || !company}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span className="font-medium">Assign Mailing Address</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMilestonesDialogOpen(true)}
+                  disabled={milestoneUpdating}
+                >
+                  <FileCheck className="w-4 h-4" />
+                  <span className="font-medium">Manage Milestones</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-red-50 hover:text-red-600 hover:border-red-200 bg-transparent"
+                  onClick={() => {
+                    generateInvoice()
+                  }}
+                  disabled={deleting}
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="font-medium">Download Invoice</span>
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="w-full justify-start h-11 hover:bg-red-600"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete Order
+                    </>
+                  )}
+                </Button>
+              </div>
             </CardContent>
           </Card>
 

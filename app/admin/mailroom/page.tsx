@@ -69,6 +69,12 @@ export default function AdminMailroomPage() {
 
   useEffect(() => {
     loadData()
+
+    const intervalId = setInterval(() => {
+      loadData()
+    }, 10000)
+
+    return () => clearInterval(intervalId)
   }, [])
 
   const loadData = async () => {
