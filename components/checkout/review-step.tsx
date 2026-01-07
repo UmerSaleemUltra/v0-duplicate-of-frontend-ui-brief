@@ -72,7 +72,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
   const basePackagePrice = formData?.packageType === "starter" ? 149 : 249
   const stateFilingFee = STATE_FEES[formData?.state || ""] || 100
 
-  const itinPrice = membersWithItin.length * 149
+  const itinPrice = membersWithItin.length * 199
   const resellerCertPrice = hasResellerCert && !resellerCertIncluded ? 99 : 0
 
   const addonsTotal = itinPrice + resellerCertPrice + websitePrice
@@ -121,7 +121,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         addons.push({
           serviceId: "itin",
           name: `ITIN Application - ${member.name}`,
-          price: 149,
+          price: 199,
           memberName: member.name,
           memberId: member.id,
         })
@@ -438,7 +438,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
                   </div>
                 </div>
                 <div className="flex items-center justify-between sm:justify-end gap-3">
-                  <span className="text-lg font-bold text-[#ff0d13]">$149</span>
+                  <span className="text-lg font-bold text-[#ff0d13]">$199</span>
                   <Button
                     variant="ghost"
                     size="sm"
