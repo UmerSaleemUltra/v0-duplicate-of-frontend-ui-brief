@@ -5,6 +5,7 @@ import { X, MapPin, Rocket, ArrowRight } from "lucide-react"
 import { US_STATES, STATE_FEES } from "@/lib/constants"
 import { useRouter } from "next/navigation"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import Link from 'next/link';
 
 interface StateFeesCalculatorModalProps {
   isOpen: boolean
@@ -129,14 +130,15 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
           )}
 
           {/* Start Business Button */}
-          <button
-            onClick={handleStartBusiness}
-            disabled={!selectedState}
-            className="w-full bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white rounded-full py-3 sm:py-4 px-6 text-base sm:text-lg font-semibold hover:shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <Rocket className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span>Start Your Business</span>
-          </button>
+        <Link
+  href={selectedState ? '/checkout' : '#'}
+  className={`w-full bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white rounded-full py-3 sm:py-4 px-6 text-base sm:text-lg font-semibold 
+              hover:shadow-lg hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2
+              ${!selectedState ? 'opacity-50 cursor-not-allowed hover:scale-100 pointer-events-none' : 'cursor-pointer'}`}
+>
+  <Rocket className="w-4 h-4 sm:w-5 sm:h-5" />
+  <span>Start Your Business</span>
+</Link>
 
           {/* Footer Note */}
           <div className="mt-4 sm:mt-6 flex items-center justify-center gap-2 text-xs sm:text-sm text-gray-600">
