@@ -427,12 +427,10 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
             <button
               onClick={handleLogout}
-              className="lg:hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium min-h-[44px] text-white/80 hover:bg-white/10 hover:text-white"
+              className="lg:hidden w-full mt-2 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium min-h-[44px] bg-white/20 hover:bg-white/30 text-white border border-white/30 hover:border-white/50 shadow-lg backdrop-blur-sm flex items-center justify-center gap-2.5"
             >
-              <div className="flex items-center gap-2.5">
-                <LogOut className="w-5 h-5 flex-shrink-0" />
-                <span className="text-sm">{isAdminView ? "Exit Admin Mode" : "Sign Out"}</span>
-              </div>
+              <LogOut className="w-5 h-5 flex-shrink-0" />
+              <span className="text-sm font-semibold">{isAdminView ? "Exit Admin Mode" : "Sign Out"}</span>
             </button>
           </nav>
 
