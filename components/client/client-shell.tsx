@@ -49,6 +49,8 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [userName, setUserName] = useState("")
   const [isAdminView, setIsAdminView] = useState(false)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [showHamburger, setShowHamburger] = useState(true)
+  const [lastScrollY, setLastScrollY] = useState(0)
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -232,6 +234,32 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     return () => document.removeEventListener("visibilitychange", handleFocus)
   }, [])
 
+  useEffect(() => {
+    let ticking = false
+
+    const handleScroll = () => {
+      if (!ticking) {
+        window.requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY
+
+          // Hide hamburger when scrolling down, show when scrolling up
+          if (currentScrollY > lastScrollY && currentScrollY > 50) {
+            setShowHamburger(false)
+          } else {
+            setShowHamburger(true)
+          }
+
+          setLastScrollY(currentScrollY)
+          ticking = false
+        })
+        ticking = true
+      }
+    }
+
+    window.addEventListener("scroll", handleScroll, { passive: true })
+    return () => window.removeEventListener("scroll", handleScroll)
+  }, [lastScrollY])
+
   const handleSelectCompany = (company: any) => {
     console.log("[v0] Switching to company:", company.id, company.name)
     setSelectedCompanyId(company.id)
@@ -400,7 +428,9 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 sm:p-3 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 rounded-lg transition-all duration-200 shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
+        className={`lg:hidden fixed top-4 left-4 z-50 p-2.5 sm:p-3 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 rounded-lg shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-all duration-300 ${
+          showHamburger ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0 pointer-events-none"
+        }`}
         aria-label={sidebarOpen ? "Close menu" : "Open menu"}
       >
         <Menu className="w-5 h-5" />
@@ -411,6 +441,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden transition-opacity duration-300"
           onClick={() => setSidebarOpen(false)}
+          onTouchStart={() => setSidebarOpen(false)}
           aria-hidden="true"
         />
       )}
