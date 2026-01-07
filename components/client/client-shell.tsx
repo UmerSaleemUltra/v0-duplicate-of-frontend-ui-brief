@@ -99,16 +99,77 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       }
 
       try {
-        const response = await ApiClient.companies.getAll(token)
-        const companies = response.data || response.companies || []
-        console.log("[v0] Loaded companies:", companies.length)
-        setAllCompanies(companies)
+        const currentUser = authService.getCurrentUser()
+        let userId = currentUser?.id
 
-        if (!selectedCompanyId && companies.length > 0) {
-          setSelectedCompanyId(companies[0].id)
+        // Fallback: Try to get userId from localStorage if not available from authService
+        if (!userId && typeof window !== "undefined") {
+          const storedUserId = localStorage.getItem("user_id")
+          const storedUserData = localStorage.getItem("user_data")
+
+          if (storedUserId) {
+            userId = storedUserId
+            console.log("[v0] Sidebar: Retrieved userId from localStorage:", userId)
+          } else if (storedUserData) {
+            try {
+              const userData = JSON.parse(storedUserData)
+              userId = userData.id
+              console.log("[v0] Sidebar: Retrieved userId from stored user data:", userId)
+            } catch (e) {
+              console.error("[v0] Sidebar: Error parsing stored user data:", e)
+            }
+          }
+        }
+
+        if (!userId) {
+          console.log("[v0] Sidebar: No userId found, cannot load companies")
+          return
+        }
+
+        console.log("[v0] Sidebar: Loading companies for userId:", userId)
+
+        const response = await ApiClient.companies.getAll(token)
+        const allCompaniesData = response.data || response.companies || []
+
+        console.log("[v0] Sidebar: Total companies fetched:", allCompaniesData.length)
+        console.log(
+          "[v0] Sidebar: All companies:",
+          allCompaniesData.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            userId: c.userId,
+          })),
+        )
+
+        const userCompanies = allCompaniesData.filter((c: any) => {
+          const companyUserId = String(c.userId)
+          const currentUserId = String(userId)
+          const match = companyUserId === currentUserId
+
+          if (!match) {
+            console.log("[v0] Sidebar: Company userId mismatch:", {
+              companyUserId,
+              currentUserId,
+              companyName: c.name,
+            })
+          }
+
+          return match
+        })
+
+        console.log("[v0] Sidebar: User's companies after filtering:", userCompanies.length)
+
+        setAllCompanies(userCompanies)
+
+        if (!selectedCompanyId && userCompanies.length > 0) {
+          console.log("[v0] Sidebar: Auto-selecting first company:", userCompanies[0].id)
+          setSelectedCompanyId(userCompanies[0].id)
+        } else if (userCompanies.length === 0) {
+          console.log("[v0] Sidebar: User has no companies")
+          setSelectedCompanyId(null)
         }
       } catch (error) {
-        console.error("[v0] Error loading companies:", error)
+        console.error("[v0] Sidebar: Error loading companies:", error)
       }
     }
 

@@ -104,13 +104,59 @@ export default function ClientDashboard() {
           return
         }
 
+        let userId = currentUser?.id
+
+        if (!userId && typeof window !== "undefined") {
+          const storedUserId = localStorage.getItem("user_id")
+          const storedUserData = localStorage.getItem("user_data")
+
+          if (storedUserId) {
+            userId = storedUserId
+            console.log("[v0] Retrieved userId from localStorage:", userId)
+          } else if (storedUserData) {
+            try {
+              const userData = JSON.parse(storedUserData)
+              userId = userData.id
+              console.log("[v0] Retrieved userId from stored user data:", userId)
+            } catch (e) {}
+          }
+        }
+
+        console.log("[v0] Loading companies for userId:", userId)
+
         const companiesResponse = await ApiClient.companies.getAll(token)
         const allCompanies = companiesResponse.data || []
 
-        const userCompanies = allCompanies.filter((c: any) => String(c.userId) === String(currentUser?.id))
+        console.log("[v0] Total companies fetched:", allCompanies.length)
+        console.log(
+          "[v0] All companies:",
+          allCompanies.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            userId: c.userId,
+          })),
+        )
+
+        const userCompanies = allCompanies.filter((c: any) => {
+          const companyUserId = String(c.userId)
+          const currentUserId = String(userId)
+          const match = companyUserId === currentUserId
+
+          if (!match) {
+            console.log("[v0] Company userId mismatch:", {
+              companyUserId,
+              currentUserId,
+              companyName: c.name,
+            })
+          }
+
+          return match
+        })
+
+        console.log("[v0] User companies after filtering:", userCompanies.length)
 
         if (userCompanies.length === 0) {
-          console.log("[v0] User has no companies")
+          console.log("[v0] User has no companies - showing no company state")
           setHasNoCompanies(true)
           setIsLoadingData(false)
           setDataLoaded(true)

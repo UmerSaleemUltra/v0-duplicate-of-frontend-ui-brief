@@ -112,12 +112,11 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setErrors({ whatsappNumber: "", submit: "" })
+    setErrors({})
     setIsSubmitting(true)
 
     try {
-      console.log("[v0] === STARTING CHECKOUT FLOW ===")
-      console.log("[v0] Step 1: Validating payment information...")
+      console.log("[v0] ========== PAYMENT SUBMISSION STARTED ==========")
 
       if (paymentMethod === "already_paid") {
         if (!whatsappPhone.trim()) {
@@ -147,241 +146,85 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       console.log("\n[v0] === PAYMENT SUBMISSION START ===")
       console.log("[v0] Checkout data:", data)
 
-      let token = authService.getToken()
-      let currentUser = authService.getUser()
+      let userId = data.userId
+      let currentToken = authService.getToken()
 
-      console.log("[v0] Initial auth check - Token exists:", !!token, "User exists:", !!currentUser)
+      if (!userId || !currentToken) {
+        console.log("[v0] No userId or token found, creating/logging in account...")
 
-      // Fallback 1: Try to get user from localStorage directly (mobile browsers might have cleared cookies)
-      if (!currentUser) {
-        console.log("[v0] Attempting fallback 1: Check localStorage for user data...")
-        try {
-          const storedUserData = localStorage.getItem("auth_user")
-          if (storedUserData) {
-            const parsedUser = JSON.parse(decodeURIComponent(storedUserData))
-            console.log("[v0] ✅ Found user in localStorage:", parsedUser)
-            currentUser = parsedUser
-          }
-        } catch (e) {
-          console.log("[v0] Could not parse user from localStorage")
-        }
-      }
+        const email = data.email?.trim()
+        const password = data.password?.trim()
+        const name = data.name?.trim()
+        const phone = data.phone?.trim()
 
-      // Fallback 2: Try to get userId from checkout data
-      if (!currentUser && data.userId) {
-        console.log("[v0] Attempting fallback 2: Using userId from checkout data:", data.userId)
-        currentUser = {
-          id: data.userId,
-          email: data.email || "",
-          name: data.firstName || data.name || "",
-          role: "client" as const,
-        }
-      }
-
-      // Fallback 3: Decode token manually to extract userId (for mobile)
-      if (!currentUser && token) {
-        console.log("[v0] Attempting fallback 3: Decode token to extract userId...")
-        try {
-          const tokenParts = token.split(".")
-          if (tokenParts.length === 3) {
-            const payload = JSON.parse(atob(tokenParts[1]))
-            console.log("[v0] Decoded token payload:", payload)
-            if (payload.userId || payload.id) {
-              currentUser = {
-                id: payload.userId || payload.id,
-                email: payload.email || data.email || "",
-                name: payload.name || data.firstName || "",
-                role: "client" as const,
-              }
-              console.log("[v0] ✅ Extracted user from token:", currentUser)
-            }
-          }
-        } catch (e) {
-          console.log("[v0] Could not decode token:", e)
-        }
-      }
-
-      if (!token) {
-        console.log("\n[v0] === STEP 1: CREATING ACCOUNT ===")
-        console.log("[v0] No existing token found, creating new account...")
-
-        if (!data.email || !data.password) {
-          throw new Error("Email and password are required to create an account")
+        if (!email || !password) {
+          throw new Error("Email and password are required")
         }
 
-        try {
-          const signupResponse = await fetch("/api/auth/signup", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              email: data.email,
-              password: data.password,
-              name: data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : data.email,
-              phone: data.phone || "",
-            }),
-          })
+        console.log("[v0] Step 1: Creating/logging in account for:", email)
 
-          const signupResult = await signupResponse.json()
+        const signupResponse = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password, name, phone, role: "client" }),
+        })
 
-          if (!signupResponse.ok) {
-            if (signupResult.error && signupResult.error.toLowerCase().includes("already exists")) {
-              console.log("[v0] Email already exists, attempting login...")
+        const signupData = await signupResponse.json()
 
-              const loginResponse = await fetch("/api/auth/login", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  email: data.email,
-                  password: data.password,
-                }),
-              })
-
-              const loginResult = await loginResponse.json()
-
-              if (!loginResponse.ok) {
-                throw new Error("Email already exists. Please use the correct password or reset your password.")
-              }
-
-              console.log("[v0] ✅ Logged in successfully with existing account")
-              console.log("[v0] User ID:", loginResult.userId || loginResult.data?.userId)
-              console.log("[v0] Token received:", loginResult.token || loginResult.data?.token ? "Yes" : "No")
-
-              const userId = loginResult.userId || loginResult.data?.userId
-              const userToken = loginResult.token || loginResult.data?.token
-              const userEmail = loginResult.email || loginResult.data?.user?.email || data.email
-              const userName = loginResult.name || loginResult.data?.user?.name || data.firstName
-
-              authService.setAuth(userToken, {
-                id: userId,
-                email: userEmail,
-                name: userName,
-                role: "client",
-              })
-
-              localStorage.setItem(
-                "auth_user",
-                encodeURIComponent(
-                  JSON.stringify({
-                    id: userId,
-                    email: userEmail,
-                    name: userName,
-                    role: "client",
-                  }),
-                ),
-              )
-
-              data.userId = userId
-              token = userToken
-              currentUser = authService.getUser()
-
-              saveCheckoutData(data)
-            } else {
-              console.error("[v0] ❌ Account creation failed:", signupResult)
-              throw new Error(signupResult.error || "Failed to create account")
-            }
-          } else {
-            console.log("[v0] ✅ Account created successfully")
-            console.log("[v0] User ID:", signupResult.userId)
-            console.log("[v0] Token received:", signupResult.token ? "Yes" : "No")
-
-            authService.setAuth(signupResult.token, {
-              id: signupResult.userId,
-              email: signupResult.email,
-              name: signupResult.name,
-              role: "client",
+        if (!signupResponse.ok) {
+          if (signupData.error?.includes("already exists") || signupData.error?.includes("already registered")) {
+            console.log("[v0] Email exists, attempting login...")
+            const loginResponse = await fetch("/api/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
             })
 
-            localStorage.setItem(
-              "auth_user",
-              encodeURIComponent(
-                JSON.stringify({
-                  id: signupResult.userId,
-                  email: signupResult.email,
-                  name: signupResult.name,
-                  role: "client",
-                }),
-              ),
-            )
+            const loginData = await loginResponse.json()
 
-            data.userId = signupResult.userId
-            token = signupResult.token
-            currentUser = authService.getUser()
+            if (!loginResponse.ok) {
+              throw new Error(loginData.error || "Login failed after signup error")
+            }
 
-            saveCheckoutData(data)
+            console.log("[v0] ✅ Login successful")
+            currentToken = loginData.data.token
+            userId = loginData.data.user.id
+
+            authService.setAuth(currentToken, loginData.data.user)
+
+            if (typeof window !== "undefined") {
+              localStorage.setItem("user_data", JSON.stringify(loginData.data.user))
+              localStorage.setItem("user_id", loginData.data.user.id)
+            }
+          } else {
+            throw new Error(signupData.error || "Account creation failed")
           }
-        } catch (accountError) {
-          console.error("[v0] ❌ Account setup error:", accountError)
-          throw accountError
+        } else {
+          console.log("[v0] ✅ Account created successfully")
+          currentToken = signupData.data.token
+          userId = signupData.data.user.id
+
+          authService.setAuth(currentToken, signupData.data.user)
+
+          if (typeof window !== "undefined") {
+            localStorage.setItem("user_data", JSON.stringify(signupData.data.user))
+            localStorage.setItem("user_id", signupData.data.user.id)
+          }
         }
-      } else {
-        console.log("[v0] ✅ User already authenticated with token")
-        if (!data.userId && currentUser?.id) {
-          console.log("[v0] Setting userId from authenticated user:", currentUser.id)
-          data.userId = currentUser.id
-          saveCheckoutData(data)
-        }
+
+        const updatedData = { ...data, userId }
+        saveCheckoutData(updatedData)
+
+        console.log("[v0] User ID set to:", userId)
       }
 
-      if (!data.userId) {
-        console.log("[v0] No userId in data, attempting all fallback methods...")
-
-        // Try fallback 1: authService
-        if (currentUser?.id) {
-          console.log("[v0] ✅ Fallback 1: Using userId from authService:", currentUser.id)
-          data.userId = currentUser.id
-          saveCheckoutData(data)
-        }
-        // Try fallback 2: localStorage
-        else {
-          try {
-            const storedUserData = localStorage.getItem("auth_user")
-            if (storedUserData) {
-              const parsedUser = JSON.parse(decodeURIComponent(storedUserData))
-              if (parsedUser?.id) {
-                console.log("[v0] ✅ Fallback 2: Using userId from localStorage:", parsedUser.id)
-                data.userId = parsedUser.id
-                currentUser = parsedUser
-                saveCheckoutData(data)
-              }
-            }
-          } catch (e) {
-            console.log("[v0] Could not retrieve user from localStorage")
-          }
-        }
-
-        // Try fallback 3: decode token
-        if (!data.userId && token) {
-          try {
-            const tokenParts = token.split(".")
-            if (tokenParts.length === 3) {
-              const payload = JSON.parse(atob(tokenParts[1]))
-              const userId = payload.userId || payload.id
-              if (userId) {
-                console.log("[v0] ✅ Fallback 3: Using userId from token decode:", userId)
-                data.userId = userId
-                saveCheckoutData(data)
-              }
-            }
-          } catch (e) {
-            console.log("[v0] Could not decode token for userId")
-          }
-        }
-
-        // Final check
-        if (!data.userId) {
-          console.error("[v0] ❌ CRITICAL: No userId found after all fallback attempts")
-          console.error("[v0] Debug info:")
-          console.error("  - data.userId:", data.userId)
-          console.error("  - currentUser:", currentUser)
-          console.error("  - token exists:", !!token)
-          console.error("  - authService.getUser():", authService.getUser())
-          console.error("  - localStorage auth_user:", localStorage.getItem("auth_user"))
-
-          throw new Error("User ID is missing - authentication may have failed. Please refresh the page and try again.")
-        }
+      if (!userId) {
+        console.error("[v0] ❌ Failed to retrieve userId after authentication")
+        throw new Error("User ID is missing - authentication may have failed. Please refresh and try again.")
       }
 
-      console.log("[v0] ✅ Proceeding with userId:", data.userId)
+      console.log("[v0] Verified userId:", userId)
+      console.log("[v0] Verified token:", currentToken ? "Present" : "Missing")
 
       console.log("\n[v0] === STEP 2: UPLOADING PASSPORTS ===")
       console.log(`[v0] Found ${data.members?.length || 0} members to process`)
@@ -390,7 +233,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
       let updatedMembers
       try {
-        updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId, "")
+        updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], userId, "")
         console.log("[v0] ✅ All passports uploaded successfully")
         console.log("[v0] Updated members with passport URLs:", updatedMembers)
       } catch (uploadError) {
@@ -407,43 +250,51 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         membersCount: updatedMembers.length,
       })
 
+      console.log("[v0] Step 3: Creating company with userId:", userId)
+      const companyPayload = {
+        name: data.businessName,
+        type: data.entityType,
+        state: data.state,
+        address: {
+          street: data.businessAddress,
+          city: data.businessCity,
+          state: data.state,
+          zip: data.businessZip,
+        },
+        businessCategory: data.businessCategory || "",
+        businessDescription: data.businessDescription || "",
+        businessWebsite: data.businessWebsite || "",
+        packageType: data.packageType,
+        members: updatedMembers,
+        status: "active",
+        transactionReference: `${paymentMethod.toUpperCase()}-${Date.now()}`,
+        purchasedAddons: data.addons || [],
+        userId: userId,
+      }
+
+      console.log("[v0] Company payload userId:", companyPayload.userId)
+
       const companyResponse = await fetch("/api/companies", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
         },
-        body: JSON.stringify({
-          name: data.businessName,
-          type: data.entityType,
-          state: data.state,
-          address: {
-            street: data.businessAddress,
-            city: data.businessCity,
-            state: data.state,
-            zip: data.businessZip,
-          },
-          businessCategory: data.businessCategory || "",
-          businessDescription: data.businessDescription || "",
-          businessWebsite: data.businessWebsite || "",
-          packageType: data.packageType,
-          members: updatedMembers,
-          purchasedAddons: data.addons || [],
-        }),
+        body: JSON.stringify(companyPayload),
       })
 
+      const companyData = await companyResponse.json()
+
       if (!companyResponse.ok) {
-        const errorData = await companyResponse.json()
-        console.log("❌ Company creation failed:", errorData.error)
-        throw new Error(errorData.error || "Failed to create company")
+        console.error("[v0] ❌ Company creation failed:", companyData.error)
+        throw new Error(companyData.error || "Failed to create company")
       }
 
-      const companyResult = await companyResponse.json()
-      const companyId = companyResult.data.id
-      console.log("✅ Company created successfully with ID:", companyId)
+      console.log("[v0] ✅ Company created successfully with ID:", companyData.data.id)
+      console.log("[v0] Company userId in response:", companyData.data.userId)
 
       console.log("Updating members with company ID...")
-      const finalMembers = await uploadPassportsFromIndexedDB(data.members || [], data.userId || "", companyId)
+      const finalMembers = await uploadPassportsFromIndexedDB(data.members || [], userId || "", companyData.data.id)
       console.log("✅ Members updated with company association")
 
       console.log("\n=== STEP 4: CREATING ORDER ===")
@@ -464,7 +315,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       })
 
       const orderData = {
-        companyId: companyId,
+        companyId: companyData.data.id,
         companyName: data.businessName,
         type: `${data.entityType.toUpperCase()} Formation`,
         amount: totalAmount,
@@ -493,7 +344,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${currentToken}`,
         },
         body: JSON.stringify(orderData),
       })
@@ -517,9 +368,9 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       console.log("Redirecting to dashboard...")
 
       window.location.href = "/client/dashboard"
-    } catch (error) {
+    } catch (error: any) {
       console.error("[v0] ❌ Payment submission error:", error)
-      setErrors({ whatsappNumber: "", submit: error instanceof Error ? error.message : "Failed to process payment" })
+      setErrors({ submit: error.message || "Payment submission failed. Please try again." })
     } finally {
       setIsSubmitting(false)
     }
