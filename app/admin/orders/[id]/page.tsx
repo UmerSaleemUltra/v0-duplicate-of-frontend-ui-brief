@@ -34,7 +34,6 @@ import {
   Clock,
   AlertCircle,
   Download,
-  Edit,
   Hash,
   UserCheck,
   Home,
@@ -1822,255 +1821,155 @@ export default function OrderDetailPage() {
             <CardContent>
               {company ? (
                 <div className="space-y-6">
-                  <div className="grid md:grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Company Name</p>
-                      <p className="text-sm font-medium text-slate-900">
-                        {getDisplayValue(company.name, "Not provided")}
-                      </p>
+                  {/* Basic Information Grid */}
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Company Name</p>
+                      <p className="text-sm font-medium text-slate-900">{company.name}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Entity Type</p>
-                      <p className="text-sm font-medium text-slate-900">{company?.type || "Not provided"}</p>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">State of Formation</p>
+                      <p className="text-sm font-medium text-slate-900">{company.state}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">State</p>
-                      <p className="text-sm font-medium text-slate-900">
-                        {getDisplayValue(company.state, "Not provided")}
-                      </p>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Entity Type</p>
+                      <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
                     </div>
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Package Type</p>
-                      <p className="text-sm font-medium text-slate-900 capitalize">
-                        {company?.packageType || "Standard"}
-                      </p>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Business Category</p>
+                      <p className="text-sm font-medium text-slate-900">{company.businessCategory || "Not provided"}</p>
                     </div>
-                  </div>
-
-                  <div className="pt-4 border-t border-slate-200">
-                    <div className="flex items-center justify-between mb-3">
-                      <p className="text-sm font-semibold text-slate-900">Identification Numbers</p>
-                      {isOverdue && (!hasEIN || !hasBusinessId) && (
-                        <Badge className="bg-amber-50 text-amber-700 border-amber-200 text-xs">
-                          {weeksSinceOrder} weeks since order
-                        </Badge>
-                      )}
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Package Type</p>
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {company.packageType || "Starter"}
+                      </Badge>
                     </div>
-
-                    <div className="grid md:grid-cols-2 gap-4">
-                      {/* EIN Section */}
-                      <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm text-slate-600 flex items-center gap-1">
-                            <Hash className="w-3 h-3" />
-                            EIN
-                          </p>
-                          {!hasEIN && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setEinDialogOpen(true)}
-                              className="h-7 text-xs gap-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0"
-                              disabled={einUpdating}
-                            >
-                              {einUpdating ? "Assigning..." : "Assign"}
-                            </Button>
-                          )}
-                        </div>
-                        {hasEIN ? (
-                          <div>
-                            <p className="text-sm font-mono font-medium text-slate-900">
-                              {formatEIN(company.ein, true)}
-                            </p>
-                            <div className="flex gap-2 mt-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setEinValue(company.ein || "")
-                                  setEinDialogOpen(true)
-                                }}
-                                className="h-6 text-xs px-2"
-                                disabled={einUpdating}
-                              >
-                                <Edit className="w-3 h-3 mr-1" />
-                                Update
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleRemoveEIN}
-                                className="h-6 text-xs px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                disabled={einUpdating}
-                              >
-                                <Trash2 className="w-3 h-3 mr-1" />
-                                Remove
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div>
-                            <p className="text-sm italic text-slate-500">Not yet assigned</p>
-                            {isOverdue && (
-                              <p className="text-xs text-amber-600 mt-1">Expected within 7 weeks of order</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* ITIN Section - Always show */}
-                      <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm text-slate-600 flex items-center gap-1">
-                            <FileBarChart className="w-3 h-3" />
-                            ITIN
-                          </p>
-                          {(!company?.itin || company.itin === "N/A") && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setItinDialogOpen(true)}
-                              className="h-7 text-xs gap-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0"
-                              disabled={itinUpdating}
-                            >
-                              {itinUpdating ? "Assigning..." : "Assign"}
-                            </Button>
-                          )}
-                        </div>
-                        {company?.itin && company.itin !== "N/A" ? (
-                          <div>
-                            <p className="text-sm font-mono font-medium text-slate-900">{company.itin}</p>
-                            <div className="flex gap-2 mt-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setItinValue(company.itin || "")
-                                  setItinDialogOpen(true)
-                                }}
-                                className="h-6 text-xs px-2"
-                                disabled={itinUpdating}
-                              >
-                                <Edit className="w-3 h-3 mr-1" />
-                                Update
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleRemoveITIN}
-                                className="h-6 text-xs px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                disabled={itinUpdating}
-                              >
-                                <Trash2 className="w-3 h-3 mr-1" />
-                                Remove
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <p className="text-sm italic text-slate-500">Not assigned (Optional)</p>
-                        )}
-                      </div>
-
-                      {/* Business ID Section */}
-                      <div className="p-4 rounded-lg border border-slate-200 bg-slate-50">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="text-sm text-slate-600 flex items-center gap-1">
-                            <Building2 className="w-3 h-3" />
-                            Business ID
-                          </p>
-                          {!hasBusinessId && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => setBusinessIdDialogOpen(true)}
-                              className="h-7 text-xs gap-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0"
-                              disabled={businessIdUpdating}
-                            >
-                              {businessIdUpdating ? "Assigning..." : "Assign"}
-                            </Button>
-                          )}
-                        </div>
-                        {hasBusinessId ? (
-                          <div>
-                            <p className="text-sm font-mono font-medium text-slate-900">
-                              {formatBusinessId(company.businessId)}
-                            </p>
-                            <div className="flex gap-2 mt-2">
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={() => {
-                                  setBusinessIdValue(company.businessId || "")
-                                  setBusinessIdDialogOpen(true)
-                                }}
-                                className="h-6 text-xs px-2"
-                                disabled={businessIdUpdating}
-                              >
-                                <Edit className="w-3 h-3 mr-1" />
-                                Update
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                onClick={handleRemoveBusinessId}
-                                className="h-6 text-xs px-2 text-red-600 hover:text-red-700 hover:bg-red-50"
-                                disabled={businessIdUpdating}
-                              >
-                                <Trash2 className="w-3 h-3 mr-1" />
-                                Remove
-                              </Button>
-                            </div>
-                          </div>
-                        ) : (
-                          <div>
-                            <p className="text-sm italic text-slate-500">Not yet assigned</p>
-                            {isOverdue && (
-                              <p className="text-xs text-amber-600 mt-1">Expected within 7 weeks of order</p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-
-                    {isOverdue && (!hasEIN || !hasBusinessId) && (
-                      <div className="mt-4 p-3 rounded-lg bg-amber-50 border border-amber-200">
-                        <p className="text-sm text-amber-800">
-                          <strong>Action Required:</strong> It's been {weeksSinceOrder} weeks since order placement.
-                          Please assign the missing identifiers.
-                        </p>
+                    {company.businessWebsite && (
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">Business Website</p>
+                        <a
+                          href={
+                            company.businessWebsite.startsWith("http")
+                              ? company.businessWebsite
+                              : `https://${company.businessWebsite}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-blue-600 hover:underline"
+                        >
+                          {company.businessWebsite}
+                        </a>
                       </div>
                     )}
                   </div>
-
-                  {company.address && (
-                    <div className="pt-4 border-t border-slate-200">
-                      <p className="text-sm text-slate-600 mb-1">Address</p>
-                      <p className="text-sm font-medium text-slate-900">
-                        {typeof company.address === "string"
-                          ? company.address
-                          : company.address
-                            ? `${company.address.street || ""}, ${company.address.city || ""}, ${company.address.state || ""} ${company.address.zip || ""}`.trim()
-                            : "Not provided"}
-                      </p>
+                  {company.businessDescription && (
+                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-2">Business Description</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">{company.businessDescription}</p>
                     </div>
                   )}
 
-                  {company?.businessCategory && (
+                  {/* Registered Agent */}
+                  {hasRegisteredAgent && (
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">Business Category</p>
-                      <p className="text-sm font-medium text-slate-900">{company.businessCategory}</p>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <UserCheck className="w-4 h-4" />
+                        Registered Agent
+                      </h3>
+                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div>
+                            <p className="text-xs text-slate-600 mb-1">Agent Name</p>
+                            <p className="text-sm font-medium text-slate-900">{company.registeredAgent.name}</p>
+                          </div>
+                          {company.registeredAgent.company && (
+                            <div>
+                              <p className="text-xs text-slate-600 mb-1">Company</p>
+                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.company}</p>
+                            </div>
+                          )}
+                          <div className="md:col-span-2">
+                            <p className="text-xs text-slate-600 mb-1">Full Address</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {company.registeredAgent.address}
+                              {company.registeredAgent.city && `, ${company.registeredAgent.city}`}
+                              {company.registeredAgent.state && `, ${company.registeredAgent.state}`}
+                              {company.registeredAgent.zip && ` ${company.registeredAgent.zip}`}
+                            </p>
+                          </div>
+                          {company.registeredAgent.phone && (
+                            <div>
+                              <p className="text-xs text-slate-600 mb-1">Phone</p>
+                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.phone}</p>
+                            </div>
+                          )}
+                          {company.registeredAgent.email && (
+                            <div>
+                              <p className="text-xs text-slate-600 mb-1">Email</p>
+                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.email}</p>
+                            </div>
+                          )}
+                          <div>
+                            <p className="text-xs text-slate-600 mb-1">Service Period</p>
+                            <Badge variant="outline" className="text-xs">
+                              {company.registeredAgent.servicePeriod || "1 Year"}
+                            </Badge>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-600 mb-1">Status</p>
+                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
+                              {company.registeredAgent.status || "Active"}
+                            </Badge>
+                          </div>
+                        </div>
+                      </div>
                     </div>
                   )}
 
-                  {company?.businessDescription && (
+                  {hasMailingAddress && (
                     <div>
-                      <p className="text-sm text-slate-600 mb-1">Business Description</p>
-                      <p className="text-sm text-700 whitespace-pre-wrap">{company.businessDescription}</p>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <Home className="w-4 h-4" />
+                        Mailing Address
+                      </h3>
+                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                        <div className="grid md:grid-cols-2 gap-4">
+                          <div className="md:col-span-2">
+                            <p className="text-xs text-slate-600 mb-1">Complete Address</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {company.mailingAddress.street}
+                              <br />
+                              {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-xs text-slate-600 mb-1">Status</p>
+                            <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Assigned</Badge>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Tax Information */}
+                  {hasEIN && (
+                    <div>
+                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <Hash className="w-4 h-4" />
+                        EIN Information
+                      </h3>
+                      <div className="grid md:grid-cols-2 gap-4">
+                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                          <p className="text-xs text-slate-600 mb-1">EIN (Employer Identification Number)</p>
+                          <p className="text-sm font-mono font-medium text-slate-900">{formatEIN(company.ein, true)}</p>
+                        </div>
+                      </div>
                     </div>
                   )}
                 </div>
               ) : (
-                <p className="text-sm text-slate-600">No company information available</p>
+                <p className="text-sm text-slate-600">No checkout data available</p>
               )}
             </CardContent>
           </Card>
@@ -2437,104 +2336,6 @@ export default function OrderDetailPage() {
                       </div>
                     </div>
                   )}
-
-                  {/* Registered Agent */}
-                  {hasRegisteredAgent && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        <UserCheck className="w-4 h-4" />
-                        Registered Agent
-                      </h3>
-                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-xs text-slate-600 mb-1">Agent Name</p>
-                            <p className="text-sm font-medium text-slate-900">{company.registeredAgent.name}</p>
-                          </div>
-                          {company.registeredAgent.company && (
-                            <div>
-                              <p className="text-xs text-slate-600 mb-1">Company</p>
-                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.company}</p>
-                            </div>
-                          )}
-                          <div className="md:col-span-2">
-                            <p className="text-xs text-slate-600 mb-1">Full Address</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {company.registeredAgent.address}
-                              {company.registeredAgent.city && `, ${company.registeredAgent.city}`}
-                              {company.registeredAgent.state && `, ${company.registeredAgent.state}`}
-                              {company.registeredAgent.zip && ` ${company.registeredAgent.zip}`}
-                            </p>
-                          </div>
-                          {company.registeredAgent.phone && (
-                            <div>
-                              <p className="text-xs text-slate-600 mb-1">Phone</p>
-                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.phone}</p>
-                            </div>
-                          )}
-                          {company.registeredAgent.email && (
-                            <div>
-                              <p className="text-xs text-slate-600 mb-1">Email</p>
-                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.email}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-xs text-slate-600 mb-1">Service Period</p>
-                            <Badge variant="outline" className="text-xs">
-                              {company.registeredAgent.servicePeriod || "1 Year"}
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-xs text-slate-600 mb-1">Status</p>
-                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
-                              {company.registeredAgent.status || "Active"}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {hasMailingAddress && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        <Home className="w-4 h-4" />
-                        Mailing Address
-                      </h3>
-                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="md:col-span-2">
-                            <p className="text-xs text-slate-600 mb-1">Complete Address</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {company.mailingAddress.street}
-                              <br />
-                              {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-slate-600 mb-1">Status</p>
-                            <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Assigned</Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tax Information */}
-                  {hasEIN && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        <Hash className="w-4 h-4" />
-                        EIN Information
-                      </h3>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                          <p className="text-xs text-slate-600 mb-1">EIN (Employer Identification Number)</p>
-                          <p className="text-sm font-mono font-medium text-slate-900">{formatEIN(company.ein, true)}</p>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               ) : (
                 <p className="text-sm text-slate-600">No checkout data available</p>
@@ -2820,23 +2621,23 @@ export default function OrderDetailPage() {
                       Custom milestones are tracked separately and don't affect the core progress percentage
                     </p>
                   </div>
-                  {company.customMilestones.map((milestone) => (
+                  {company.customMilestones.map((customMilestone: any) => (
                     <div
-                      key={milestone.id}
+                      key={customMilestone.id}
                       className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
                     >
-                      <div className="flex items-center gap-3">
-                        <FileCheck className={`w-5 h-5 ${milestone.completed ? "text-green-600" : "text-slate-400"}`} />
-                        <div>
-                          <span className="text-sm font-medium">{milestone.title}</span>
-                          {milestone.description && (
-                            <p className="text-xs text-slate-500 mt-0.5">{milestone.description}</p>
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
+                          {customMilestone.description && (
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{customMilestone.description}</p>
                           )}
                         </div>
                       </div>
                       <Switch
-                        checked={milestone.completed}
-                        onCheckedChange={() => handleCustomMilestoneToggle(milestone.id)}
+                        checked={customMilestone.completed}
+                        onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
                         disabled={milestoneUpdating}
                       />
                     </div>
@@ -3275,79 +3076,24 @@ export default function OrderDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Order Documents */}
-      {order.passportDocuments && order.passportDocuments.length > 0 && (
-        <Card className="bg-white border-slate-200">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-              <FileText className="w-5 h-5" />
-              Passport Documents
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {order.passportDocuments.map((doc: any, index: number) => {
-                const getFileName = (url: string) => {
-                  if (!url) return "Document"
-                  try {
-                    const urlParts = url.split("/")
-                    const fileNameEncoded = urlParts[urlParts.length - 1]
-                    const decoded = decodeURIComponent(fileNameEncoded)
-                    // Remove the hash from filename if present
-                    return decoded.replace(/-[a-zA-Z0-9]+\.(pdf|jpg|jpeg|png)$/i, ".$1")
-                  } catch {
-                    return "Document"
-                  }
-                }
+      {/* Order Documents - REMOVED AS PER UPDATES, NOW PART OF MEMBERS CARD */}
 
-                return (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-primary/30 transition-colors"
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
-                        <FileText className="h-5 w-5 text-primary" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium text-slate-900 truncate">{getFileName(doc.fileUrl || doc.url)}</p>
-                        <p className="text-sm text-slate-500">
-                          Uploaded: {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : "Unknown"}
-                        </p>
-                      </div>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => window.open(doc.fileUrl || doc.url, "_blank")}
-                      className="flex-shrink-0"
-                    >
-                      <Eye className="h-4 w-4 mr-2" />
-                      View
-                    </Button>
-                  </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Members & Passport Documents */}
+      {/* Members & Passport Documents - Single consolidated card */}
       <Card className="bg-white border-slate-200">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <FileCheck className="w-5 h-5" />
+            <Users className="w-5 h-5" />
             Members & Passport Documents
           </CardTitle>
         </CardHeader>
         <CardContent>
           {company?.members && company.members.length > 0 ? (
-            <div className="space-y-6">
+            <div className="space-y-4">
               {company.members.map((member: any, index: number) => {
                 const passport = passportDocuments.find(
                   (p: any) =>
                     p.memberId === member.id ||
+                    p.memberName === member.name ||
                     p.memberName === `${member.firstName} ${member.lastName}` ||
                     p.memberName === `${member.firstName} ${member.middleName} ${member.lastName}`,
                 )
@@ -3362,20 +3108,22 @@ export default function OrderDetailPage() {
                   try {
                     const urlParts = url.split("/")
                     const filename = urlParts[urlParts.length - 1]
-                    // Decode URL encoding and clean up
                     return decodeURIComponent(filename)
                       .replace(/^passports\//, "")
-                      .replace(/-[a-zA-Z0-9]{10,}\.pdf$/, ".pdf")
+                      .replace(/-[a-zA-Z0-9]{10,}\.(pdf|jpg|jpeg|png)$/i, ".$1")
                   } catch {
                     return "Passport Document"
                   }
                 }
 
                 return (
-                  <div key={index} className="p-4 border border-slate-200 rounded-lg">
+                  <div
+                    key={index}
+                    className="p-4 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors"
+                  >
                     <div className="flex items-start justify-between mb-3">
-                      <div className="space-y-1">
-                        <h4 className="font-medium text-slate-900">{fullName}</h4>
+                      <div className="space-y-1.5">
+                        <h4 className="font-semibold text-slate-900 text-base">{fullName}</h4>
                         {member.isResponsiblePerson && (
                           <Badge variant="secondary" className="text-xs">
                             Responsible Person
@@ -3384,8 +3132,10 @@ export default function OrderDetailPage() {
                       </div>
                     </div>
 
-                    <div className="mt-3 p-3 bg-slate-50 rounded-lg">
-                      <p className="text-sm text-slate-700">
+                    {/* Address */}
+                    <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Address</p>
+                      <p className="text-sm text-slate-700 leading-relaxed">
                         {member.address}
                         {member.city && `, ${member.city}`}
                         {member.state && `, ${member.state}`}
@@ -3393,12 +3143,13 @@ export default function OrderDetailPage() {
                       </p>
                     </div>
 
+                    {/* Passport Document */}
                     {passport ? (
                       <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
                         <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-blue-600" />
-                            <span className="text-sm font-medium text-slate-900">
+                          <div className="flex items-center gap-2 flex-1 min-w-0">
+                            <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
+                            <span className="text-sm font-medium text-slate-900 truncate">
                               {extractFilename(passport.fileName || passport.fileUrl || "")}
                             </span>
                           </div>
@@ -3407,9 +3158,9 @@ export default function OrderDetailPage() {
                               variant="ghost"
                               size="sm"
                               onClick={() => window.open(passport.fileUrl, "_blank")}
-                              className="h-7 text-xs"
+                              className="h-8 text-xs ml-2 flex-shrink-0"
                             >
-                              <Eye className="w-3 h-3 mr-1" />
+                              <Eye className="w-3.5 h-3.5 mr-1" />
                               View
                             </Button>
                           )}
@@ -3422,7 +3173,10 @@ export default function OrderDetailPage() {
                       </div>
                     ) : (
                       <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p className="text-sm text-amber-800">No passport document uploaded</p>
+                        <div className="flex items-center gap-2">
+                          <AlertCircle className="w-4 h-4 text-amber-600" />
+                          <p className="text-sm text-amber-800">No passport document uploaded</p>
+                        </div>
                       </div>
                     )}
                   </div>
@@ -3430,7 +3184,10 @@ export default function OrderDetailPage() {
               })}
             </div>
           ) : (
-            <p className="text-center text-slate-500 py-4">No members or documents found</p>
+            <div className="text-center py-8">
+              <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-500">No members or documents found</p>
+            </div>
           )}
         </CardContent>
       </Card>
@@ -3516,6 +3273,104 @@ export default function OrderDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Milestones Section - Keep the "Add Milestone" button */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+            <CheckCircle2 className="w-5 h-5" />
+            Milestones
+          </h2>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setCustomMilestoneDialogOpen(true)}
+            className="h-9"
+            disabled={
+              statusUpdating ||
+              agentUpdating ||
+              addressUpdating ||
+              einUpdating ||
+              itinUpdating ||
+              businessIdUpdating ||
+              docUploading ||
+              milestoneUpdating ||
+              deleting
+            }
+          >
+            <Clock className="w-4 h-4 mr-2" />
+            Add Milestone
+          </Button>
+        </div>
+
+        {/* Standard Milestones */}
+        <Card className="bg-white border-slate-200">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold text-slate-900">Standard Progress</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {[
+                { key: "orderProcessed", label: "Order Processed", icon: Package },
+                { key: "registeredAgentAssigned", label: "Registered Agent Assigned", icon: UserCheck },
+                { key: "mailingAddressIssued", label: "Mailing Address Issued", icon: Home },
+                { key: "formationCompleted", label: "Formation Completed", icon: Building2 },
+                { key: "einProcessed", label: "EIN Processed", icon: Hash },
+                { key: "boiReportFiled", label: "BOI Report Filed", icon: FileCheck },
+              ].map((milestone) => (
+                <div
+                  key={milestone.key}
+                  className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <milestone.icon className="w-5 h-5 text-slate-600" />
+                    <span className="text-sm font-medium text-slate-900">{milestone.label}</span>
+                  </div>
+                  <Switch
+                    checked={milestones[milestone.key as keyof typeof milestones]}
+                    onCheckedChange={() => handleMilestoneToggle(milestone.key as keyof typeof milestones)}
+                    disabled={milestoneUpdating}
+                  />
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Custom Milestones */}
+        {company?.customMilestones && company.customMilestones.length > 0 && (
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold text-slate-900">Custom Milestones</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {company.customMilestones.map((customMilestone: any) => (
+                  <div
+                    key={customMilestone.id}
+                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
+                        {customMilestone.description && (
+                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{customMilestone.description}</p>
+                        )}
+                      </div>
+                    </div>
+                    <Switch
+                      checked={customMilestone.completed}
+                      onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
+                      disabled={milestoneUpdating}
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
     </div>
   )
 }
