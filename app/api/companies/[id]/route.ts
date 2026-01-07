@@ -65,6 +65,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           },
           customMilestones: company.customMilestones || [],
           purchasedAddons: company.purchasedAddons || [],
+          orders: company.orders || [],
+          revenue: company.revenue || 0,
+          lastOrderDate: company.lastOrderDate || null,
           ein: company.ein || null,
           itin: company.itin || null,
           businessId: company.businessId || null,
@@ -127,6 +130,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...member,
         passportUrl: member.passportUrl || null,
       }))
+    }
+
+    if (body.orders && Array.isArray(body.orders)) {
+      const totalRevenue = body.orders.reduce((sum: number, order: any) => sum + (order.pricing?.total || 0), 0)
+      updateData.revenue = totalRevenue
+      updateData.lastOrderDate = new Date().toISOString()
+    }
+
+    if (decoded.role === "admin" && body.status) {
+      updateData.status = body.status
+      console.log("[v0] Admin updating company status to:", body.status)
     }
 
     if (body.milestones) {

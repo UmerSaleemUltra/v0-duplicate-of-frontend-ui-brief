@@ -65,41 +65,65 @@ export default function AdminDashboard() {
       }
 
       try {
+        console.log("[v0] Admin Dashboard: Starting data load...")
         const token = authService.getToken()
-        if (!token) return
+        if (!token) {
+          console.log("[v0] Admin Dashboard: No token found")
+          return
+        }
 
+        const timestamp = Date.now()
         const [usersResponse, companiesResponse] = await Promise.all([
           ApiClient.users.getAll(token),
-          ApiClient.companies.getAll(token),
+          fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Cache-Control": "no-cache, no-store, must-revalidate",
+            },
+          }).then((res) => res.json()),
         ])
 
         const allUsers = usersResponse.data || []
-        const allCompanies = companiesResponse.data || []
+        const allCompanies = companiesResponse.data || companiesResponse || []
 
-        const allOrders = allCompanies.flatMap((company: any) =>
-          (company.orders || []).map((order: any) => ({
+        console.log("[v0] Admin Dashboard: Fetched data", {
+          usersCount: allUsers.length,
+          companiesCount: allCompanies.length,
+        })
+
+        const allOrders = allCompanies.flatMap((company: any) => {
+          const companyOrders = company.orders || []
+          console.log(`[v0] Company ${company.name}: ${companyOrders.length} orders`)
+
+          return companyOrders.map((order: any) => ({
             ...order,
             companyId: company.id,
             companyName: company.name,
             state: company.state,
+            userId: company.userId,
             packageType: company.packageType
               ? `${company.packageType} Package`
               : order.type === "Addon Purchase"
                 ? "Add-on Only"
                 : "N/A",
-          })),
-        )
-
-        const ordersWithDetails = allOrders.slice(0, 4).map((order: any) => {
-          const user = allUsers.find((u: any) => u.id === order.userId)
-
-          return {
-            ...order,
-            userName: user?.name || "Unknown",
-          }
+          }))
         })
 
+        console.log("[v0] Admin Dashboard: Total orders extracted:", allOrders.length)
+
+        const ordersWithDetails = allOrders
+          .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+          .slice(0, 4)
+          .map((order: any) => {
+            const user = allUsers.find((u: any) => u.id === order.userId)
+            return {
+              ...order,
+              userName: user?.name || "Unknown Customer",
+            }
+          })
+
         setOrders(ordersWithDetails)
+        console.log("[v0] Admin Dashboard: Recent orders set:", ordersWithDetails.length)
 
         const now = new Date()
         const startOfYear = new Date(now.getFullYear(), 0, 1)
@@ -118,6 +142,12 @@ export default function AdminDashboard() {
             return orderDate >= startOfMonth
           })
           .reduce((sum: number, order: any) => sum + (order.total || order.amount || 0), 0)
+
+        console.log("[v0] Admin Dashboard: Revenue calculated", {
+          yearRevenue,
+          currentMonthRevenue,
+          totalOrders: allOrders.length,
+        })
 
         const currentMonthName = now.toLocaleDateString("en-US", { month: "short", year: "numeric" })
         const monthlyRevenueData = [
@@ -149,22 +179,26 @@ export default function AdminDashboard() {
           .map(([state, count]) => ({
             state,
             count,
-            percentage: Math.round((count / allCompanies.length) * 100),
+            percentage: allCompanies.length > 0 ? Math.round((count / allCompanies.length) * 100) : 0,
           }))
           .sort((a, b) => b.count - a.count)
           .slice(0, 5)
 
         setStateBreakdown(breakdown)
+        console.log("[v0] Admin Dashboard: State breakdown set:", breakdown.length)
 
         setDataLoaded(true)
 
         const loadTime = Date.now() - startTime
+        console.log(`[v0] Admin Dashboard: Data loaded in ${loadTime}ms`)
+
         if (loadTime < 100) {
           setIsLoadingData(false)
         } else {
           setTimeout(() => setIsLoadingData(false), 300)
         }
       } catch (error) {
+        console.error("[v0] Admin Dashboard: Error loading data", error)
         if (error instanceof Error && error.message.includes("Unauthorized")) {
           authService.logout()
           router.push("/login")
@@ -285,22 +319,26 @@ export default function AdminDashboard() {
         </CardHeader>
         <CardContent>
           <div className="space-y-4">
-            {monthlyData.map((data) => (
-              <div key={data.month}>
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm font-medium text-slate-700">{data.month}</span>
-                  <span className="text-sm font-semibold text-slate-900">${data.revenue.toLocaleString()}</span>
+            {monthlyData.length === 0 ? (
+              <p className="text-center text-muted-foreground py-8">No revenue data yet</p>
+            ) : (
+              monthlyData.map((data) => (
+                <div key={data.month}>
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-700">{data.month}</span>
+                    <span className="text-sm font-semibold text-slate-900">${data.revenue.toLocaleString()}</span>
+                  </div>
+                  <div className="w-full bg-slate-100 rounded-full h-2">
+                    <div
+                      className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-2 rounded-full transition-all duration-300"
+                      style={{
+                        width: data.revenue > 0 ? "100%" : "0%",
+                      }}
+                    />
+                  </div>
                 </div>
-                <div className="w-full bg-slate-100 rounded-full h-2">
-                  <div
-                    className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-2 rounded-full transition-all duration-300"
-                    style={{
-                      width: data.revenue > 0 ? "100%" : "0%",
-                    }}
-                  />
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </CardContent>
       </Card>

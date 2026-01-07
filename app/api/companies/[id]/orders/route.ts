@@ -95,13 +95,23 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       updatedAt: new Date().toISOString(),
     }
 
+    const existingOrders = company.orders || []
+    const currentRevenue = company.revenue || 0
+    const newRevenue = currentRevenue + (newOrder.pricing.total || 0)
+
     await db.collection("companies").updateOne(
       { _id: new ObjectId(params.id) },
       {
         $push: { orders: newOrder },
-        $set: { updatedAt: new Date().toISOString() },
+        $set: {
+          updatedAt: new Date().toISOString(),
+          revenue: newRevenue,
+          lastOrderDate: new Date().toISOString(),
+        },
       },
     )
+
+    console.log("[v0] Order added to company. Previous revenue:", currentRevenue, "New revenue:", newRevenue)
 
     broadcastUpdate("companies", "updated", { id: params.id, userId: company.userId })
 
@@ -112,6 +122,7 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       }),
     )
   } catch (error) {
+    console.error("[v0] Error creating order:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to create order" }, { status: 500 }))
   }
 }

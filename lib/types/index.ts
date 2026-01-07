@@ -103,6 +103,9 @@ export interface Company {
   }>
   purchasedAddons?: string[]
   orders?: Order[]
+  revenue?: number
+  lastOrderDate?: string | null
+  transactionReference?: string | null
   createdAt: string
   updatedAt: string
 }

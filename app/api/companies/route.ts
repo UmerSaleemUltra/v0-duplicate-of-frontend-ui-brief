@@ -166,6 +166,8 @@ export async function POST(req: NextRequest) {
         ]
       : []
 
+    const totalRevenue = initialOrders.reduce((sum, order) => sum + (order.pricing?.total || 0), 0)
+
     const newCompany = {
       userId: decoded.userId,
       name,
@@ -190,6 +192,8 @@ export async function POST(req: NextRequest) {
       customMilestones: [],
       purchasedAddons: Array.isArray(purchasedAddons) ? purchasedAddons : [],
       orders: initialOrders,
+      revenue: totalRevenue,
+      lastOrderDate: initialOrders.length > 0 ? new Date().toISOString() : null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
