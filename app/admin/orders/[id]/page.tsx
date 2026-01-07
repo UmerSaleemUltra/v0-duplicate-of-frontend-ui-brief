@@ -28,7 +28,6 @@ import {
   Package,
   User,
   Building2,
-  CreditCard,
   FileText,
   CheckCircle2,
   Clock,
@@ -41,13 +40,10 @@ import {
   HashIcon,
   FileBarChart,
   Users,
-  Briefcase,
-  ShoppingCart,
   Loader2,
   Eye,
   MapPin,
   Trash2,
-  MessageCircle,
   Settings,
   Plus,
 } from "lucide-react"
@@ -1955,292 +1951,36 @@ export default function OrderDetailPage() {
                   )}
 
                   {/* Tax Information */}
-                  {hasEIN && (
+                  {(hasEIN || company?.itin || company?.businessId) && (
                     <div>
                       <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
                         <Hash className="w-4 h-4" />
-                        EIN Information
+                        Tax & Business IDs
                       </h3>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                          <p className="text-xs text-slate-600 mb-1">EIN (Employer Identification Number)</p>
-                          <p className="text-sm font-mono font-medium text-slate-900">{formatEIN(company.ein, true)}</p>
-                        </div>
+                      <div className="grid md:grid-cols-3 gap-4">
+                        {hasEIN && (
+                          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                            <p className="text-xs text-slate-600 mb-1">EIN (Employer Identification Number)</p>
+                            <p className="text-sm font-mono font-medium text-slate-900">
+                              {formatEIN(company.ein, true)}
+                            </p>
+                          </div>
+                        )}
+                        {company?.itin && (
+                          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                            <p className="text-xs text-slate-600 mb-1">ITIN (Individual Taxpayer ID)</p>
+                            <p className="text-sm font-mono font-medium text-slate-900">{company.itin}</p>
+                          </div>
+                        )}
+                        {company?.businessId && (
+                          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                            <p className="text-xs text-slate-600 mb-1">Business ID</p>
+                            <p className="text-sm font-mono font-medium text-slate-900">{company.businessId}</p>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
-                </div>
-              ) : (
-                <p className="text-sm text-slate-600">No checkout data available</p>
-              )}
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-slate-200">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <CreditCard className="w-5 h-5" />
-                Payment Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-                  <span className="text-sm text-slate-600">Package Price</span>
-                  <span className="text-sm font-medium text-slate-900">
-                    ${order?.pricing?.packagePrice || order?.packagePrice || 149}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-                  <span className="text-sm text-slate-600">State Filing Fee</span>
-                  <span className="text-sm font-medium text-slate-900">
-                    ${order?.pricing?.stateFilingFee || order?.stateFilingFee || 0}
-                  </span>
-                </div>
-                {(order?.selectedAddons && order.selectedAddons.length > 0) ||
-                (order?.pricing?.addonsTotal && order.pricing.addonsTotal > 0) ? (
-                  <div className="flex items-center justify-between pb-3 border-b border-slate-200">
-                    <span className="text-sm text-slate-600">Add-ons</span>
-                    <span className="text-sm font-medium text-slate-900">
-                      $
-                      {order?.pricing?.addonsTotal ||
-                        (order?.selectedAddons || []).reduce(
-                          (sum: number, addon: any) => sum + (addon.price || 0),
-                          0,
-                        ) ||
-                        0}
-                    </span>
-                  </div>
-                ) : null}
-                <div className="flex items-center justify-between pt-3 border-t-2 border-slate-300">
-                  <span className="text-base font-semibold text-slate-900">Total Amount</span>
-                  <span className="text-2xl font-bold text-slate-900">
-                    ${order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 149}
-                  </span>
-                </div>
-                <div className="grid md:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Payment Method</p>
-                    <div className="flex items-center gap-2">
-                      <CreditCard className="w-4 h-4 text-blue-600" />
-                      <p className="text-sm font-medium text-slate-900 capitalize">
-                        {order?.paymentInfo?.method || "Card Payment"}
-                      </p>
-                    </div>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Payment Status</p>
-                    <Badge
-                      className={
-                        order?.paymentInfo?.status === "paid"
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-amber-50 text-amber-700 border-amber-200"
-                      }
-                    >
-                      {order?.paymentInfo?.status || "Pending"}
-                    </Badge>
-                  </div>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">Payment Date</p>
-                  <p className="text-sm font-medium text-slate-900">
-                    {order?.paymentInfo?.date || order?.createdAt
-                      ? new Date(order.paymentInfo?.date || order.createdAt).toLocaleDateString("en-US", {
-                          month: "2-digit",
-                          day: "2-digit",
-                          year: "numeric",
-                        })
-                      : "Not available"}
-                  </p>
-                </div>
-                {order?.paymentInfo?.terms && (
-                  <div className="mt-4 p-3 bg-slate-50 rounded-lg">
-                    <p className="text-xs font-medium text-slate-600 mb-1">Payment Terms</p>
-                    <p className="text-sm text-slate-700">{order.paymentInfo.terms}</p>
-                  </div>
-                )}
-                {order?.paymentInfo?.receiptUrl && (
-                  <div className="mt-4 border-t border-slate-200 pt-4">
-                    <p className="text-sm font-medium text-slate-600 mb-2">Payment Receipt</p>
-                    <a
-                      href={order.paymentInfo.receiptUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                    >
-                      <CreditCard className="w-4 h-4" />
-                      View Receipt
-                    </a>
-                  </div>
-                )}
-                {/* WhatsApp phone number display */}
-                {order?.paymentInfo?.whatsappPhone && (
-                  <div className="mt-4 border-t border-slate-200 pt-4">
-                    <p className="text-sm font-medium text-slate-600 mb-1">WhatsApp Contact</p>
-                    <div className="flex items-center gap-2">
-                      <MessageCircle className="w-4 h-4 text-green-600" />
-                      <a
-                        href={`https://wa.me/${order.paymentInfo.whatsappPhone.replace(/\D/g, "")}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline"
-                      >
-                        {order.paymentInfo.whatsappPhone}
-                      </a>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-slate-200">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <ShoppingCart className="w-5 h-5" />
-                Purchased Add-ons
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {addons && addons.length > 0 ? (
-                  addons.map((addon: any, index: number) => {
-                    const isObject = typeof addon === "object" && addon !== null
-                    const addonName = isObject
-                      ? addon.name || getAddonName(addon.serviceId || addon.id || "")
-                      : getAddonName(addon)
-                    const addonPrice = isObject ? addon.price : 0
-                    const serviceId = isObject ? addon.serviceId : addon
-
-                    return (
-                      <div key={index} className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                        <div className="flex items-center justify-between">
-                          <div className="flex-1">
-                            <div className="flex items-center gap-3 mb-2">
-                              <p className="text-sm font-medium text-slate-900">{addonName}</p>
-                              <Badge variant="outline" className="text-xs">
-                                Active
-                              </Badge>
-                            </div>
-                            <p className="text-xs text-slate-600">
-                              {serviceId === "itin-application"
-                                ? "Individual Taxpayer Identification Number application"
-                                : serviceId === "reseller-certificate"
-                                  ? "Sales tax exemption certificate for wholesale purchasing"
-                                  : serviceId === "business-website"
-                                    ? "Professional website design and hosting"
-                                    : "Add-on service"}
-                            </p>
-                          </div>
-                          <div className="text-right">
-                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">${addonPrice}</Badge>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })
-                ) : (
-                  <div className="p-8 text-center">
-                    <ShoppingCart className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-                    <p className="text-sm text-slate-500">No add-ons purchased</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-slate-200">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Briefcase className="w-5 h-5" />
-                Checkout Data & Business Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {company ? (
-                <div className="space-y-6">
-                  {/* Company Status */}
-                  <div className="p-4 rounded-lg bg-gradient-to-r from-slate-50 to-slate-100 border border-slate-200">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-xs text-slate-600 mb-1">Company Status</p>
-                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-sm">
-                          {company.status || "Active"}
-                        </Badge>
-                      </div>
-                      <div className="text-right">
-                        <p className="text-xs text-slate-600 mb-1">Order Date</p>
-                        <p className="text-sm font-medium text-slate-900">
-                          {order?.createdAt
-                            ? new Date(order.createdAt).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })
-                            : "Not set"}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Business Information */}
-                  <div>
-                    <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                      <Building2 className="w-4 h-4" />
-                      Business Details
-                    </h3>
-                    <div className="grid md:grid-cols-2 gap-4">
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 mb-1">Business Name</p>
-                        <p className="text-sm font-medium text-slate-900">{company.name}</p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 mb-1">State of Formation</p>
-                        <p className="text-sm font-medium text-slate-900">{company.state}</p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 mb-1">Entity Type</p>
-                        <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 mb-1">Business Category</p>
-                        <p className="text-sm font-medium text-slate-900">
-                          {company.businessCategory || "Not provided"}
-                        </p>
-                      </div>
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 mb-1">Package Type</p>
-                        <Badge variant="outline" className="text-xs capitalize">
-                          {company.packageType || "Starter"}
-                        </Badge>
-                      </div>
-                      {company.businessWebsite && (
-                        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                          <p className="text-xs text-slate-600 mb-1">Business Website</p>
-                          <a
-                            href={
-                              company.businessWebsite.startsWith("http")
-                                ? company.businessWebsite
-                                : `https://${company.businessWebsite}`
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm font-medium text-blue-600 hover:underline"
-                          >
-                            {company.businessWebsite}
-                          </a>
-                        </div>
-                      )}
-                    </div>
-                    {company.businessDescription && (
-                      <div className="mt-4 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 mb-1">Business Description</p>
-                        <p className="text-sm text-700">{company.businessDescription}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Members & Owners - THIS SECTION IS REMOVED AS PER UPDATES */}
                 </div>
               ) : (
                 <p className="text-sm text-slate-600">No checkout data available</p>

@@ -444,11 +444,14 @@ export default function UserDetailPage() {
                           Edit IDs
                         </Button>
                       )}
-                      <Link href={`/admin/customers/${company.id}`}>
-                        <Button size="sm" variant="outline" className="border-2 bg-transparent">
-                          View Details
-                        </Button>
-                      </Link>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="border-2 bg-transparent"
+                        onClick={() => router.push(`/admin/customers/${company.id}`)}
+                      >
+                        View Customer
+                      </Button>
                     </div>
                   </div>
 
