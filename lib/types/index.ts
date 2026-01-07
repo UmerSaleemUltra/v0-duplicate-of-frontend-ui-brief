@@ -102,6 +102,7 @@ export interface Company {
     passportKey?: string
   }>
   purchasedAddons?: string[]
+  orders?: Order[]
   createdAt: string
   updatedAt: string
 }
@@ -112,13 +113,11 @@ export interface Company {
 
 export interface Order {
   id: string
-  userId: string
-  companyId: string
-  orderType?: string
+  orderType: string
   packageType?: string
   state?: string
   status: "pending" | "processing" | "completed" | "cancelled"
-  pricing?: {
+  pricing: {
     packagePrice: number
     stateFilingFee: number
     addonsTotal: number
@@ -130,17 +129,15 @@ export interface Order {
     name: string
     price: number
   }>
-  paymentInfo?: {
+  paymentInfo: {
     method: "whatsapp" | "bank_transfer" | "stripe"
     status: "pending" | "pending_verification" | "paid" | "failed"
     transactionId?: string
-    whatsappPhone?: string // Added WhatsApp phone field
+    whatsappPhone?: string
     receiptUrl?: string
-    date?: string
+    date: string
     terms?: string
   }
-  company?: Company
-  user?: User
   passportDocuments?: Array<{
     id: string
     memberId: string

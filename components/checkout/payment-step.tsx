@@ -241,7 +241,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         throw uploadError
       }
 
-      console.log("\n[v0] === STEP 3: CREATING COMPANY ===")
+      console.log("\n[v0] === STEP 3: CREATING COMPANY WITH EMBEDDED ORDER ===")
       console.log("[v0] Company details:", {
         name: data.businessName,
         type: data.entityType,
@@ -250,7 +250,14 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         membersCount: updatedMembers.length,
       })
 
-      console.log("[v0] Step 3: Creating company with userId:", userId)
+      const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
+      const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
+      const packageWithStateFee = packagePrice + stateFilingFee
+      const addonsTotal =
+        data.addonsTotal ||
+        (Array.isArray(data.addons) ? data.addons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) : 0)
+      const totalAmount = packageWithStateFee + addonsTotal
+
       const companyPayload = {
         name: data.businessName,
         type: data.entityType,
@@ -270,9 +277,38 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         transactionReference: `${paymentMethod.toUpperCase()}-${Date.now()}`,
         purchasedAddons: data.addons || [],
         userId: userId,
+        orderData: {
+          orderType: `${data.entityType.toUpperCase()} Formation`,
+          packageType: data.packageType,
+          state: data.state,
+          status: "pending",
+          packagePrice: packagePrice,
+          stateFilingFee: stateFilingFee,
+          addonsTotal: addonsTotal,
+          subtotal: packageWithStateFee + addonsTotal,
+          total: totalAmount,
+          selectedAddons: data.addons || [],
+          paymentMethod: paymentMethod,
+          paymentStatus: "pending",
+          whatsappPhone: whatsappPhone ? (whatsappPhone.startsWith("+") ? whatsappPhone : `+${whatsappPhone}`) : null,
+          receiptUrl: receiptUrl || null,
+          transactionId: `${paymentMethod.toUpperCase()}-${Date.now()}`,
+          passportDocuments: updatedMembers
+            .filter((m: any) => m.passportUrl)
+            .map((m: any) => ({
+              id: new Date().getTime().toString(),
+              memberId: m.id || m.email,
+              memberName: `${m.firstName} ${m.lastName}`,
+              fileName: m.passportKey || "passport.pdf",
+              fileUrl: m.passportUrl,
+              fileType: "application/pdf",
+              fileSize: 0,
+              uploadedAt: new Date().toISOString(),
+            })),
+        },
       }
 
-      console.log("[v0] Company payload userId:", companyPayload.userId)
+      console.log("[v0] Company payload with embedded order")
 
       const companyResponse = await fetch("/api/companies", {
         method: "POST",
@@ -290,82 +326,17 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         throw new Error(companyData.error || "Failed to create company")
       }
 
-      console.log("[v0] ✅ Company created successfully with ID:", companyData.data.id)
-      console.log("[v0] Company userId in response:", companyData.data.userId)
+      console.log("[v0] ✅ Company and order created successfully with ID:", companyData.data.id)
+      console.log("[v0] ✅ Order embedded in company")
 
-      console.log("Updating members with company ID...")
-      const finalMembers = await uploadPassportsFromIndexedDB(data.members || [], userId || "", companyData.data.id)
-      console.log("✅ Members updated with company association")
-
-      console.log("\n=== STEP 4: CREATING ORDER ===")
-
-      const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
-      const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
-      const packageWithStateFee = packagePrice + stateFilingFee
-      const addonsTotal =
-        data.addonsTotal ||
-        (Array.isArray(data.addons) ? data.addons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) : 0)
-      const totalAmount = packageWithStateFee + addonsTotal
-
-      console.log("Order pricing:", {
-        packagePrice,
-        stateFilingFee,
-        addonsTotal,
-        totalAmount,
-      })
-
-      const orderData = {
-        companyId: companyData.data.id,
-        companyName: data.businessName,
-        type: `${data.entityType.toUpperCase()} Formation`,
-        amount: totalAmount,
-        total: totalAmount,
-        packagePrice: packagePrice,
-        packageType: data.packageType,
-        stateFilingFee: stateFilingFee,
-        addonsTotal: addonsTotal,
-        items: [
-          {
-            name: `${data.state} ${data.packageType === "starter" ? "Starter" : "Advance"} Package`,
-            price: packageWithStateFee,
-            quantity: 1,
-          },
-        ],
-        purchasedAddons: data.addons || [],
-        paymentMethod: paymentMethod,
-        whatsappPhone: whatsappPhone ? (whatsappPhone.startsWith("+") ? whatsappPhone : `+${whatsappPhone}`) : null,
-        receiptUrl: receiptUrl || null,
-        members: finalMembers,
-      }
-
-      console.log("Creating order with data:", orderData)
-
-      const orderResponse = await fetch("/api/orders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${currentToken}`,
-        },
-        body: JSON.stringify(orderData),
-      })
-
-      if (!orderResponse.ok) {
-        const errorData = await orderResponse.json()
-        console.log("❌ Order creation failed:", errorData.error)
-        throw new Error(errorData.error || "Failed to create order")
-      }
-
-      const orderResult = await orderResponse.json()
-      console.log("✅ Order created successfully:", orderResult)
-
-      console.log("\n=== CLEANING UP ===")
-      console.log("Clearing checkout data from localStorage...")
+      console.log("\n[v0] === CLEANING UP ===")
+      console.log("[v0] Clearing checkout data from localStorage...")
       localStorage.removeItem("checkoutData")
       localStorage.removeItem("checkoutStep")
-      console.log("✅ Checkout data cleared")
+      console.log("[v0] ✅ Checkout data cleared")
 
-      console.log("\n=== CHECKOUT COMPLETED SUCCESSFULLY ===")
-      console.log("Redirecting to dashboard...")
+      console.log("\n[v0] === CHECKOUT COMPLETED SUCCESSFULLY ===")
+      console.log("[v0] Redirecting to dashboard...")
 
       window.location.href = "/client/dashboard"
     } catch (error: any) {

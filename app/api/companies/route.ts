@@ -3,6 +3,7 @@ import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
+import { ObjectId } from "mongodb"
 
 export async function GET(req: NextRequest) {
   try {
@@ -107,6 +108,7 @@ export async function POST(req: NextRequest) {
       milestones,
       purchasedAddons,
       transactionReference,
+      orderData,
     } = body
 
     if (!name || !type || !state) {
@@ -133,6 +135,37 @@ export async function POST(req: NextRequest) {
         }))
       : []
 
+    const initialOrders = orderData
+      ? [
+          {
+            id: new ObjectId().toString(),
+            orderType: orderData.orderType || `${type} Formation`,
+            packageType: orderData.packageType || packageType || "basic",
+            state: state,
+            status: orderData.status || "pending",
+            pricing: {
+              packagePrice: orderData.packagePrice || 0,
+              stateFilingFee: orderData.stateFilingFee || 0,
+              addonsTotal: orderData.addonsTotal || 0,
+              subtotal: orderData.subtotal || 0,
+              total: orderData.total || 0,
+            },
+            selectedAddons: orderData.selectedAddons || purchasedAddons || [],
+            paymentInfo: {
+              method: orderData.paymentMethod || "stripe",
+              status: orderData.paymentStatus || "pending",
+              whatsappPhone: orderData.whatsappPhone || null,
+              receiptUrl: orderData.receiptUrl || null,
+              transactionId: orderData.transactionId || transactionReference || null,
+              date: new Date().toISOString(),
+            },
+            passportDocuments: orderData.passportDocuments || [],
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        ]
+      : []
+
     const newCompany = {
       userId: decoded.userId,
       name,
@@ -156,6 +189,7 @@ export async function POST(req: NextRequest) {
       },
       customMilestones: [],
       purchasedAddons: Array.isArray(purchasedAddons) ? purchasedAddons : [],
+      orders: initialOrders,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
