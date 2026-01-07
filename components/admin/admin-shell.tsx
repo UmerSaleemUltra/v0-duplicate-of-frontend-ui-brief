@@ -6,21 +6,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import {
-  LayoutDashboard,
-  ShoppingCart,
-  Users,
-  FileText,
-  Mail,
-  Menu,
-  Bell,
-  Search,
-  Package,
-  LogOut,
-  Shield,
-  X,
-} from "lucide-react"
-import { Input } from "@/components/ui/input"
+import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Package, LogOut, Shield } from "lucide-react"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import Image from "next/image"
 import { authService } from "@/lib/auth"
@@ -42,8 +28,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [showMobileSearch, setShowMobileSearch] = useState(false)
   const [userName, setUserName] = useState("Admin User")
   const [userEmail, setUserEmail] = useState("admin@buzzfiling.com")
   const [userInitials, setUserInitials] = useState("AU")
@@ -84,24 +68,6 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       authService.logout()
       router.push("/login")
     }
-  }
-
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (!searchQuery.trim()) return
-
-    const query = searchQuery.toLowerCase().trim()
-
-    if (/^[0-9a-f-]+$/i.test(query)) {
-      router.push(`/admin/orders?search=${encodeURIComponent(query)}`)
-    } else if (query.includes("@")) {
-      router.push(`/admin/customers?search=${encodeURIComponent(query)}`)
-    } else {
-      router.push(`/admin/customers?search=${encodeURIComponent(query)}`)
-    }
-
-    setShowMobileSearch(false)
-    setSearchQuery("")
   }
 
   if (isLoading) {
@@ -164,7 +130,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-2 sm:gap-x-4 border-b border-gray-200 bg-white px-2 sm:px-4 shadow-sm lg:hidden">
+      <div className="sticky top-0 z-40 flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm lg:hidden">
         <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
           <SheetTrigger asChild>
             <Button variant="ghost" size="icon" className="-m-2.5">
@@ -209,89 +175,36 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </SheetContent>
         </Sheet>
 
-        {showMobileSearch ? (
-          <form onSubmit={handleSearch} className="flex-1 flex items-center gap-x-2">
-            <div className="relative flex-1">
-              <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-4 text-gray-400" />
-              <Input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search..."
-                className="pl-9 pr-3 h-9 text-sm bg-white border-gray-200"
-                autoFocus
-              />
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              className="h-9 w-9"
-              onClick={() => {
-                setShowMobileSearch(false)
-                setSearchQuery("")
-              }}
-            >
-              <X className="h-4 w-4" />
-            </Button>
-          </form>
-        ) : (
-          <>
-            <div className="flex-1 text-xs sm:text-sm font-semibold leading-6 text-gray-900 truncate">
-              BuzzFiling Admin
-            </div>
-            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => setShowMobileSearch(true)}>
-              <Search className="h-4 w-4" />
-            </Button>
-            <Button variant="ghost" size="icon" className="h-9 w-9">
-              <Bell className="h-4 w-4" />
-            </Button>
-            <div className="flex items-center gap-x-2">
-              <Avatar className="h-7 w-7 sm:h-8 sm:w-8">
-                <AvatarFallback className="bg-[#ff3b30]/10 text-[#ff3b30] text-xs font-medium">
-                  {userInitials}
-                </AvatarFallback>
-              </Avatar>
-              <Button variant="ghost" size="icon" className="h-9 w-9" onClick={handleLogout}>
-                <LogOut className="h-3 w-3 sm:h-4 sm:w-4" />
-              </Button>
-            </div>
-          </>
-        )}
+        <div className="flex-1 text-sm font-semibold leading-6 text-gray-900">BuzzFiling Admin</div>
+
+        <div className="flex items-center gap-x-3">
+          <Avatar className="h-8 w-8">
+            <AvatarFallback className="bg-[#ff3b30]/10 text-[#ff3b30] text-xs font-medium">
+              {userInitials}
+            </AvatarFallback>
+          </Avatar>
+          <Button variant="ghost" size="icon" className="h-9 w-9" onClick={handleLogout}>
+            <LogOut className="h-4 w-4" />
+          </Button>
+        </div>
       </div>
 
       <div className="lg:pl-72">
         <div className="sticky top-0 z-40 hidden lg:flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-8 shadow-sm">
-          <div className="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
-            <form onSubmit={handleSearch} className="relative flex flex-1 max-w-md">
-              <Search className="pointer-events-none absolute inset-y-0 left-3 h-full w-5 text-gray-400" />
-              <Input
-                type="search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search orders, customers..."
-                className="pl-10 bg-white border-gray-200"
-              />
-            </form>
-            <div className="flex items-center gap-x-4 lg:gap-x-6">
-              <Button variant="ghost" size="icon">
-                <Bell className="h-5 w-5" />
-              </Button>
-              <div className="hidden lg:block lg:h-6 lg:w-px lg:bg-gray-200" />
-              <div className="flex items-center gap-x-3">
-                <Avatar className="h-8 w-8">
-                  <AvatarFallback className="bg-[#ff3b30]/10 text-[#ff3b30] text-xs font-medium">
-                    {userInitials}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="hidden lg:block">
-                  <p className="text-sm font-medium text-gray-900">{userName}</p>
-                  <p className="text-xs text-gray-500">{userEmail}</p>
-                </div>
-                <Button variant="ghost" size="icon" className="ml-2" onClick={handleLogout}>
-                  <LogOut className="h-4 w-4" />
-                </Button>
+          <div className="flex flex-1 items-center justify-end gap-x-6">
+            <div className="flex items-center gap-x-3">
+              <Avatar className="h-8 w-8">
+                <AvatarFallback className="bg-[#ff3b30]/10 text-[#ff3b30] text-xs font-medium">
+                  {userInitials}
+                </AvatarFallback>
+              </Avatar>
+              <div>
+                <p className="text-sm font-medium text-gray-900">{userName}</p>
+                <p className="text-xs text-gray-500">{userEmail}</p>
               </div>
+              <Button variant="ghost" size="icon" className="ml-2" onClick={handleLogout}>
+                <LogOut className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
