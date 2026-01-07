@@ -11,6 +11,7 @@ import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
 import { toast } from "@/components/ui/use-toast"
 import { getCheckoutData, saveCheckoutData } from "@/lib/checkout-storage"
+import { authService } from "@/lib/auth"
 
 interface PaymentStepProps {
   data: any
@@ -115,8 +116,8 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     setIsSubmitting(true)
 
     try {
-      console.log("=== STARTING CHECKOUT FLOW ===")
-      console.log("Step 1: Validating payment information...")
+      console.log("[v0] === STARTING CHECKOUT FLOW ===")
+      console.log("[v0] Step 1: Validating payment information...")
 
       if (paymentMethod === "already_paid") {
         if (!whatsappPhone.trim()) {
@@ -140,13 +141,12 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         }
       }
 
-      console.log("✅ Payment information validated")
+      console.log("[v0] ✅ Payment information validated")
       setShowValidationError(false)
 
       console.log("\n[v0] === PAYMENT SUBMISSION START ===")
       console.log("[v0] Checkout data:", data)
 
-      const { authService } = await import("@/lib/auth")
       let token = authService.getToken()
 
       if (!token) {
@@ -157,38 +157,84 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           throw new Error("Email and password are required to create an account")
         }
 
-        const signupResponse = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            email: data.email,
-            password: data.password,
-            name: data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : data.email,
-            phone: data.phone || "",
-          }),
-        })
+        try {
+          const signupResponse = await fetch("/api/auth/signup", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              email: data.email,
+              password: data.password,
+              name: data.firstName && data.lastName ? `${data.firstName} ${data.lastName}` : data.email,
+              phone: data.phone || "",
+            }),
+          })
 
-        const signupResult = await signupResponse.json()
+          const signupResult = await signupResponse.json()
 
-        if (!signupResponse.ok) {
-          console.error("[v0] ❌ Account creation failed:", signupResult)
-          throw new Error(signupResult.error || "Failed to create account")
+          if (!signupResponse.ok) {
+            if (signupResult.error && signupResult.error.toLowerCase().includes("already exists")) {
+              console.log("[v0] Email already exists, attempting login...")
+
+              const loginResponse = await fetch("/api/auth/login", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  email: data.email,
+                  password: data.password,
+                }),
+              })
+
+              const loginResult = await loginResponse.json()
+
+              if (!loginResponse.ok) {
+                throw new Error("Email already exists. Please use the correct password or reset your password.")
+              }
+
+              console.log("[v0] ✅ Logged in successfully with existing account")
+              console.log("[v0] User ID:", loginResult.userId || loginResult.data?.userId)
+              console.log("[v0] Token received:", loginResult.token || loginResult.data?.token ? "Yes" : "No")
+
+              const userId = loginResult.userId || loginResult.data?.userId
+              const userToken = loginResult.token || loginResult.data?.token
+              const userEmail = loginResult.email || loginResult.data?.user?.email || data.email
+              const userName = loginResult.name || loginResult.data?.user?.name || data.firstName
+
+              authService.setAuth(userToken, {
+                id: userId,
+                email: userEmail,
+                name: userName,
+                role: "client",
+              })
+
+              data.userId = userId
+              token = userToken
+
+              saveCheckoutData(data)
+            } else {
+              console.error("[v0] ❌ Account creation failed:", signupResult)
+              throw new Error(signupResult.error || "Failed to create account")
+            }
+          } else {
+            console.log("[v0] ✅ Account created successfully")
+            console.log("[v0] User ID:", signupResult.userId)
+            console.log("[v0] Token received:", signupResult.token ? "Yes" : "No")
+
+            authService.setAuth(signupResult.token, {
+              id: signupResult.userId,
+              email: signupResult.email,
+              name: signupResult.name,
+              role: "client",
+            })
+
+            data.userId = signupResult.userId
+            token = signupResult.token
+
+            saveCheckoutData(data)
+          }
+        } catch (accountError) {
+          console.error("[v0] ❌ Account setup error:", accountError)
+          throw accountError
         }
-
-        console.log("[v0] ✅ Account created successfully")
-        console.log("[v0] User ID:", signupResult.userId)
-        console.log("[v0] Token received:", signupResult.token ? "Yes" : "No")
-
-        authService.setToken(signupResult.token, {
-          id: signupResult.userId,
-          email: signupResult.email,
-          name: signupResult.name,
-        })
-
-        data.userId = signupResult.userId
-        token = signupResult.token
-
-        saveCheckoutData(data)
       } else {
         console.log("[v0] ✅ User already authenticated with token")
       }
@@ -214,8 +260,8 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         throw uploadError
       }
 
-      console.log("\n=== STEP 3: CREATING COMPANY ===")
-      console.log("Company details:", {
+      console.log("\n[v0] === STEP 3: CREATING COMPANY ===")
+      console.log("[v0] Company details:", {
         name: data.businessName,
         type: data.entityType,
         state: data.state,
@@ -334,7 +380,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
       window.location.href = "/client/dashboard"
     } catch (error) {
-      console.error("❌ Payment submission error:", error)
+      console.error("[v0] ❌ Payment submission error:", error)
       setErrors({ whatsappNumber: "", submit: error instanceof Error ? error.message : "Failed to process payment" })
     } finally {
       setIsSubmitting(false)
