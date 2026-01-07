@@ -4,6 +4,9 @@ export * from "./jwt"
 export * from "./blob"
 
 export const config = {
+  api: {
+    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "https://www.buzzfiling.com",
+  },
   mongodb: {
     uri: process.env.MONGODB_URI!,
     dbName: process.env.MONGODB_DB || "llc_formation",
