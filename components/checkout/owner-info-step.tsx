@@ -268,7 +268,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     const itinAddon = {
       id: `itin-${memberId}`,
       name: `ITIN Application - ${data.members?.find((m) => m.id === memberId)?.name || "Member"}`,
-      price: 149,
+      price: 199,
       memberId: memberId,
     }
 
@@ -278,7 +278,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
     if (!addonExists) {
       updateData({
         addons: [...currentAddons, itinAddon],
-        addonsTotal: (data.addonsTotal || 0) + 149,
+        addonsTotal: (data.addonsTotal || 0) + 199,
       })
     }
 
@@ -292,7 +292,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
     updateData({
       addons: updatedAddons,
-      addonsTotal: Math.max(0, (data.addonsTotal || 0) - 149),
+      addonsTotal: Math.max(0, (data.addonsTotal || 0) - 199),
     })
 
     updateMember(memberId, { itinAdded: false })
@@ -307,7 +307,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
       <div className="space-y-2">
         <h1 className="text-2xl md:text-3xl font-bold text-slate-950 tracking-tight">Member Information</h1>
         <p className="text-sm md:text-base text-slate-500 max-w-2xl leading-relaxed">
-          Add all members or owners of the business. At least one must be designated as the Responsible Person.
+          Add all members or owners of the business. At least one must be designated as the Responsible Party.
         </p>
 
         {errors.responsiblePerson && (
@@ -353,12 +353,12 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       htmlFor={`responsible-${member.id}`}
                       className="text-xs md:text-sm font-medium text-slate-900 cursor-pointer leading-relaxed"
                     >
-                      Responsible Person / Authorized Person
+                      Responsible Party / Authorized Person
                     </label>
                   </div>
                   <p className="text-xs text-slate-600 mt-2 ml-6">
                     {data.members?.length === 1
-                      ? "As the only member, you are automatically the responsible person."
+                      ? "As the only member, you are automatically the responsible party."
                       : "Person authorized to represent the company"}
                   </p>
                 </div>
@@ -555,7 +555,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                           </h3>
 
                           <p className="text-sm md:text-base text-slate-600 leading-relaxed">
-                            Need an ITIN to open bank accounts or file taxes? We handle the complete process for you.
+                            Need an ITIN to open payment accounts or file taxes? We handle the complete process for you.
                           </p>
 
                           <ul className="space-y-2 text-sm md:text-base text-slate-700">
@@ -576,8 +576,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
                         <div className="flex flex-col items-center gap-3 pt-3 md:flex-row md:justify-between md:items-center">
                           <div className="text-center md:text-left">
-                            <div className="text-2xl md:text-2xl font-bold text-red-600">$149.00</div>
-                            <div className="text-xs md:text-sm text-slate-500">per application</div>
+                            <div className="text-2xl md:text-2xl font-bold text-red-600">$199.00</div>
                           </div>
 
                           {member.itinAdded ? (
@@ -604,7 +603,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
                       <div className="pt-4 border-t border-slate-100 text-xs md:text-sm text-slate-500 flex items-center gap-2">
                         <Upload className="w-4 h-4 flex-shrink-0" />
-                        <span className="break-words">Processing time: 6–8 weeks after IRS receives your file</span>
+                        <span className="break-words">Processing time: 7–12 weeks after IRS receives your file</span>
                       </div>
                     </div>
                   </div>

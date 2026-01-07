@@ -40,7 +40,7 @@ function truncateFilename(filename: string, maxLength = 20): string {
   return truncatedFilename.trim() + (truncatedFilename !== filename ? "..." : "")
 }
 
-export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
+function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const router = useRouter()
   const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "already_paid">("already_paid")
   const [whatsappPhone, setWhatsappPhone] = useState("")
@@ -102,18 +102,16 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const getAddonName = (addon: any) => {
     if (!addon) return "Unknown Add-on"
 
-    // For ITIN applications with member info
     if (addon.serviceId === "itin" && addon.memberName) {
       return `ITIN Application - ${addon.memberName}`
     }
 
-    // Use addon name if available, otherwise fallback to service name
     return addon.name || addon.serviceName || "Add-on"
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setErrors({})
+    setErrors({ whatsappNumber: "", submit: "" })
     setIsSubmitting(true)
 
     try {
@@ -122,14 +120,14 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
       if (paymentMethod === "already_paid") {
         if (!whatsappPhone.trim()) {
-          setErrors({ ...errors, whatsappNumber: "Please provide your phone number to proceed" })
+          setErrors({ whatsappNumber: "Please provide your phone number to proceed", submit: "" })
           setShowValidationError(true)
           console.log("❌ Validation failed: WhatsApp phone number is required")
           return
         }
         const phoneDigits = whatsappPhone.replace(/\D/g, "")
         if (phoneDigits.length < 10) {
-          setErrors({ ...errors, whatsappNumber: "Please enter a valid phone number with at least 10 digits" })
+          setErrors({ whatsappNumber: "Please enter a valid phone number with at least 10 digits", submit: "" })
           setShowValidationError(true)
           console.log("❌ Validation failed: Invalid phone number format")
           return
@@ -190,7 +188,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         data.userId = signupResult.userId
         token = signupResult.token
 
-        // Save updated data to localStorage
         saveCheckoutData(data)
       } else {
         console.log("[v0] ✅ User already authenticated with token")
@@ -272,7 +269,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       const packageWithStateFee = packagePrice + stateFilingFee
       const addonsTotal =
         data.addonsTotal ||
-        (Array.isArray(data.addons) ? data.addons.reduce((sum, addon) => sum + (addon.price || 0), 0) : 0)
+        (Array.isArray(data.addons) ? data.addons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) : 0)
       const totalAmount = packageWithStateFee + addonsTotal
 
       console.log("Order pricing:", {
@@ -338,7 +335,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       window.location.href = "/client/dashboard"
     } catch (error) {
       console.error("❌ Payment submission error:", error)
-      setErrors({ ...errors, submit: error instanceof Error ? error.message : "Failed to process payment" })
+      setErrors({ whatsappNumber: "", submit: error instanceof Error ? error.message : "Failed to process payment" })
     } finally {
       setIsSubmitting(false)
     }
@@ -346,7 +343,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
 
   const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setWhatsappPhone(e.target.value)
-    setErrors({ whatsappNumber: "" })
+    setErrors({ whatsappNumber: "", submit: "" })
     setShowValidationError(false)
   }
 
@@ -406,7 +403,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   const packageWithStateFee = packagePrice + stateFilingFee
   const addonsTotal =
     data.addonsTotal ||
-    (Array.isArray(data.addons) ? data.addons.reduce((sum, addon) => sum + (addon.price || 0), 0) : 0)
+    (Array.isArray(data.addons) ? data.addons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) : 0)
   const totalAmount = packageWithStateFee + addonsTotal
 
   const isPaymentValid = paymentMethod === "already_paid" ? whatsappPhone.trim() !== "" : receiptUrl !== ""
@@ -435,7 +432,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
       <div className="space-y-2">
         <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Complete Payment</h1>
         <p className="text-sm md:text-base text-slate-700 leading-relaxed">
-         Choose a payment option below to continue your business setup.
+          Choose a payment option below to continue your business setup.
         </p>
       </div>
 
@@ -518,7 +515,7 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
           </div>
 
           {data.addons && data.addons.length > 0 ? (
-            data.addons.map((addon, index) => (
+            data.addons.map((addon: any, index: number) => (
               <div
                 key={index}
                 className="flex items-center justify-between gap-4 py-2 md:py-2.5 border-b border-slate-200"
@@ -554,7 +551,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm md:text-base font-semibold text-slate-900">Total Amount</p>
-            
               </div>
               <div className="text-right">
                 <p className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900">${calculateTotal()}</p>
@@ -589,33 +585,27 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
               </span>
             </div>
 
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
-  <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">
-    Account Title
-  </span>
-  <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
-    BUZZ FILING
-  </span>
-</div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
+              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Account Title</span>
+              <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
+                BUZZ FILING
+              </span>
+            </div>
 
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
-  <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">
-    Account Number
-  </span>
-  <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
-    1176314943776
-  </span>
-</div>
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
+              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Account Number</span>
+              <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
+                1176314943776
+              </span>
+            </div>
 
-<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 overflow-hidden">
-  <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">
-    IBAN
-  </span>
-  <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
-    PK22UNIL0109000314943776
-  </span>
-</div>
-
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 overflow-hidden">
+              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">IBAN</span>
+              <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
+                PK22UNIL0109000314943776
+              </span>
+            </div>
+          </div>
 
           <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2 sm:gap-3 overflow-hidden">
             <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
@@ -673,37 +663,35 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
                 </label>
               </div>
 
-             {receiptFile?.name && (
-  <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-green-50 border border-green-200 rounded-lg overflow-hidden">
-    <div className="flex items-center gap-2 min-w-0 flex-1">
-      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-      <span
-        className="text-xs sm:text-sm font-medium text-green-700 truncate"
-        title={receiptFile.name}
-      >
-        {truncateFilename(receiptFile.name, 15)}
-      </span>
-    </div>
-    <button
-      type="button"
-      onClick={handleRemoveReceipt}
-      className="text-red-600 hover:text-red-700 flex-shrink-0 p-1"
-    >
-      <X className="w-4 h-4 sm:w-5 sm:h-5" />
-    </button>
-  </div>
-)}
+              {receiptFile?.name && (
+                <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-green-50 border border-green-200 rounded-lg overflow-hidden">
+                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
+                    <span className="text-xs sm:text-sm font-medium text-green-700 truncate" title={receiptFile.name}>
+                      {truncateFilename(receiptFile.name, 15)}
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={handleRemoveReceipt}
+                    className="text-red-600 hover:text-red-700 flex-shrink-0 p-1"
+                  >
+                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
+                  </button>
+                </div>
+              )}
 
-{uploadError && (
-  <p className="text-xs sm:text-sm text-red-600 break-words leading-relaxed">
-    {uploadError}
-  </p>
-)}
+              {uploadError && (
+                <p className="text-xs sm:text-sm text-red-600 break-words leading-relaxed">{uploadError}</p>
+              )}
 
-<p className="text-xs text-slate-500 break-words leading-relaxed">
-  Supported formats: PNG, JPG, WEBP (max. 5MB)
-</p>
-
+              <p className="text-xs text-slate-500 break-words leading-relaxed">
+                Supported formats: PNG, JPG, WEBP (max. 5MB)
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {paymentMethod === "already_paid" && (
         <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6 space-y-4 overflow-hidden">
@@ -741,7 +729,6 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
         </div>
       )}
 
-      {/* Navigation Buttons */}
       <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
         <Button
           type="button"
@@ -788,4 +775,5 @@ export default function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps
   )
 }
 
+export default PaymentStep
 export { PaymentStep }
