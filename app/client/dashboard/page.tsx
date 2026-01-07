@@ -16,7 +16,6 @@ import {
   FileCheck,
   HashIcon,
   FileBarChart,
-  LogOut,
   Briefcase,
   Users,
 } from "lucide-react"
@@ -655,25 +654,15 @@ export default function ClientDashboard() {
         <OrderCelebration show={showCelebration} onClose={handleCloseCelebration} companyName={company?.name} />
 
         <div className="space-y-6 pb-16 sm:pb-24 lg:pb-8">
-          <div className="flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl sm:text-3xl font-bold mb-2 text-slate-900">
-                {isFirstVisit ? `Welcome, ${responsibleMemberName}!` : `Welcome back, ${responsibleMemberName}!`}
-              </h1>
-              <p className="text-sm sm:text-base text-slate-600">
-                {isFirstVisit
-                  ? `Get started with ${businessName}. Here's your formation status.`
-                  : `You're managing ${businessName} today. Here's your current formation status.`}
-              </p>
-            </div>
-            <Button
-              variant="outline"
-              onClick={handleLogout}
-              className="h-10 gap-2 bg-transparent hover:bg-red-50 hover:text-red-600 hover:border-red-200"
-            >
-              <LogOut className="w-4 h-4" />
-              Logout
-            </Button>
+          <div>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-slate-900 break-words">
+              {isFirstVisit ? `Welcome, ${responsibleMemberName}!` : `Welcome back, ${responsibleMemberName}!`}
+            </h1>
+            <p className="text-sm sm:text-base text-slate-600">
+              {isFirstVisit
+                ? `Get started with ${businessName}. Here's your formation status.`
+                : `You're managing ${businessName} today. Here's your current formation status.`}
+            </p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
