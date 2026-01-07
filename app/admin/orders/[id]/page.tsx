@@ -340,93 +340,155 @@ export default function OrderDetailPage() {
       }
 
       console.log("[v0] Loading order data for ID:", orderId)
-      const result = await ApiClient.orders.getById(orderId, token)
 
-      if (result.success && result.data) {
-        const orderData = result.data
-        console.log("[v0] Order data loaded successfully:", orderData)
+      const timestamp = Date.now()
+      const [companiesResponse, usersResponse] = await Promise.all([
+        fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
+        }),
+        fetch(`https://www.buzzfiling.com/api/users?_t=${timestamp}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
+        }),
+      ])
 
-        setOrder(orderData)
-        setCompany(orderData.company)
-        setCustomer(orderData.user)
-        setUser(orderData.user)
-        setPassportDocuments(orderData.passportDocuments || [])
+      const companiesData = await companiesResponse.json()
+      const usersData = await usersResponse.json()
 
-        if (orderData.company?.milestones) {
-          console.log("[v0] Initializing milestones from company data:", orderData.company.milestones)
-          setMilestones({
-            orderProcessed: orderData.company.milestones.orderProcessed || false,
-            registeredAgentAssigned: orderData.company.milestones.registeredAgentAssigned || false,
-            mailingAddressIssued: orderData.company.milestones.mailingAddressIssued || false,
-            formationCompleted: orderData.company.milestones.formationCompleted || false,
-            einProcessed: orderData.company.milestones.einProcessed || false,
-            boiReportFiled: orderData.company.milestones.boiReportFiled || false,
-          })
-        } else {
-          // Initialize with default false values if no milestones exist
-          setMilestones({
-            orderProcessed: false,
-            registeredAgentAssigned: false,
-            mailingAddressIssued: false,
-            formationCompleted: false,
-            einProcessed: false,
-            boiReportFiled: false,
-          })
+      const allCompanies = companiesData.data || companiesData || []
+      const allUsers = usersData.data || usersData || []
+
+      console.log("[v0] Loaded companies:", allCompanies.length)
+      console.log("[v0] Loaded users:", allUsers.length)
+
+      // Find the order within companies
+      let foundOrder = null
+      let foundCompany = null
+
+      for (const company of allCompanies) {
+        const orders = company.orders || []
+        const order = orders.find((o: any) => o.id === orderId)
+        if (order) {
+          foundOrder = order
+          foundCompany = company
+          break
         }
+      }
 
-        if (orderData.company?.registeredAgent) {
-          const agent = orderData.company.registeredAgent
-          console.log("[v0] Pre-populating registered agent form:", agent)
-          setAgentForm({
-            name: agent.name || "",
-            company: agent.company || "",
-            address: agent.address || "",
-            city: agent.city || "",
-            state: agent.state || "",
-            zip: agent.zip || "",
-            phone: agent.phone || "",
-            email: agent.email || "",
-            servicePeriod: agent.servicePeriod || "1 Year",
-          })
-        }
-
-        if (orderData.company?.mailingAddress) {
-          const address = orderData.company.mailingAddress
-          console.log("[v0] Pre-populating mailing address form:", address)
-          setMailingAddress({
-            street: address.street || "",
-            city: address.city || "",
-            state: address.state || "",
-            zip: address.zip || "",
-          })
-        }
-
-        const orderAddons = orderData.purchasedAddons || orderData.selectedAddons || []
-        const companyAddons = orderData.company?.purchasedAddons || []
-
-        const allAddons = [...orderAddons]
-        companyAddons.forEach((companyAddon: any) => {
-          const addonId = typeof companyAddon === "object" ? companyAddon.serviceId : companyAddon
-          const alreadyExists = allAddons.some((orderAddon: any) => {
-            const orderAddonId = typeof orderAddon === "object" ? orderAddon.serviceId : orderAddon
-            return orderAddonId === addonId
-          })
-          if (!alreadyExists) {
-            allAddons.push(companyAddon)
-          }
-        })
-
-        setAddons(allAddons)
-        setNewStatus(orderData.status || "")
-        setError(null)
-      } else {
-        setError("Failed to load order data")
+      if (!foundOrder || !foundCompany) {
+        console.error("[v0] Order not found:", orderId)
+        setError("Order not found")
         toast({
           title: "Error",
-          description: "Failed to load order data",
+          description: "Order not found",
           variant: "destructive",
         })
+        setLoading(false)
+        return
       }
+
+      console.log("[v0] Found order:", foundOrder)
+      console.log("[v0] Found company:", foundCompany)
+
+      // Find the user
+      const foundUser = allUsers.find((u: any) => String(u.id) === String(foundCompany.userId))
+
+      console.log("[v0] Found user:", foundUser)
+
+      // Construct order data with company and user info
+      const orderData = {
+        ...foundOrder,
+        id: foundOrder.id,
+        userId: foundCompany.userId,
+        company: foundCompany,
+        user: foundUser || {
+          id: foundCompany.userId,
+          name: "Unknown",
+          email: "N/A",
+        },
+        passportDocuments: foundOrder.passportDocuments || [],
+      }
+
+      console.log("[v0] Order data loaded successfully:", orderData)
+
+      setOrder(orderData)
+      setCompany(foundCompany)
+      setCustomer(foundUser || orderData.user)
+      setUser(foundUser || orderData.user)
+      setPassportDocuments(orderData.passportDocuments || [])
+
+      if (orderData.company?.milestones) {
+        console.log("[v0] Initializing milestones from company data:", orderData.company.milestones)
+        setMilestones({
+          orderProcessed: orderData.company.milestones.orderProcessed || false,
+          registeredAgentAssigned: orderData.company.milestones.registeredAgentAssigned || false,
+          mailingAddressIssued: orderData.company.milestones.mailingAddressIssued || false,
+          formationCompleted: orderData.company.milestones.formationCompleted || false,
+          einProcessed: orderData.company.milestones.einProcessed || false,
+          boiReportFiled: orderData.company.milestones.boiReportFiled || false,
+        })
+      } else {
+        // Initialize with default false values if no milestones exist
+        setMilestones({
+          orderProcessed: false,
+          registeredAgentAssigned: false,
+          mailingAddressIssued: false,
+          formationCompleted: false,
+          einProcessed: false,
+          boiReportFiled: false,
+        })
+      }
+
+      if (orderData.company?.registeredAgent) {
+        const agent = orderData.company.registeredAgent
+        console.log("[v0] Pre-populating registered agent form:", agent)
+        setAgentForm({
+          name: agent.name || "",
+          company: agent.company || "",
+          address: agent.address || "",
+          city: agent.city || "",
+          state: agent.state || "",
+          zip: agent.zip || "",
+          phone: agent.phone || "",
+          email: agent.email || "",
+          servicePeriod: agent.servicePeriod || "1 Year",
+        })
+      }
+
+      if (orderData.company?.mailingAddress) {
+        const address = orderData.company.mailingAddress
+        console.log("[v0] Pre-populating mailing address form:", address)
+        setMailingAddress({
+          street: address.street || "",
+          city: address.city || "",
+          state: address.state || "",
+          zip: address.zip || "",
+        })
+      }
+
+      const orderAddons = orderData.purchasedAddons || orderData.selectedAddons || []
+      const companyAddons = orderData.company?.purchasedAddons || []
+
+      const allAddons = [...orderAddons]
+      companyAddons.forEach((companyAddon: any) => {
+        const addonId = typeof companyAddon === "object" ? companyAddon.serviceId : companyAddon
+        const alreadyExists = allAddons.some((orderAddon: any) => {
+          const orderAddonId = typeof orderAddon === "object" ? orderAddon.serviceId : orderAddon
+          return orderAddonId === addonId
+        })
+        if (!alreadyExists) {
+          allAddons.push(companyAddon)
+        }
+      })
+
+      setAddons(allAddons)
+      setNewStatus(orderData.status || "")
+      setError(null)
     } catch (error) {
       console.error("[v0] Error loading order data:", error)
       setError("Failed to load order")

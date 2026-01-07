@@ -270,7 +270,7 @@ export default function OrdersPage() {
           order.companyName,
           order.state,
           order.packageType,
-          order.amount,
+          order.pricing?.total || order.amount || order.total || 0,
           order.status,
           new Date(order.createdAt).toLocaleDateString(),
         ].join(","),
@@ -294,7 +294,7 @@ export default function OrdersPage() {
   }
 
   const totalRevenue = orders.reduce((sum, order) => {
-    const orderAmount = order.amount || order.total || 0
+    const orderAmount = order.pricing?.total || order.amount || order.total || 0
     return sum + orderAmount
   }, 0)
 
@@ -433,7 +433,9 @@ export default function OrdersPage() {
                           </Badge>
                         </td>
                         <td className="py-4 px-4">
-                          <span className="text-sm font-semibold text-slate-900">${order.amount}</span>
+                          <span className="text-sm font-semibold text-slate-900">
+                            ${order.pricing?.total || order.amount || order.total || 0}
+                          </span>
                         </td>
                         <td className="py-4 px-4">
                           <Badge
