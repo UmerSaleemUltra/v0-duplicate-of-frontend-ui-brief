@@ -42,14 +42,11 @@ export default function UsersPage() {
         return
       }
 
-      const [usersRes, companiesRes, ordersRes] = await Promise.all([
+      const [usersRes, companiesRes] = await Promise.all([
         fetch("/api/users", {
           headers: { Authorization: `Bearer ${token}` },
         }),
         fetch("/api/companies", {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch("/api/orders", {
           headers: { Authorization: `Bearer ${token}` },
         }),
       ])
@@ -62,12 +59,20 @@ export default function UsersPage() {
 
       if (companiesRes.ok) {
         const companiesData = await companiesRes.json()
-        setCompanies(companiesData.data || companiesData.companies || [])
-      }
+        const allCompanies = companiesData.data || companiesData.companies || []
+        setCompanies(allCompanies)
 
-      if (ordersRes.ok) {
-        const ordersData = await ordersRes.json()
-        setOrders(ordersData.data || ordersData.orders || [])
+        const extractedOrders = allCompanies.flatMap((company: any) => {
+          const companyOrders = company.orders || []
+          return companyOrders.map((order: any) => ({
+            ...order,
+            companyId: company.id,
+            userId: company.userId,
+          }))
+        })
+
+        setOrders(extractedOrders)
+        console.log("[v0] Extracted orders from companies:", extractedOrders.length)
       }
     } catch (error) {
       toast({

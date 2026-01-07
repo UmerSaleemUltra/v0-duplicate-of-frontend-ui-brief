@@ -38,21 +38,29 @@ export default function CustomersPage() {
       const token = authService.getToken()
       if (!token) return
 
-      const [usersResponse, companiesResponse, ordersResponse] = await Promise.all([
+      const [usersResponse, companiesResponse] = await Promise.all([
         ApiClient.users.getAll(token),
         ApiClient.companies.getAll(token),
-        ApiClient.orders.getAll(token),
       ])
 
       const allUsers = Array.isArray(usersResponse.data) ? usersResponse.data : []
       const allCompanies = Array.isArray(companiesResponse.data) ? companiesResponse.data : []
-      const allOrders = Array.isArray(ordersResponse.data) ? ordersResponse.data : []
 
       console.log("[v0] Loaded customers data:", {
         users: allUsers.length,
         companies: allCompanies.length,
-        orders: allOrders.length,
       })
+
+      const allOrders = allCompanies.flatMap((company: any) => {
+        const companyOrders = company.orders || []
+        return companyOrders.map((order: any) => ({
+          ...order,
+          companyId: company.id,
+          userId: company.userId,
+        }))
+      })
+
+      console.log("[v0] Extracted orders from companies:", allOrders.length)
 
       const normalizedCompanies = allCompanies.map((c: any) => ({
         ...c,
@@ -121,24 +129,6 @@ export default function CustomersPage() {
       setFilteredCustomers(customers)
     }
   }, [searchQuery, customers])
-
-  useEffect(() => {
-    if (searchQuery) {
-      const filtered = customers.filter(
-        (customer) =>
-          customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          customer.company.toLowerCase().includes(searchQuery.toLowerCase()),
-      )
-      setFilteredCustomers(filtered)
-    } else {
-      setFilteredCustomers(customers)
-    }
-  }, [searchQuery, customers])
-
-  useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery])
 
   const handleDeleteCustomer = async (customerId: string) => {
     if (typeof window === "undefined") return
