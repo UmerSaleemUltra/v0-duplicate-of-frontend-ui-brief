@@ -148,6 +148,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       console.log("[v0] Checkout data:", data)
 
       let token = authService.getToken()
+      let currentUser = authService.getUser()
 
       if (!token) {
         console.log("\n[v0] === STEP 1: CREATING ACCOUNT ===")
@@ -208,6 +209,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
               data.userId = userId
               token = userToken
+              currentUser = authService.getUser()
 
               saveCheckoutData(data)
             } else {
@@ -228,6 +230,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
             data.userId = signupResult.userId
             token = signupResult.token
+            currentUser = authService.getUser()
 
             saveCheckoutData(data)
           }
@@ -237,13 +240,28 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         }
       } else {
         console.log("[v0] ✅ User already authenticated with token")
+        if (!data.userId && currentUser?.id) {
+          console.log("[v0] Setting userId from authenticated user:", currentUser.id)
+          data.userId = currentUser.id
+          saveCheckoutData(data)
+        }
       }
 
       if (!data.userId) {
-        throw new Error("User ID is missing - account creation may have failed")
+        if (currentUser?.id) {
+          console.log("[v0] Using userId from authService:", currentUser.id)
+          data.userId = currentUser.id
+          saveCheckoutData(data)
+        } else {
+          console.error("[v0] ❌ No userId found in data or authService")
+          console.error("[v0] data.userId:", data.userId)
+          console.error("[v0] currentUser:", currentUser)
+          console.error("[v0] token exists:", !!token)
+          throw new Error("User ID is missing - authentication may have failed. Please refresh and try again.")
+        }
       }
 
-      console.log("[v0] Proceeding with userId:", data.userId)
+      console.log("[v0] ✅ Proceeding with userId:", data.userId)
 
       console.log("\n[v0] === STEP 2: UPLOADING PASSPORTS ===")
       console.log(`[v0] Found ${data.members?.length || 0} members to process`)
