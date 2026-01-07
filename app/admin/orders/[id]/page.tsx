@@ -35,7 +35,6 @@ import {
   AlertCircle,
   Download,
   Edit,
-  Upload,
   Hash,
   UserCheck,
   Home,
@@ -2349,28 +2348,35 @@ export default function OrderDetailPage() {
                               p.memberName === `${member.firstName} ${member.middleName} ${member.lastName}`,
                           )
 
-                          const fullName = [member.firstName, member.middleName, member.lastName]
-                            .filter(Boolean)
-                            .join(" ")
+                          const fullName =
+                            member.name ||
+                            [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ") ||
+                            "N/A"
+
+                          const extractFilename = (url: string) => {
+                            if (!url) return "Passport Document"
+                            try {
+                              const urlParts = url.split("/")
+                              const filename = urlParts[urlParts.length - 1]
+                              // Decode URL encoding and clean up
+                              return decodeURIComponent(filename)
+                                .replace(/^passports\//, "")
+                                .replace(/-[a-zA-Z0-9]{10,}\.pdf$/, ".pdf")
+                            } catch {
+                              return "Passport Document"
+                            }
+                          }
 
                           return (
                             <div key={index} className="p-4 border border-slate-200 rounded-lg">
                               <div className="flex items-start justify-between mb-3">
                                 <div className="space-y-1">
                                   <h4 className="font-medium text-slate-900">{fullName}</h4>
-                                  <p className="text-sm text-slate-600">{member.email}</p>
-                                  {member.phone && <p className="text-sm text-slate-600">{member.phone}</p>}
                                   {member.isResponsiblePerson && (
                                     <Badge variant="secondary" className="text-xs">
                                       Responsible Person
                                     </Badge>
                                   )}
-                                </div>
-                                <div className="text-right">
-                                  {member.ownershipPercentage !== undefined && (
-                                    <div className="text-2xl font-bold text-primary">{member.ownershipPercentage}%</div>
-                                  )}
-                                  <p className="text-xs text-slate-500 mt-1">Ownership</p>
                                 </div>
                               </div>
 
@@ -2389,7 +2395,7 @@ export default function OrderDetailPage() {
                                     <div className="flex items-center gap-2">
                                       <FileText className="w-4 h-4 text-blue-600" />
                                       <span className="text-sm font-medium text-slate-900">
-                                        {passport.fileName || "Passport Document"}
+                                        {extractFilename(passport.fileName || passport.fileUrl || "")}
                                       </span>
                                     </div>
                                     {passport.fileUrl && (
@@ -2607,18 +2613,7 @@ export default function OrderDetailPage() {
                 <MapPin className="w-4 h-4" />
                 <span className="font-medium">Assign Mailing Address</span>
               </Button>
-              <Button
-                variant="outline"
-                className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-slate-50 text-slate-700"
-                onClick={() => {
-                  setUploadDocDialogOpen(true)
-                  setUploadDocType("general")
-                }}
-                disabled={docUploading || !company}
-              >
-                <Upload className="w-4 h-4" />
-                <span className="font-medium">Upload Document</span>
-              </Button>
+              {/* Upload Document button removed */}
               <Button
                 variant="outline"
                 className="w-full h-11 justify-start gap-3 bg-transparent hover:bg-slate-50 text-slate-700"
@@ -3340,75 +3335,84 @@ export default function OrderDetailPage() {
           {company?.members && company.members.length > 0 ? (
             <div className="space-y-6">
               {company.members.map((member: any, index: number) => {
-                const fullName = [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ")
-                const memberPassports = (order.passportDocuments || []).filter(
-                  (doc: any) => doc.memberId === member.id || doc.memberName === fullName,
+                const passport = passportDocuments.find(
+                  (p: any) =>
+                    p.memberId === member.id ||
+                    p.memberName === `${member.firstName} ${member.lastName}` ||
+                    p.memberName === `${member.firstName} ${member.middleName} ${member.lastName}`,
                 )
 
+                const fullName =
+                  member.name ||
+                  [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ") ||
+                  "N/A"
+
+                const extractFilename = (url: string) => {
+                  if (!url) return "Passport Document"
+                  try {
+                    const urlParts = url.split("/")
+                    const filename = urlParts[urlParts.length - 1]
+                    // Decode URL encoding and clean up
+                    return decodeURIComponent(filename)
+                      .replace(/^passports\//, "")
+                      .replace(/-[a-zA-Z0-9]{10,}\.pdf$/, ".pdf")
+                  } catch {
+                    return "Passport Document"
+                  }
+                }
+
                 return (
-                  <div key={index} className="p-4 border border-slate-200 rounded-lg space-y-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <h4 className="font-semibold text-slate-900">{fullName || `Member ${index + 1}`}</h4>
+                  <div key={index} className="p-4 border border-slate-200 rounded-lg">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="space-y-1">
+                        <h4 className="font-medium text-slate-900">{fullName}</h4>
+                        {member.isResponsiblePerson && (
+                          <Badge variant="secondary" className="text-xs">
+                            Responsible Person
+                          </Badge>
+                        )}
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                      <div>
-                        <p className="text-slate-600">Address</p>
-                        <p className="font-medium text-slate-900">
-                          {member.address && member.city && member.state && member.zip
-                            ? `${member.address}, ${member.city}, ${member.state} ${member.zip}`
-                            : "Not provided"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-slate-600">Responsible Person</p>
-                        <Badge variant={member.isResponsiblePerson ? "default" : "secondary"} className="mt-1">
-                          {member.isResponsiblePerson ? "Yes" : "No"}
-                        </Badge>
-                      </div>
+                    <div className="mt-3 p-3 bg-slate-50 rounded-lg">
+                      <p className="text-sm text-slate-700">
+                        {member.address}
+                        {member.city && `, ${member.city}`}
+                        {member.state && `, ${member.state}`}
+                        {member.zip && ` ${member.zip}`}
+                      </p>
                     </div>
 
-                    {memberPassports.length > 0 && (
-                      <div className="space-y-2">
-                        <p className="text-sm font-medium text-slate-700">Passport Documents:</p>
-                        <div className="space-y-2">
-                          {memberPassports.map((doc: any, docIndex: number) => {
-                            const getFileName = (url: string) => {
-                              if (!url) return "Passport Document"
-                              try {
-                                const urlParts = url.split("/")
-                                const fileNameEncoded = urlParts[urlParts.length - 1]
-                                const decoded = decodeURIComponent(fileNameEncoded)
-                                return decoded.replace(/-[a-zA-Z0-9]+\.(pdf|jpg|jpeg|png)$/i, ".$1")
-                              } catch {
-                                return "Passport Document"
-                              }
-                            }
-
-                            return (
-                              <div
-                                key={docIndex}
-                                className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
-                              >
-                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                  <FileText className="h-4 w-4 text-slate-600 flex-shrink-0" />
-                                  <span className="text-sm text-slate-900 truncate">
-                                    {getFileName(doc.fileUrl || doc.url)}
-                                  </span>
-                                </div>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => window.open(doc.fileUrl || doc.url, "_blank")}
-                                >
-                                  <Eye className="h-4 w-4" />
-                                </Button>
-                              </div>
-                            )
-                          })}
+                    {passport ? (
+                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <FileText className="w-4 h-4 text-blue-600" />
+                            <span className="text-sm font-medium text-slate-900">
+                              {extractFilename(passport.fileName || passport.fileUrl || "")}
+                            </span>
+                          </div>
+                          {passport.fileUrl && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => window.open(passport.fileUrl, "_blank")}
+                              className="h-7 text-xs"
+                            >
+                              <Eye className="w-3 h-3 mr-1" />
+                              View
+                            </Button>
+                          )}
                         </div>
+                        {passport.uploadedAt && (
+                          <p className="text-xs text-slate-500 mt-2">
+                            Uploaded: {new Date(passport.uploadedAt).toLocaleDateString()}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
+                        <p className="text-sm text-amber-800">No passport document uploaded</p>
                       </div>
                     )}
                   </div>

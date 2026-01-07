@@ -138,7 +138,21 @@ export default function OrdersPage() {
         console.log("[v0] Admin Orders: Extracted orders from companies:", allOrders.length)
 
         const ordersWithDetails = allOrders.map((order: any) => {
-          const user = allUsers.find((u: any) => String(u.id) === String(order.userId))
+          const company = allCompanies.find((c: any) => c.id === order.companyId)
+          const user = allUsers.find(
+            (u: any) => String(u.id) === String(order.userId) || String(u.id) === String(company?.userId),
+          )
+
+          console.log(
+            "[v0] Order mapping - Order ID:",
+            order.id,
+            "User ID from order:",
+            order.userId,
+            "User ID from company:",
+            company?.userId,
+            "Found user:",
+            user?.name,
+          )
 
           return {
             ...order,
