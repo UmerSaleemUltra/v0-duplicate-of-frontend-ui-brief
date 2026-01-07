@@ -51,6 +51,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showHamburger, setShowHamburger] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
+  const [isPageReady, setIsPageReady] = useState(false)
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -242,10 +243,14 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY
 
-          // Hide hamburger when scrolling down, show when scrolling up
-          if (currentScrollY > lastScrollY && currentScrollY > 50) {
+          if (currentScrollY < 20) {
+            // Always show when near top
+            setShowHamburger(true)
+          } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
+            // Hide when scrolling down
             setShowHamburger(false)
-          } else {
+          } else if (currentScrollY < lastScrollY) {
+            // Show when scrolling up
             setShowHamburger(true)
           }
 
@@ -259,6 +264,14 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [lastScrollY])
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsPageReady(true)
+    }, 500)
+
+    return () => clearTimeout(timer)
+  }, [])
 
   const handleSelectCompany = (company: any) => {
     console.log("[v0] Switching to company:", company.id, company.name)
@@ -411,9 +424,19 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                 </Link>
               )
             })}
+
+            <button
+              onClick={handleLogout}
+              className="lg:hidden w-full flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium min-h-[44px] text-white/80 hover:bg-white/10 hover:text-white"
+            >
+              <div className="flex items-center gap-2.5">
+                <LogOut className="w-5 h-5 flex-shrink-0" />
+                <span className="text-sm">{isAdminView ? "Exit Admin Mode" : "Sign Out"}</span>
+              </div>
+            </button>
           </nav>
 
-          <div className="p-3 border-t border-white/10 flex-shrink-0 bg-gradient-to-b from-transparent to-black/5">
+          <div className="hidden lg:block p-3 border-t border-white/10 flex-shrink-0 bg-gradient-to-b from-transparent to-black/5">
             <Button
               variant="ghost"
               onClick={handleLogout}
@@ -429,7 +452,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className={`lg:hidden fixed top-4 left-4 z-50 p-2.5 sm:p-3 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 rounded-lg shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-all duration-300 ${
-          showHamburger ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0 pointer-events-none"
+          showHamburger && isPageReady ? "translate-y-0 opacity-100" : "-translate-y-20 opacity-0 pointer-events-none"
         }`}
         aria-label={sidebarOpen ? "Close menu" : "Open menu"}
       >
