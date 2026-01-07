@@ -4,12 +4,8 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useRouter } from "next/navigation"
 import {
-  Search,
-  Filter,
   Download,
   Eye,
   Trash2,
@@ -17,12 +13,12 @@ import {
   Clock,
   AlertCircle,
   MoreVertical,
-  Calendar,
   Building2,
+  DollarSign,
+  ShoppingCart,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAuthGuard } from "@/lib/use-auth-guard"
-import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { CompanyModal } from "@/components/company-modal"
@@ -83,6 +79,7 @@ const US_STATES = [
 export default function OrdersPage() {
   const { isAuthenticated, isLoading } = useAuthGuard("admin")
   const { toast } = useToast()
+  const [companies, setCompanies] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
   const [filteredOrders, setFilteredOrders] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
@@ -99,66 +96,63 @@ export default function OrdersPage() {
   useEffect(() => {
     const loadOrders = async () => {
       try {
+        console.log("[v0] Admin Orders: Loading companies with embedded orders...")
         const token = authService.getToken()
         if (!token) return
 
-        const [ordersResponse, usersResponse, companiesResponse] = await Promise.all([
-          ApiClient.orders.getAll(token),
-          ApiClient.users.getAll(token),
-          ApiClient.companies.getAll(token),
+        const timestamp = Date.now()
+        const [usersResponse, companiesResponse] = await Promise.all([
+          fetch(`https://www.buzzfiling.com/api/users?_t=${timestamp}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Cache-Control": "no-cache, no-store, must-revalidate",
+            },
+          }),
+          fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Cache-Control": "no-cache, no-store, must-revalidate",
+            },
+          }),
         ])
 
-        const allOrders = ordersResponse.data || []
-        const allUsers = usersResponse.data || []
-        const allCompanies = companiesResponse.data || []
+        const usersData = await usersResponse.json()
+        const companiesData = await companiesResponse.json()
+
+        const allUsers = usersData.data || usersData || []
+        const allCompanies = companiesData.data || companiesData || []
+
+        console.log("[v0] Admin Orders: Loaded companies:", allCompanies.length)
+
+        const allOrders = allCompanies.flatMap((company: any) => {
+          const companyOrders = company.orders || []
+          return companyOrders.map((order: any) => ({
+            ...order,
+            companyId: company.id,
+            companyName: company.name,
+            state: company.state,
+            packageType: order.packageType || company.packageType || "N/A",
+          }))
+        })
+
+        console.log("[v0] Admin Orders: Extracted orders from companies:", allOrders.length)
 
         const ordersWithDetails = allOrders.map((order: any) => {
           const user = allUsers.find((u: any) => String(u.id) === String(order.userId))
-          const company = allCompanies.find((c: any) => String(c.id) === String(order.companyId))
-
-          let packageType = "N/A"
-
-          // First priority: check order packageType field directly
-          if (order.packageType) {
-            packageType = order.packageType.toLowerCase()
-          }
-          // Second priority: check company packageType
-          else if (company?.packageType) {
-            packageType = company.packageType.toLowerCase()
-          }
-          // Third priority: check order type for addon purchases
-          else if (order.type === "Addon Purchase") {
-            packageType = "addon"
-          }
-          // Fourth priority: parse from items array
-          else if (order.items && Array.isArray(order.items) && order.items.length > 0) {
-            const packageItem = order.items.find(
-              (item: any) => item.name && typeof item.name === "string" && item.name.toLowerCase().includes("package"),
-            )
-            if (packageItem?.name) {
-              const nameLower = packageItem.name.toLowerCase()
-              if (nameLower.includes("starter")) packageType = "starter"
-              else if (nameLower.includes("advance")) packageType = "advance"
-              else if (nameLower.includes("standard")) packageType = "standard"
-            }
-          }
 
           return {
             ...order,
             customerName: user?.name || "Unknown",
             customerEmail: user?.email || "N/A",
-            companyName: company?.name || order.companyName || "N/A",
-            state: company?.state || order.state || "N/A",
-            entityType: order.type || company?.type || "LLC",
-            packageType: packageType,
           }
         })
 
-        console.log("[v0] Loaded orders with details, count:", ordersWithDetails.length)
+        console.log("[v0] Admin Orders: Orders with details:", ordersWithDetails.length)
+        setCompanies(allCompanies)
         setOrders(ordersWithDetails)
         setFilteredOrders(ordersWithDetails)
       } catch (error) {
-        console.error("[v0] Error loading orders:", error)
+        console.error("[v0] Admin Orders: Error loading data:", error)
         toast({
           title: "Error",
           description: "Failed to load orders. Please try again.",
@@ -230,10 +224,21 @@ export default function OrdersPage() {
         return
       }
 
-      const response = await ApiClient.orders.delete(orderId, token)
+      const orderToDelete = orders.find((o) => o.id === orderId)
+      if (!orderToDelete) return
 
-      if (!response.success) {
-        throw new Error(response.message || "Failed to delete order")
+      const response = await fetch(
+        `https://www.buzzfiling.com/api/companies/${orderToDelete.companyId}/orders/${orderId}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      )
+
+      if (!response.ok) {
+        throw new Error("Failed to delete order")
       }
 
       const updatedOrders = orders.filter((order) => order.id !== orderId)
@@ -245,7 +250,7 @@ export default function OrdersPage() {
         description: "Order deleted successfully",
       })
     } catch (error) {
-      console.error("[v0] Error deleting order:", error)
+      console.error("[v0] Admin Orders: Error deleting order:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to delete order. Please try again.",
@@ -288,6 +293,9 @@ export default function OrdersPage() {
     }
   }
 
+  const totalRevenue = companies.reduce((sum, c) => sum + (c.totalRevenue || 0), 0)
+  const totalOrders = orders.length
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -307,7 +315,7 @@ export default function OrdersPage() {
     <div className="space-y-8">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-semibold text-slate-900">Orders</h1>
+          <h1 className="text-3xl font-semibold text-slate-900">Orders & Companies</h1>
           <p className="text-slate-600 mt-1">
             {dateFilter === "current-month" ? "Current month orders" : "All orders"}
           </p>
@@ -321,56 +329,49 @@ export default function OrdersPage() {
         </Button>
       </div>
 
-      <Card className="bg-white border-slate-200">
-        <CardContent className="pt-6">
-          <div className="flex flex-col sm:flex-row gap-4">
-            <div className="flex-1 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search orders..."
-                className="pl-10 h-10"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Total Companies</CardTitle>
+            <Building2 className="h-4 w-4 text-slate-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold text-slate-900">{companies.length}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-slate-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold text-slate-900">${totalRevenue.toLocaleString()}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-slate-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold text-slate-900">{totalOrders}</div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Avg Order Value</CardTitle>
+            <DollarSign className="h-4 w-4 text-slate-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold text-slate-900">
+              ${totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0}
             </div>
-            <Select value={dateFilter} onValueChange={setDateFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] h-10">
-                <Calendar className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Date Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="current-month">Current Month</SelectItem>
-                <SelectItem value="all">All Time</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] h-10">
-                <Filter className="h-4 w-4 mr-2" />
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={stateFilter} onValueChange={setStateFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] h-10">
-                <SelectValue placeholder="State" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All States</SelectItem>
-                {US_STATES.map((state) => (
-                  <SelectItem key={state} value={state.toLowerCase().replace(/\s+/g, "")}>
-                    {state}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardContent>
-      </Card>
+          </CardContent>
+        </Card>
+      </div>
 
       <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg">
         <CardHeader>
