@@ -269,10 +269,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
               {formData?.businessName || "N/A"}
             </span>
           </div>
-          <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
-            <span className="text-sm text-slate-700">Company Ending</span>
-            <span className="text-sm font-medium text-slate-900">{formData?.entityType || "LLC"}</span>
-          </div>
+        
           <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-1 sm:gap-0 py-2 border-b border-slate-100">
             <span className="text-sm text-slate-700">Industry</span>
             <span className="text-sm font-medium text-slate-900 break-words sm:text-right sm:max-w-[60%]">
