@@ -46,11 +46,38 @@ export async function GET(req: NextRequest) {
         formationDate: 1,
         purchasedAddons: 1,
         transactionReference: 1,
+        orders: 1, // Include embedded orders array
+        revenue: 1, // Include total revenue
+        lastOrderDate: 1, // Include last order date
+        milestones: 1, // Include milestones
+        customMilestones: 1, // Include custom milestones
+        registeredAgent: 1, // Include registered agent
+        mailingAddress: 1, // Include mailing address
+        address: 1, // Include company address
+        members: 1, // Include members
+        businessCategory: 1,
+        businessDescription: 1,
+        businessWebsite: 1,
+        packageType: 1,
         createdAt: 1,
         updatedAt: 1,
       })
       .limit(200)
       .toArray()
+
+    console.log(`[v0] GET /api/companies - Found ${companies.length} companies`)
+    console.log(
+      `[v0] Sample company data:`,
+      companies[0]
+        ? {
+            id: companies[0]._id.toString(),
+            name: companies[0].name,
+            ordersCount: companies[0].orders?.length || 0,
+            revenue: companies[0].revenue || 0,
+            hasMilestones: !!companies[0].milestones,
+          }
+        : "No companies",
+    )
 
     const result = {
       success: true,
@@ -67,6 +94,19 @@ export async function GET(req: NextRequest) {
         formationDate: company.formationDate,
         purchasedAddons: company.purchasedAddons || [],
         transactionReference: company.transactionReference || null,
+        orders: company.orders || [], // Include orders array
+        revenue: company.revenue || 0, // Include revenue
+        lastOrderDate: company.lastOrderDate || null, // Include last order date
+        milestones: company.milestones || {}, // Include milestones
+        customMilestones: company.customMilestones || [], // Include custom milestones
+        registeredAgent: company.registeredAgent || null,
+        mailingAddress: company.mailingAddress || null,
+        address: company.address || {},
+        members: company.members || [],
+        businessCategory: company.businessCategory || "",
+        businessDescription: company.businessDescription || "",
+        businessWebsite: company.businessWebsite || "",
+        packageType: company.packageType || "basic",
         createdAt: company.createdAt,
         updatedAt: company.updatedAt,
       })),
@@ -74,6 +114,7 @@ export async function GET(req: NextRequest) {
 
     return addSecurityHeaders(NextResponse.json(result))
   } catch (error) {
+    console.error("[v0] GET /api/companies error:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch companies" }, { status: 500 }))
   }
 }
