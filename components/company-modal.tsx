@@ -173,7 +173,7 @@ export function CompanyModal({
   if (loading) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-center py-12">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
@@ -185,7 +185,7 @@ export function CompanyModal({
   if (!company) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto">
           <div className="text-center py-12">
             <p className="text-slate-600">Company not found</p>
           </div>
@@ -196,7 +196,7 @@ export function CompanyModal({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-[95vw] sm:max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogDescription className="sr-only">
           View detailed information about the company including business details, owners, and order information.
         </DialogDescription>
@@ -449,26 +449,13 @@ export function CompanyModal({
                   <div key={index} className="p-4 border border-slate-200 rounded-lg">
                     <CardHeader className="p-0 mb-3">
                       <CardTitle className="text-lg flex items-center justify-between">
-                        <span>
-                          {member.firstName || ""} {member.middleName || ""} {member.lastName || ""}
-                        </span>
-                        <Badge variant="outline" className="text-lg font-semibold">
-                          {member.ownershipPercentage || 0}%
-                        </Badge>
+                        <span>{fullName}</span>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="p-0 grid grid-cols-2 gap-4">
-                      <div>
-                        <p className="text-sm text-slate-600">Email</p>
-                        <p className="font-medium">{member.email || "N/A"}</p>
-                      </div>
-                      <div>
-                        <p className="text-sm text-slate-600">Phone</p>
-                        <p className="font-medium">{member.phone || "N/A"}</p>
-                      </div>
+                    <CardContent className="p-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
                       <div>
                         <p className="text-sm text-slate-600">Address</p>
-                        <p className="font-medium">
+                        <p className="font-medium break-words">
                           {formatAddress({
                             street: member.address,
                             city: member.city,

@@ -513,7 +513,7 @@ export default function OrderDetailPage() {
   // Milestones are now initialized directly in loadOrderData
 
   const handleStatusUpdate = async () => {
-    if (!order || !newStatus) return
+    if (!order || !newStatus || !company) return
 
     setStatusUpdating(true)
     try {
@@ -523,13 +523,20 @@ export default function OrderDetailPage() {
         return
       }
 
-      const response = await fetch(`/api/orders/${order.id}`, {
+      // Update the order within the company
+      const updatedOrders = (company.orders || []).map((o: any) =>
+        o.id === order.id ? { ...o, status: newStatus } : o,
+      )
+
+      const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify({
+          orders: updatedOrders,
+        }),
       })
 
       if (!response.ok) {
@@ -537,7 +544,11 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
-      setOrder(result.data)
+      setCompany(result.data)
+
+      // Update local order state
+      const updatedOrder = updatedOrders.find((o: any) => o.id === order.id)
+      setOrder(updatedOrder)
 
       toast({
         title: "Status Updated",
@@ -1643,18 +1654,21 @@ export default function OrderDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-slate-600 mb-1">Current Status</p>
-                  <Badge className={`${getStatusColor(order.status)} text-sm`}>
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Current Status</Label>
+                <div className="mt-2">
+                  <Badge className={`${getStatusColor(order.status)} px-3 py-1 text-sm flex items-center gap-2 w-fit`}>
                     {getStatusIcon(order.status)}
-                    <span className="ml-1 capitalize">{order.status}</span>
+                    <span className="capitalize">{order.status}</span>
                   </Badge>
                 </div>
-                <div className="flex items-center gap-3">
+              </div>
+
+              <div className="flex gap-2">
+                <div className="flex-1">
                   <Select value={newStatus} onValueChange={setNewStatus}>
-                    <SelectTrigger className="w-[180px] h-10">
-                      <SelectValue placeholder="Update status" />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
@@ -1662,96 +1676,41 @@ export default function OrderDetailPage() {
                       <SelectItem value="completed">Completed</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button
-                    onClick={handleStatusUpdate}
-                    disabled={newStatus === order.status || statusUpdating}
-                    className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                  >
-                    {statusUpdating ? "Updating..." : "Update Status"}
-                  </Button>
                 </div>
-              </div>
-
-              {/* Timeline */}
-              <div className="pt-4 border-t border-slate-200">
-                <p className="text-sm font-medium text-slate-900 mb-3">Order Timeline</p>
-                <div className="space-y-3">
-                  <div className="flex items-start gap-3">
-                    <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                      <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">Order Placed</p>
-                      <p className="text-xs text-slate-600">{new Date(order.createdAt).toLocaleString()}</p>
-                    </div>
-                  </div>
-                  {order.status !== "pending" && (
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center shrink-0">
-                        <Clock className="w-4 h-4 text-blue-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-900">Processing Started</p>
-                        <p className="text-xs text-slate-600">{new Date(order.createdAt).toLocaleString()}</p>
-                      </div>
-                    </div>
+                <Button
+                  onClick={handleStatusUpdate}
+                  disabled={statusUpdating || !newStatus || newStatus === order.status}
+                  className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                >
+                  {statusUpdating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Status"
                   )}
-                  {order.status === "completed" && (
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-full bg-emerald-100 flex items-center justify-center shrink-0">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium text-slate-900">Order Completed</p>
-                        <p className="text-xs text-slate-600">{new Date(order.createdAt).toLocaleString()}</p>
-                      </div>
-                    </div>
-                  )}
-                </div>
+                </Button>
               </div>
             </CardContent>
           </Card>
 
           <Card className="bg-white border-slate-200">
-            <CardHeader className="flex flex-row items-center justify-between">
-              <div>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <FileCheck className="w-5 h-5" />
-                  Formation Progress
-                </CardTitle>
-                <p className="text-sm text-slate-600 mt-1">
-                  {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed (
-                  {completionPercentage}%)
-                  {company?.customMilestones && company.customMilestones.length > 0 && (
-                    <span className="text-slate-500">
-                      {" "}
-                      • {completedMilestonesWithCustom} of {totalMilestonesWithCustom} total
-                    </span>
-                  )}
-                </p>
-              </div>
-              <div className="flex gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setCustomMilestoneDialogOpen(true)}
-                  className="h-9 gap-2"
-                  disabled={milestoneUpdating}
-                >
-                  <Edit className="w-4 h-4" />
-                  Add Milestone
-                </Button>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setMilestonesDialogOpen(true)}
-                  className="h-9 gap-2"
-                  disabled={milestoneUpdating}
-                >
-                  <Edit className="w-4 h-4" />
-                  Manage Milestones
-                </Button>
-              </div>
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <FileCheck className="w-5 h-5" />
+                Formation Progress
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">
+                {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed (
+                {completionPercentage}%)
+                {company?.customMilestones && company.customMilestones.length > 0 && (
+                  <span className="text-slate-500">
+                    {" "}
+                    • {completedMilestonesWithCustom} of {totalMilestonesWithCustom} total
+                  </span>
+                )}
+              </p>
             </CardHeader>
             <CardContent>
               {/* Progress Bar */}
@@ -2733,52 +2692,7 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      {/* Upload Document Dialog */}
-      <Dialog open={uploadDocDialogOpen} onOpenChange={setUploadDocDialogOpen}>
-        <DialogContent className="max-w-2xl">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Upload Document</DialogTitle>
-            <DialogDescription>
-              Upload a document for {company?.name} - Order #{order.id}
-              <br />
-              <span className="text-xs text-amber-600 mt-2 block">
-                💡 Tip: Document titles like "EIN", "Articles of Organization", "BOI Report" will automatically update
-                milestones
-              </span>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 py-4">
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="documentFile">Select File</Label>
-                <Input
-                  id="documentFile"
-                  type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  className="h-10"
-                  onChange={handleDocumentUpload}
-                  disabled={docUploading}
-                />
-                <p className="text-xs text-slate-500">Supported formats: PDF, DOC, DOCX, JPG, PNG (Max 10MB)</p>
-                <p className="text-xs text-amber-600">
-                  💡 File names with keywords like "EIN", "Articles", "BOI", "Formation" will auto-update milestones
-                </p>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button
-                variant="outline"
-                onClick={() => setUploadDocDialogOpen(false)}
-                className="h-10"
-                disabled={docUploading}
-              >
-                {docUploading ? "Uploading..." : "Close"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+      {/* Upload Document Dialog - REMOVED AS PER UPDATE */}
 
       {/* Manage Milestones Dialog */}
       <Dialog open={milestonesDialogOpen} onOpenChange={setMilestonesDialogOpen}>
@@ -3129,7 +3043,7 @@ export default function OrderDetailPage() {
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">Assign EIN</DialogTitle>
             <DialogDescription>
-              Assign an Employer Identification Number (EIN) for {company?.name}. This will update the company records
+              Assign a Employer Identification Number (EIN) for {company?.name}. This will update the company records
               and mark the EIN milestone as complete.
             </DialogDescription>
           </DialogHeader>
@@ -3356,95 +3270,154 @@ export default function OrderDetailPage() {
         </DialogContent>
       </Dialog>
 
+      {/* Order Documents */}
+      {order.passportDocuments && order.passportDocuments.length > 0 && (
+        <Card className="bg-white border-slate-200">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <FileText className="w-5 h-5" />
+              Passport Documents
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-3">
+              {order.passportDocuments.map((doc: any, index: number) => {
+                const getFileName = (url: string) => {
+                  if (!url) return "Document"
+                  try {
+                    const urlParts = url.split("/")
+                    const fileNameEncoded = urlParts[urlParts.length - 1]
+                    const decoded = decodeURIComponent(fileNameEncoded)
+                    // Remove the hash from filename if present
+                    return decoded.replace(/-[a-zA-Z0-9]+\.(pdf|jpg|jpeg|png)$/i, ".$1")
+                  } catch {
+                    return "Document"
+                  }
+                }
+
+                return (
+                  <div
+                    key={index}
+                    className="flex items-center justify-between p-4 border border-slate-200 rounded-lg hover:border-primary/30 transition-colors"
+                  >
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center flex-shrink-0">
+                        <FileText className="h-5 w-5 text-primary" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-slate-900 truncate">{getFileName(doc.fileUrl || doc.url)}</p>
+                        <p className="text-sm text-slate-500">
+                          Uploaded: {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : "Unknown"}
+                        </p>
+                      </div>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => window.open(doc.fileUrl || doc.url, "_blank")}
+                      className="flex-shrink-0"
+                    >
+                      <Eye className="h-4 w-4 mr-2" />
+                      View
+                    </Button>
+                  </div>
+                )
+              })}
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Members & Passport Documents */}
       <Card className="bg-white border-slate-200">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <Users className="w-5 h-5" />
+            <FileCheck className="w-5 h-5" />
             Members & Passport Documents
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="space-y-4">
-            {company?.members && company.members.length > 0 ? (
-              company.members.map((member: any, index: number) => {
-                const passport = passportDocuments.find(
-                  (p: any) =>
-                    p.memberId === member.id ||
-                    p.memberName === `${member.firstName} ${member.lastName}` ||
-                    p.memberName === `${member.firstName} ${member.middleName} ${member.lastName}`,
+          {company?.members && company.members.length > 0 ? (
+            <div className="space-y-6">
+              {company.members.map((member: any, index: number) => {
+                const fullName = [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ")
+                const memberPassports = (order.passportDocuments || []).filter(
+                  (doc: any) => doc.memberId === member.id || doc.memberName === fullName,
                 )
 
-                const fullName = [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ")
-
                 return (
-                  <div key={index} className="p-4 border border-slate-200 rounded-lg">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="space-y-1">
-                        <h4 className="font-medium text-slate-900">{fullName}</h4>
-                        <p className="text-sm text-slate-600">{member.email}</p>
-                        {member.phone && <p className="text-sm text-slate-600">{member.phone}</p>}
-                        {member.isResponsiblePerson && (
-                          <Badge variant="secondary" className="text-xs">
-                            Responsible Person
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        {member.ownershipPercentage !== undefined && (
-                          <div className="text-2xl font-bold text-primary">{member.ownershipPercentage}%</div>
-                        )}
-                        <p className="text-xs text-slate-500 mt-1">Ownership</p>
+                  <div key={index} className="p-4 border border-slate-200 rounded-lg space-y-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <h4 className="font-semibold text-slate-900">{fullName || `Member ${index + 1}`}</h4>
                       </div>
                     </div>
 
-                    <div className="mt-3 p-3 bg-slate-50 rounded-lg">
-                      <p className="text-sm text-slate-700">
-                        {member.address}
-                        {member.city && `, ${member.city}`}
-                        {member.state && `, ${member.state}`}
-                        {member.zip && ` ${member.zip}`}
-                      </p>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                      <div>
+                        <p className="text-slate-600">Address</p>
+                        <p className="font-medium text-slate-900">
+                          {member.address && member.city && member.state && member.zip
+                            ? `${member.address}, ${member.city}, ${member.state} ${member.zip}`
+                            : "Not provided"}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-slate-600">Responsible Person</p>
+                        <Badge variant={member.isResponsiblePerson ? "default" : "secondary"} className="mt-1">
+                          {member.isResponsiblePerson ? "Yes" : "No"}
+                        </Badge>
+                      </div>
                     </div>
 
-                    {passport ? (
-                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <FileText className="w-4 h-4 text-blue-600" />
-                            <span className="text-sm font-medium text-slate-900">
-                              {passport.fileName || "Passport Document"}
-                            </span>
-                          </div>
-                          {passport.fileUrl && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => window.open(passport.fileUrl, "_blank")}
-                              className="h-7 text-xs"
-                            >
-                              <Eye className="w-3 h-3 mr-1" />
-                              View
-                            </Button>
-                          )}
+                    {memberPassports.length > 0 && (
+                      <div className="space-y-2">
+                        <p className="text-sm font-medium text-slate-700">Passport Documents:</p>
+                        <div className="space-y-2">
+                          {memberPassports.map((doc: any, docIndex: number) => {
+                            const getFileName = (url: string) => {
+                              if (!url) return "Passport Document"
+                              try {
+                                const urlParts = url.split("/")
+                                const fileNameEncoded = urlParts[urlParts.length - 1]
+                                const decoded = decodeURIComponent(fileNameEncoded)
+                                return decoded.replace(/-[a-zA-Z0-9]+\.(pdf|jpg|jpeg|png)$/i, ".$1")
+                              } catch {
+                                return "Passport Document"
+                              }
+                            }
+
+                            return (
+                              <div
+                                key={docIndex}
+                                className="flex items-center justify-between p-3 bg-slate-50 rounded-lg"
+                              >
+                                <div className="flex items-center gap-2 flex-1 min-w-0">
+                                  <FileText className="h-4 w-4 text-slate-600 flex-shrink-0" />
+                                  <span className="text-sm text-slate-900 truncate">
+                                    {getFileName(doc.fileUrl || doc.url)}
+                                  </span>
+                                </div>
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => window.open(doc.fileUrl || doc.url, "_blank")}
+                                >
+                                  <Eye className="h-4 w-4" />
+                                </Button>
+                              </div>
+                            )
+                          })}
                         </div>
-                        {passport.uploadedAt && (
-                          <p className="text-xs text-slate-500 mt-2">
-                            Uploaded: {new Date(passport.uploadedAt).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <p className="text-sm text-amber-800">No passport document uploaded</p>
                       </div>
                     )}
                   </div>
                 )
-              })
-            ) : (
-              <p className="text-sm text-slate-500">No members information available</p>
-            )}
-          </div>
+              })}
+            </div>
+          ) : (
+            <p className="text-center text-slate-500 py-4">No members or documents found</p>
+          )}
         </CardContent>
       </Card>
 

@@ -135,7 +135,7 @@ export default function AdminDashboard() {
             return orderDate >= startOfYear
           })
           .reduce((sum: number, order: any) => {
-            const orderAmount = order.amount || order.total || 0
+            const orderAmount = order.pricing?.total || order.amount || order.total || 0
             console.log(`[v0] Order ${order.id}: amount=${orderAmount}`)
             return sum + orderAmount
           }, 0)
@@ -146,7 +146,7 @@ export default function AdminDashboard() {
             return orderDate >= startOfMonth
           })
           .reduce((sum: number, order: any) => {
-            const orderAmount = order.amount || order.total || 0
+            const orderAmount = order.pricing?.total || order.amount || order.total || 0
             return sum + orderAmount
           }, 0)
 
