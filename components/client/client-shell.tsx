@@ -450,7 +450,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       <button
         onClick={() => setSidebarOpen(!sidebarOpen)}
         className={`lg:hidden fixed top-4 left-4 z-50 p-2.5 sm:p-3 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 rounded-lg shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-all duration-300 ${
-          showHamburger && isPageReady ? " opacity-100" : " opacity-0 pointer-events-none"
+          showHamburger && isPageReady && !sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
         }`}
         aria-label={sidebarOpen ? "Close menu" : "Open menu"}
       >

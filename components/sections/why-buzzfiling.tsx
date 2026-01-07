@@ -43,7 +43,7 @@ export default function WhyBuzzFilling() {
               <div className="absolute top-4 right-4 w-[92%] h-[92%] bg-[#8B0000] rounded-3xl z-0"></div>
 
               <Image
-                src="https://v0.dev/_next/image?url=https%3A%2F%2Fhebbkx1anhila5yf.public.blob.vercel-storage.com%2Fimage-QPd4PbLwdpVwGTFNIjvOXFFr6OUHEy.png&w=1920&q=75"
+                src="/images/design-mode/image(2).png"
                 alt="Person working on laptop"
                 width={600}
                 height={500}
