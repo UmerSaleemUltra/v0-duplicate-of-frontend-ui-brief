@@ -10,7 +10,7 @@ from datetime import datetime
 # Configuration
 BASE_URL = "https://buzzfiling.com"  # Production domain
 LOGIN_ENDPOINT = f"{BASE_URL}/api/auth/login"
-TEST_EMAIL = "test@example.com"
+TEST_EMAIL = "us800750@gmail.com"
 FAILED_ATTEMPTS = 15
 
 class Colors:
