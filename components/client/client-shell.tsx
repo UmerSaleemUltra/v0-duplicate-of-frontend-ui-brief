@@ -243,15 +243,11 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         window.requestAnimationFrame(() => {
           const currentScrollY = window.scrollY
 
-          if (currentScrollY < 20) {
-            // Always show when near top
+          if (currentScrollY < 50) {
             setShowHamburger(true)
-          } else if (currentScrollY > lastScrollY && currentScrollY > 50) {
-            // Hide when scrolling down
+          } else {
+            // Hide hamburger when scrolled down past 50px
             setShowHamburger(false)
-          } else if (currentScrollY < lastScrollY) {
-            // Show when scrolling up
-            setShowHamburger(true)
           }
 
           setLastScrollY(currentScrollY)
