@@ -150,6 +150,57 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       let token = authService.getToken()
       let currentUser = authService.getUser()
 
+      console.log("[v0] Initial auth check - Token exists:", !!token, "User exists:", !!currentUser)
+
+      // Fallback 1: Try to get user from localStorage directly (mobile browsers might have cleared cookies)
+      if (!currentUser) {
+        console.log("[v0] Attempting fallback 1: Check localStorage for user data...")
+        try {
+          const storedUserData = localStorage.getItem("auth_user")
+          if (storedUserData) {
+            const parsedUser = JSON.parse(decodeURIComponent(storedUserData))
+            console.log("[v0] ✅ Found user in localStorage:", parsedUser)
+            currentUser = parsedUser
+          }
+        } catch (e) {
+          console.log("[v0] Could not parse user from localStorage")
+        }
+      }
+
+      // Fallback 2: Try to get userId from checkout data
+      if (!currentUser && data.userId) {
+        console.log("[v0] Attempting fallback 2: Using userId from checkout data:", data.userId)
+        currentUser = {
+          id: data.userId,
+          email: data.email || "",
+          name: data.firstName || data.name || "",
+          role: "client" as const,
+        }
+      }
+
+      // Fallback 3: Decode token manually to extract userId (for mobile)
+      if (!currentUser && token) {
+        console.log("[v0] Attempting fallback 3: Decode token to extract userId...")
+        try {
+          const tokenParts = token.split(".")
+          if (tokenParts.length === 3) {
+            const payload = JSON.parse(atob(tokenParts[1]))
+            console.log("[v0] Decoded token payload:", payload)
+            if (payload.userId || payload.id) {
+              currentUser = {
+                id: payload.userId || payload.id,
+                email: payload.email || data.email || "",
+                name: payload.name || data.firstName || "",
+                role: "client" as const,
+              }
+              console.log("[v0] ✅ Extracted user from token:", currentUser)
+            }
+          }
+        } catch (e) {
+          console.log("[v0] Could not decode token:", e)
+        }
+      }
+
       if (!token) {
         console.log("\n[v0] === STEP 1: CREATING ACCOUNT ===")
         console.log("[v0] No existing token found, creating new account...")
@@ -207,6 +258,18 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                 role: "client",
               })
 
+              localStorage.setItem(
+                "auth_user",
+                encodeURIComponent(
+                  JSON.stringify({
+                    id: userId,
+                    email: userEmail,
+                    name: userName,
+                    role: "client",
+                  }),
+                ),
+              )
+
               data.userId = userId
               token = userToken
               currentUser = authService.getUser()
@@ -228,6 +291,18 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               role: "client",
             })
 
+            localStorage.setItem(
+              "auth_user",
+              encodeURIComponent(
+                JSON.stringify({
+                  id: signupResult.userId,
+                  email: signupResult.email,
+                  name: signupResult.name,
+                  role: "client",
+                }),
+              ),
+            )
+
             data.userId = signupResult.userId
             token = signupResult.token
             currentUser = authService.getUser()
@@ -248,16 +323,61 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       }
 
       if (!data.userId) {
+        console.log("[v0] No userId in data, attempting all fallback methods...")
+
+        // Try fallback 1: authService
         if (currentUser?.id) {
-          console.log("[v0] Using userId from authService:", currentUser.id)
+          console.log("[v0] ✅ Fallback 1: Using userId from authService:", currentUser.id)
           data.userId = currentUser.id
           saveCheckoutData(data)
-        } else {
-          console.error("[v0] ❌ No userId found in data or authService")
-          console.error("[v0] data.userId:", data.userId)
-          console.error("[v0] currentUser:", currentUser)
-          console.error("[v0] token exists:", !!token)
-          throw new Error("User ID is missing - authentication may have failed. Please refresh and try again.")
+        }
+        // Try fallback 2: localStorage
+        else {
+          try {
+            const storedUserData = localStorage.getItem("auth_user")
+            if (storedUserData) {
+              const parsedUser = JSON.parse(decodeURIComponent(storedUserData))
+              if (parsedUser?.id) {
+                console.log("[v0] ✅ Fallback 2: Using userId from localStorage:", parsedUser.id)
+                data.userId = parsedUser.id
+                currentUser = parsedUser
+                saveCheckoutData(data)
+              }
+            }
+          } catch (e) {
+            console.log("[v0] Could not retrieve user from localStorage")
+          }
+        }
+
+        // Try fallback 3: decode token
+        if (!data.userId && token) {
+          try {
+            const tokenParts = token.split(".")
+            if (tokenParts.length === 3) {
+              const payload = JSON.parse(atob(tokenParts[1]))
+              const userId = payload.userId || payload.id
+              if (userId) {
+                console.log("[v0] ✅ Fallback 3: Using userId from token decode:", userId)
+                data.userId = userId
+                saveCheckoutData(data)
+              }
+            }
+          } catch (e) {
+            console.log("[v0] Could not decode token for userId")
+          }
+        }
+
+        // Final check
+        if (!data.userId) {
+          console.error("[v0] ❌ CRITICAL: No userId found after all fallback attempts")
+          console.error("[v0] Debug info:")
+          console.error("  - data.userId:", data.userId)
+          console.error("  - currentUser:", currentUser)
+          console.error("  - token exists:", !!token)
+          console.error("  - authService.getUser():", authService.getUser())
+          console.error("  - localStorage auth_user:", localStorage.getItem("auth_user"))
+
+          throw new Error("User ID is missing - authentication may have failed. Please refresh the page and try again.")
         }
       }
 
