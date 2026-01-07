@@ -104,10 +104,15 @@ export default function BlogManagement() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900">Blog Management</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
+            Blog Management
+          </h1>
           <p className="text-sm sm:text-base text-slate-600 mt-1">Create and manage blog posts</p>
         </div>
-        <Button asChild className="bg-[#ff0d13] hover:bg-[#d81c20]">
+        <Button
+          asChild
+          className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 transition-opacity shadow-lg"
+        >
           <Link href="/admin/blog/new">
             <Plus className="h-4 w-4 mr-2" />
             New Post
@@ -115,7 +120,7 @@ export default function BlogManagement() {
         </Button>
       </div>
 
-      <Card>
+      <Card className="border-slate-200 shadow-lg">
         <CardHeader>
           <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
             <div className="relative flex-1 max-w-md">
@@ -156,7 +161,10 @@ export default function BlogManagement() {
           {filteredPosts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-slate-500">No blog posts found</p>
-              <Button asChild className="mt-4 bg-[#ff0d13] hover:bg-[#d81c20]">
+              <Button
+                asChild
+                className="mt-4 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 transition-opacity shadow-lg"
+              >
                 <Link href="/admin/blog/new">Create your first post</Link>
               </Button>
             </div>
@@ -165,7 +173,7 @@ export default function BlogManagement() {
               {filteredPosts.map((post) => (
                 <div
                   key={post._id}
-                  className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-xl transition-all duration-300"
+                  className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-2xl hover:scale-105 transition-all duration-300"
                 >
                   {/* Featured Image */}
                   <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">

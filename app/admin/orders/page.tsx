@@ -545,7 +545,12 @@ export default function OrdersPage() {
         </CardContent>
       </Card>
 
-      <CompanyModal open={companyModalOpen} onOpenChange={setCompanyModalOpen} companyId={selectedCompanyId} />
+      <CompanyModal
+        open={companyModalOpen}
+        onOpenChange={setCompanyModalOpen}
+        companyId={selectedCompanyId}
+        showOwnerDetails={true}
+      />
     </div>
   )
 }

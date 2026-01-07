@@ -661,6 +661,7 @@ export default function DocumentsPage() {
                     variant={currentPage === page ? "default" : "outline"}
                     size="sm"
                     onClick={() => setCurrentPage(page)}
+                    className={currentPage === page ? "bg-primary" : ""}
                   >
                     {page}
                   </Button>

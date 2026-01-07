@@ -234,21 +234,23 @@ export default function CustomersPage() {
       </Card>
 
       <div className="grid gap-6 md:grid-cols-3">
-        <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg hover:border-primary/20">
+        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-xl hover:scale-105">
           <CardHeader className="pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Customers</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-slate-900">{customers.length}</div>
+            <div className="text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
+              {customers.length}
+            </div>
             <p className="text-xs text-slate-500 mt-1">Registered users</p>
           </CardContent>
         </Card>
-        <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg hover:border-primary/20">
+        <Card className="bg-gradient-to-br from-white to-green-50 border-green-200 transition-all duration-300 hover:shadow-xl hover:scale-105">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900">Active Customers</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-600">Active Customers</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">
+            <div className="text-3xl font-bold text-green-600">
               {customers.filter((c) => c.status === "active").length}
             </div>
             <p className="text-xs text-slate-500 mt-1">
@@ -259,12 +261,12 @@ export default function CustomersPage() {
             </p>
           </CardContent>
         </Card>
-        <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg hover:border-primary/20">
+        <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200 transition-all duration-300 hover:shadow-xl hover:scale-105">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900">Total Orders</CardTitle>
+            <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold text-slate-900">{customers.reduce((sum, c) => sum + c.orders, 0)}</div>
+            <div className="text-3xl font-bold text-blue-600">{customers.reduce((sum, c) => sum + c.orders, 0)}</div>
             <p className="text-xs text-slate-500 mt-1">Across all customers</p>
           </CardContent>
         </Card>

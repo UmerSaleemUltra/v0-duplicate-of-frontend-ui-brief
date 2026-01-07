@@ -11,7 +11,7 @@ import { Card } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Mail, Search, MoreVertical, Upload, X, Trash2 } from "lucide-react"
+import { Search, MoreVertical, Upload, X, Trash2 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
   Dialog,
@@ -674,21 +674,15 @@ Notes: ${mail.notes || "None"}
         )}
       </Card>
 
-      <Card className="bg-white border-slate-200">
+      <Card className="bg-white border-slate-200 overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow className="hover:bg-transparent border-slate-200">
-                <TableHead className="w-12">
+                <TableHead className="w-[50px]">
                   <Checkbox
                     checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
-                    onCheckedChange={() => {
-                      if (selectedItems.length === filteredItems.length) {
-                        setSelectedItems([])
-                      } else {
-                        setSelectedItems(filteredItems.map((item) => item.id))
-                      }
-                    }}
+                    onCheckedChange={toggleSelectAll}
                   />
                 </TableHead>
                 <TableHead className="text-slate-900 font-semibold">Company</TableHead>
@@ -696,20 +690,15 @@ Notes: ${mail.notes || "None"}
                 <TableHead className="text-slate-900 font-semibold">Subject</TableHead>
                 <TableHead className="text-slate-900 font-semibold">Type</TableHead>
                 <TableHead className="text-slate-900 font-semibold">Date</TableHead>
-                <TableHead className="w-12"></TableHead>
+                <TableHead className="text-slate-900 font-semibold">Status</TableHead>
+                <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-12">
-                    <div className="flex flex-col items-center justify-center">
-                      <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center mb-4 shadow-sm">
-                        <Mail className="h-6 w-6 text-white" />
-                      </div>
-                      <p className="text-slate-900 font-medium">No mail items found</p>
-                      <p className="text-sm text-slate-600 mt-1">Try adjusting your search or filter criteria</p>
-                    </div>
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
+                    No mail items found
                   </TableCell>
                 </TableRow>
               ) : (
@@ -739,7 +728,8 @@ Notes: ${mail.notes || "None"}
                       <TableCell className="text-slate-600">
                         {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-slate-600 text-sm capitalize">{item.status}</TableCell>
+                      <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
                             <Button variant="ghost" size="icon" className="h-8 w-8">
@@ -774,26 +764,27 @@ Notes: ${mail.notes || "None"}
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between p-4 border-t border-slate-200">
-            <div className="text-sm text-slate-600">
-              Showing {startIndex + 1} to {Math.min(endIndex, filteredItems.length)} of {filteredItems.length} items
+          <div className="flex items-center justify-between border-t p-4">
+            <div className="text-sm text-muted-foreground">
+              Showing {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} of {filteredItems.length} mail items
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex gap-2">
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
               >
                 Previous
               </Button>
-              <div className="flex items-center gap-1">
+              <div className="flex items-center gap-2">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <Button
                     key={page}
                     variant={currentPage === page ? "default" : "outline"}
                     size="sm"
                     onClick={() => setCurrentPage(page)}
+                    className={currentPage === page ? "bg-primary" : ""}
                   >
                     {page}
                   </Button>
@@ -802,7 +793,7 @@ Notes: ${mail.notes || "None"}
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
               >
                 Next

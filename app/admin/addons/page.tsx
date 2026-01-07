@@ -282,18 +282,26 @@ export default function AdminAddonsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Addons Management</h1>
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
+            Addons Management
+          </h1>
           <p className="text-slate-600 mt-1">Create and manage add-on services for clients</p>
         </div>
-        <Button onClick={() => handleOpenDialog()} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+        <Button
+          onClick={() => handleOpenDialog()}
+          className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 transition-opacity shadow-lg"
+        >
           <Plus className="w-4 h-4 mr-2" />
           Add New Addon
         </Button>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
         {addons.map((addon) => (
-          <Card key={addon.id} className={`${!addon.isActive ? "opacity-60" : ""}`}>
+          <Card
+            key={addon.id}
+            className={`transition-all duration-300 hover:shadow-xl hover:scale-105 ${!addon.isActive ? "opacity-60" : "border-slate-200"}`}
+          >
             <CardHeader>
               <div className="flex items-start justify-between">
                 <div className="flex-1">

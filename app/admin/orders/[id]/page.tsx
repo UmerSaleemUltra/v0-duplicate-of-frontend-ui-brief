@@ -124,7 +124,7 @@ export default function OrderDetailPage() {
   const [uploadDocDialogOpen, setUploadDocDialogOpen] = useState(false)
   const [milestonesDialogOpen, setMilestonesDialogOpen] = useState(false)
   const [customMilestoneDialogOpen, setCustomMilestoneDialogOpen] = useState(false)
-  const [addMilestoneDialogOpen, setAddMilestoneDialogOpen] = useState(false) // New state for Add Milestone dialog
+  // Removed duplicate addMilestoneDialogOpen state
 
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
@@ -2151,13 +2151,10 @@ export default function OrderDetailPage() {
 
           <Card className="bg-white border-slate-200">
             <CardHeader>
-              <div>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Briefcase className="w-5 h-5" />
-                  Checkout Data & Business Details
-                </CardTitle>
-                <p className="text-sm text-slate-600 mt-1">Complete information collected during checkout</p>
-              </div>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Briefcase className="w-5 h-5" />
+                Checkout Data & Business Details
+              </CardTitle>
             </CardHeader>
             <CardContent>
               {company ? (
@@ -2316,7 +2313,7 @@ export default function OrderDetailPage() {
             <CardContent className="p-6">
               <div className="space-y-3">
                 <Button
-                  onClick={() => setAddMilestoneDialogOpen(true)}
+                  onClick={() => setCustomMilestoneDialogOpen(true)}
                   variant="outline"
                   className="w-full justify-start h-11 hover:bg-slate-50"
                 >

@@ -19,6 +19,7 @@ import {
   Hash,
   ExternalLink,
   Trash2,
+  Eye,
 } from "lucide-react"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
@@ -30,6 +31,7 @@ interface CompanyModalProps {
   companyId: string
   passportDocuments?: any[]
   orderDate?: string
+  showOwnerDetails?: boolean
 }
 
 export function CompanyModal({
@@ -38,6 +40,7 @@ export function CompanyModal({
   companyId,
   passportDocuments: propPassportDocuments,
   orderDate: propOrderDate,
+  showOwnerDetails = false,
 }: CompanyModalProps) {
   const [loading, setLoading] = useState(true)
   const [company, setCompany] = useState<any>(null)
@@ -436,26 +439,33 @@ export function CompanyModal({
           )}
 
           {/* Owners/Members Section */}
-          {company.members && company.members.length > 0 && (
+          {showOwnerDetails && company.members && company.members.length > 0 && (
             <div className="space-y-4">
               <h3 className="text-lg font-semibold flex items-center gap-2">
                 <Users className="h-5 w-5" />
                 Owners & Members
               </h3>
               {company.members.map((member: any, index: number) => {
-                const fullName = [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ")
+                const fullName =
+                  member.name ||
+                  [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ") ||
+                  "N/A"
+
+                // Extract passport filename
+                const passport = member.passports?.[0] || {}
+                const passportFileName = passport.fileName
+                  ? passport.fileName.split("/").pop()?.split("-").slice(1).join("-") || passport.fileName
+                  : null
 
                 return (
-                  <div key={index} className="p-4 border border-slate-200 rounded-lg">
-                    <CardHeader className="p-0 mb-3">
-                      <CardTitle className="text-lg flex items-center justify-between">
-                        <span>{fullName}</span>
-                      </CardTitle>
+                  <Card key={index} className="border-slate-200">
+                    <CardHeader className="pb-3">
+                      <CardTitle className="text-base">{fullName}</CardTitle>
                     </CardHeader>
-                    <CardContent className="p-0 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <CardContent className="space-y-3">
                       <div>
                         <p className="text-sm text-slate-600">Address</p>
-                        <p className="font-medium break-words">
+                        <p className="font-medium text-sm">
                           {formatAddress({
                             street: member.address,
                             city: member.city,
@@ -466,30 +476,35 @@ export function CompanyModal({
                       </div>
                       <div>
                         <p className="text-sm text-slate-600">Responsible Person</p>
-                        <Badge variant={member.isResponsiblePerson ? "default" : "secondary"}>
+                        <Badge variant={member.isResponsiblePerson ? "default" : "secondary"} className="text-xs">
                           {member.isResponsiblePerson ? "Yes" : "No"}
                         </Badge>
                       </div>
-                      {member.dateOfBirth && (
-                        <div>
-                          <p className="text-sm text-slate-600">Date of Birth</p>
-                          <p className="font-medium">{member.dateOfBirth}</p>
-                        </div>
-                      )}
-                      {member.ssn && (
-                        <div>
-                          <p className="text-sm text-slate-600">SSN</p>
-                          <p className="font-mono font-medium">***-**-{member.ssn.slice(-4)}</p>
-                        </div>
-                      )}
-                      {member.needsItin && (
-                        <div>
-                          <p className="text-sm text-slate-600">Needs ITIN</p>
-                          <Badge variant="outline">Yes</Badge>
+
+                      {/* Passport Document */}
+                      {passportFileName && (
+                        <div className="pt-2 border-t border-slate-200">
+                          <p className="text-sm text-slate-600 mb-2">Passport Document</p>
+                          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border border-blue-200">
+                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                              <FileText className="h-4 w-4 text-blue-600 flex-shrink-0" />
+                              <span className="text-sm text-blue-900 font-medium truncate">{passportFileName}</span>
+                            </div>
+                            {passport.url && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="flex-shrink-0"
+                                onClick={() => window.open(passport.url, "_blank")}
+                              >
+                                <Eye className="h-4 w-4" />
+                              </Button>
+                            )}
+                          </div>
                         </div>
                       )}
                     </CardContent>
-                  </div>
+                  </Card>
                 )
               })}
             </div>
