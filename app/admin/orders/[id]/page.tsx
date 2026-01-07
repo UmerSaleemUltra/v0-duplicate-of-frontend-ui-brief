@@ -397,7 +397,12 @@ export default function OrderDetailPage() {
       // Find the user
       const foundUser = allUsers.find((u: any) => String(u.id) === String(foundCompany.userId))
 
-      console.log("[v0] Found user:", foundUser)
+      console.log("[v0] Company userId:", foundCompany.userId)
+      console.log(
+        "[v0] All user IDs:",
+        allUsers.map((u: any) => u.id),
+      )
+      console.log("[v0] Found user:", foundUser?.name || foundUser?.email)
 
       // Construct order data with company and user info
       const orderData = {
@@ -417,8 +422,13 @@ export default function OrderDetailPage() {
 
       setOrder(orderData)
       setCompany(foundCompany)
-      setCustomer(foundUser || orderData.user)
-      setUser(foundUser || orderData.user)
+      setCustomer(
+        foundUser || {
+          name: foundCompany.members?.[0]?.name || "Unknown User",
+          email: foundCompany.members?.[0]?.email || "N/A",
+        },
+      )
+      setUser(foundUser)
       setPassportDocuments(orderData.passportDocuments || [])
 
       if (orderData.company?.milestones) {

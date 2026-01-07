@@ -139,25 +139,24 @@ export default function OrdersPage() {
 
         const ordersWithDetails = allOrders.map((order: any) => {
           const company = allCompanies.find((c: any) => c.id === order.companyId)
-          const user = allUsers.find(
-            (u: any) => String(u.id) === String(order.userId) || String(u.id) === String(company?.userId),
-          )
+          const user = allUsers.find((u: any) => String(u.id) === String(company?.userId))
 
           console.log(
             "[v0] Order mapping - Order ID:",
             order.id,
-            "User ID from order:",
-            order.userId,
-            "User ID from company:",
+            "Company ID:",
+            order.companyId,
+            "Company userId:",
             company?.userId,
             "Found user:",
-            user?.name,
+            user?.name || user?.email,
           )
 
           return {
             ...order,
-            customerName: user?.name || "Unknown",
+            customerName: user?.name || company?.members?.[0]?.name || "Unknown",
             customerEmail: user?.email || "N/A",
+            userId: company?.userId, // Add userId for tracking
           }
         })
 
