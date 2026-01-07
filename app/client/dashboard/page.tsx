@@ -233,9 +233,8 @@ export default function ClientDashboard() {
         }
 
         if (companyToLoad) {
-          const [selectedComp, allOrders, companyDocuments, companyMail, companyNotifications] = await Promise.all([
+          const [selectedComp, companyDocuments, companyMail, companyNotifications] = await Promise.all([
             ApiClient.companies.getById(companyToLoad, token),
-            ApiClient.orders.getAll(token),
             ApiClient.documents.getAll(token, companyToLoad),
             ApiClient.mail.getAll(token, companyToLoad),
             ApiClient.notifications.getAll(token, companyToLoad),
@@ -244,7 +243,7 @@ export default function ClientDashboard() {
           setCompany(selectedComp.data)
           setNotifications(companyNotifications.data || [])
 
-          const companyOrders = allOrders.data.filter((o: any) => String(o.companyId) === String(companyToLoad))
+          const companyOrders = selectedComp.data?.orders || []
           if (companyOrders.length > 0) {
             setOrder(companyOrders[0])
           }

@@ -132,16 +132,32 @@ export class ApiClient {
     update: (id: string, data: any, token: string) =>
       this.request(`/companies/${id}`, { method: "PUT", body: data, token }),
     delete: (id: string, token: string) => this.request(`/companies/${id}`, { method: "DELETE", token }),
+    addOrder: (companyId: string, orderData: any, token: string) =>
+      this.request(`/companies/${companyId}/orders`, { method: "POST", body: orderData, token }),
   }
 
-  // Order APIs
+  // Orders APIs (deprecated)
   static orders = {
-    getAll: (token: string) => this.request("/orders", { token, cache: true, cacheTime: 30000 }),
-    getById: (id: string, token: string) => this.request(`/orders/${id}`, { token, cache: true }),
-    create: (data: any, token: string) => this.request("/orders", { method: "POST", body: data, token }),
-    update: (id: string, data: any, token: string) =>
-      this.request(`/orders/${id}`, { method: "PUT", body: data, token }),
-    delete: (id: string, token: string) => this.request(`/orders/${id}`, { method: "DELETE", token }),
+    getAll: (token: string) => {
+      console.warn("[v0] orders.getAll() is deprecated. Orders are now embedded in companies.")
+      return this.request("/orders", { token, cache: true, cacheTime: 30000 })
+    },
+    getById: (id: string, token: string) => {
+      console.warn("[v0] orders.getById() is deprecated. Orders are now embedded in companies.")
+      return this.request(`/orders/${id}`, { token, cache: true })
+    },
+    create: (data: any, token: string) => {
+      console.warn("[v0] orders.create() is deprecated. Use companies.addOrder() instead.")
+      return this.request("/orders", { method: "POST", body: data, token })
+    },
+    update: (id: string, data: any, token: string) => {
+      console.warn("[v0] orders.update() is deprecated. Orders are now embedded in companies.")
+      return this.request(`/orders/${id}`, { method: "PUT", body: data, token })
+    },
+    delete: (id: string, token: string) => {
+      console.warn("[v0] orders.delete() is deprecated. Orders are now embedded in companies.")
+      return this.request(`/orders/${id}`, { method: "DELETE", token })
+    },
   }
 
   // Document APIs

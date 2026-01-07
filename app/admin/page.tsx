@@ -68,38 +68,34 @@ export default function AdminDashboard() {
         const token = authService.getToken()
         if (!token) return
 
-        const [ordersResponse, usersResponse, companiesResponse] = await Promise.all([
-          ApiClient.orders.getAll(token),
+        const [usersResponse, companiesResponse] = await Promise.all([
           ApiClient.users.getAll(token),
           ApiClient.companies.getAll(token),
         ])
 
-        const allOrders = ordersResponse.data || []
         const allUsers = usersResponse.data || []
         const allCompanies = companiesResponse.data || []
 
+        const allOrders = allCompanies.flatMap((company: any) =>
+          (company.orders || []).map((order: any) => ({
+            ...order,
+            companyId: company.id,
+            companyName: company.name,
+            state: company.state,
+            packageType: company.packageType
+              ? `${company.packageType} Package`
+              : order.type === "Addon Purchase"
+                ? "Add-on Only"
+                : "N/A",
+          })),
+        )
+
         const ordersWithDetails = allOrders.slice(0, 4).map((order: any) => {
           const user = allUsers.find((u: any) => u.id === order.userId)
-          const company = allCompanies.find((c: any) => c.id === order.companyId)
-
-          let packageType = "N/A"
-          if (order.type === "Addon Purchase") {
-            packageType = "Add-on Only"
-          } else if (order.items && order.items.length > 0) {
-            const packageItem = order.items[0]
-            if (packageItem.name) {
-              packageType = packageItem.name
-            }
-          } else if (company?.packageType) {
-            packageType = `${company.packageType} Package`
-          }
 
           return {
             ...order,
             userName: user?.name || "Unknown",
-            companyName: company?.name || order.companyName || "Unknown",
-            state: company?.state || "N/A",
-            packageType,
           }
         })
 
