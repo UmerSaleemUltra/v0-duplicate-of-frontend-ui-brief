@@ -148,8 +148,16 @@ export default function ClientDashboard() {
 
         console.log("[v0] Dashboard: Loading companies for userId:", userId)
 
-        const companiesResponse = await ApiClient.companies.getAll(token)
-        const allCompanies = companiesResponse.data || []
+        const cacheBuster = `?t=${Date.now()}`
+        const companiesResponse = await fetch(`/api/companies${cacheBuster}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
+        }).then((res) => res.json())
+
+        const allCompanies = companiesResponse.data || companiesResponse.companies || []
 
         console.log("[v0] Dashboard: Total companies fetched from API:", allCompanies.length)
         console.log(
@@ -276,7 +284,7 @@ export default function ClientDashboard() {
     }
 
     loadData()
-  }, [isAuthenticating, currentUser, selectedCompanyId, dataLoaded, router, setSelectedCompanyId, toast])
+  }, [isAuthenticating, currentUser, selectedCompanyId, dataLoaded, router, setSelectedCompanyId])
 
   useEffect(() => {
     if (!company) return

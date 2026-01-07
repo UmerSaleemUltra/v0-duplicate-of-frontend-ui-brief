@@ -29,7 +29,6 @@ import { NotificationDropdown } from "@/components/notifications/notification-dr
 import { BusinessNameDisplay } from "@/components/ui/business-name-display"
 import { useSelectedCompany } from "@/lib/company-context"
 import { authService } from "@/lib/auth"
-import { ApiClient } from "@/lib/api-client"
 
 const NAV_ITEMS = [
   { href: "/client/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -144,7 +143,15 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
         console.log("[v0] Sidebar: Loading companies for userId:", userId)
 
-        const response = await ApiClient.companies.getAll(token)
+        const cacheBuster = `?t=${Date.now()}`
+        const response = await fetch(`/api/companies${cacheBuster}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
+        }).then((res) => res.json())
+
         const allCompaniesData = response.data || response.companies || []
 
         console.log("[v0] Sidebar: Total companies fetched:", allCompaniesData.length)
