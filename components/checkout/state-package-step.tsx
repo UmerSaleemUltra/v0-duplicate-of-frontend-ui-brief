@@ -93,9 +93,9 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
   return (
     <div className="space-y-6 overflow-hidden max-w-full">
       <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 break-words">Select your company formation</h1>
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 break-words">Formation Details</h1>
         <p className="text-sm text-slate-600 break-words leading-relaxed">
-          Choose the legal entity structure that aligns with your business goals.
+          Select your state of formation and business entity type.
         </p>
       </div>
 
