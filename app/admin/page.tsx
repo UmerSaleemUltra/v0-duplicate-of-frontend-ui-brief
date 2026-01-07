@@ -134,14 +134,21 @@ export default function AdminDashboard() {
             const orderDate = new Date(order.createdAt)
             return orderDate >= startOfYear
           })
-          .reduce((sum: number, order: any) => sum + (order.total || order.amount || 0), 0)
+          .reduce((sum: number, order: any) => {
+            const orderAmount = order.amount || order.total || 0
+            console.log(`[v0] Order ${order.id}: amount=${orderAmount}`)
+            return sum + orderAmount
+          }, 0)
 
         const currentMonthRevenue = allOrders
           .filter((order: any) => {
             const orderDate = new Date(order.createdAt)
             return orderDate >= startOfMonth
           })
-          .reduce((sum: number, order: any) => sum + (order.total || order.amount || 0), 0)
+          .reduce((sum: number, order: any) => {
+            const orderAmount = order.amount || order.total || 0
+            return sum + orderAmount
+          }, 0)
 
         console.log("[v0] Admin Dashboard: Revenue calculated", {
           yearRevenue,

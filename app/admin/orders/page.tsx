@@ -293,7 +293,13 @@ export default function OrdersPage() {
     }
   }
 
-  const totalRevenue = companies.reduce((sum, c) => sum + (c.totalRevenue || 0), 0)
+  const totalRevenue = orders.reduce((sum, order) => {
+    const orderAmount = order.amount || order.total || 0
+    return sum + orderAmount
+  }, 0)
+
+  console.log("[v0] Admin Orders: Total revenue calculated:", totalRevenue, "from", orders.length, "orders")
+
   const totalOrders = orders.length
 
   if (isLoading) {
