@@ -499,11 +499,12 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
               size="icon"
               onClick={async () => {
                 setIsRefreshing(true)
+                console.log("[v0] Manual refresh triggered")
                 window.dispatchEvent(new Event("client-dashboard-refresh"))
-                // Force page reload to refresh all data
+                // Show loading state for visual feedback
                 setTimeout(() => {
-                  window.location.reload()
-                }, 300)
+                  setIsRefreshing(false)
+                }, 1500)
               }}
               disabled={isRefreshing}
               className="h-10 w-10"
