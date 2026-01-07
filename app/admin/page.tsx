@@ -397,7 +397,9 @@ export default function AdminDashboard() {
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-semibold text-slate-900">${order.total || order.amount}</p>
+                      <p className="text-sm font-semibold text-slate-900">
+                        ${(order.pricing?.total || order.amount || order.total || 0).toLocaleString()}
+                      </p>
                       <p className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</p>
                     </div>
                   </div>

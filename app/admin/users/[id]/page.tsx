@@ -59,15 +59,16 @@ export default function UserDetailPage() {
 
       console.log("[v0] Loading user data for ID:", params.id)
 
-      const [userResponse, compResponse, ordersResponse, docsResponse] = await Promise.allSettled([
+      const timestamp = Date.now()
+      const [userResponse, compResponse, docsResponse] = await Promise.allSettled([
         fetch(`/api/users/${params.id}`, {
           headers: { Authorization: `Bearer ${token}` },
         }),
-        fetch(`/api/companies`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`/api/orders`, {
-          headers: { Authorization: `Bearer ${token}` },
+        fetch(`/api/companies?_t=${timestamp}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
         }),
         fetch(`/api/documents`, {
           headers: { Authorization: `Bearer ${token}` },
@@ -118,19 +119,21 @@ export default function UserDetailPage() {
           return normalizeId(c.userId) === normalizeId(params.id)
         })
         setCompanies(userCompanies)
+        console.log("[v0] Companies loaded:", userCompanies.length)
+
+        const userOrders = userCompanies.flatMap((company: any) => {
+          const companyOrders = company.orders || []
+          return companyOrders.map((order: any) => ({
+            ...order,
+            companyId: company.id,
+            companyName: company.name,
+          }))
+        })
+
+        setOrders(userOrders)
+        console.log("[v0] Orders extracted from companies:", userOrders.length)
       } else {
         console.log("[v0] Failed to load companies")
-      }
-
-      if (ordersResponse.status === "fulfilled" && ordersResponse.value.ok) {
-        const ordersResult = await ordersResponse.value.json()
-        const allOrders = ordersResult.data || ordersResult.orders || []
-        const userOrders = allOrders.filter((o: any) => {
-          return normalizeId(o.userId) === normalizeId(params.id)
-        })
-        setOrders(userOrders)
-      } else {
-        console.log("[v0] Failed to load orders")
       }
 
       if (docsResponse.status === "fulfilled" && docsResponse.value.ok) {

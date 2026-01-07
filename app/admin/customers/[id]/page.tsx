@@ -99,14 +99,13 @@ export default function CustomerDetailPage() {
       setCustomer(user)
       console.log("[v0] Customer loaded:", user.email)
 
-      const [compResponse, ordersResponse] = await Promise.all([
-        fetch(`/api/companies`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-        fetch(`/api/orders`, {
-          headers: { Authorization: `Bearer ${token}` },
-        }),
-      ])
+      const timestamp = Date.now()
+      const compResponse = await fetch(`/api/companies?_t=${timestamp}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
+      })
 
       if (compResponse.ok) {
         const compResult = await compResponse.json()
@@ -124,24 +123,18 @@ export default function CustomerDetailPage() {
 
         setCompanies(userCompanies)
         console.log("[v0] Companies loaded:", userCompanies.length)
-      }
 
-      if (ordersResponse.ok) {
-        const ordersResult = await ordersResponse.json()
-        const allOrders = Array.isArray(ordersResult.data)
-          ? ordersResult.data
-          : Array.isArray(ordersResult.orders)
-            ? ordersResult.orders
-            : []
-
-        const userOrders = allOrders.filter((o: any) => {
-          const orderUserId = o.userId?.toString ? o.userId.toString() : String(o.userId || "")
-          const userId = customerId?.toString ? customerId.toString() : String(customerId || "")
-          return orderUserId === userId
+        const userOrders = userCompanies.flatMap((company: any) => {
+          const companyOrders = company.orders || []
+          return companyOrders.map((order: any) => ({
+            ...order,
+            companyId: company.id,
+            companyName: company.name,
+          }))
         })
 
         setOrders(userOrders)
-        console.log("[v0] Orders loaded:", userOrders.length)
+        console.log("[v0] Orders extracted from companies:", userOrders.length)
       }
     } catch (error) {
       console.error("[v0] Error loading customer:", error)
