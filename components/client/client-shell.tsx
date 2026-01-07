@@ -95,6 +95,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     const loadCompanies = async () => {
       const token = authService.getToken()
       if (!token) {
+        console.log("[v0] Sidebar: No token found")
         return
       }
 
@@ -102,7 +103,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         const currentUser = authService.getCurrentUser()
         let userId = currentUser?.id
 
-        // Fallback: Try to get userId from localStorage if not available from authService
         if (!userId && typeof window !== "undefined") {
           const storedUserId = localStorage.getItem("user_id")
           const storedUserData = localStorage.getItem("user_data")
@@ -119,10 +119,26 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
               console.error("[v0] Sidebar: Error parsing stored user data:", e)
             }
           }
+
+          // Try to decode token as last resort
+          if (!userId && token) {
+            try {
+              const tokenParts = token.split(".")
+              if (tokenParts.length === 3) {
+                const payload = JSON.parse(atob(tokenParts[1]))
+                userId = payload.userId || payload.id
+                console.log("[v0] Sidebar: Retrieved userId from token:", userId)
+              }
+            } catch (e) {
+              console.error("[v0] Sidebar: Error decoding token:", e)
+            }
+          }
         }
 
         if (!userId) {
-          console.log("[v0] Sidebar: No userId found, cannot load companies")
+          console.error("[v0] Sidebar: CRITICAL - No userId found!")
+          console.log("[v0] Sidebar: currentUser:", currentUser)
+          console.log("[v0] Sidebar: localStorage user_id:", localStorage.getItem("user_id"))
           return
         }
 
@@ -133,31 +149,38 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
         console.log("[v0] Sidebar: Total companies fetched:", allCompaniesData.length)
         console.log(
-          "[v0] Sidebar: All companies:",
+          "[v0] Sidebar: All companies details:",
           allCompaniesData.map((c: any) => ({
             id: c.id,
             name: c.name,
             userId: c.userId,
+            userIdType: typeof c.userId,
+            createdAt: c.createdAt,
           })),
         )
 
+        console.log("[v0] Sidebar: Current userId for filtering:", userId, "Type:", typeof userId)
+
         const userCompanies = allCompaniesData.filter((c: any) => {
-          const companyUserId = String(c.userId)
-          const currentUserId = String(userId)
+          const companyUserId = String(c.userId).trim()
+          const currentUserId = String(userId).trim()
           const match = companyUserId === currentUserId
 
-          if (!match) {
-            console.log("[v0] Sidebar: Company userId mismatch:", {
-              companyUserId,
-              currentUserId,
-              companyName: c.name,
-            })
-          }
+          console.log("[v0] Sidebar: Comparing company:", {
+            companyName: c.name,
+            companyUserId,
+            currentUserId,
+            match,
+          })
 
           return match
         })
 
         console.log("[v0] Sidebar: User's companies after filtering:", userCompanies.length)
+        console.log(
+          "[v0] Sidebar: Filtered company names:",
+          userCompanies.map((c: any) => c.name),
+        )
 
         setAllCompanies(userCompanies)
 
@@ -174,7 +197,18 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     }
 
     loadCompanies()
-  }, [])
+
+    const handleRefresh = () => {
+      console.log("[v0] Sidebar: Refresh event triggered, reloading companies")
+      loadCompanies()
+    }
+
+    window.addEventListener("client-dashboard-refresh", handleRefresh)
+
+    return () => {
+      window.removeEventListener("client-dashboard-refresh", handleRefresh)
+    }
+  }, [selectedCompanyId, setSelectedCompanyId])
 
   useEffect(() => {
     const handleFocus = () => {

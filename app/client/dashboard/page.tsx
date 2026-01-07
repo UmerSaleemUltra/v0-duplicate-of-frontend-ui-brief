@@ -112,56 +112,91 @@ export default function ClientDashboard() {
 
           if (storedUserId) {
             userId = storedUserId
-            console.log("[v0] Retrieved userId from localStorage:", userId)
+            console.log("[v0] Dashboard: Retrieved userId from localStorage:", userId)
           } else if (storedUserData) {
             try {
               const userData = JSON.parse(storedUserData)
               userId = userData.id
-              console.log("[v0] Retrieved userId from stored user data:", userId)
-            } catch (e) {}
+              console.log("[v0] Dashboard: Retrieved userId from stored user data:", userId)
+            } catch (e) {
+              console.error("[v0] Dashboard: Error parsing user data:", e)
+            }
+          }
+
+          // Try to decode token as last resort
+          if (!userId && token) {
+            try {
+              const tokenParts = token.split(".")
+              if (tokenParts.length === 3) {
+                const payload = JSON.parse(atob(tokenParts[1]))
+                userId = payload.userId || payload.id
+                console.log("[v0] Dashboard: Retrieved userId from token:", userId)
+              }
+            } catch (e) {
+              console.error("[v0] Dashboard: Error decoding token:", e)
+            }
           }
         }
 
-        console.log("[v0] Loading companies for userId:", userId)
+        if (!userId) {
+          console.error("[v0] Dashboard: CRITICAL - No userId found anywhere!")
+          console.log("[v0] Dashboard: currentUser:", currentUser)
+          console.log("[v0] Dashboard: localStorage user_id:", localStorage.getItem("user_id"))
+          console.log("[v0] Dashboard: localStorage user_data:", localStorage.getItem("user_data"))
+          return
+        }
+
+        console.log("[v0] Dashboard: Loading companies for userId:", userId)
 
         const companiesResponse = await ApiClient.companies.getAll(token)
         const allCompanies = companiesResponse.data || []
 
-        console.log("[v0] Total companies fetched:", allCompanies.length)
+        console.log("[v0] Dashboard: Total companies fetched from API:", allCompanies.length)
         console.log(
-          "[v0] All companies:",
+          "[v0] Dashboard: All companies details:",
           allCompanies.map((c: any) => ({
             id: c.id,
             name: c.name,
             userId: c.userId,
+            userIdType: typeof c.userId,
+            createdAt: c.createdAt,
           })),
         )
 
+        console.log("[v0] Dashboard: Current userId for filtering:", userId, "Type:", typeof userId)
+
         const userCompanies = allCompanies.filter((c: any) => {
-          const companyUserId = String(c.userId)
-          const currentUserId = String(userId)
+          const companyUserId = String(c.userId).trim()
+          const currentUserId = String(userId).trim()
           const match = companyUserId === currentUserId
 
-          if (!match) {
-            console.log("[v0] Company userId mismatch:", {
-              companyUserId,
-              currentUserId,
-              companyName: c.name,
-            })
-          }
+          console.log("[v0] Dashboard: Comparing company:", {
+            companyName: c.name,
+            companyUserId,
+            currentUserId,
+            match,
+            companyUserIdLength: companyUserId.length,
+            currentUserIdLength: currentUserId.length,
+          })
 
           return match
         })
 
-        console.log("[v0] User companies after filtering:", userCompanies.length)
+        console.log("[v0] Dashboard: User companies after filtering:", userCompanies.length)
+        console.log(
+          "[v0] Dashboard: Filtered company names:",
+          userCompanies.map((c: any) => c.name),
+        )
 
         if (userCompanies.length === 0) {
-          console.log("[v0] User has no companies - showing no company state")
+          console.log("[v0] Dashboard: User has no companies - showing no company state")
           setHasNoCompanies(true)
           setIsLoadingData(false)
           setDataLoaded(true)
           return
         }
+
+        setHasNoCompanies(false)
 
         let companyToLoad = selectedCompanyId
 
