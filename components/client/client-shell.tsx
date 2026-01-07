@@ -48,6 +48,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [userInitials, setUserInitials] = useState("U")
   const [userName, setUserName] = useState("")
   const [isAdminView, setIsAdminView] = useState(false)
+  const [isRefreshing, setIsRefreshing] = useState(false)
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -496,11 +497,19 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             <Button
               variant="ghost"
               size="icon"
-              onClick={() => window.dispatchEvent(new Event("client-dashboard-refresh"))}
+              onClick={async () => {
+                setIsRefreshing(true)
+                window.dispatchEvent(new Event("client-dashboard-refresh"))
+                // Force page reload to refresh all data
+                setTimeout(() => {
+                  window.location.reload()
+                }, 300)
+              }}
+              disabled={isRefreshing}
               className="h-10 w-10"
               aria-label="Refresh dashboard"
             >
-              <RefreshCw className="w-5 h-5" />
+              <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
             </Button>
             {/* NotificationDropdown is conditionally rendered based on specific pages */}
             {pathname.includes("/client/dashboard") && <NotificationDropdown />}
