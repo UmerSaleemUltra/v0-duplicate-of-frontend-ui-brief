@@ -146,18 +146,7 @@ function AddonCheckoutContent() {
 
       console.log("[v0] Purchasing addon for company:", company.name)
 
-      const ordersResponse = await fetch(`/api/orders?companyId=${selectedCompanyId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!ordersResponse.ok) {
-        throw new Error("Failed to fetch orders")
-      }
-
-      const ordersData = await ordersResponse.json()
-      const existingOrder = ordersData.data?.orders?.[0] || ordersData.data?.[0]
+      const existingOrder = company.orders?.[0]
 
       if (!existingOrder) {
         throw new Error("No order found for this company")
@@ -209,7 +198,7 @@ function AddonCheckoutContent() {
         updatedTotal,
       })
 
-      const updateOrderResponse = await fetch(`/api/orders/${orderId}`, {
+      const updateOrderResponse = await fetch(`/api/companies/${selectedCompanyId}/orders/${orderId}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -318,7 +307,7 @@ function AddonCheckoutContent() {
       console.error("[v0] Error purchasing addon:", error)
       toast({
         title: "Error",
-        description: "Failed to purchase addon. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to purchase addon. Please try again.",
         variant: "destructive",
       })
     } finally {
