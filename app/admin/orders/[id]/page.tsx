@@ -6,7 +6,6 @@ import type React from "react"
 
 import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -1166,6 +1165,8 @@ export default function OrderDetailPage() {
   }
 
   const handleDeleteOrder = async () => {
+    if (!company || !order) return
+
     setDeleting(true)
     try {
       const token = authService.getToken()
@@ -1178,7 +1179,20 @@ export default function OrderDetailPage() {
         return
       }
 
-      await ApiClient.orders.delete(order.id, token)
+      console.log("[v0] Deleting order from company:", company.id, "order:", order.id)
+
+      // Delete order from company's orders array
+      const response = await fetch(`https://www.buzzfiling.com/api/companies/${company.id}/orders/${order.id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to delete order")
+      }
 
       toast({
         title: "Success",
@@ -1188,7 +1202,7 @@ export default function OrderDetailPage() {
       setDeleteDialogOpen(false)
       router.push("/admin/orders")
     } catch (error) {
-      console.log("[v0] Error deleting order:", error)
+      console.error("[v0] Error deleting order:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to delete order",
@@ -2009,7 +2023,309 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-6">
+        <div className="space-y-4">
+          {/* Customer Information */}
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Customer
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {customer ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Name</p>
+                    <p className="text-sm font-medium text-slate-900">{customer.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Email</p>
+                    <p className="text-sm font-medium text-slate-900">{customer.email}</p>
+                  </div>
+                  {customer.phone && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Phone</p>
+                      <p className="text-sm font-medium text-slate-900">{customer.phone}</p>
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="w-full h-10 bg-transparent"
+                    onClick={() => router.push(`/admin/customers/${customer.id}`)}
+                    disabled={
+                      statusUpdating ||
+                      agentUpdating ||
+                      addressUpdating ||
+                      einUpdating ||
+                      itinUpdating ||
+                      businessIdUpdating ||
+                      docUploading ||
+                      milestoneUpdating ||
+                      deleting
+                    }
+                  >
+                    View Customer Profile
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-600">No customer information available</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Admin Actions Card */}
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Admin Actions
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <Button
+                  onClick={() => setCustomMilestoneDialogOpen(true)}
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Milestone
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setRegisteredAgentDialogOpen(true)}
+                  disabled={agentUpdating || !company}
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span className="font-medium">Assign Registered Agent</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMailingAddressDialogOpen(true)}
+                  disabled={addressUpdating || !company}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span className="font-medium">Assign Mailing Address</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setEinDialogOpen(true)}
+                  disabled={einUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setItinDialogOpen(true)}
+                  disabled={itinUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setBusinessIdDialogOpen(true)}
+                  disabled={businessIdUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMilestonesDialogOpen(true)}
+                  disabled={milestoneUpdating}
+                >
+                  <FileCheck className="w-4 h-4" />
+                  <span className="font-medium">Manage Milestones</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => {
+                    generateInvoice()
+                  }}
+                  disabled={deleting}
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="font-medium">Download Invoice</span>
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  className="w-full justify-start h-11 hover:bg-red-600"
+                  onClick={() => setDeleteDialogOpen(true)}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete Order
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Order Summary */}
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <FileText className="w-5 h-5" />
+                Order Summary
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Order ID</span>
+                  <span className="text-sm font-mono font-medium text-slate-900">{order.id}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Order Date</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "Not set"}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Status</span>
+                  <Badge className={getStatusColor(order.status)}>
+                    {getStatusIcon(order.status)}
+                    <span className="ml-1 capitalize">{order.status}</span>
+                  </Badge>
+                </div>
+                <div className="pt-3 border-t border-slate-200">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-semibold text-slate-900">Total Amount</span>
+                    <span className="text-lg font-semibold text-slate-900">
+                      ${order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 149}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Payment Receipt Section */}
+          {(order?.paymentInfo?.screenshot ||
+            order?.paymentInfo?.receiptUrl ||
+            order?.paymentScreenshot ||
+            order?.paymentReceipt ||
+            company?.paymentScreenshot ||
+            company?.paymentReceipt) && (
+            <Card className="bg-white border-slate-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Receipt className="w-5 h-5" />
+                  Payment Receipt
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {(order?.paymentInfo?.screenshot || order?.paymentScreenshot || company?.paymentScreenshot) && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-3">Payment Screenshot</p>
+                      <div className="relative rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+                        <img
+                          src={order?.paymentInfo?.screenshot || order?.paymentScreenshot || company?.paymentScreenshot}
+                          alt="Payment Screenshot"
+                          className="w-full h-auto object-contain max-h-[400px]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {(order?.paymentInfo?.receiptUrl || order?.paymentReceipt || company?.paymentReceipt) && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-2">Payment Receipt Document</p>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-11 hover:bg-slate-50 bg-transparent"
+                        onClick={() =>
+                          window.open(
+                            order?.paymentInfo?.receiptUrl || order?.paymentReceipt || company?.paymentReceipt,
+                            "_blank",
+                          )
+                        }
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        View Receipt Document
+                      </Button>
+                    </div>
+                  )}
+
+                  {order?.paymentInfo?.method && (
+                    <div className="pt-3 border-t border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600">Payment Method</span>
+                        <span className="text-sm font-medium text-slate-900">
+                          {order.paymentInfo.method
+                            .replace(/_/g, " ")
+                            .split(" ")
+                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+                            .join(" ")}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {order?.paymentInfo?.transactionId && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Transaction ID</span>
+                      <span className="text-sm font-mono font-medium text-slate-900">
+                        {order.paymentInfo.transactionId
+                          .replace(/_/g, "-")
+                          .split("-")
+                          .map((part, index) =>
+                            index === 0
+                              ? part
+                                  .split("")
+                                  .map((char, i, arr) =>
+                                    i === 0 || arr[i - 1] === "_" ? char.toUpperCase() : char.toLowerCase(),
+                                  )
+                                  .join("")
+                              : part,
+                          )
+                          .join("-")}
+                      </span>
+                    </div>
+                  )}
+
+                  {order?.paymentInfo?.paidAt && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Payment Date</span>
+                      <span className="text-sm font-medium text-slate-900">
+                        {new Date(order.paymentInfo.paidAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
+
+        {/* Sidebar */}
+        <div className="space-y-4">
           {/* Customer Information */}
           <Card className="bg-white border-slate-200">
             <CardHeader>
@@ -2588,30 +2904,6 @@ export default function OrderDetailPage() {
                   placeholder="33101"
                   value={agentForm.zip}
                   onChange={(e) => setAgentForm({ ...agentForm, zip: e.target.value })}
-                  className="h-10"
-                />
-              </div>
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="agentPhone">Phone</Label>
-                <Input
-                  id="agentPhone"
-                  placeholder="(305) 555-0123"
-                  value={agentForm.phone}
-                  onChange={(e) => setAgentForm({ ...agentForm, phone: e.target.value })}
-                  className="h-10"
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="agentEmail">Email</Label>
-                <Input
-                  id="agentEmail"
-                  type="email"
-                  placeholder="agent@example.com"
-                  value={agentForm.email}
-                  onChange={(e) => setAgentForm({ ...agentForm, email: e.target.value })}
                   className="h-10"
                 />
               </div>
