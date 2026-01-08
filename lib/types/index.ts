@@ -33,17 +33,56 @@ export interface Company {
   type: "LLC" | "Corporation" | "S-Corp" | "Non-Profit"
   state: string
   status: "pending" | "processing" | "active" | "suspended"
+
+  // Status fields - all manual (M)
   companyStatus?: "pending" | "active" | "inactive"
   registeredAgentStatus?: "pending" | "active" | "inactive"
   businessAddressStatus?: "pending" | "active" | "inactive"
   serviceStatus?: "pending" | "active" | "inactive"
-  businessCategory?: string
-  businessDescription?: string
-  businessWebsite?: string
-  packageType?: string
-  ein?: string
-  itin?: string
-  businessId?: string
+
+  // Formation & Tax fields - manual (M)
+  formationDate?: string // (M) - Admin sets formation date
+  taxClassification?: string // (M) - Admin sets tax classification
+  annualReportFilingDate?: string // (M) - Admin sets annual report date
+  irsFilingDate?: string // (M) - Admin sets IRS filing date
+
+  // Business ID fields - manual (M)
+  businessId?: string // (M) - State filing number set by admin
+  ein?: string // (M) - Admin assigns EIN
+  itin?: string // (M) - Admin assigns ITIN/SSN
+
+  // Registered Agent - manual (M)
+  registeredAgent?: {
+    name: string // (M)
+    company?: string // (M)
+    address: string // (M)
+    city: string // (M)
+    state: string // (M)
+    zip: string // (M)
+    phone?: string
+    email?: string
+    servicePeriod?: string // (M)
+    expiryDate?: string // (M)
+    status?: string // (M)
+  }
+
+  // Business Address - manual (M)
+  businessAddress?: {
+    companyName?: string // (M)
+    street: string // (M)
+    city: string // (M)
+    state: string // (M)
+    zip: string // (M)
+    expiryDate?: string // (M)
+    status?: string // (M)
+  }
+
+  // Fetched fields (F) - from forms/API
+  businessCategory?: string // (F)
+  businessDescription?: string // (F)
+  businessWebsite?: string // (F)
+  packageType?: string // (F)
+
   einDocument?: string
   itemNumber?: string
   itemNumberDocument?: string
@@ -53,25 +92,12 @@ export interface Company {
     state: string
     zip: string
   }
-  formationDate?: string
   notes?: string
   mailingAddress?: {
     street: string
     city: string
     state: string
     zip: string
-  }
-  registeredAgent?: {
-    name: string
-    company?: string
-    address: string
-    city: string
-    state: string
-    zip: string
-    phone?: string
-    email?: string
-    servicePeriod?: string
-    status?: string
   }
   milestones?: {
     orderProcessed: boolean
@@ -89,23 +115,28 @@ export interface Company {
     createdAt: string
     completedAt?: string
   }>
+
+  // Members - fetched (F) with some manual fields (M)
   members?: Array<{
-    firstName: string
-    middleName?: string
-    lastName: string
-    email: string
-    phone: string
-    address: string
-    city: string
-    state?: string
-    zip: string
-    ssn?: string
-    dateOfBirth?: string
-    isResponsiblePerson: boolean
-    needsItin?: boolean
+    firstName: string // (F)
+    middleName?: string // (F)
+    lastName: string // (F)
+    email: string // (F)
+    phone: string // (F)
+    address: string // (F)
+    city: string // (F)
+    state?: string // (F)
+    zip: string // (F)
+    ssn?: string // (F/M) - Can be fetched or manually added
+    dateOfBirth?: string // (F)
+    isResponsiblePerson: boolean // (F)
+    needsItin?: boolean // (F)
     passportKey?: string
   }>
-  purchasedAddons?: string[]
+
+  // Addons - fetched (F)
+  purchasedAddons?: string[] // (F)
+
   orders?: Order[]
   revenue?: number
   lastOrderDate?: string | null
