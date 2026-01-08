@@ -686,7 +686,7 @@ export default function ClientDashboard() {
                 <p className="text-xs text-slate-500 font-medium">Business Name</p>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <h3 className="text-2xl font-bold text-slate-900 truncate cursor-help hover:opacity-80 transition-opacity">
+                    <h3 className="text-2xl font-bold text-slate-900 truncate  hover:opacity-80 transition-opacity">
                       {businessName}
                     </h3>
                   </TooltipTrigger>

@@ -37,144 +37,155 @@ export default function CompanyPage() {
   const [documentCount, setDocumentCount] = useState(0)
   const [orderDetails, setOrderDetails] = useState<any>(null)
 
-  useEffect(() => {
-    const loadCompanyData = async () => {
-      if (!selectedCompanyId) return
+  const loadCompanyData = async () => {
+    if (!selectedCompanyId) return
 
-      try {
-        setLoading(true)
-        setError(null)
+    try {
+      setLoading(true)
+      setError(null)
 
-        const token = authService.getToken()
-        if (!token) {
-          setError("Authentication required")
+      const token = authService.getToken()
+      if (!token) {
+        setError("Authentication required")
+        setLoading(false)
+        return
+      }
+
+      const [companyResponse, mailResponse, docsResponse, ordersResponse] = await Promise.allSettled([
+        ApiClient.companies.getById(selectedCompanyId, token),
+        ApiClient.mail.getAll(token),
+        ApiClient.documents.getAll(token),
+        ApiClient.orders.getAll(token),
+      ])
+
+      if (companyResponse.status === "fulfilled") {
+        const selectedComp = companyResponse.value.data || companyResponse.value
+
+        if (!selectedComp) {
+          setError("Company not found")
           setLoading(false)
           return
         }
 
-        const [companyResponse, mailResponse, docsResponse, ordersResponse] = await Promise.allSettled([
-          ApiClient.companies.getById(selectedCompanyId, token),
-          ApiClient.mail.getAll(token),
-          ApiClient.documents.getAll(token),
-          ApiClient.orders.getAll(token),
-        ])
+        const builtMembers: MemberUI[] = (selectedComp.members ?? []).map((m: any, idx: number) => {
+          const firstName = m.firstName || ""
+          const middleName = m.middleName || ""
+          const lastName = m.lastName || ""
 
-        if (companyResponse.status === "fulfilled") {
-          const selectedComp = companyResponse.value.data || companyResponse.value
-
-          if (!selectedComp) {
-            setError("Company not found")
-            setLoading(false)
-            return
+          let fullName = "Not yet"
+          if (firstName && lastName) {
+            fullName = middleName ? `${firstName} ${middleName} ${lastName}` : `${firstName} ${lastName}`
+          } else if (firstName) {
+            fullName = firstName
+          } else if (m.name) {
+            fullName = m.name
           }
 
-          const builtMembers: MemberUI[] = (selectedComp.members ?? []).map((m: any, idx: number) => {
-            const firstName = m.firstName || ""
-            const middleName = m.middleName || ""
-            const lastName = m.lastName || ""
-
-            let fullName = "Not yet"
-            if (firstName && lastName) {
-              fullName = middleName ? `${firstName} ${middleName} ${lastName}` : `${firstName} ${lastName}`
-            } else if (firstName) {
-              fullName = firstName
-            } else if (m.name) {
-              fullName = m.name
-            }
-
-            return {
-              id: m._id?.toString() || m.id || `member-${idx + 1}`,
-              storageKey: m.id || m.memberId || `member-${idx + 1}`,
-              name: fullName,
-              email: m.email || "",
-              phone: m.phone || "",
-              address: m.address || "Not yet",
-              city: m.city || "Not yet",
-              state: m.state || "Not yet",
-              country: m.country || "US",
-              zip: m.zip || "Not yet",
-              ssn: m.ssn && m.ssn.trim() ? `***-**-${String(m.ssn).slice(-4)}` : "Not yet",
-              isResponsiblePerson: !!m.isResponsiblePerson,
-              itinAdded: !!m.needsItin,
-              ownership: `${m.ownershipPercentage || 0}%`,
-            }
-          })
-
-          if (mailResponse.status === "fulfilled") {
-            const allMail = mailResponse.value.data || mailResponse.value.mail || []
-            const companyMail = allMail.filter((mail: any) => mail.companyId === selectedCompanyId)
-            setMailCount(companyMail.length)
-          } else {
-            console.error("[v0] Mail fetch error:", mailResponse.reason)
-            setMailCount(0)
+          return {
+            id: m._id?.toString() || m.id || `member-${idx + 1}`,
+            storageKey: m.id || m.memberId || `member-${idx + 1}`,
+            name: fullName,
+            email: m.email || "",
+            phone: m.phone || "",
+            address: m.address || "Not yet",
+            city: m.city || "Not yet",
+            state: m.state || "Not yet",
+            country: m.country || "US",
+            zip: m.zip || "Not yet",
+            ssn: m.ssn && m.ssn.trim() ? `***-**-${String(m.ssn).slice(-4)}` : "Not yet",
+            isResponsiblePerson: !!m.isResponsiblePerson,
+            itinAdded: !!m.needsItin,
+            ownership: `${m.ownershipPercentage || 0}%`,
           }
+        })
 
-          if (docsResponse.status === "fulfilled") {
-            const allDocs = docsResponse.value.data || docsResponse.value.documents || []
-            const companyDocs = allDocs.filter((doc: any) => doc.companyId === selectedCompanyId && !doc.isMailDocument)
-            setDocumentCount(companyDocs.length)
-          } else {
-            console.error("[v0] Documents fetch error:", docsResponse.reason)
-            setDocumentCount(0)
-          }
-
-          let orderDate = new Date(selectedComp.createdAt).toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })
-
-          // If we have the actual order, use its date
-          if (ordersResponse.status === "fulfilled") {
-            const allOrders = ordersResponse.value.data || ordersResponse.value.orders || []
-            const companyOrder = allOrders.find((order: any) => order.companyId === selectedCompanyId)
-            if (companyOrder) {
-              setOrderDetails(companyOrder)
-              orderDate = new Date(companyOrder.createdAt).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })
-            }
-          }
-
-          setCompanyData({
-            businessName: selectedComp.name || "Your Company",
-            businessCategory: selectedComp.businessCategory || "Not yet",
-            businessDescription: selectedComp.businessDescription || "No description provided",
-            website: selectedComp.website || selectedComp.businessWebsite || "Not yet",
-            needsResellerCertificate: selectedComp.businessCategory === "Reseller" || false,
-            state: selectedComp.state || "Not yet",
-            entityType: selectedComp.entityType || "LLC",
-            packageType: selectedComp.packageType || "starter",
-            orderDate: orderDate,
-            ein: selectedComp.ein || "Not yet",
-            businessId: selectedComp.businessId || "BIZ-PENDING",
-            selectedServices: selectedComp.services || [],
-            selectedAddons: selectedComp.addons || [],
-            purchasedAddons: selectedComp.purchasedAddons || [],
-            members: builtMembers,
-            registeredAgent: selectedComp.registeredAgent,
-            businessAddress: selectedComp.businessAddress,
-            itin: selectedComp.itin,
-            companyStatus: selectedComp.status || "pending",
-            registeredAgentStatus: selectedComp.registeredAgentStatus || "pending",
-            businessAddressStatus: selectedComp.businessAddressStatus || "pending",
-            serviceStatus: selectedComp.serviceStatus || "pending",
-          })
+        if (mailResponse.status === "fulfilled") {
+          const allMail = mailResponse.value.data || mailResponse.value.mail || []
+          const companyMail = allMail.filter((mail: any) => mail.companyId === selectedCompanyId)
+          setMailCount(companyMail.length)
         } else {
-          setError("Company not found")
+          console.error("[v0] Mail fetch error:", mailResponse.reason)
+          setMailCount(0)
         }
 
-        setLoading(false)
-      } catch (err) {
-        console.error("[v0] Load company error:", err)
-        setError("Failed to load company data")
-        setLoading(false)
+        if (docsResponse.status === "fulfilled") {
+          const allDocs = docsResponse.value.data || docsResponse.value.documents || []
+          const companyDocs = allDocs.filter((doc: any) => doc.companyId === selectedCompanyId && !doc.isMailDocument)
+          setDocumentCount(companyDocs.length)
+        } else {
+          console.error("[v0] Documents fetch error:", docsResponse.reason)
+          setDocumentCount(0)
+        }
+
+        let orderDate = new Date(selectedComp.createdAt).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })
+
+        // If we have the actual order, use its date
+        if (ordersResponse.status === "fulfilled") {
+          const allOrders = ordersResponse.value.data || ordersResponse.value.orders || []
+          const companyOrder = allOrders.find((order: any) => order.companyId === selectedCompanyId)
+          if (companyOrder) {
+            setOrderDetails(companyOrder)
+            orderDate = new Date(companyOrder.createdAt).toLocaleDateString("en-US", {
+              month: "long",
+              day: "numeric",
+              year: "numeric",
+            })
+          }
+        }
+
+        setCompanyData({
+          businessName: selectedComp.name || "Your Company",
+          businessCategory: selectedComp.businessCategory || "Not yet",
+          businessDescription: selectedComp.businessDescription || "No description provided",
+          website: selectedComp.website || selectedComp.businessWebsite || "Not yet",
+          needsResellerCertificate: selectedComp.businessCategory === "Reseller" || false,
+          state: selectedComp.state || "Not yet",
+          entityType: selectedComp.entityType || "LLC",
+          packageType: selectedComp.packageType || "starter",
+          orderDate: orderDate,
+          ein: selectedComp.ein || "Not yet",
+          businessId: selectedComp.businessId || "BIZ-PENDING",
+          selectedServices: selectedComp.services || [],
+          selectedAddons: selectedComp.addons || [],
+          purchasedAddons: selectedComp.purchasedAddons || [],
+          members: builtMembers,
+          registeredAgent: selectedComp.registeredAgent,
+          businessAddress: selectedComp.businessAddress,
+          itin: selectedComp.itin,
+          companyStatus: selectedComp.status || "pending",
+          registeredAgentStatus: selectedComp.registeredAgentStatus || "pending",
+          businessAddressStatus: selectedComp.businessAddressStatus || "pending",
+          serviceStatus: selectedComp.serviceStatus || "pending",
+        })
+      } else {
+        setError("Company not found")
       }
+
+      setLoading(false)
+    } catch (err) {
+      console.error("[v0] Load company error:", err)
+      setError("Failed to load company data")
+      setLoading(false)
+    }
+  }
+
+  useEffect(() => {
+    loadCompanyData()
+
+    const handleStatusUpdate = () => {
+      console.log("[v0] Status update detected, refreshing company data")
+      loadCompanyData()
     }
 
-    loadCompanyData()
+    window.addEventListener("company-status-updated", handleStatusUpdate)
+
+    return () => {
+      window.removeEventListener("company-status-updated", handleStatusUpdate)
+    }
   }, [selectedCompanyId])
 
   if (authLoading) {

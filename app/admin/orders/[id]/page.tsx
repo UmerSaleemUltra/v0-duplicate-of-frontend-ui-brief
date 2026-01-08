@@ -469,8 +469,8 @@ export default function OrderDetailPage() {
         return
       }
 
-      console.log("[v0] Found order:", foundOrder)
       console.log("[v0] Found company:", foundCompany)
+      console.log("[v0] Company members:", foundCompany.members)
 
       // Find the user
       const foundUser = allUsers.find((u: any) => String(u.id) === String(foundCompany.userId))
@@ -487,13 +487,20 @@ export default function OrderDetailPage() {
         ...foundOrder,
         id: foundOrder.id,
         userId: foundCompany.userId,
-        company: foundCompany,
+        company: {
+          ...foundCompany,
+          members: foundCompany.members || [], // Ensure members array is included
+        },
         user: foundUser || {
           id: foundCompany.userId,
-          name: "Unknown",
-          email: "N/A",
+          name: foundCompany.members?.[0]?.name || "Unknown",
+          email: foundCompany.members?.[0]?.email || "N/A",
         },
         passportDocuments: foundOrder.passportDocuments || [],
+        businessName: foundCompany.businessName,
+        businessCategory: foundCompany.businessCategory,
+        businessDescription: foundCompany.businessDescription,
+        businessWebsite: foundCompany.businessWebsite,
       }
 
       console.log("[v0] Order data loaded successfully:", orderData)
@@ -1820,7 +1827,7 @@ export default function OrderDetailPage() {
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Business Name</div>
-        <div class="info-value">${getDisplayValue(company?.name)}</div>
+        <div class="info-value">${getDisplayValue(company?.name || order.businessName)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">State</div>
@@ -1828,7 +1835,7 @@ export default function OrderDetailPage() {
       </div>
       <div class="info-item">
         <div class="info-label">Business Category</div>
-        <div class="info-value">${getDisplayValue(company?.businessCategory)}</div>
+        <div class="info-value">${getDisplayValue(company?.businessCategory || order.businessCategory)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">Package Type</div>
@@ -1913,6 +1920,56 @@ export default function OrderDetailPage() {
       title: "Invoice Downloaded",
       description: "Invoice has been downloaded as an HTML file.",
     })
+  }
+
+  const handleUpdateCompanyStatus = async (newStatus: "pending" | "active" | "inactive") => {
+    if (!company) return
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statusType: "companyStatus",
+          statusValue: newStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update company status")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setCompanyStatusDialogOpen(false)
+
+      toast({
+        title: "Status Updated",
+        description: `Company status changed to ${newStatus}`,
+      })
+
+      window.dispatchEvent(
+        new CustomEvent("company-status-updated", { detail: { companyId: company.id, status: newStatus } }),
+      )
+
+      loadOrderData() // Refresh data
+    } catch (error) {
+      console.log("[v0] Error updating company status:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update company status",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
@@ -2195,7 +2252,9 @@ export default function OrderDetailPage() {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Company Name</p>
-                  <p className="text-sm font-medium text-slate-900">{getDisplayValue(company?.name)}</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {getDisplayValue(company?.name || order.businessName)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600 mb-1">State of Formation</p>
@@ -2207,7 +2266,9 @@ export default function OrderDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Business Category</p>
-                  <p className="text-sm font-medium text-slate-900">{getDisplayValue(company?.businessCategory)}</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {getDisplayValue(company?.businessCategory || order.businessCategory)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Package Type</p>
@@ -2222,14 +2283,14 @@ export default function OrderDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Business Website</p>
-                  {company?.website && company.website !== "N/A" ? (
+                  {company?.website || order.businessWebsite ? (
                     <a
-                      href={company.website}
+                      href={company?.website || order.businessWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-medium text-[#880000] hover:underline"
                     >
-                      {company.website}
+                      {company?.website || order.businessWebsite}
                     </a>
                   ) : (
                     <p className="text-sm font-medium text-slate-900">N/A</p>
@@ -2238,7 +2299,9 @@ export default function OrderDetailPage() {
               </div>
               <div className="mt-4">
                 <p className="text-sm text-slate-600 mb-1">Business Description</p>
-                <p className="text-sm text-slate-700">{getDisplayValue(company?.description)}</p>
+                <p className="text-sm text-slate-700">
+                  {getDisplayValue(company?.description || order.businessDescription)}
+                </p>
               </div>
             </CardContent>
           </Card>
