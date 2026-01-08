@@ -45,6 +45,7 @@ import {
   Settings,
   Plus,
   Receipt,
+  DollarSign,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -68,6 +69,12 @@ const getDisplayValue = (value: any, defaultValue = "N/A"): string => {
     }
   }
   return String(value)
+}
+
+const formatPrice = (value: any): string => {
+  const num = Number(value)
+  if (isNaN(num)) return "0.00"
+  return num.toFixed(2)
 }
 
 const formatEIN = (ein: string | undefined, includeHyphen = false): string => {
@@ -1813,15 +1820,15 @@ export default function OrderDetailPage() {
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Business Name</div>
-        <div class="info-value">${company?.name || "N/A"}</div>
+        <div class="info-value">${getDisplayValue(company?.name)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">State</div>
-        <div class="info-value">${company?.state || "N/A"}</div>
+        <div class="info-value">${getDisplayValue(company?.state)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">Business Category</div>
-        <div class="info-value">${company?.businessCategory || "N/A"}</div>
+        <div class="info-value">${getDisplayValue(company?.businessCategory)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">Package Type</div>
@@ -1842,19 +1849,19 @@ export default function OrderDetailPage() {
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Base Price</div>
-        <div class="info-value">$${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}</div>
+        <div class="info-value">$${formatPrice(order?.pricing?.packagePrice || order?.packagePrice || 0)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">Add-ons</div>
-        <div class="info-value">$${(order?.pricing?.addonsTotal || (order?.selectedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) || 0).toFixed(2)}</div>
+        <div class="info-value">$${formatPrice(order?.pricing?.addonsTotal || (order?.selectedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) || 0)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">State Fee</div>
-        <div class="info-value">$${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}</div>
+        <div class="info-value">$${formatPrice(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0)}</div>
       </div>
       <div class="info-item" style="background: #880000; color: white;">
         <div class="info-label" style="color: #fff;">Total Amount</div>
-        <div class="info-value" style="color: #fff; font-size: 20px; font-weight: bold;">$${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}</div>
+        <div class="info-value" style="color: #fff; font-size: 20px; font-weight: bold;">$${formatPrice(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0)}</div>
       </div>
     </div>
   </div>
@@ -1873,7 +1880,7 @@ export default function OrderDetailPage() {
           return `
         <li style="padding: 10px; background: #f5f5f5; margin-bottom: 10px; border-radius: 5px;">
           <strong>${addonName}</strong>
-          ${addonPrice ? ` - $${addonPrice.toFixed(2)}` : ""}
+          ${addonPrice ? ` - $${formatPrice(addonPrice)}` : ""}
         </li>
       `
         })
@@ -2177,21 +2184,12 @@ export default function OrderDetailPage() {
           </Card>
 
           <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader className="flex flex-row items-center justify-between">
+            <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                 <Building2 className="w-5 h-5" />
                 Company Information
               </CardTitle>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => {
-                  setSelectedCompany(company)
-                  setCompanyModalOpen(true)
-                }}
-              >
-                View Full Details
-              </Button>
+              <p className="text-sm text-slate-600 mt-1">Key details about the company</p>
             </CardHeader>
             <CardContent>
               <div className="grid grid-cols-2 gap-4">
@@ -2245,41 +2243,39 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Order & Pricing Details - Keep existing code */}
+          {/* Order & Pricing Details */}
           {order?.pricing && (
             <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
+              <CardHeader className="pb-3">
                 <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Pricing & Fees
+                  <DollarSign className="w-5 h-5" />
+                  Order Pricing
                 </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Base Package Price</span>
-                    <span className="text-sm font-medium text-slate-900">
-                      ${getDisplayValue(order.pricing.packagePrice, 0).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">Add-ons Total</span>
-                    <span className="text-sm font-medium text-slate-900">
-                      ${getDisplayValue(order.pricing.addonsTotal, 0).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-slate-600">State Filing Fee</span>
-                    <span className="text-sm font-medium text-slate-900">
-                      ${getDisplayValue(order.pricing.stateFilingFee, 0).toFixed(2)}
-                    </span>
-                  </div>
-                  <div className="flex items-center justify-between pt-3 border-t border-slate-200">
-                    <span className="text-lg font-semibold text-slate-900">Total Amount</span>
-                    <span className="text-xl font-bold text-[#880000]">
-                      ${getDisplayValue(order.pricing.total || order.pricing.totalAmount, 0).toFixed(2)}
-                    </span>
-                  </div>
+              <CardContent className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Package Price</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    ${formatPrice(order.pricing.packagePrice || 0)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">Add-ons Total</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    ${formatPrice(order.pricing.addonsTotal || 0)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm text-slate-600">State Filing Fee</span>
+                  <span className="text-sm font-medium text-slate-900">
+                    ${formatPrice(order.pricing.stateFilingFee || 0)}
+                  </span>
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-slate-200">
+                  <span className="text-sm font-semibold text-slate-900">Total Amount</span>
+                  <span className="text-lg font-bold text-[#880000]">
+                    ${formatPrice(order.pricing.total || order.pricing.totalAmount || 0)}
+                  </span>
                 </div>
               </CardContent>
             </Card>
@@ -2438,7 +2434,7 @@ export default function OrderDetailPage() {
                 <div className="flex items-center justify-between pt-3 border-t border-slate-200">
                   <span className="text-sm font-semibold text-slate-900">Total Amount</span>
                   <span className="text-lg font-bold text-[#880000]">
-                    ${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}
+                    ${formatPrice(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0)}
                   </span>
                 </div>
               </div>
