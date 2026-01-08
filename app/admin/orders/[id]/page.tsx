@@ -433,111 +433,78 @@ export default function OrderDetailPage() {
 
       console.log("[v0] Loading order data for ID:", orderId)
 
-      const timestamp = Date.now()
-      const [companiesResponse, usersResponse] = await Promise.all([
-        fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-          },
-        }),
-        fetch(`https://www.buzzfiling.com/api/users?_t=${timestamp}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-          },
-        }),
-      ])
+      const orderResponse = await fetch(`/api/orders/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+        },
+      })
 
-      const companiesData = await companiesResponse.json()
-      const usersData = await usersResponse.json()
-
-      const allCompanies = companiesData.data || companiesData || []
-      const allUsers = usersData.data || usersData || []
-
-      console.log("[v0] Loaded companies:", allCompanies.length)
-      console.log("[v0] Loaded users:", allUsers.length)
-
-      // Find the order within companies
-      let foundOrder = null
-      let foundCompany = null
-
-      for (const company of allCompanies) {
-        const orders = company.orders || []
-        const order = orders.find((o: any) => o.id === orderId)
-        if (order) {
-          foundOrder = order
-          foundCompany = company
-          break
+      if (!orderResponse.ok) {
+        if (orderResponse.status === 404) {
+          setError("Order not found")
+          toast({
+            title: "Error",
+            description: "Order not found",
+            variant: "destructive",
+          })
+        } else {
+          throw new Error(`Failed to fetch order: ${orderResponse.status}`)
         }
-      }
-
-      if (!foundOrder || !foundCompany) {
-        console.error("[v0] Order not found:", orderId)
-        setError("Order not found")
-        toast({
-          title: "Error",
-          description: "Order not found",
-          variant: "destructive",
-        })
         setLoading(false)
         return
       }
 
+      const orderData = await orderResponse.json()
+      console.log("[v0] Order API response:", orderData)
+
+      if (!orderData.success || !orderData.data) {
+        setError("Invalid order data")
+        setLoading(false)
+        return
+      }
+
+      const {
+        data: { company: foundCompany, user: foundUser, passportDocuments: foundPassportDocuments, ...foundOrder },
+      } = orderData
+
       console.log("[v0] Found order:", foundOrder)
       console.log("[v0] Found company:", foundCompany)
+      console.log("[v0] Found user:", foundUser)
 
-      // Find the user
-      let foundUser = allUsers.find((u: any) => String(u.id) === String(foundCompany.userId))
-
-      if (!foundUser && foundCompany.userId) {
-        console.warn("[v0] User not found for userId:", foundCompany.userId)
-        // Create a placeholder user from company members if available
-        foundUser = {
-          id: foundCompany.userId,
-          name: foundCompany.members?.[0]?.name || "User Not Found",
-          email: foundCompany.members?.[0]?.email || "no-email@example.com",
-          phone: foundCompany.members?.[0]?.phone || "N/A",
+      let customerData = foundUser
+      if (!customerData && foundCompany?.members?.[0]) {
+        console.warn("[v0] User not found, creating placeholder from company members")
+        customerData = {
+          id: foundCompany.userId || foundOrder.userId,
+          name: foundCompany.members[0].name || "User Not Found",
+          email: foundCompany.members[0].email || "no-email@example.com",
+          phone: foundCompany.members[0].phone || "N/A",
           role: "client",
           accountStatus: "inactive",
         }
-      }
-
-      console.log("[v0] Found user:", foundUser?.name || foundUser?.email)
-
-      // Construct order data with company and user info
-      const orderData = {
-        ...foundOrder,
-        id: foundOrder.id,
-        userId: foundCompany.userId,
-        company: foundCompany,
-        user: foundUser || {
-          id: foundCompany.userId,
-          name: "Unknown",
+      } else if (!customerData) {
+        customerData = {
+          id: foundOrder.userId,
+          name: "Unknown User",
           email: "N/A",
           phone: "N/A",
-        },
-        passportDocuments: foundOrder.passportDocuments || [],
+          role: "client",
+        }
       }
 
-      console.log("[v0] Order data loaded successfully:", orderData)
+      console.log("[v0] Customer data:", customerData)
 
-      setOrder(orderData)
+      setOrder(foundOrder)
       setCompany(foundCompany)
-      setCustomer(
-        foundUser || {
-          name: foundCompany.members?.[0]?.name || "Unknown User",
-          email: foundCompany.members?.[0]?.email || "N/A",
-          phone: foundCompany.members?.[0]?.phone || "N/A",
-        },
-      )
+      setCustomer(customerData)
       setUser(foundUser)
-      setPassportDocuments(orderData.passportDocuments || [])
+      setPassportDocuments(foundPassportDocuments || [])
 
       setCustomerForm({
-        name: foundUser?.name || foundCompany.members?.[0]?.name || "",
-        email: foundUser?.email || foundCompany.members?.[0]?.email || "",
-        phone: foundUser?.phone || foundCompany.members?.[0]?.phone || "",
+        name: customerData?.name || "",
+        email: customerData?.email || "",
+        phone: customerData?.phone || "",
       })
 
       setCompanyForm({
@@ -548,18 +515,17 @@ export default function OrderDetailPage() {
         businessDescription: foundCompany?.businessDescription || "",
       })
 
-      if (orderData.company?.milestones) {
-        console.log("[v0] Initializing milestones from company data:", orderData.company.milestones)
+      if (foundCompany?.milestones) {
+        console.log("[v0] Initializing milestones from company data:", foundCompany.milestones)
         setMilestones({
-          orderProcessed: orderData.company.milestones.orderProcessed || false,
-          registeredAgentAssigned: orderData.company.milestones.registeredAgentAssigned || false,
-          mailingAddressIssued: orderData.company.milestones.mailingAddressIssued || false,
-          formationCompleted: orderData.company.milestones.formationCompleted || false,
-          einProcessed: orderData.company.milestones.einProcessed || false,
-          boiReportFiled: orderData.company.milestones.boiReportFiled || false,
+          orderProcessed: foundCompany.milestones.orderProcessed || false,
+          registeredAgentAssigned: foundCompany.milestones.registeredAgentAssigned || false,
+          mailingAddressIssued: foundCompany.milestones.mailingAddressIssued || false,
+          formationCompleted: foundCompany.milestones.formationCompleted || false,
+          einProcessed: foundCompany.milestones.einProcessed || false,
+          boiReportFiled: foundCompany.milestones.boiReportFiled || false,
         })
       } else {
-        // Initialize with default false values if no milestones exist
         setMilestones({
           orderProcessed: false,
           registeredAgentAssigned: false,
@@ -570,8 +536,8 @@ export default function OrderDetailPage() {
         })
       }
 
-      if (orderData.company?.registeredAgent) {
-        const agent = orderData.company.registeredAgent
+      if (foundCompany?.registeredAgent) {
+        const agent = foundCompany.registeredAgent
         console.log("[v0] Pre-populating registered agent form:", agent)
         setAgentForm({
           name: agent.name || "",
@@ -586,8 +552,8 @@ export default function OrderDetailPage() {
         })
       }
 
-      if (orderData.company?.mailingAddress) {
-        const address = orderData.company.mailingAddress
+      if (foundCompany?.mailingAddress) {
+        const address = foundCompany.mailingAddress
         console.log("[v0] Pre-populating mailing address form:", address)
         setMailingAddress({
           street: address.street || "",
@@ -597,8 +563,8 @@ export default function OrderDetailPage() {
         })
       }
 
-      const orderAddons = orderData.purchasedAddons || orderData.selectedAddons || []
-      const companyAddons = orderData.company?.purchasedAddons || []
+      const orderAddons = foundOrder.purchasedAddons || foundOrder.selectedAddons || []
+      const companyAddons = foundCompany?.purchasedAddons || []
 
       const allAddons = [...orderAddons]
       companyAddons.forEach((companyAddon: any) => {
@@ -613,14 +579,14 @@ export default function OrderDetailPage() {
       })
 
       setAddons(allAddons)
-      setNewStatus(orderData.status || "")
+      setNewStatus(foundOrder.status || "")
       setError(null)
     } catch (error) {
       console.error("[v0] Error loading order data:", error)
       setError("Failed to load order")
       toast({
         title: "Error",
-        description: "Failed to load order details",
+        description: "Failed to load order details. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -649,19 +615,14 @@ export default function OrderDetailPage() {
         return
       }
 
-      // Update the order within the company
-      const updatedOrders = (company.orders || []).map((o: any) =>
-        o.id === order.id ? { ...o, status: newStatus } : o,
-      )
-
-      const response = await fetch(`/api/companies/${company.id}`, {
+      const response = await fetch(`/api/orders/${order.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          orders: updatedOrders,
+          status: newStatus,
         }),
       })
 
@@ -670,18 +631,18 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
-      setCompany(result.data)
+      console.log("[v0] Order status updated:", result)
 
-      // Update local order state
-      const updatedOrder = updatedOrders.find((o: any) => o.id === order.id)
-      setOrder(updatedOrder)
+      setOrder({ ...order, status: newStatus })
 
       toast({
         title: "Status Updated",
         description: `Order status changed to ${newStatus}`,
       })
+
+      await loadOrderData()
     } catch (error) {
-      console.log("[v0] Error updating status:", error)
+      console.error("[v0] Error updating status:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update order status. Please try again.",
@@ -1366,7 +1327,8 @@ export default function OrderDetailPage() {
     setNewMilestoneDescription("")
   }
 
-  const handleCompanyStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
+  // --- Status Update Handlers ---
+  const handleUpdateCompanyStatus = async (newStatus: "pending" | "active" | "inactive") => {
     if (!company) return
 
     try {
@@ -1376,8 +1338,10 @@ export default function OrderDetailPage() {
         return
       }
 
+      console.log("[v0] Updating company status to:", newStatus)
+
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1389,11 +1353,15 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update company status")
+        const errorData = await response.json()
+        console.error("[v0] Error response:", errorData)
+        throw new Error(errorData.error || "Failed to update company status")
       }
 
       const result = await response.json()
-      setCompany(result.data)
+      console.log("[v0] Status update successful:", result)
+
+      setCompany({ ...company, companyStatus: newStatus })
       setCompanyStatusDialogOpen(false)
 
       toast({
@@ -1401,16 +1369,16 @@ export default function OrderDetailPage() {
         description: `Company status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating company status:", error)
+      console.error("[v0] Error updating company status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update company status",
+        description: error instanceof Error ? error.message : "Failed to update status",
         variant: "destructive",
       })
     }
   }
 
-  const handleRegisteredAgentStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
+  const handleUpdateRegisteredAgentStatus = async (newStatus: "pending" | "active" | "inactive") => {
     if (!company) return
 
     try {
@@ -1420,8 +1388,10 @@ export default function OrderDetailPage() {
         return
       }
 
+      console.log("[v0] Updating registered agent status to:", newStatus)
+
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1433,11 +1403,15 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update registered agent status")
+        const errorData = await response.json()
+        console.error("[v0] Error response:", errorData)
+        throw new Error(errorData.error || "Failed to update registered agent status")
       }
 
       const result = await response.json()
-      setCompany(result.data)
+      console.log("[v0] Status update successful:", result)
+
+      setCompany({ ...company, registeredAgentStatus: newStatus })
       setRegisteredAgentStatusDialogOpen(false)
 
       toast({
@@ -1445,16 +1419,16 @@ export default function OrderDetailPage() {
         description: `Registered agent status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating registered agent status:", error)
+      console.error("[v0] Error updating registered agent status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update registered agent status",
+        description: error instanceof Error ? error.message : "Failed to update status",
         variant: "destructive",
       })
     }
   }
 
-  const handleBusinessAddressStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
+  const handleUpdateBusinessAddressStatus = async (newStatus: "pending" | "active" | "inactive") => {
     if (!company) return
 
     try {
@@ -1464,8 +1438,10 @@ export default function OrderDetailPage() {
         return
       }
 
+      console.log("[v0] Updating business address status to:", newStatus)
+
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1477,11 +1453,15 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update business address status")
+        const errorData = await response.json()
+        console.error("[v0] Error response:", errorData)
+        throw new Error(errorData.error || "Failed to update business address status")
       }
 
       const result = await response.json()
-      setCompany(result.data)
+      console.log("[v0] Status update successful:", result)
+
+      setCompany({ ...company, businessAddressStatus: newStatus })
       setBusinessAddressStatusDialogOpen(false)
 
       toast({
@@ -1489,16 +1469,16 @@ export default function OrderDetailPage() {
         description: `Business address status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating business address status:", error)
+      console.error("[v0] Error updating business address status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update business address status",
+        description: error instanceof Error ? error.message : "Failed to update status",
         variant: "destructive",
       })
     }
   }
 
-  const handleServiceStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
+  const handleUpdateServiceStatus = async (newStatus: "pending" | "active" | "inactive") => {
     if (!company) return
 
     try {
@@ -1508,8 +1488,10 @@ export default function OrderDetailPage() {
         return
       }
 
+      console.log("[v0] Updating service status to:", newStatus)
+
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1521,11 +1503,15 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update service status")
+        const errorData = await response.json()
+        console.error("[v0] Error response:", errorData)
+        throw new Error(errorData.error || "Failed to update service status")
       }
 
       const result = await response.json()
-      setCompany(result.data)
+      console.log("[v0] Status update successful:", result)
+
+      setCompany({ ...company, serviceStatus: newStatus })
       setServiceStatusDialogOpen(false)
 
       toast({
@@ -1533,10 +1519,10 @@ export default function OrderDetailPage() {
         description: `Service status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating service status:", error)
+      console.error("[v0] Error updating service status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update service status",
+        description: error instanceof Error ? error.message : "Failed to update status",
         variant: "destructive",
       })
     }
@@ -1955,14 +1941,15 @@ export default function OrderDetailPage() {
   }
 
   const handleSaveCustomer = async () => {
-    if (!customer?.id) {
+    if (!customer || !user?.id) {
       toast({
         title: "Error",
-        description: "Customer ID not found. Cannot save changes.",
+        description: "Cannot update customer - user not found",
         variant: "destructive",
       })
       return
     }
+
     try {
       const token = authService.getToken()
       if (!token) {
@@ -1970,50 +1957,43 @@ export default function OrderDetailPage() {
         return
       }
 
-      const response = await fetch(`/api/users/${customer.id}`, {
+      const response = await fetch(`/api/users/${user.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name: customerForm.name,
-          email: customerForm.email,
-          phone: customerForm.phone,
-        }),
+        body: JSON.stringify(customerForm),
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update customer information")
+        throw new Error("Failed to update customer")
       }
 
       const result = await response.json()
-      setCustomer(result.data) // Update customer state with the latest data
-      setEditingCustomer(false) // Exit editing mode
+      console.log("[v0] Customer updated:", result)
+
+      setCustomer({ ...customer, ...customerForm })
+      setUser({ ...user, ...customerForm })
+      setEditingCustomer(false)
 
       toast({
-        title: "Customer Updated",
-        description: "Customer information has been successfully updated.",
+        title: "Success",
+        description: "Customer information updated",
       })
     } catch (error) {
-      console.error("[v0] Error saving customer info:", error)
+      console.error("[v0] Error updating customer:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update customer information. Please try again.",
+        description: "Failed to update customer information",
         variant: "destructive",
       })
     }
   }
 
   const handleSaveCompany = async () => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found. Cannot save changes.",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!company) return
+
     try {
       const token = authService.getToken()
       if (!token) {
@@ -2027,32 +2007,28 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          name: companyForm.name,
-          state: companyForm.state,
-          businessCategory: companyForm.businessCategory,
-          businessWebsite: companyForm.businessWebsite,
-          businessDescription: companyForm.businessDescription,
-        }),
+        body: JSON.stringify(companyForm),
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update company information")
+        throw new Error("Failed to update company")
       }
 
       const result = await response.json()
-      setCompany(result.data) // Update company state with the latest data
-      setEditingCompany(false) // Exit editing mode
+      console.log("[v0] Company updated:", result)
+
+      setCompany(result.data)
+      setEditingCompany(false)
 
       toast({
-        title: "Company Updated",
-        description: "Company information has been successfully updated.",
+        title: "Success",
+        description: "Company information updated",
       })
     } catch (error) {
-      console.error("[v0] Error saving company info:", error)
+      console.error("[v0] Error updating company:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update company information. Please try again.",
+        description: "Failed to update company information",
         variant: "destructive",
       })
     }
@@ -2741,8 +2717,122 @@ export default function OrderDetailPage() {
 
         {/* Right Sidebar */}
         <div className="space-y-4">
-          {/* Customer Information (Moved to left column) */}
+          {/* Admin Actions Card */}
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Admin Actions
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <Button
+                  onClick={() => setCustomMilestoneDialogOpen(true)}
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Milestone
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setRegisteredAgentDialogOpen(true)}
+                  disabled={agentUpdating || !company}
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span className="font-medium">Assign Registered Agent</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMailingAddressDialogOpen(true)}
+                  disabled={addressUpdating || !company}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span className="font-medium">Assign Mailing Address</span>
+                </Button>
 
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setEinDialogOpen(true)}
+                  disabled={einUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setItinDialogOpen(true)}
+                  disabled={itinUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setBusinessIdDialogOpen(true)}
+                  disabled={businessIdUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMilestonesDialogOpen(true)}
+                  disabled={milestoneUpdating}
+                >
+                  <FileCheck className="w-4 h-4" />
+                  <span className="font-medium">Manage Milestones</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => {
+                    generateInvoice()
+                  }}
+                  disabled={deleting}
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="font-medium">Download Invoice</span>
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  className="w-full justify-start h-11 hover:bg-red-600"
+                  onClick={() => {
+                    console.log("[v0] Delete button clicked")
+                    setDeleteDialogOpen(true)
+                  }}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete Order
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status Management */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -3009,244 +3099,6 @@ export default function OrderDetailPage() {
               </Card>
             )}
           </div>
-        </div>
-
-        {/* Right Sidebar - For Admin Actions and Status Management */}
-        <div className="space-y-4">
-          {/* Admin Actions Card */}
-          <Card className="shadow-sm border-slate-200">
-            <CardHeader className="bg-slate-50/50 border-b">
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Admin Actions
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <Button
-                  onClick={() => setCustomMilestoneDialogOpen(true)}
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Milestone
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setRegisteredAgentDialogOpen(true)}
-                  disabled={agentUpdating || !company}
-                >
-                  <UserCheck className="w-4 h-4" />
-                  <span className="font-medium">Assign Registered Agent</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMailingAddressDialogOpen(true)}
-                  disabled={addressUpdating || !company}
-                >
-                  <MapPin className="w-4 h-4" />
-                  <span className="font-medium">Assign Mailing Address</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setEinDialogOpen(true)}
-                  disabled={einUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setItinDialogOpen(true)}
-                  disabled={itinUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setBusinessIdDialogOpen(true)}
-                  disabled={businessIdUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMilestonesDialogOpen(true)}
-                  disabled={milestoneUpdating}
-                >
-                  <FileCheck className="w-4 h-4" />
-                  <span className="font-medium">Manage Milestones</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => {
-                    generateInvoice()
-                  }}
-                  disabled={deleting}
-                >
-                  <Download className="w-4 h-4" />
-                  <span className="font-medium">Download Invoice</span>
-                </Button>
-
-                <Button
-                  variant="destructive"
-                  className="w-full justify-start h-11 hover:bg-red-600"
-                  onClick={() => {
-                    console.log("[v0] Delete button clicked")
-                    setDeleteDialogOpen(true)
-                  }}
-                  disabled={deleting}
-                >
-                  {deleting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4" />
-                      Delete Order
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Status Management */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Status Management
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                Manage company, registered agent, business address, and service statuses
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Company Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Company Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Overall company operational status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.companyStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.companyStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.companyStatus || "pending"}
-                  </Badge>
-                  <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)} className="h-8">
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Registered Agent Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Registered Agent Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Agent assignment and service status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.registeredAgentStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.registeredAgentStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.registeredAgentStatus || "pending"}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setRegisteredAgentStatusDialogOpen(true)}
-                    className="h-8"
-                  >
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Business Address Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Business Address Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Mailing address setup status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.businessAddressStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.businessAddressStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.businessAddressStatus || "pending"}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setBusinessAddressStatusDialogOpen(true)}
-                    className="h-8"
-                  >
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Service Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Service Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Overall service delivery status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.serviceStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.serviceStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.serviceStatus || "pending"}
-                  </Badge>
-                  <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
-                    Update
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
         </div>
 
         {/* Manage Milestones Dialog */}
@@ -3840,7 +3692,7 @@ export default function OrderDetailPage() {
           title="Update Company Status"
           description="Change the overall operational status of this company"
           currentStatus={company?.companyStatus || "pending"}
-          onUpdate={handleCompanyStatusUpdate}
+          onUpdate={handleUpdateCompanyStatus}
         />
 
         <StatusUpdateModal
@@ -3849,7 +3701,7 @@ export default function OrderDetailPage() {
           title="Update Registered Agent Status"
           description="Change the status of the registered agent assignment"
           currentStatus={company?.registeredAgentStatus || "pending"}
-          onUpdate={handleRegisteredAgentStatusUpdate}
+          onUpdate={handleUpdateRegisteredAgentStatus}
         />
 
         <StatusUpdateModal
@@ -3858,7 +3710,7 @@ export default function OrderDetailPage() {
           title="Update Business Address Status"
           description="Change the status of the business mailing address"
           currentStatus={company?.businessAddressStatus || "pending"}
-          onUpdate={handleBusinessAddressStatusUpdate}
+          onUpdate={handleUpdateBusinessAddressStatus}
         />
 
         <StatusUpdateModal
@@ -3867,7 +3719,7 @@ export default function OrderDetailPage() {
           title="Update Service Status"
           description="Change the overall service delivery status"
           currentStatus={company?.serviceStatus || "pending"}
-          onUpdate={handleServiceStatusUpdate}
+          onUpdate={handleUpdateServiceStatus}
         />
 
         {/* Manual Data Modals */}
