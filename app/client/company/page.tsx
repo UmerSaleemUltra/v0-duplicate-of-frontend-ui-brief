@@ -287,10 +287,10 @@ export default function CompanyPage() {
 
         {/* Company Status */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-0 mb-6">
-            <h2 className="text-base sm:text-lg font-semibold">Company Status</h2>
-            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 w-fit">Active</Badge>
-          </div>
+          <div className="text-xs sm:text-sm text-slate-600 mb-1">Company Status</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base break-words">
+                  {companyData.status}
+                </div>
           <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
