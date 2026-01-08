@@ -387,7 +387,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -1996,10 +1996,10 @@ export default function OrderDetailPage() {
   }
 
   const handleSaveCustomer = async () => {
-    if (!customer || !user?.id) {
+    if (!customer) {
       toast({
         title: "Error",
-        description: "Cannot update customer - user not found",
+        description: "Cannot update customer - customer data not found",
         variant: "destructive",
       })
       return
@@ -2012,24 +2012,53 @@ export default function OrderDetailPage() {
         return
       }
 
-      const response = await fetch(`/api/users/${user.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(customerForm),
-      })
+      // If user exists, update user
+      if (user?.id) {
+        const response = await fetch(`/api/users/${user.id}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(customerForm),
+        })
 
-      if (!response.ok) {
-        throw new Error("Failed to update customer")
+        if (!response.ok) {
+          throw new Error("Failed to update customer")
+        }
+
+        setCustomer({ ...customer, ...customerForm })
+        setUser({ ...user, ...customerForm })
+      } else if (company?.members?.[0]) {
+        const updatedMembers = company.members.map((member: any, index: number) =>
+          index === 0
+            ? {
+                ...member,
+                name: customerForm.name,
+                email: customerForm.email,
+                phone: customerForm.phone,
+              }
+            : member,
+        )
+
+        const response = await fetch(`/api/companies/${company.id}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ members: updatedMembers }),
+        })
+
+        if (!response.ok) {
+          throw new Error("Failed to update company member")
+        }
+
+        const result = await response.json()
+        setCompany(result.data)
+        setCustomer({ ...customer, ...customerForm })
       }
 
-      const result = await response.json()
-      console.log("[v0] Customer updated:", result)
-
-      setCustomer({ ...customer, ...customerForm })
-      setUser({ ...user, ...customerForm })
       setEditingCustomer(false)
 
       toast({
