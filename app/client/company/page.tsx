@@ -342,6 +342,11 @@ export default function CompanyPage() {
                   {companyData.ein || "Not Assigned"}
                 </div>
               </div>
+               <div className="text-xs sm:text-sm text-slate-600 mb-1">Business ID</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">
+                  {companyData.businessId || "Not Assigned"}
+                </div>
+              </div>
             </div>
           </div>
         </div>
