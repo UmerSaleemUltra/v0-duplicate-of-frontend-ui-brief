@@ -1,15 +1,11 @@
 import { ObjectId } from "mongodb"
 
 export function isValidObjectId(id: string): boolean {
-  return ObjectId.isValid(id)
+  return ObjectId.isValid(id) && /^[a-f\d]{24}$/i.test(id)
 }
 
-export function validateObjectId(id: string, fieldName = "ID"): void {
-  if (!id || typeof id !== "string") {
-    throw new Error(`${fieldName} is required and must be a string`)
-  }
-
-  if (!ObjectId.isValid(id)) {
+export function validateObjectId(id: string, fieldName: string = "ID"): void {
+  if (!isValidObjectId(id)) {
     throw new Error(`Invalid ${fieldName} format`)
   }
 }
@@ -40,27 +36,24 @@ export function validatePhone(phone: string): boolean {
   return phoneRegex.test(phone)
 }
 
-export function sanitizeString(input: string, maxLength = 255): string {
+export function sanitizeString(input: string, maxLength: number = 255): string {
   return input.trim().slice(0, maxLength)
 }
 
-export function validateFileUpload(
-  file: File,
-  options: {
-    maxSize?: number
-    allowedTypes?: string[]
-  } = {},
-): { valid: boolean; error?: string } {
+export function validateFileUpload(file: File, options: {
+  maxSize?: number
+  allowedTypes?: string[]
+} = {}): { valid: boolean; error?: string } {
   const maxSize = options.maxSize || 10 * 1024 * 1024 // 10MB default
-  const allowedTypes = options.allowedTypes || ["image/jpeg", "image/png", "image/gif", "application/pdf"]
-
+  const allowedTypes = options.allowedTypes || ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
+  
   if (file.size > maxSize) {
     return { valid: false, error: `File size must be less than ${maxSize / 1024 / 1024}MB` }
   }
-
+  
   if (!allowedTypes.includes(file.type)) {
     return { valid: false, error: `File type ${file.type} is not allowed` }
   }
-
+  
   return { valid: true }
 }

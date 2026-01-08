@@ -75,7 +75,7 @@ export default function AdminDashboard() {
         const timestamp = Date.now()
         const [usersResponse, companiesResponse] = await Promise.all([
           ApiClient.users.getAll(token),
-          fetch(`/api/companies?_t=${timestamp}`, {
+          fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -175,26 +175,20 @@ export default function AdminDashboard() {
 
         setMonthlyData(monthlyRevenueData)
 
-        const stateRevenue: Record<string, number> = {}
         const stateCount: Record<string, number> = {}
-
         allCompanies.forEach((company: any) => {
           if (company.state) {
             stateCount[company.state] = (stateCount[company.state] || 0) + 1
-            stateRevenue[company.state] = (stateRevenue[company.state] || 0) + (company.revenue || 0)
           }
         })
 
-        const totalStateRevenue = Object.values(stateRevenue).reduce((sum: number, rev: number) => sum + rev, 0)
-
-        const breakdown = Object.entries(stateRevenue)
-          .map(([state, revenue]) => ({
+        const breakdown = Object.entries(stateCount)
+          .map(([state, count]) => ({
             state,
-            count: stateCount[state],
-            revenue,
-            percentage: totalStateRevenue > 0 ? Math.round((revenue / totalStateRevenue) * 100) : 0,
+            count,
+            percentage: allCompanies.length > 0 ? Math.round((count / allCompanies.length) * 100) : 0,
           }))
-          .sort((a, b) => b.revenue - a.revenue)
+          .sort((a, b) => b.count - a.count)
           .slice(0, 5)
 
         setStateBreakdown(breakdown)
@@ -418,7 +412,7 @@ export default function AdminDashboard() {
         {/* State Breakdown */}
         <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg">
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900">Top States by Revenue</CardTitle>
+            <CardTitle className="text-lg font-semibold text-slate-900">Top States</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
@@ -429,9 +423,7 @@ export default function AdminDashboard() {
                   <div key={item.state}>
                     <div className="flex items-center justify-between mb-2">
                       <span className="text-sm font-medium text-slate-700">{item.state}</span>
-                      <span className="text-sm text-slate-600">
-                        ${item.revenue.toLocaleString()} ({item.count} companies)
-                      </span>
+                      <span className="text-sm text-slate-600">{item.count} companies</span>
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-2">
                       <div

@@ -200,13 +200,6 @@ export default function OrderDetailPage() {
     businessDescription: "",
   })
 
-  const [priceEditModalOpen, setPriceEditModalOpen] = useState(false)
-  const [priceForm, setPriceForm] = useState({
-    packagePrice: 0,
-    stateFilingFee: 0,
-    addonsTotal: 0,
-  })
-
   const hasEIN =
     company?.ein &&
     company.ein.trim() !== "" &&
@@ -394,7 +387,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSON.stringify({
+        body: JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -423,141 +416,128 @@ export default function OrderDetailPage() {
   }
 
   const loadOrderData = useCallback(async () => {
-    if (!orderId || typeof orderId !== "string" || orderId.trim() === "") {
-      console.error("[v0] Invalid order ID provided:", orderId)
+    if (!orderId) {
       setError("Invalid order ID")
       setLoading(false)
-      toast({
-        title: "Error",
-        description: "Invalid order ID provided",
-        variant: "destructive",
-      })
       return
     }
 
     try {
       setLoading(true)
-      setError(null)
       const token = authService.getToken()
 
       if (!token) {
-        console.error("[v0] No authentication token found")
         router.push("/login")
         return
       }
 
       console.log("[v0] Loading order data for ID:", orderId)
-      console.log("[v0] Token present:", !!token)
 
-      const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 30000)
+      const timestamp = Date.now()
+      const [companiesResponse, usersResponse] = await Promise.all([
+        fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
+        }),
+        fetch(`https://www.buzzfiling.com/api/users?_t=${timestamp}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
+        }),
+      ])
 
-      const orderResponse = await fetch(`/api/orders/${orderId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-          "Cache-Control": "no-cache, no-store, must-revalidate",
-        },
-        signal: controller.signal,
-      })
+      const companiesData = await companiesResponse.json()
+      const usersData = await usersResponse.json()
 
-      clearTimeout(timeoutId)
+      const allCompanies = companiesData.data || companiesData || []
+      const allUsers = usersData.data || usersData || []
 
-      console.log("[v0] Order response status:", orderResponse.status)
-      console.log("[v0] Order response ok:", orderResponse.ok)
+      console.log("[v0] Loaded companies:", allCompanies.length)
+      console.log("[v0] Loaded users:", allUsers.length)
 
-      if (!orderResponse.ok) {
-        const errorData = await orderResponse.json().catch(() => ({ error: "Unknown error" }))
-        console.error("[v0] Order fetch error:", errorData)
+      // Find the order within companies
+      let foundOrder = null
+      let foundCompany = null
 
-        if (orderResponse.status === 404) {
-          console.error("[v0] Order not found in database")
-          setError("Order not found")
-          toast({
-            title: "Order Not Found",
-            description: "The order you're looking for doesn't exist in the database.",
-            variant: "destructive",
-          })
-        } else if (orderResponse.status === 400) {
-          setError("Invalid order ID")
-          toast({
-            title: "Invalid Order ID",
-            description: errorData.details || "The order ID format is not valid. Please check the URL.",
-            variant: "destructive",
-          })
-        } else if (orderResponse.status === 401) {
-          console.error("[v0] Unauthorized - redirecting to login")
-          router.push("/login")
-          return
-        } else {
-          console.error("[v0] Order fetch failed with status:", orderResponse.status)
-          setError(`Failed to fetch order (${orderResponse.status})`)
-          toast({
-            title: "Error",
-            description: errorData.error || `Failed to fetch order`,
-            variant: "destructive",
-          })
+      for (const company of allCompanies) {
+        const orders = company.orders || []
+        const order = orders.find((o: any) => o.id === orderId)
+        if (order) {
+          foundOrder = order
+          foundCompany = company
+          break
         }
-        setLoading(false)
-        return
       }
 
-      const orderData = await orderResponse.json()
-      console.log("[v0] Order API response received:", orderData.success)
-
-      if (!orderData.success || !orderData.data) {
-        console.error("[v0] Invalid order data structure:", orderData)
-        setError("Invalid order data")
+      if (!foundOrder || !foundCompany) {
+        console.error("[v0] Order not found:", orderId)
+        setError("Order not found")
         toast({
           title: "Error",
-          description: "Received invalid order data from server",
+          description: "Order not found",
           variant: "destructive",
         })
         setLoading(false)
         return
       }
 
-      const {
-        data: { company: foundCompany, user: foundUser, passportDocuments: foundPassportDocuments, ...foundOrder },
-      } = orderData
-
       console.log("[v0] Found order:", foundOrder)
       console.log("[v0] Found company:", foundCompany)
-      console.log("[v0] Found user:", foundUser)
 
-      let customerData = foundUser
-      if (!customerData && foundCompany?.members?.[0]) {
-        console.warn("[v0] User not found, creating placeholder from company members")
-        customerData = {
-          id: foundCompany.userId || foundOrder.userId,
-          name: foundCompany.members[0].name || "User Not Found",
-          email: foundCompany.members[0].email || "no-email@example.com",
-          phone: foundCompany.members[0].phone || "N/A",
+      // Find the user
+      let foundUser = allUsers.find((u: any) => String(u.id) === String(foundCompany.userId))
+
+      if (!foundUser && foundCompany.userId) {
+        console.warn("[v0] User not found for userId:", foundCompany.userId)
+        // Create a placeholder user from company members if available
+        foundUser = {
+          id: foundCompany.userId,
+          name: foundCompany.members?.[0]?.name || "User Not Found",
+          email: foundCompany.members?.[0]?.email || "no-email@example.com",
+          phone: foundCompany.members?.[0]?.phone || "N/A",
           role: "client",
           accountStatus: "inactive",
         }
-      } else if (!customerData) {
-        customerData = {
-          id: foundOrder.userId,
-          name: "Unknown User",
-          email: "N/A",
-          phone: "N/A",
-          role: "client",
-        }
       }
 
-      console.log("[v0] Customer data:", customerData)
+      console.log("[v0] Found user:", foundUser?.name || foundUser?.email)
 
-      setOrder(foundOrder)
+      // Construct order data with company and user info
+      const orderData = {
+        ...foundOrder,
+        id: foundOrder.id,
+        userId: foundCompany.userId,
+        company: foundCompany,
+        user: foundUser || {
+          id: foundCompany.userId,
+          name: "Unknown",
+          email: "N/A",
+          phone: "N/A",
+        },
+        passportDocuments: foundOrder.passportDocuments || [],
+      }
+
+      console.log("[v0] Order data loaded successfully:", orderData)
+
+      setOrder(orderData)
       setCompany(foundCompany)
-      setCustomer(customerData)
+      setCustomer(
+        foundUser || {
+          name: foundCompany.members?.[0]?.name || "Unknown User",
+          email: foundCompany.members?.[0]?.email || "N/A",
+          phone: foundCompany.members?.[0]?.phone || "N/A",
+        },
+      )
       setUser(foundUser)
-      setPassportDocuments(foundPassportDocuments || [])
+      setPassportDocuments(orderData.passportDocuments || [])
 
       setCustomerForm({
-        name: customerData?.name || "",
-        email: customerData?.email || "",
-        phone: customerData?.phone || "",
+        name: foundUser?.name || foundCompany.members?.[0]?.name || "",
+        email: foundUser?.email || foundCompany.members?.[0]?.email || "",
+        phone: foundUser?.phone || foundCompany.members?.[0]?.phone || "",
       })
 
       setCompanyForm({
@@ -568,17 +548,18 @@ export default function OrderDetailPage() {
         businessDescription: foundCompany?.businessDescription || "",
       })
 
-      if (foundCompany?.milestones) {
-        console.log("[v0] Initializing milestones from company data:", foundCompany.milestones)
+      if (orderData.company?.milestones) {
+        console.log("[v0] Initializing milestones from company data:", orderData.company.milestones)
         setMilestones({
-          orderProcessed: foundCompany.milestones.orderProcessed || false,
-          registeredAgentAssigned: foundCompany.milestones.registeredAgentAssigned || false,
-          mailingAddressIssued: foundCompany.milestones.mailingAddressIssued || false,
-          formationCompleted: foundCompany.milestones.formationCompleted || false,
-          einProcessed: foundCompany.milestones.einProcessed || false,
-          boiReportFiled: foundCompany.milestones.boiReportFiled || false,
+          orderProcessed: orderData.company.milestones.orderProcessed || false,
+          registeredAgentAssigned: orderData.company.milestones.registeredAgentAssigned || false,
+          mailingAddressIssued: orderData.company.milestones.mailingAddressIssued || false,
+          formationCompleted: orderData.company.milestones.formationCompleted || false,
+          einProcessed: orderData.company.milestones.einProcessed || false,
+          boiReportFiled: orderData.company.milestones.boiReportFiled || false,
         })
       } else {
+        // Initialize with default false values if no milestones exist
         setMilestones({
           orderProcessed: false,
           registeredAgentAssigned: false,
@@ -589,8 +570,8 @@ export default function OrderDetailPage() {
         })
       }
 
-      if (foundCompany?.registeredAgent) {
-        const agent = foundCompany.registeredAgent
+      if (orderData.company?.registeredAgent) {
+        const agent = orderData.company.registeredAgent
         console.log("[v0] Pre-populating registered agent form:", agent)
         setAgentForm({
           name: agent.name || "",
@@ -605,8 +586,8 @@ export default function OrderDetailPage() {
         })
       }
 
-      if (foundCompany?.mailingAddress) {
-        const address = foundCompany.mailingAddress
+      if (orderData.company?.mailingAddress) {
+        const address = orderData.company.mailingAddress
         console.log("[v0] Pre-populating mailing address form:", address)
         setMailingAddress({
           street: address.street || "",
@@ -616,8 +597,8 @@ export default function OrderDetailPage() {
         })
       }
 
-      const orderAddons = foundOrder.purchasedAddons || foundOrder.selectedAddons || []
-      const companyAddons = foundCompany?.purchasedAddons || []
+      const orderAddons = orderData.purchasedAddons || orderData.selectedAddons || []
+      const companyAddons = orderData.company?.purchasedAddons || []
 
       const allAddons = [...orderAddons]
       companyAddons.forEach((companyAddon: any) => {
@@ -632,56 +613,28 @@ export default function OrderDetailPage() {
       })
 
       setAddons(allAddons)
-      setNewStatus(foundOrder.status || "")
+      setNewStatus(orderData.status || "")
       setError(null)
     } catch (error) {
       console.error("[v0] Error loading order data:", error)
-      if (error instanceof Error) {
-        console.error("[v0] Error name:", error.name)
-        console.error("[v0] Error message:", error.message)
-
-        if (error.name === "AbortError") {
-          setError("Request timeout")
-          toast({
-            title: "Timeout",
-            description: "Request took too long. Please check your connection and try again.",
-            variant: "destructive",
-          })
-        } else {
-          setError("Failed to load order")
-          toast({
-            title: "Error",
-            description: error.message || "Failed to load order details. Please try again.",
-            variant: "destructive",
-          })
-        }
-      }
+      setError("Failed to load order")
+      toast({
+        title: "Error",
+        description: "Failed to load order details",
+        variant: "destructive",
+      })
     } finally {
       setLoading(false)
     }
   }, [orderId, router, toast])
 
-  // Modified useEffect to include enhanced validation
   useEffect(() => {
-    if (!isAuthenticated || authLoading || !orderId) {
-      return
+    if (isAuthenticated && orderId) {
+      loadOrderData()
+    } else if (!authLoading && !isAuthenticated) {
+      router.push("/login")
     }
-
-    console.log("[v0] Order ID from params:", orderId)
-
-    if (!orderId || orderId === "undefined" || orderId === "null") {
-      setError("Invalid order ID")
-      setLoading(false)
-      toast({
-        title: "Error",
-        description: "Invalid order ID",
-        variant: "destructive",
-      })
-      return
-    }
-
-    loadOrderData() // Renamed fetchOrder to loadOrderData for consistency with original code
-  }, [isAuthenticated, authLoading, orderId, loadOrderData])
+  }, [orderId, isAuthenticated, authLoading, loadOrderData, router])
 
   // Milestones are now initialized directly in loadOrderData
 
@@ -696,14 +649,19 @@ export default function OrderDetailPage() {
         return
       }
 
-      const response = await fetch(`/api/orders/${order.id}`, {
+      // Update the order within the company
+      const updatedOrders = (company.orders || []).map((o: any) =>
+        o.id === order.id ? { ...o, status: newStatus } : o,
+      )
+
+      const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          status: newStatus,
+          orders: updatedOrders,
         }),
       })
 
@@ -712,18 +670,18 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
-      console.log("[v0] Order status updated:", result)
+      setCompany(result.data)
 
-      setOrder({ ...order, status: newStatus })
+      // Update local order state
+      const updatedOrder = updatedOrders.find((o: any) => o.id === order.id)
+      setOrder(updatedOrder)
 
       toast({
         title: "Status Updated",
         description: `Order status changed to ${newStatus}`,
       })
-
-      await loadOrderData()
     } catch (error) {
-      console.error("[v0] Error updating status:", error)
+      console.log("[v0] Error updating status:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update order status. Please try again.",
@@ -1408,27 +1366,8 @@ export default function OrderDetailPage() {
     setNewMilestoneDescription("")
   }
 
-  // Status Update Handlers
-  const handleUpdateCompanyStatus = async (newStatus: "pending" | "active" | "inactive") => {
-    if (!company) {
-      console.error("[v0] No company data available")
-      toast({
-        title: "Error",
-        description: "Company data is not available",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!company.id) {
-      console.error("[v0] Company ID is missing:", company)
-      toast({
-        title: "Error",
-        description: "Company ID is missing. Please refresh the page.",
-        variant: "destructive",
-      })
-      return
-    }
+  const handleCompanyStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
+    if (!company) return
 
     try {
       const token = authService.getToken()
@@ -1437,10 +1376,8 @@ export default function OrderDetailPage() {
         return
       }
 
-      console.log("[v0] Updating company status for company:", company.id)
-
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH", // Changed from PUT to PATCH
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1452,50 +1389,29 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
-        console.error("[v0] Failed to update company status:", errorData)
-        throw new Error(errorData.error || "Failed to update company status")
+        throw new Error("Failed to update company status")
       }
 
-      console.log("[v0] Company status updated successfully")
+      const result = await response.json()
+      setCompany(result.data)
       setCompanyStatusDialogOpen(false)
-
-      await loadOrderData()
 
       toast({
         title: "Status Updated",
         description: `Company status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.error("[v0] Error updating company status:", error)
+      console.log("[v0] Error updating company status:", error)
       toast({
         title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update company status",
+        description: "Failed to update company status",
         variant: "destructive",
       })
     }
   }
 
-  const handleUpdateRegisteredAgentStatus = async (newStatus: "pending" | "active" | "inactive") => {
-    if (!company) {
-      console.error("[v0] No company data available")
-      toast({
-        title: "Error",
-        description: "Company data is not available",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!company.id) {
-      console.error("[v0] Company ID is missing:", company)
-      toast({
-        title: "Error",
-        description: "Company ID is missing. Please refresh the page.",
-        variant: "destructive",
-      })
-      return
-    }
+  const handleRegisteredAgentStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
+    if (!company) return
 
     try {
       const token = authService.getToken()
@@ -1504,10 +1420,8 @@ export default function OrderDetailPage() {
         return
       }
 
-      console.log("[v0] Updating registered agent status for company:", company.id)
-
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH", // Changed from PUT to PATCH
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1519,50 +1433,29 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
-        console.error("[v0] Failed to update registered agent status:", errorData)
-        throw new Error(errorData.error || "Failed to update status")
+        throw new Error("Failed to update registered agent status")
       }
 
-      console.log("[v0] Registered agent status updated successfully")
+      const result = await response.json()
+      setCompany(result.data)
       setRegisteredAgentStatusDialogOpen(false)
-
-      await loadOrderData()
 
       toast({
         title: "Status Updated",
         description: `Registered agent status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.error("[v0] Error updating registered agent status:", error)
+      console.log("[v0] Error updating registered agent status:", error)
       toast({
         title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update status",
+        description: "Failed to update registered agent status",
         variant: "destructive",
       })
     }
   }
 
-  const handleUpdateBusinessAddressStatus = async (newStatus: "pending" | "active" | "inactive") => {
-    if (!company) {
-      console.error("[v0] No company data available")
-      toast({
-        title: "Error",
-        description: "Company data is not available",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!company.id) {
-      console.error("[v0] Company ID is missing:", company)
-      toast({
-        title: "Error",
-        description: "Company ID is missing. Please refresh the page.",
-        variant: "destructive",
-      })
-      return
-    }
+  const handleBusinessAddressStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
+    if (!company) return
 
     try {
       const token = authService.getToken()
@@ -1571,10 +1464,8 @@ export default function OrderDetailPage() {
         return
       }
 
-      console.log("[v0] Updating business address status for company:", company.id)
-
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH", // Changed from PUT to PATCH
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1586,50 +1477,29 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
-        console.error("[v0] Failed to update business address status:", errorData)
-        throw new Error(errorData.error || "Failed to update status")
+        throw new Error("Failed to update business address status")
       }
 
-      console.log("[v0] Business address status updated successfully")
+      const result = await response.json()
+      setCompany(result.data)
       setBusinessAddressStatusDialogOpen(false)
-
-      await loadOrderData()
 
       toast({
         title: "Status Updated",
         description: `Business address status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.error("[v0] Error updating business address status:", error)
+      console.log("[v0] Error updating business address status:", error)
       toast({
         title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update status",
+        description: "Failed to update business address status",
         variant: "destructive",
       })
     }
   }
 
-  const handleUpdateServiceStatus = async (newStatus: "pending" | "active" | "inactive") => {
-    if (!company) {
-      console.error("[v0] No company data available")
-      toast({
-        title: "Error",
-        description: "Company data is not available",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!company.id) {
-      console.error("[v0] Company ID is missing:", company)
-      toast({
-        title: "Error",
-        description: "Company ID is missing. Please refresh the page.",
-        variant: "destructive",
-      })
-      return
-    }
+  const handleServiceStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
+    if (!company) return
 
     try {
       const token = authService.getToken()
@@ -1638,10 +1508,8 @@ export default function OrderDetailPage() {
         return
       }
 
-      console.log("[v0] Updating service status for company:", company.id)
-
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH", // Changed from PUT to PATCH
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1653,25 +1521,22 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
-        console.error("[v0] Failed to update service status:", errorData)
-        throw new Error(errorData.error || "Failed to update status")
+        throw new Error("Failed to update service status")
       }
 
-      console.log("[v0] Service status updated successfully")
+      const result = await response.json()
+      setCompany(result.data)
       setServiceStatusDialogOpen(false)
-
-      await loadOrderData()
 
       toast({
         title: "Status Updated",
         description: `Service status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.error("[v0] Error updating service status:", error)
+      console.log("[v0] Error updating service status:", error)
       toast({
         title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update status",
+        description: "Failed to update service status",
         variant: "destructive",
       })
     }
@@ -2090,15 +1955,14 @@ export default function OrderDetailPage() {
   }
 
   const handleSaveCustomer = async () => {
-    if (!customer) {
+    if (!customer?.id) {
       toast({
         title: "Error",
-        description: "Cannot update customer - customer data not found",
+        description: "Customer ID not found. Cannot save changes.",
         variant: "destructive",
       })
       return
     }
-
     try {
       const token = authService.getToken()
       if (!token) {
@@ -2106,89 +1970,56 @@ export default function OrderDetailPage() {
         return
       }
 
-      // If user exists, update user
-      if (user?.id) {
-        const response = await fetch(`/api/users/${user.id}`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(customerForm),
-        })
+      const response = await fetch(`/api/users/${customer.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: customerForm.name,
+          email: customerForm.email,
+          phone: customerForm.phone,
+        }),
+      })
 
-        if (!response.ok) {
-          throw new Error("Failed to update customer")
-        }
-
-        setCustomer({ ...customer, ...customerForm })
-        setUser({ ...user, ...customerForm })
-      } else if (company?.members?.[0]) {
-        const updatedMembers = company.members.map((member: any, index: number) =>
-          index === 0
-            ? {
-                ...member,
-                name: customerForm.name,
-                email: customerForm.email,
-                phone: customerForm.phone,
-              }
-            : member,
-        )
-
-        const response = await fetch(`/api/companies/${company.id}`, {
-          method: "PUT",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ members: updatedMembers }),
-        })
-
-        if (!response.ok) {
-          throw new Error("Failed to update company member")
-        }
-
-        const result = await response.json()
-        setCompany(result.data)
-        setCustomer({ ...customer, ...customerForm })
+      if (!response.ok) {
+        throw new Error("Failed to update customer information")
       }
 
-      setEditingCustomer(false)
+      const result = await response.json()
+      setCustomer(result.data) // Update customer state with the latest data
+      setEditingCustomer(false) // Exit editing mode
 
       toast({
-        title: "Success",
-        description: "Customer information updated",
+        title: "Customer Updated",
+        description: "Customer information has been successfully updated.",
       })
     } catch (error) {
-      console.error("[v0] Error updating customer:", error)
+      console.error("[v0] Error saving customer info:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update customer information",
+        description: "Failed to update customer information. Please try again.",
         variant: "destructive",
       })
     }
   }
 
   const handleSaveCompany = async () => {
-    if (!company || !companyForm.name.trim()) {
+    if (!company?.id) {
       toast({
-        title: "Validation Error",
-        description: "Company name is required",
+        title: "Error",
+        description: "Company ID not found. Cannot save changes.",
         variant: "destructive",
       })
       return
     }
-
     try {
       const token = authService.getToken()
       if (!token) {
         router.push("/login")
         return
       }
-
-      const stateChanged = company.state !== companyForm.state
-      const oldState = company.state
-      const newState = companyForm.state
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -2206,176 +2037,47 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update company")
+        throw new Error("Failed to update company information")
       }
 
       const result = await response.json()
-
-      if (stateChanged && order?.pricing?.total) {
-        console.log("[v0] State changed from", oldState, "to", newState, "- updating revenue tracking")
-
-        try {
-          await fetch("/api/analytics/update", {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              type: "state_change",
-              oldState,
-              newState,
-              revenue: order.pricing.total,
-              companyId: company.id,
-              orderId: order.id,
-            }),
-          })
-          console.log("[v0] Analytics updated for state change")
-        } catch (analyticsError) {
-          console.error("[v0] Failed to update analytics (non-critical):", analyticsError)
-        }
-      }
-
-      setCompany(result.data)
-      setEditingCompany(false)
+      setCompany(result.data) // Update company state with the latest data
+      setEditingCompany(false) // Exit editing mode
 
       toast({
-        title: "Success",
-        description: "Company information updated successfully",
-      })
-
-      await loadOrderData()
-    } catch (error) {
-      console.error("[v0] Error updating company:", error)
-      toast({
-        title: "Error",
-        description: "Failed to update company information",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleEditPrice = () => {
-    if (order) {
-      setPriceForm({
-        packagePrice: order.packagePrice || order.pricing?.packagePrice || 0,
-        stateFilingFee: order.stateFilingFee || order.pricing?.stateFilingFee || 0,
-        addonsTotal: order.addonsTotal || order.pricing?.addonsTotal || 0,
-      })
-      setPriceEditModalOpen(true)
-    }
-  }
-
-  const handleSavePrice = async () => {
-    if (!order || !company) {
-      toast({
-        title: "Error",
-        description: "Order or company data is missing",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      const token = authService.getToken()
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      console.log("[v0] Updating order pricing...")
-      const newSubtotal = priceForm.packagePrice + priceForm.stateFilingFee + priceForm.addonsTotal
-      const newTotal = newSubtotal
-
-      const response = await fetch(`/api/orders/${order.id}`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          pricing: {
-            packagePrice: priceForm.packagePrice,
-            stateFilingFee: priceForm.stateFilingFee,
-            addonsTotal: priceForm.addonsTotal,
-            subtotal: newSubtotal,
-            total: newTotal,
-          },
-          packagePrice: priceForm.packagePrice,
-          stateFilingFee: priceForm.stateFilingFee,
-          addonsTotal: priceForm.addonsTotal,
-          subtotal: newSubtotal,
-          total: newTotal,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update pricing")
-      }
-
-      await loadOrderData()
-      setPriceEditModalOpen(false)
-
-      toast({
-        title: "Success",
-        description: "Order pricing updated successfully",
+        title: "Company Updated",
+        description: "Company information has been successfully updated.",
       })
     } catch (error) {
-      console.error("[v0] Error updating pricing:", error)
+      console.error("[v0] Error saving company info:", error)
       toast({
-        title: "Error",
-        description: "Failed to update pricing. Please try again.",
+        title: "Update Failed",
+        description: "Failed to update company information. Please try again.",
         variant: "destructive",
       })
     }
   }
 
   return (
-    <div className="min-h-screen bg-slate-50">
+    <div className="space-y-4">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 py-6 px-4 md:px-8 bg-white border-b">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button
             variant="outline"
             onClick={() => router.push("/admin/orders")}
-            className="h-10 w-10 p-0 bg-transparent border-slate-300"
+            className="h-10 w-10 p-0 bg-transparent"
           >
-            <ArrowLeft className="w-4 h-4 text-slate-700" />
+            <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
             <h1 className="text-3xl font-semibold text-slate-900">Order Details</h1>
             <p className="text-slate-600 mt-1">Order ID: {order.id}</p>
           </div>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" className="h-11 px-4 bg-transparent">
-            <FileText className="w-4 h-4 mr-2" />
-            View Invoice
-          </Button>
-          <Button
-            className="h-11 px-4 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-            onClick={() => {
-              console.log("[v0] Delete button clicked")
-              setDeleteDialogOpen(true)
-            }}
-            disabled={deleting}
-          >
-            {deleting ? (
-              <>
-                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                Deleting...
-              </>
-            ) : (
-              <>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Order
-              </>
-            )}
-          </Button>
-        </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4 p-4 md:p-8">
+      <div className="grid lg:grid-cols-3 gap-4">
         {/* Main Content - Left Column */}
         <div className="lg:col-span-2 space-y-4">
           {/* Customer Information Card */}
@@ -2525,7 +2227,8 @@ export default function OrderDetailPage() {
                 Formation Progress
               </CardTitle>
               <p className="text-sm text-slate-600 mt-1">
-                {completionPercentage}% Complete
+                {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed (
+                {completionPercentage}%)
                 {company?.customMilestones && company.customMilestones.length > 0 && (
                   <span className="text-slate-500">
                     {" "}
@@ -2715,65 +2418,139 @@ export default function OrderDetailPage() {
 
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                Company Information
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">Basic details about the company for this order.</p>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Company Information
+                </CardTitle>
+                {!editingCompany && (
+                  <Button variant="ghost" size="sm" onClick={() => setEditingCompany(true)} className="h-8 text-xs">
+                    <Settings className="w-4 h-4 mr-1" />
+                    Edit
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
-              <div className="space-y-6">
-                {/* Basic Information Grid */}
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Company Name</p>
-                    <p className="text-sm font-medium text-slate-900">{company.name}</p>
+              {editingCompany ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Company Name</Label>
+                    <Input
+                      value={companyForm.name}
+                      onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
+                      placeholder="Enter company name"
+                    />
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">State of Formation</p>
-                    <p className="text-sm font-medium text-slate-900">{company.state}</p>
+                  <div>
+                    <Label>State</Label>
+                    <Input
+                      value={companyForm.state}
+                      onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })}
+                      placeholder="Enter state"
+                    />
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Entity Type</p>
-                    <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
+                  <div>
+                    <Label>Business Category</Label>
+                    <Input
+                      value={companyForm.businessCategory}
+                      onChange={(e) => setCompanyForm({ ...companyForm, businessCategory: e.target.value })}
+                      placeholder="Enter business category"
+                    />
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Business Category</p>
-                    <p className="text-sm font-medium text-slate-900">{company.businessCategory || "Not provided"}</p>
+                  <div>
+                    <Label>Business Website</Label>
+                    <Input
+                      value={companyForm.businessWebsite}
+                      onChange={(e) => setCompanyForm({ ...companyForm, businessWebsite: e.target.value })}
+                      placeholder="Enter website URL"
+                    />
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Package Type</p>
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {company.packageType || "Starter"}
-                    </Badge>
+                  <div>
+                    <Label>Business Description</Label>
+                    <Textarea
+                      value={companyForm.businessDescription}
+                      onChange={(e) => setCompanyForm({ ...companyForm, businessDescription: e.target.value })}
+                      placeholder="Enter business description"
+                      rows={3}
+                    />
                   </div>
-                  {company.businessWebsite && (
+                  <div className="flex gap-2">
+                    <Button onClick={handleSaveCompany} size="sm">
+                      Save Changes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingCompany(false)
+                        setCompanyForm({
+                          name: company?.name || "",
+                          state: company?.state || "",
+                          businessCategory: company?.businessCategory || "",
+                          businessWebsite: company?.businessWebsite || "",
+                          businessDescription: company?.businessDescription || "",
+                        })
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Basic Information Grid */}
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Business Website</p>
-                      <a
-                        href={
-                          company.businessWebsite.startsWith("http")
-                            ? company.businessWebsite
-                            : `https://${company.businessWebsite}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-blue-600 hover:underline"
-                      >
-                        {company.businessWebsite}
-                      </a>
+                      <p className="text-xs text-slate-600 mb-1">Company Name</p>
+                      <p className="text-sm font-medium text-slate-900">{company.name}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">State of Formation</p>
+                      <p className="text-sm font-medium text-slate-900">{company.state}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Entity Type</p>
+                      <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Business Category</p>
+                      <p className="text-sm font-medium text-slate-900">{company.businessCategory || "Not provided"}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Package Type</p>
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {company.packageType || "Starter"}
+                      </Badge>
+                    </div>
+                    {company.businessWebsite && (
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">Business Website</p>
+                        <a
+                          href={
+                            company.businessWebsite.startsWith("http")
+                              ? company.businessWebsite
+                              : `https://${company.businessWebsite}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-blue-600 hover:underline"
+                        >
+                          {company.businessWebsite}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Business Description */}
+                  {company.businessDescription && (
+                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-2">Business Description</p>
+                      <p className="text-sm text-slate-900 leading-relaxed">{company.businessDescription}</p>
                     </div>
                   )}
                 </div>
-
-                {/* Business Description */}
-                {company.businessDescription && (
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-2">Business Description</p>
-                    <p className="text-sm text-slate-900 leading-relaxed">{company.businessDescription}</p>
-                  </div>
-                )}
-              </div>
+              )}
             </CardContent>
           </Card>
 
@@ -2793,7 +2570,7 @@ export default function OrderDetailPage() {
                   {company.members.map((member: any, index: number) => (
                     <div
                       key={member.id || index}
-                      className={`p-4 rounded-lg border ${member.responsiblePerson ? "bg-blue-50 border-blue-300" : "bg-slate-50 border-slate-200"}`}
+                      className={`p-4 rounded-lg border border-slate-200 ${member.responsiblePerson ? "bg-blue-50 border-blue-300" : "bg-slate-50"}`}
                     >
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex items-center gap-3">
@@ -2876,219 +2653,96 @@ export default function OrderDetailPage() {
             </Card>
           )}
 
-          {/* Order & Pricing Details Card - UPDATED */}
-          {order && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                    <Receipt className="w-5 h-5" />
-                    Order & Pricing Details
-                  </CardTitle>
-                  <Button variant="outline" size="sm" onClick={handleEditPrice} className="h-9 bg-transparent">
-                    <Settings className="w-4 h-4 mr-2" />
-                    Edit Price
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* Pricing Breakdown */}
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Package Price</p>
-                      <p className="text-lg font-bold text-slate-900">
-                        ${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">State Filing Fee</p>
-                      <p className="text-lg font-bold text-slate-900">
-                        ${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
-                      <p className="text-lg font-bold text-slate-900">
-                        ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
-                      </p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-slate-200">
-                      <p className="text-xs text-white mb-1">Total Amount</p>
-                      <p className="text-2xl font-bold text-white">
-                        ${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Payment Information */}
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                    <div className="grid sm:grid-cols-2 gap-3">
-                      <div>
-                        <p className="text-xs text-slate-600 mb-1">Payment Method</p>
-                        <p className="text-sm font-medium text-slate-900 capitalize">
-                          {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-xs text-slate-600 mb-1">Payment Status</p>
-                        <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"}>
-                          {order?.paymentInfo?.status || "Pending"}
-                        </Badge>
-                      </div>
-                      {order?.paymentInfo?.transactionReference && (
-                        <div className="sm:col-span-2">
-                          <p className="text-xs text-slate-600 mb-1">Transaction Reference</p>
-                          <p className="text-sm font-medium text-slate-900 font-mono">
-                            {order.paymentInfo.transactionReference}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Order Date */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Receipt className="w-5 h-5" />
+                Order & Pricing Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Pricing Breakdown */}
+                <div className="grid sm:grid-cols-2 gap-3">
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <div className="flex items-center gap-2">
-                      <Calendar className="w-4 h-4 text-slate-600" />
-                      <div>
-                        <p className="text-xs text-slate-600">Order Date</p>
-                        <p className="text-sm font-medium text-slate-900">
-                          {order?.createdAt
-                            ? new Date(order.createdAt).toLocaleDateString("en-US", {
-                                year: "numeric",
-                                month: "long",
-                                day: "numeric",
-                              })
-                            : "N/A"}
+                    <p className="text-xs text-slate-600 mb-1">Package Price</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">State Filing Fee</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-slate-200">
+                    <p className="text-xs text-white mb-1">Total Amount</p>
+                    <p className="text-2xl font-bold text-white">
+                      ${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Payment Information */}
+                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-slate-600 mb-1">Payment Method</p>
+                      <p className="text-sm font-medium text-slate-900 capitalize">
+                        {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 mb-1">Payment Status</p>
+                      <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"}>
+                        {order?.paymentInfo?.status || "Pending"}
+                      </Badge>
+                    </div>
+                    {order?.paymentInfo?.transactionReference && (
+                      <div className="sm:col-span-2">
+                        <p className="text-xs text-slate-600 mb-1">Transaction Reference</p>
+                        <p className="text-sm font-medium text-slate-900 font-mono">
+                          {order.paymentInfo.transactionReference}
                         </p>
                       </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Order Date */}
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-600" />
+                    <div>
+                      <p className="text-xs text-slate-600">Order Date</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {order?.createdAt
+                          ? new Date(order.createdAt).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "N/A"}
+                      </p>
                     </div>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
-          )}
+              </div>
+            </CardContent>
+          </Card>
         </div>
 
         {/* Right Sidebar */}
         <div className="space-y-4">
-          {/* Admin Actions Card */}
-          <Card className="shadow-sm border-slate-200">
-            <CardHeader className="bg-slate-50/50 border-b">
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Admin Actions
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <Button
-                  onClick={() => setCustomMilestoneDialogOpen(true)}
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Milestone
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setRegisteredAgentDialogOpen(true)}
-                  disabled={agentUpdating || !company}
-                >
-                  <UserCheck className="w-4 h-4" />
-                  <span className="font-medium">Assign Registered Agent</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMailingAddressDialogOpen(true)}
-                  disabled={addressUpdating || !company}
-                >
-                  <MapPin className="w-4 h-4" />
-                  <span className="font-medium">Assign Mailing Address</span>
-                </Button>
+          {/* Customer Information (Moved to left column) */}
 
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setEinDialogOpen(true)}
-                  disabled={einUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setItinDialogOpen(true)}
-                  disabled={itinUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setBusinessIdDialogOpen(true)}
-                  disabled={businessIdUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMilestonesDialogOpen(true)}
-                  disabled={milestoneUpdating}
-                >
-                  <FileCheck className="w-4 h-4" />
-                  <span className="font-medium">Manage Milestones</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => {
-                    generateInvoice()
-                  }}
-                  disabled={deleting}
-                >
-                  <Download className="w-4 h-4" />
-                  <span className="font-medium">Download Invoice</span>
-                </Button>
-
-                <Button
-                  variant="destructive"
-                  className="w-full justify-start h-11 hover:bg-red-600"
-                  onClick={() => {
-                    console.log("[v0] Delete button clicked")
-                    setDeleteDialogOpen(true)
-                  }}
-                  disabled={deleting}
-                >
-                  {deleting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4" />
-                      Delete Order
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Status Management */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -3357,7 +3011,243 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        {/* Dialogs and Modals */}
+        {/* Right Sidebar - For Admin Actions and Status Management */}
+        <div className="space-y-4">
+          {/* Admin Actions Card */}
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Admin Actions
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <Button
+                  onClick={() => setCustomMilestoneDialogOpen(true)}
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Milestone
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setRegisteredAgentDialogOpen(true)}
+                  disabled={agentUpdating || !company}
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span className="font-medium">Assign Registered Agent</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMailingAddressDialogOpen(true)}
+                  disabled={addressUpdating || !company}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span className="font-medium">Assign Mailing Address</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setEinDialogOpen(true)}
+                  disabled={einUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setItinDialogOpen(true)}
+                  disabled={itinUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setBusinessIdDialogOpen(true)}
+                  disabled={businessIdUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMilestonesDialogOpen(true)}
+                  disabled={milestoneUpdating}
+                >
+                  <FileCheck className="w-4 h-4" />
+                  <span className="font-medium">Manage Milestones</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => {
+                    generateInvoice()
+                  }}
+                  disabled={deleting}
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="font-medium">Download Invoice</span>
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  className="w-full justify-start h-11 hover:bg-red-600"
+                  onClick={() => {
+                    console.log("[v0] Delete button clicked")
+                    setDeleteDialogOpen(true)
+                  }}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete Order
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status Management */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Status Management
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">
+                Manage company, registered agent, business address, and service statuses
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Company Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Company Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Overall company operational status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.companyStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.companyStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.companyStatus || "pending"}
+                  </Badge>
+                  <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)} className="h-8">
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Registered Agent Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Registered Agent Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Agent assignment and service status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.registeredAgentStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.registeredAgentStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.registeredAgentStatus || "pending"}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRegisteredAgentStatusDialogOpen(true)}
+                    className="h-8"
+                  >
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Business Address Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Business Address Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Mailing address setup status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.businessAddressStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.businessAddressStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.businessAddressStatus || "pending"}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setBusinessAddressStatusDialogOpen(true)}
+                    className="h-8"
+                  >
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Service Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Service Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Overall service delivery status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.serviceStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.serviceStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.serviceStatus || "pending"}
+                  </Badge>
+                  <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
+                    Update
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
 
         {/* Manage Milestones Dialog */}
         <Dialog open={milestonesDialogOpen} onOpenChange={setMilestonesDialogOpen}>
@@ -3368,7 +3258,7 @@ export default function OrderDetailPage() {
                 Toggle milestones to update the formation progress for {company?.name}
                 <br />
                 <span className="text-sm text-slate-600 mt-2 block">
-                  Core Progress: {completionPercentage}%
+                  Core Progress: {completedDefaultMilestones}/{totalDefaultMilestones} ({completionPercentage}%)
                   {company?.customMilestones && company.customMilestones.length > 0 && (
                     <span className="text-slate-500">
                       {" "}
@@ -3950,7 +3840,7 @@ export default function OrderDetailPage() {
           title="Update Company Status"
           description="Change the overall operational status of this company"
           currentStatus={company?.companyStatus || "pending"}
-          onUpdate={handleUpdateCompanyStatus}
+          onUpdate={handleCompanyStatusUpdate}
         />
 
         <StatusUpdateModal
@@ -3959,7 +3849,7 @@ export default function OrderDetailPage() {
           title="Update Registered Agent Status"
           description="Change the status of the registered agent assignment"
           currentStatus={company?.registeredAgentStatus || "pending"}
-          onUpdate={handleUpdateRegisteredAgentStatus}
+          onUpdate={handleRegisteredAgentStatusUpdate}
         />
 
         <StatusUpdateModal
@@ -3968,7 +3858,7 @@ export default function OrderDetailPage() {
           title="Update Business Address Status"
           description="Change the status of the business mailing address"
           currentStatus={company?.businessAddressStatus || "pending"}
-          onUpdate={handleUpdateBusinessAddressStatus}
+          onUpdate={handleBusinessAddressStatusUpdate}
         />
 
         <StatusUpdateModal
@@ -3977,14 +3867,14 @@ export default function OrderDetailPage() {
           title="Update Service Status"
           description="Change the overall service delivery status"
           currentStatus={company?.serviceStatus || "pending"}
-          onUpdate={handleUpdateServiceStatus}
+          onUpdate={handleServiceStatusUpdate}
         />
 
         {/* Manual Data Modals */}
         <AdminManualDataModal
           open={taxModalOpen}
           onOpenChange={setTaxModalOpen}
-          companyId={company?.id || ""}
+          companyId={company?._id}
           dataType="tax"
           currentData={{
             formationDate: company?.formationDate,
@@ -3999,7 +3889,7 @@ export default function OrderDetailPage() {
         <AdminManualDataModal
           open={agentModalOpen}
           onOpenChange={setAgentModalOpen}
-          companyId={company?.id || ""}
+          companyId={company?._id}
           dataType="registered-agent"
           currentData={company?.registeredAgent}
           onUpdate={loadOrderData}
@@ -4007,73 +3897,11 @@ export default function OrderDetailPage() {
         <AdminManualDataModal
           open={addressModalOpen}
           onOpenChange={setAddressModalOpen}
-          companyId={company?.id || ""}
+          companyId={company?._id}
           dataType="business-address"
           currentData={company?.businessAddress}
           onUpdate={loadOrderData}
         />
-
-        <Dialog open={priceEditModalOpen} onOpenChange={setPriceEditModalOpen}>
-          <DialogContent className="sm:max-w-[500px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-[#dc2626]" />
-                Edit Order Pricing
-              </DialogTitle>
-              <DialogDescription>
-                Update the pricing details for this order. Changes will affect revenue calculations.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="packagePrice">Package Price ($)</Label>
-                <Input
-                  id="packagePrice"
-                  type="number"
-                  value={priceForm.packagePrice}
-                  onChange={(e) => setPriceForm({ ...priceForm, packagePrice: Number.parseFloat(e.target.value) || 0 })}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="stateFilingFee">State Filing Fee ($)</Label>
-                <Input
-                  id="stateFilingFee"
-                  type="number"
-                  value={priceForm.stateFilingFee}
-                  onChange={(e) =>
-                    setPriceForm({ ...priceForm, stateFilingFee: Number.parseFloat(e.target.value) || 0 })
-                  }
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="addonsTotal">Addons Total ($)</Label>
-                <Input
-                  id="addonsTotal"
-                  type="number"
-                  value={priceForm.addonsTotal}
-                  onChange={(e) => setPriceForm({ ...priceForm, addonsTotal: Number.parseFloat(e.target.value) || 0 })}
-                  placeholder="0.00"
-                />
-              </div>
-              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  <strong>New Total:</strong> $
-                  {(priceForm.packagePrice + priceForm.stateFilingFee + priceForm.addonsTotal).toFixed(2)}
-                </p>
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setPriceEditModalOpen(false)}>
-                Cancel
-              </Button>
-              <Button onClick={handleSavePrice} className="bg-[#dc2626] hover:bg-[#b91c1c]">
-                Save Changes
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
       </div>
     </div>
   )

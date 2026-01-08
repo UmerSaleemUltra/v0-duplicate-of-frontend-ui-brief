@@ -124,19 +124,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
-    const isStateChanged = body.state && body.state !== company.state
-    if (isStateChanged && decoded.role === "admin") {
-      console.log(`[v0] State changed from ${company.state} to ${body.state} for company ${company.name}`)
-      console.log(`[v0] Company revenue: $${company.revenue || 0}`)
-      // Broadcast state change event for analytics refresh
-      broadcastUpdate("analytics", "state-changed", {
-        companyId: id,
-        oldState: company.state,
-        newState: body.state,
-        revenue: company.revenue || 0,
-      })
-    }
-
     const updateData: Partial<Company> = {
       ...body,
       updatedAt: new Date().toISOString(),
