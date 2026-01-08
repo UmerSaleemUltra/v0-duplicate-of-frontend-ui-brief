@@ -1221,42 +1221,44 @@ export default function OrderDetailPage() {
   }
 
   const handleDeleteOrder = async () => {
-    if (!company || !order) return
+    if (!order?.id || !company?.id) {
+      toast({
+        title: "Error",
+        description: "Cannot delete order - missing order or company ID",
+        variant: "destructive",
+      })
+      return
+    }
 
     setDeleting(true)
     try {
-      const token = authService.getToken()
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "Authentication required",
-          variant: "destructive",
-        })
-        return
-      }
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("No authentication token")
 
-      console.log("[v0] Deleting order from company:", company.id, "order:", order.id)
-
-      // Delete order from company's orders array
-      const response = await fetch(`https://www.buzzfiling.com/api/companies/${company.id}/orders/${order.id}`, {
+      const response = await fetch(`/api/companies/${company.id}/orders/${order.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
         },
       })
 
       if (!response.ok) {
-        throw new Error("Failed to delete order")
+        const error = await response.json()
+        throw new Error(error.error || "Failed to delete order")
       }
+
+      const result = await response.json()
 
       toast({
         title: "Success",
-        description: "Order deleted successfully",
+        description: result.companyDeleted ? "Order and company deleted successfully" : "Order deleted successfully",
       })
 
-      setDeleteDialogOpen(false)
-      router.push("/admin/orders")
+      if (result.companyDeleted) {
+        router.push("/admin/orders")
+      } else {
+        router.push("/admin/orders")
+      }
     } catch (error) {
       console.error("[v0] Error deleting order:", error)
       toast({
@@ -1266,6 +1268,7 @@ export default function OrderDetailPage() {
       })
     } finally {
       setDeleting(false)
+      setDeleteDialogOpen(false)
     }
   }
 
@@ -2359,11 +2362,26 @@ export default function OrderDetailPage() {
                     <span className="ml-1 capitalize">{order.status}</span>
                   </Badge>
                 </div>
+
+                {order.purchasedAddons && order.purchasedAddons.length > 0 && (
+                  <div className="pt-3 border-t border-slate-200">
+                    <p className="text-sm font-medium text-slate-900 mb-2">Purchased Add-ons</p>
+                    <div className="space-y-2">
+                      {order.purchasedAddons.map((addon: any, index: number) => (
+                        <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-slate-50">
+                          <span className="text-sm text-slate-700">{addon.name || addon.title}</span>
+                          <span className="text-sm font-semibold text-slate-900">${addon.price}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 <div className="pt-3 border-t border-slate-200">
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-semibold text-slate-900">Total Amount</span>
                     <span className="text-lg font-semibold text-slate-900">
-                      ${order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 149}
+                      ${order?.pricing?.total || order?.total || order?.amount || 149}
                     </span>
                   </div>
                 </div>

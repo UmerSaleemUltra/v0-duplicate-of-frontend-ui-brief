@@ -49,20 +49,41 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
+    const oldOrder = orders[orderIndex]
+
     // Update the order with new data
     const updatedOrder = {
-      ...orders[orderIndex],
+      ...oldOrder,
       ...body,
       updatedAt: new Date().toISOString(),
     }
 
     orders[orderIndex] = updatedOrder
 
+    const oldTotal = oldOrder.pricing?.total || oldOrder.amount || oldOrder.total || 0
+    const newTotal = updatedOrder.pricing?.total || updatedOrder.amount || updatedOrder.total || 0
+    const revenueDifference = newTotal - oldTotal
+
+    const currentRevenue = company.revenue || 0
+    const updatedRevenue = currentRevenue + revenueDifference
+
+    console.log(
+      "[v0] Revenue update - Old total:",
+      oldTotal,
+      "New total:",
+      newTotal,
+      "Difference:",
+      revenueDifference,
+      "New revenue:",
+      updatedRevenue,
+    )
+
     await db.collection("companies").updateOne(
       { _id: companyObjectId },
       {
         $set: {
           orders: orders,
+          revenue: updatedRevenue,
           updatedAt: new Date().toISOString(),
         },
       },
@@ -131,6 +152,22 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
+    if (orders.length === 1) {
+      console.log("[v0] Deleting company because it has only one order")
+
+      await db.collection("companies").deleteOne({ _id: companyObjectId })
+
+      broadcastUpdate("companies", "deleted", { id: id, userId: company.userId })
+
+      return addSecurityHeaders(
+        NextResponse.json({
+          success: true,
+          message: "Order and company deleted successfully",
+          companyDeleted: true,
+        }),
+      )
+    }
+
     // Calculate new revenue after removing the order
     const currentRevenue = company.revenue || 0
     const orderAmount = orderToDelete.pricing?.total || orderToDelete.amount || orderToDelete.total || 0
@@ -158,6 +195,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       NextResponse.json({
         success: true,
         message: "Order deleted successfully",
+        companyDeleted: false,
       }),
     )
   } catch (error) {

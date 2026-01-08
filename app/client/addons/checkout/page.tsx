@@ -186,17 +186,20 @@ function AddonCheckoutContent() {
       }
 
       const updatedPurchasedAddons = [...existingAddons, addonObject]
-      const updatedAddonsTotal = (existingOrder.addonsTotal || 0) + addon.price
-      const updatedTotal = (existingOrder.total || existingOrder.amount || 0) + addon.price
+      const existingAddonsTotal = existingOrder.addonsTotal || 0
+      const updatedAddonsTotal = existingAddonsTotal + addon.price
 
-      console.log("[v0] Updating order with:", {
-        orderId,
-        currentAddonsTotal: existingOrder.addonsTotal || 0,
-        newAddon: addon.name,
-        newAddonPrice: addon.price,
-        updatedAddonsTotal,
+      const baseTotal = existingOrder.pricing?.total || existingOrder.amount || existingOrder.total || 0
+      const updatedTotal = baseTotal + addon.price
+
+      console.log(
+        "[v0] Updating order with addon. Base total:",
+        baseTotal,
+        "Addon price:",
+        addon.price,
+        "New total:",
         updatedTotal,
-      })
+      )
 
       const updateOrderResponse = await fetch(`/api/companies/${selectedCompanyId}/orders/${orderId}`, {
         method: "PUT",
@@ -209,6 +212,11 @@ function AddonCheckoutContent() {
           addonsTotal: updatedAddonsTotal,
           total: updatedTotal,
           amount: updatedTotal,
+          pricing: {
+            ...(existingOrder.pricing || {}),
+            total: updatedTotal,
+            addonsTotal: updatedAddonsTotal,
+          },
         }),
       })
 
