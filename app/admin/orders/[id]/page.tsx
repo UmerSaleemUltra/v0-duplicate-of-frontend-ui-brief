@@ -387,7 +387,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -433,119 +433,53 @@ export default function OrderDetailPage() {
 
       console.log("[v0] Loading order data for ID:", orderId)
 
-      const timestamp = Date.now()
-      const [companiesResponse, usersResponse] = await Promise.all([
-        fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-          },
-        }),
-        fetch(`https://www.buzzfiling.com/api/users?_t=${timestamp}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-          },
-        }),
-      ])
-
-      const companiesData = await companiesResponse.json()
-      const usersData = await usersResponse.json()
-
-      const allCompanies = companiesData.data || companiesData || []
-      const allUsers = usersData.data || usersData || []
-
-      console.log("[v0] Loaded companies:", allCompanies.length)
-      console.log("[v0] Loaded users:", allUsers.length)
-
-      // Find the order within companies
-      let foundOrder = null
-      let foundCompany = null
-
-      for (const company of allCompanies) {
-        const orders = company.orders || []
-        const order = orders.find((o: any) => o.id === orderId)
-        if (order) {
-          foundOrder = order
-          foundCompany = company
-          break
-        }
-      }
-
-      if (!foundOrder || !foundCompany) {
-        console.error("[v0] Order not found:", orderId)
-        setError("Order not found")
-        toast({
-          title: "Error",
-          description: "Order not found",
-          variant: "destructive",
-        })
-        setLoading(false)
-        return
-      }
-
-      console.log("[v0] Found order:", foundOrder)
-      console.log("[v0] Found company:", foundCompany)
-
-      // Find the user
-      let foundUser = allUsers.find((u: any) => String(u.id) === String(foundCompany.userId))
-
-      if (!foundUser && foundCompany.userId) {
-        console.warn("[v0] User not found for userId:", foundCompany.userId)
-        // Create a placeholder user from company members if available
-        foundUser = {
-          id: foundCompany.userId,
-          name: foundCompany.members?.[0]?.name || "User Not Found",
-          email: foundCompany.members?.[0]?.email || "no-email@example.com",
-          phone: foundCompany.members?.[0]?.phone || "N/A",
-          role: "client",
-          accountStatus: "inactive",
-        }
-      }
-
-      console.log("[v0] Found user:", foundUser?.name || foundUser?.email)
-
-      // Construct order data with company and user info
-      const orderData = {
-        ...foundOrder,
-        id: foundOrder.id,
-        userId: foundCompany.userId,
-        company: foundCompany,
-        user: foundUser || {
-          id: foundCompany.userId,
-          name: "Unknown",
-          email: "N/A",
-          phone: "N/A",
+      const response = await fetch(`/api/orders/${orderId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Cache-Control": "no-cache, no-store, must-revalidate",
         },
-        passportDocuments: foundOrder.passportDocuments || [],
+      })
+
+      if (!response.ok) {
+        if (response.status === 404) {
+          throw new Error("Order not found")
+        }
+        throw new Error(`Failed to load order: ${response.status}`)
+      }
+
+      const result = await response.json()
+      const orderData = result.data
+
+      if (!orderData) {
+        throw new Error("Order data not found")
       }
 
       console.log("[v0] Order data loaded successfully:", orderData)
 
       setOrder(orderData)
-      setCompany(foundCompany)
+      setCompany(orderData.company)
       setCustomer(
-        foundUser || {
-          name: foundCompany.members?.[0]?.name || "Unknown User",
-          email: foundCompany.members?.[0]?.email || "N/A",
-          phone: foundCompany.members?.[0]?.phone || "N/A",
+        orderData.user || {
+          name: orderData.company?.members?.[0]?.name || "Unknown User",
+          email: orderData.company?.members?.[0]?.email || "N/A",
+          phone: orderData.company?.members?.[0]?.phone || "N/A",
         },
       )
-      setUser(foundUser)
+      setUser(orderData.user)
       setPassportDocuments(orderData.passportDocuments || [])
 
       setCustomerForm({
-        name: foundUser?.name || foundCompany.members?.[0]?.name || "",
-        email: foundUser?.email || foundCompany.members?.[0]?.email || "",
-        phone: foundUser?.phone || foundCompany.members?.[0]?.phone || "",
+        name: orderData.user?.name || orderData.company?.members?.[0]?.name || "",
+        email: orderData.user?.email || orderData.company?.members?.[0]?.email || "",
+        phone: orderData.user?.phone || orderData.company?.members?.[0]?.phone || "",
       })
 
       setCompanyForm({
-        name: foundCompany?.name || "",
-        state: foundCompany?.state || "",
-        businessCategory: foundCompany?.businessCategory || "",
-        businessWebsite: foundCompany?.businessWebsite || "",
-        businessDescription: foundCompany?.businessDescription || "",
+        name: orderData.company?.name || "",
+        state: orderData.company?.state || "",
+        businessCategory: orderData.company?.businessCategory || "",
+        businessWebsite: orderData.company?.businessWebsite || "",
+        businessDescription: orderData.company?.businessDescription || "",
       })
 
       if (orderData.company?.milestones) {
@@ -616,11 +550,11 @@ export default function OrderDetailPage() {
       setNewStatus(orderData.status || "")
       setError(null)
     } catch (error) {
-      console.error("[v0] Error loading order data:", error)
-      setError("Failed to load order")
+      console.error("[v0] Error loading order:", error)
+      setError(error instanceof Error ? error.message : "Failed to load order")
       toast({
         title: "Error",
-        description: "Failed to load order details",
+        description: error instanceof Error ? error.message : "Failed to load order data",
         variant: "destructive",
       })
     } finally {
@@ -2058,6 +1992,232 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleUpdateCompanyStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setStatusUpdating(true)
+      const token = authService.getToken()
+
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statusType: "companyStatus",
+          statusValue: newStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update company status")
+      }
+
+      const result = await response.json()
+
+      setCompany(result.data)
+      setCompanyStatusDialogOpen(false)
+
+      toast({
+        title: "Status Updated",
+        description: "Company status has been updated successfully",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error updating company status:", error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update company status",
+        variant: "destructive",
+      })
+    } finally {
+      setStatusUpdating(false)
+    }
+  }
+
+  const handleUpdateRegisteredAgentStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setAgentUpdating(true)
+      const token = authService.getToken()
+
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statusType: "registeredAgentStatus",
+          statusValue: newStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update registered agent status")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setRegisteredAgentStatusDialogOpen(false)
+
+      toast({
+        title: "Status Updated",
+        description: "Registered agent status has been updated successfully",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error updating registered agent status:", error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update registered agent status",
+        variant: "destructive",
+      })
+    } finally {
+      setAgentUpdating(false)
+    }
+  }
+
+  const handleUpdateBusinessAddressStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setAddressUpdating(true)
+      const token = authService.getToken()
+
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statusType: "businessAddressStatus",
+          statusValue: newStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update business address status")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setBusinessAddressStatusDialogOpen(false)
+
+      toast({
+        title: "Status Updated",
+        description: "Business address status has been updated successfully",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error updating business address status:", error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update business address status",
+        variant: "destructive",
+      })
+    } finally {
+      setAddressUpdating(false)
+    }
+  }
+
+  const handleUpdateServiceStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const token = authService.getToken()
+
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statusType: "serviceStatus",
+          statusValue: newStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update service status")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setServiceStatusDialogOpen(false)
+
+      toast({
+        title: "Status Updated",
+        description: "Service status has been updated successfully",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error updating service status:", error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update service status",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -2741,278 +2901,6 @@ export default function OrderDetailPage() {
 
         {/* Right Sidebar */}
         <div className="space-y-4">
-          {/* Customer Information (Moved to left column) */}
-
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Status Management
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                Manage company, registered agent, business address, and service statuses
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Company Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Company Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Overall company operational status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.companyStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.companyStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.companyStatus || "pending"}
-                  </Badge>
-                  <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)} className="h-8">
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Registered Agent Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Registered Agent Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Agent assignment and service status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.registeredAgentStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.registeredAgentStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.registeredAgentStatus || "pending"}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setRegisteredAgentStatusDialogOpen(true)}
-                    className="h-8"
-                  >
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Business Address Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Business Address Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Mailing address setup status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.businessAddressStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.businessAddressStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.businessAddressStatus || "pending"}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setBusinessAddressStatusDialogOpen(true)}
-                    className="h-8"
-                  >
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Service Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Service Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Overall service delivery status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.serviceStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.serviceStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.serviceStatus || "pending"}
-                  </Badge>
-                  <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
-                    Update
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Admin Manual Data Section - Add after Status Management card */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                <Hash className="w-4 h-4" />
-                Manual Admin Data
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex items-center gap-3">
-                  <Calendar className="w-4 h-4 text-slate-600" />
-                  <span className="text-sm text-slate-700">Tax & Compliance Info</span>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => setTaxModalOpen(true)} disabled={statusUpdating}>
-                  Edit
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex items-center gap-3">
-                  <Building2 className="w-4 h-4 text-slate-600" />
-                  <span className="text-sm text-slate-700">Registered Agent</span>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => setAgentModalOpen(true)} disabled={statusUpdating}>
-                  Edit
-                </Button>
-              </div>
-              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <div className="flex items-center gap-3">
-                  <MapPin className="w-4 h-4 text-slate-600" />
-                  <span className="text-sm text-slate-700">Business Address</span>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => setAddressModalOpen(true)} disabled={statusUpdating}>
-                  Edit
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Milestones Section - Now inside main grid */}
-          <div className="col-span-3">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" />
-                Milestones
-              </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCustomMilestoneDialogOpen(true)}
-                className="h-9"
-                disabled={
-                  statusUpdating ||
-                  agentUpdating ||
-                  addressUpdating ||
-                  einUpdating ||
-                  itinUpdating ||
-                  businessIdUpdating ||
-                  docUploading ||
-                  milestoneUpdating ||
-                  deleting
-                }
-              >
-                <Clock className="w-4 h-4 mr-2" />
-                Add Milestone
-              </Button>
-            </div>
-
-            {/* Standard Milestones */}
-            <Card className="bg-white border-slate-200 shadow-sm mb-4">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-slate-900">Standard Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { key: "orderProcessed", label: "Order Processed", icon: Package },
-                    { key: "registeredAgentAssigned", label: "Registered Agent Assigned", icon: UserCheck },
-                    { key: "mailingAddressIssued", label: "Mailing Address Issued", icon: Home },
-                    { key: "formationCompleted", label: "Formation Completed", icon: Building2 },
-                    { key: "einProcessed", label: "EIN Processed", icon: Hash },
-                    { key: "boiReportFiled", label: "BOI Report Filed", icon: FileCheck },
-                  ].map((milestone) => (
-                    <div
-                      key={milestone.key}
-                      className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <milestone.icon className="w-5 h-5 text-slate-600" />
-                        <span className="text-sm font-medium text-slate-900">{milestone.label}</span>
-                      </div>
-                      <Switch
-                        checked={milestones[milestone.key as keyof typeof milestones]}
-                        onCheckedChange={() => handleMilestoneToggle(milestone.key as keyof typeof milestones)}
-                        disabled={milestoneUpdating}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Custom Milestones */}
-            {company?.customMilestones && company.customMilestones.length > 0 && (
-              <Card className="bg-white border-slate-200 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base font-semibold text-slate-900">Custom Milestones</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {company.customMilestones.map((customMilestone: any) => (
-                      <div
-                        key={customMilestone.id}
-                        className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
-                            {customMilestone.description && (
-                              <p className="text-xs text-slate-500 mt-0.5">{customMilestone.description}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={customMilestone.completed}
-                            onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
-                            disabled={milestoneUpdating}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteCustomMilestone(customMilestone.id)}
-                            disabled={milestoneUpdating}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-        </div>
-
-        {/* Right Sidebar - For Admin Actions and Status Management */}
-        <div className="space-y-4">
           {/* Admin Actions Card */}
           <Card className="shadow-sm border-slate-200">
             <CardHeader className="bg-slate-50/50 border-b">
@@ -3249,660 +3137,778 @@ export default function OrderDetailPage() {
           </Card>
         </div>
 
-        {/* Manage Milestones Dialog */}
-        <Dialog open={milestonesDialogOpen} onOpenChange={setMilestonesDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold">Manage Formation Milestones</DialogTitle>
-              <DialogDescription>
-                Toggle milestones to update the formation progress for {company?.name}
-                <br />
-                <span className="text-sm text-slate-600 mt-2 block">
-                  Core Progress: {completedDefaultMilestones}/{totalDefaultMilestones} ({completionPercentage}%)
-                  {company?.customMilestones && company.customMilestones.length > 0 && (
-                    <span className="text-slate-500">
-                      {" "}
-                      • Total with Custom: {completedMilestonesWithCustom}/{totalMilestonesWithCustom}
-                    </span>
-                  )}
-                </span>
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Package className="w-5 h-5 text-slate-600" />
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">Order Successfully Processed</p>
-                      <p className="text-xs text-slate-500">Articles of Organization uploaded</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={milestones.orderProcessed}
-                    onCheckedChange={() => handleMilestoneToggle("orderProcessed")}
-                    disabled={milestoneUpdating}
-                  />
-                </div>
+        {/* Status Management */}
+        <Card className="bg-white border-slate-200 shadow-sm">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+              <Settings className="w-5 h-5" />
+              Status Management
+            </CardTitle>
+            <p className="text-sm text-slate-600 mt-1">
+              Manage company, registered agent, business address, and service statuses
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {/* Company Status */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <div>
+                <p className="text-sm font-medium text-slate-900">Company Status</p>
+                <p className="text-xs text-slate-500 mt-0.5">Overall company operational status</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge
+                  className={`${
+                    company?.companyStatus === "active"
+                      ? "bg-green-100 text-green-700"
+                      : company?.companyStatus === "inactive"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {company?.companyStatus || "pending"}
+                </Badge>
+                <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)} className="h-8">
+                  Update
+                </Button>
+              </div>
+            </div>
 
-                <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <UserCheck className="w-5 h-5 text-slate-600" />
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">Registered Agent Assigned</p>
-                      <p className="text-xs text-slate-500">
-                        {company?.registeredAgent?.servicePeriod || "1 Year"} service period
-                      </p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={milestones.registeredAgentAssigned}
-                    onCheckedChange={() => handleMilestoneToggle("registeredAgentAssigned")}
-                    disabled={milestoneUpdating}
-                  />
-                </div>
+            {/* Registered Agent Status */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <div>
+                <p className="text-sm font-medium text-slate-900">Registered Agent Status</p>
+                <p className="text-xs text-slate-500 mt-0.5">Agent assignment and service status</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge
+                  className={`${
+                    company?.registeredAgentStatus === "active"
+                      ? "bg-green-100 text-green-700"
+                      : company?.registeredAgentStatus === "inactive"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {company?.registeredAgentStatus || "pending"}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setRegisteredAgentStatusDialogOpen(true)}
+                  className="h-8"
+                >
+                  Update
+                </Button>
+              </div>
+            </div>
 
-                <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <Home className="w-5 h-5 text-slate-600" />
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">Business Mailing Address Issued</p>
-                      <p className="text-xs text-slate-500">Address confirmation received</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={milestones.mailingAddressIssued}
-                    onCheckedChange={() => handleMilestoneToggle("mailingAddressIssued")}
-                    disabled={milestoneUpdating}
-                  />
-                </div>
+            {/* Business Address Status */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <div>
+                <p className="text-sm font-medium text-slate-900">Business Address Status</p>
+                <p className="text-xs text-slate-500 mt-0.5">Mailing address setup status</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge
+                  className={`${
+                    company?.businessAddressStatus === "active"
+                      ? "bg-green-100 text-green-700"
+                      : company?.businessAddressStatus === "inactive"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {company?.businessAddressStatus || "pending"}
+                </Badge>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setBusinessAddressStatusDialogOpen(true)}
+                  className="h-8"
+                >
+                  Update
+                </Button>
+              </div>
+            </div>
 
-                <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FileCheck className="w-5 h-5 text-slate-600" />
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">Company Formation Completed</p>
-                      <p className="text-xs text-slate-500">Formation certificate issued</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={milestones.formationCompleted}
-                    onCheckedChange={() => handleMilestoneToggle("formationCompleted")}
-                    disabled={milestoneUpdating}
-                  />
-                </div>
+            {/* Service Status */}
+            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+              <div>
+                <p className="text-sm font-medium text-slate-900">Service Status</p>
+                <p className="text-xs text-slate-500 mt-0.5">Overall service delivery status</p>
+              </div>
+              <div className="flex items-center gap-2">
+                <Badge
+                  className={`${
+                    company?.serviceStatus === "active"
+                      ? "bg-green-100 text-green-700"
+                      : company?.serviceStatus === "inactive"
+                        ? "bg-red-100 text-red-700"
+                        : "bg-yellow-100 text-yellow-700"
+                  }`}
+                >
+                  {company?.serviceStatus || "pending"}
+                </Badge>
+                <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
+                  Update
+                </Button>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
 
-                <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <HashIcon className="w-5 h-5 text-slate-600" />
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">EIN Successfully Processed</p>
-                      <p className="text-xs text-slate-500">EIN letter uploaded</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={milestones.einProcessed}
-                    onCheckedChange={() => handleMilestoneToggle("einProcessed")}
-                    disabled={milestoneUpdating}
-                  />
-                </div>
-
-                <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                  <div className="flex items-center gap-3">
-                    <FileBarChart className="w-5 h-5 text-slate-600" />
-                    <div>
-                      <p className="text-sm font-medium text-slate-900">BOI Report Filed</p>
-                      <p className="text-xs text-slate-500">Beneficial ownership report submitted</p>
-                    </div>
-                  </div>
-                  <Switch
-                    checked={milestones.boiReportFiled}
-                    onCheckedChange={() => handleMilestoneToggle("boiReportFiled")}
-                    disabled={milestoneUpdating}
-                  />
-                </div>
-
+      {/* Manage Milestones Dialog */}
+      <Dialog open={milestonesDialogOpen} onOpenChange={setMilestonesDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Manage Formation Milestones</DialogTitle>
+            <DialogDescription>
+              Toggle milestones to update the formation progress for {company?.name}
+              <br />
+              <span className="text-sm text-slate-600 mt-2 block">
+                Core Progress: {completedDefaultMilestones}/{totalDefaultMilestones} ({completionPercentage}%)
                 {company?.customMilestones && company.customMilestones.length > 0 && (
-                  <>
-                    <div className="pt-4 border-t border-slate-200">
-                      <p className="text-sm font-semibold text-slate-900 mb-1">Custom Milestones</p>
-                      <p className="text-xs text-slate-500 mb-3">
-                        Custom milestones are tracked separately and don't affect the core progress percentage
-                      </p>
-                    </div>
-                    {company.customMilestones.map((customMilestone: any) => (
-                      <div
-                        key={customMilestone.id}
-                        className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
-                            {customMilestone.description && (
-                              <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
-                                {customMilestone.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                        <Switch
-                          checked={customMilestone.completed}
-                          onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
-                          disabled={milestoneUpdating}
-                        />
-                      </div>
-                    ))}
-                  </>
+                  <span className="text-slate-500">
+                    {" "}
+                    • Total with Custom: {completedMilestonesWithCustom}/{totalMilestonesWithCustom}
+                  </span>
                 )}
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={() => setMilestonesDialogOpen(false)} className="h-10">
-                  Close
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        {/* Custom Milestone Dialog */}
-        <Dialog open={customMilestoneDialogOpen} onOpenChange={handleCloseCustomMilestoneDialog}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold">Add Custom Milestone</DialogTitle>
-              <DialogDescription>
-                Create a custom milestone for {company?.name} that will appear in their progress tracker
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="customMilestoneTitle">Milestone Title *</Label>
-                <Input
-                  id="customMilestoneTitle"
-                  placeholder="e.g., Business License Approved"
-                  value={newMilestoneTitle}
-                  onChange={(e) => setNewMilestoneTitle(e.target.value)}
-                  className="h-10"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="customMilestoneDescription">Description (Optional)</Label>
-                <Textarea
-                  id="customMilestoneDescription"
-                  placeholder="Add any notes about this milestone..."
-                  value={newMilestoneDescription}
-                  onChange={(e) => setNewMilestoneDescription(e.target.value)}
-                  className="min-h-[80px]"
-                />
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={() => setCustomMilestoneDialogOpen(false)} className="h-10">
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleAddCustomMilestone}
-                  className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                  disabled={!newMilestoneTitle.trim() || milestoneUpdating}
-                >
-                  {milestoneUpdating ? "Adding..." : "Add Milestone"}
-                </Button>
-              </div>
-            </div>
-          </DialogContent>
-        </Dialog>
-
-        <Dialog open={registeredAgentDialogOpen} onOpenChange={handleCloseRegisteredAgentDialog}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold">Assign Registered Agent</DialogTitle>
-              <DialogDescription>
-                Assign a registered agent for {company?.name}. This will update the company records and mark the
-                milestone as complete.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="grid md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="agentName">Agent Name *</Label>
-                  <Input
-                    id="agentName"
-                    placeholder="John Doe"
-                    value={agentForm.name}
-                    onChange={(e) => setAgentForm({ ...agentForm, name: e.target.value })}
-                    className="h-10"
-                  />
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Package className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Order Successfully Processed</p>
+                    <p className="text-xs text-slate-500">Articles of Organization uploaded</p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="agentCompany">Company Name</Label>
-                  <Input
-                    id="agentCompany"
-                    placeholder="Agent Services LLC"
-                    value={agentForm.company}
-                    onChange={(e) => setAgentForm({ ...agentForm, company: e.target.value })}
-                    className="h-10"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="agentAddress">Street Address *</Label>
-                <Input
-                  id="agentAddress"
-                  placeholder="123 Main Street"
-                  value={agentForm.address}
-                  onChange={(e) => setAgentForm({ ...agentForm, address: e.target.value })}
-                  className="h-10"
+                <Switch
+                  checked={milestones.orderProcessed}
+                  onCheckedChange={() => handleMilestoneToggle("orderProcessed")}
+                  disabled={milestoneUpdating}
                 />
               </div>
 
-              <div className="grid md:grid-cols-3 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="agentCity">City</Label>
-                  <Input
-                    id="agentCity"
-                    placeholder="Miami"
-                    value={agentForm.city}
-                    onChange={(e) => setAgentForm({ ...agentForm, city: e.target.value })}
-                    className="h-10"
-                  />
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <UserCheck className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Registered Agent Assigned</p>
+                    <p className="text-xs text-slate-500">
+                      {company?.registeredAgent?.servicePeriod || "1 Year"} service period
+                    </p>
+                  </div>
                 </div>
-                <div className="space-y-2">
-                  <Label htmlFor="agentState">State</Label>
-                  <Input
-                    id="agentState"
-                    placeholder="FL"
-                    value={agentForm.state}
-                    onChange={(e) => setAgentForm({ ...agentForm, state: e.target.value })}
-                    className="h-10"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="agentZip">ZIP Code</Label>
-                  <Input
-                    id="agentZip"
-                    placeholder="33101"
-                    value={agentForm.zip}
-                    onChange={(e) => setAgentForm({ ...agentForm, zip: e.target.value })}
-                    className="h-10"
-                  />
-                </div>
+                <Switch
+                  checked={milestones.registeredAgentAssigned}
+                  onCheckedChange={() => handleMilestoneToggle("registeredAgentAssigned")}
+                  disabled={milestoneUpdating}
+                />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="servicePeriod">Service Period</Label>
-                <Select
-                  value={agentForm.servicePeriod}
-                  onValueChange={(value) => setAgentForm({ ...agentForm, servicePeriod: value })}
-                >
-                  <SelectTrigger className="h-10">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="1 Year">1 Year</SelectItem>
-                    <SelectItem value="2 Years">2 Years</SelectItem>
-                    <SelectItem value="3 Years">3 Years</SelectItem>
-                  </SelectContent>
-                </Select>
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Home className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Business Mailing Address Issued</p>
+                    <p className="text-xs text-slate-500">Address confirmation received</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.mailingAddressIssued}
+                  onCheckedChange={() => handleMilestoneToggle("mailingAddressIssued")}
+                  disabled={milestoneUpdating}
+                />
               </div>
 
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={() => setRegisteredAgentDialogOpen(false)} disabled={agentUpdating}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleAssignRegisteredAgent}
-                  className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                  disabled={agentUpdating}
-                >
-                  {agentUpdating ? (
-                    "Assigning..."
-                  ) : (
-                    <>
-                      <UserCheck className="w-4 h-4 mr-2" />
-                      Assign Agent
-                    </>
-                  )}
-                </Button>
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <FileCheck className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Company Formation Completed</p>
+                    <p className="text-xs text-slate-500">Formation certificate issued</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.formationCompleted}
+                  onCheckedChange={() => handleMilestoneToggle("formationCompleted")}
+                  disabled={milestoneUpdating}
+                />
               </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <HashIcon className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">EIN Successfully Processed</p>
+                    <p className="text-xs text-slate-500">EIN letter uploaded</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.einProcessed}
+                  onCheckedChange={() => handleMilestoneToggle("einProcessed")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <FileBarChart className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">BOI Report Filed</p>
+                    <p className="text-xs text-slate-500">Beneficial ownership report submitted</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.boiReportFiled}
+                  onCheckedChange={() => handleMilestoneToggle("boiReportFiled")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              {company?.customMilestones && company.customMilestones.length > 0 && (
+                <>
+                  <div className="pt-4 border-t border-slate-200">
+                    <p className="text-sm font-semibold text-slate-900 mb-1">Custom Milestones</p>
+                    <p className="text-xs text-slate-500 mb-3">
+                      Custom milestones are tracked separately and don't affect the core progress percentage
+                    </p>
+                  </div>
+                  {company.customMilestones.map((customMilestone: any) => (
+                    <div
+                      key={customMilestone.id}
+                      className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
+                          {customMilestone.description && (
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{customMilestone.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Switch
+                        checked={customMilestone.completed}
+                        onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
+                        disabled={milestoneUpdating}
+                      />
+                    </div>
+                  ))}
+                </>
+              )}
             </div>
-          </DialogContent>
-        </Dialog>
 
-        <Dialog open={einDialogOpen} onOpenChange={handleCloseEinDialog}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold">Assign EIN</DialogTitle>
-              <DialogDescription>
-                Assign a Employer Identification Number (EIN) for {company?.name}. This will update the company records
-                and mark the EIN milestone as complete.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="einInput">EIN (Employer Identification Number) *</Label>
-                <Input
-                  id="einInput"
-                  placeholder="12-3456789"
-                  value={einValue}
-                  onChange={(e) => setEinValue(e.target.value)}
-                  className="h-10 font-mono"
-                  maxLength={10}
-                />
-                <p className="text-xs text-slate-500">Format: XX-XXXXXXX (9 digits with hyphen)</p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> The EIN will be formatted automatically and the "EIN Successfully Processed"
-                  milestone will be marked as complete.
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={() => setEinDialogOpen(false)} disabled={einUpdating}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleAssignEIN}
-                  className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                  disabled={!einValue.trim() || einUpdating}
-                >
-                  {einUpdating ? (
-                    "Assigning..."
-                  ) : (
-                    <>
-                      <Hash className="w-4 h-4 mr-2" />
-                      Assign EIN
-                    </>
-                  )}
-                </Button>
-              </div>
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setMilestonesDialogOpen(false)} className="h-10">
+                Close
+              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        <Dialog open={itinDialogOpen} onOpenChange={handleCloseItinDialog}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold">Assign ITIN</DialogTitle>
-              <DialogDescription>
-                Enter the ITIN (Individual Taxpayer Identification Number) for this company.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="itinInput">ITIN Number *</Label>
-                <Input
-                  id="itinInput"
-                  placeholder="9XX-XX-XXXX"
-                  value={itinValue}
-                  onChange={(e) => setItinValue(e.target.value)}
-                  className="h-10 font-mono"
-                />
-                <p className="text-xs text-slate-500">
-                  Format: 9XX-XX-XXXX (starts with 9, followed by two digits from 50-65, 70-88, 90-92, 94-99)
-                </p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> The ITIN will be entered as provided.
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={() => setItinDialogOpen(false)} disabled={itinUpdating}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleAssignITIN}
-                  className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                  disabled={!itinValue.trim() || itinUpdating}
-                >
-                  {itinUpdating ? (
-                    "Assigning..."
-                  ) : (
-                    <>
-                      <FileBarChart className="w-4 h-4 mr-2" />
-                      Assign ITIN
-                    </>
-                  )}
-                </Button>
-              </div>
+      {/* Custom Milestone Dialog */}
+      <Dialog open={customMilestoneDialogOpen} onOpenChange={handleCloseCustomMilestoneDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Add Custom Milestone</DialogTitle>
+            <DialogDescription>
+              Create a custom milestone for {company?.name} that will appear in their progress tracker
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="customMilestoneTitle">Milestone Title *</Label>
+              <Input
+                id="customMilestoneTitle"
+                placeholder="e.g., Business License Approved"
+                value={newMilestoneTitle}
+                onChange={(e) => setNewMilestoneTitle(e.target.value)}
+                className="h-10"
+              />
             </div>
-          </DialogContent>
-        </Dialog>
 
-        <Dialog open={businessIdDialogOpen} onOpenChange={handleCloseBusinessIdDialog}>
-          <DialogContent className="max-w-md">
-            <DialogHeader>
-              <DialogTitle className="text-xl font-semibold">Assign Business ID</DialogTitle>
-              <DialogDescription>
-                Assign a Business ID (State Filing Number) for {company?.name}. This identifier is issued by the state
-                after formation is complete.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="businessIdInput">Business ID / State Filing Number *</Label>
-                <Input
-                  id="businessIdInput"
-                  placeholder="L21000123456"
-                  value={businessIdValue}
-                  onChange={(e) => setBusinessIdValue(e.target.value)}
-                  className="h-10 font-mono"
-                />
-                <p className="text-xs text-slate-500">
-                  Enter the business ID or filing number issued by the state (format varies by state)
-                </p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> This is the official state-issued identifier for the business entity, different
-                  from the EIN.
-                </p>
-              </div>
-
-              <div className="flex justify-end gap-3 pt-4 border-t">
-                <Button variant="outline" onClick={() => setBusinessIdDialogOpen(false)} disabled={businessIdUpdating}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={handleAssignBusinessId}
-                  className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                  disabled={!businessIdValue.trim() || businessIdUpdating}
-                >
-                  {businessIdUpdating ? (
-                    "Assigning..."
-                  ) : (
-                    <>
-                      <Building2 className="w-4 h-4 mr-2" />
-                      Assign Business ID
-                    </>
-                  )}
-                </Button>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="customMilestoneDescription">Description (Optional)</Label>
+              <Textarea
+                id="customMilestoneDescription"
+                placeholder="Add any notes about this milestone..."
+                value={newMilestoneDescription}
+                onChange={(e) => setNewMilestoneDescription(e.target.value)}
+                className="min-h-[80px]"
+              />
             </div>
-          </DialogContent>
-        </Dialog>
 
-        <Dialog open={mailingAddressDialogOpen} onOpenChange={handleCloseMailingAddressDialog}>
-          <DialogContent className="sm:max-w-[600px]">
-            <DialogHeader>
-              <DialogTitle className="flex items-center gap-2">
-                <Home className="w-5 h-5 text-[#dc2626]" />
-                Assign Mailing Address
-              </DialogTitle>
-              <DialogDescription>
-                Assign a mailing address to {company?.name}. This will be displayed on the user dashboard and company
-                page.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="street">Street Address *</Label>
-                <Input
-                  id="street"
-                  value={mailingAddress.street}
-                  onChange={(e) => setMailingAddress({ ...mailingAddress, street: e.target.value })}
-                  placeholder="123 Main Street"
-                  disabled={addressUpdating}
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="grid gap-2">
-                  <Label htmlFor="city">City *</Label>
-                  <Input
-                    id="city"
-                    value={mailingAddress.city}
-                    onChange={(e) => setMailingAddress({ ...mailingAddress, city: e.target.value })}
-                    placeholder="New York"
-                    disabled={addressUpdating}
-                  />
-                </div>
-                <div className="grid gap-2">
-                  <Label htmlFor="state">State *</Label>
-                  <Input
-                    id="state"
-                    value={mailingAddress.state}
-                    onChange={(e) => setMailingAddress({ ...mailingAddress, state: e.target.value })}
-                    placeholder="NY"
-                    maxLength={2}
-                    disabled={addressUpdating}
-                  />
-                </div>
-              </div>
-              <div className="grid gap-2">
-                <Label htmlFor="zip">ZIP Code *</Label>
-                <Input
-                  id="zip"
-                  value={mailingAddress.zip}
-                  onChange={(e) => setMailingAddress({ ...mailingAddress, zip: e.target.value })}
-                  placeholder="10001"
-                  maxLength={10}
-                  disabled={addressUpdating}
-                />
-              </div>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setMailingAddressDialogOpen(false)} disabled={addressUpdating}>
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setCustomMilestoneDialogOpen(false)} className="h-10">
                 Cancel
               </Button>
               <Button
-                onClick={handleAssignMailingAddress}
-                disabled={addressUpdating}
-                className="bg-[#dc2626] hover:bg-[#b91c1c]"
+                onClick={handleAddCustomMilestone}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!newMilestoneTitle.trim() || milestoneUpdating}
               >
-                {addressUpdating ? "Assigning..." : "Assign Mailing Address"}
+                {milestoneUpdating ? "Adding..." : "Add Milestone"}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Company Details Modal */}
-        <CompanyDetailsModal
-          company={selectedCompany}
-          orderId={order?.id || ""}
-          isOpen={companyModalOpen && !!selectedCompany}
-          onClose={() => setCompanyModalOpen(false)}
-          passportDocuments={passportDocuments}
-          orderDate={order?.createdAt}
-        />
+      <Dialog open={registeredAgentDialogOpen} onOpenChange={handleCloseRegisteredAgentDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign Registered Agent</DialogTitle>
+            <DialogDescription>
+              Assign a registered agent for {company?.name}. This will update the company records and mark the milestone
+              as complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agentName">Agent Name *</Label>
+                <Input
+                  id="agentName"
+                  placeholder="John Doe"
+                  value={agentForm.name}
+                  onChange={(e) => setAgentForm({ ...agentForm, name: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentCompany">Company Name</Label>
+                <Input
+                  id="agentCompany"
+                  placeholder="Agent Services LLC"
+                  value={agentForm.company}
+                  onChange={(e) => setAgentForm({ ...agentForm, company: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+            </div>
 
-        {/* Delete Confirmation Dialog */}
-        <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to delete this order? This action cannot be undone.
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+            <div className="space-y-2">
+              <Label htmlFor="agentAddress">Street Address *</Label>
+              <Input
+                id="agentAddress"
+                placeholder="123 Main Street"
+                value={agentForm.address}
+                onChange={(e) => setAgentForm({ ...agentForm, address: e.target.value })}
+                className="h-10"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agentCity">City</Label>
+                <Input
+                  id="agentCity"
+                  placeholder="Miami"
+                  value={agentForm.city}
+                  onChange={(e) => setAgentForm({ ...agentForm, city: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentState">State</Label>
+                <Input
+                  id="agentState"
+                  placeholder="FL"
+                  value={agentForm.state}
+                  onChange={(e) => setAgentForm({ ...agentForm, state: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentZip">ZIP Code</Label>
+                <Input
+                  id="agentZip"
+                  placeholder="33101"
+                  value={agentForm.zip}
+                  onChange={(e) => setAgentForm({ ...agentForm, zip: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="servicePeriod">Service Period</Label>
+              <Select
+                value={agentForm.servicePeriod}
+                onValueChange={(value) => setAgentForm({ ...agentForm, servicePeriod: value })}
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1 Year">1 Year</SelectItem>
+                  <SelectItem value="2 Years">2 Years</SelectItem>
+                  <SelectItem value="3 Years">3 Years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setRegisteredAgentDialogOpen(false)} disabled={agentUpdating}>
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
-                {deleting ? "Deleting..." : "Delete Order"}
+              <Button
+                onClick={handleAssignRegisteredAgent}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={agentUpdating}
+              >
+                {agentUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <UserCheck className="w-4 h-4 mr-2" />
+                    Assign Agent
+                  </>
+                )}
               </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        {/* Add status update modals */}
-        <StatusUpdateModal
-          open={companyStatusDialogOpen}
-          onOpenChange={setCompanyStatusDialogOpen}
-          title="Update Company Status"
-          description="Change the overall operational status of this company"
-          currentStatus={company?.companyStatus || "pending"}
-          onUpdate={handleCompanyStatusUpdate}
-        />
+      <Dialog open={einDialogOpen} onOpenChange={handleCloseEinDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign EIN</DialogTitle>
+            <DialogDescription>
+              Assign a Employer Identification Number (EIN) for {company?.name}. This will update the company records
+              and mark the EIN milestone as complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="einInput">EIN (Employer Identification Number) *</Label>
+              <Input
+                id="einInput"
+                placeholder="12-3456789"
+                value={einValue}
+                onChange={(e) => setEinValue(e.target.value)}
+                className="h-10 font-mono"
+                maxLength={10}
+              />
+              <p className="text-xs text-slate-500">Format: XX-XXXXXXX (9 digits with hyphen)</p>
+            </div>
 
-        <StatusUpdateModal
-          open={registeredAgentStatusDialogOpen}
-          onOpenChange={setRegisteredAgentStatusDialogOpen}
-          title="Update Registered Agent Status"
-          description="Change the status of the registered agent assignment"
-          currentStatus={company?.registeredAgentStatus || "pending"}
-          onUpdate={handleRegisteredAgentStatusUpdate}
-        />
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> The EIN will be formatted automatically and the "EIN Successfully Processed"
+                milestone will be marked as complete.
+              </p>
+            </div>
 
-        <StatusUpdateModal
-          open={businessAddressStatusDialogOpen}
-          onOpenChange={setBusinessAddressStatusDialogOpen}
-          title="Update Business Address Status"
-          description="Change the status of the business mailing address"
-          currentStatus={company?.businessAddressStatus || "pending"}
-          onUpdate={handleBusinessAddressStatusUpdate}
-        />
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setEinDialogOpen(false)} disabled={einUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignEIN}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!einValue.trim() || einUpdating}
+              >
+                {einUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <Hash className="w-4 h-4 mr-2" />
+                    Assign EIN
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
-        <StatusUpdateModal
-          open={serviceStatusDialogOpen}
-          onOpenChange={setServiceStatusDialogOpen}
-          title="Update Service Status"
-          description="Change the overall service delivery status"
-          currentStatus={company?.serviceStatus || "pending"}
-          onUpdate={handleServiceStatusUpdate}
-        />
+      <Dialog open={itinDialogOpen} onOpenChange={handleCloseItinDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign ITIN</DialogTitle>
+            <DialogDescription>
+              Enter the ITIN (Individual Taxpayer Identification Number) for this company.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="itinInput">ITIN Number *</Label>
+              <Input
+                id="itinInput"
+                placeholder="9XX-XX-XXXX"
+                value={itinValue}
+                onChange={(e) => setItinValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <p className="text-xs text-slate-500">
+                Format: 9XX-XX-XXXX (starts with 9, followed by two digits from 50-65, 70-88, 90-92, 94-99)
+              </p>
+            </div>
 
-        {/* Manual Data Modals */}
-        <AdminManualDataModal
-          open={taxModalOpen}
-          onOpenChange={setTaxModalOpen}
-          companyId={company?._id}
-          dataType="tax"
-          currentData={{
-            formationDate: company?.formationDate,
-            ein: company?.ein,
-            businessId: company?.businessId,
-            taxClassification: company?.taxClassification,
-            annualReportFilingDate: company?.annualReportFilingDate,
-            irsFilingDate: company?.irsFilingDate,
-          }}
-          onUpdate={loadOrderData}
-        />
-        <AdminManualDataModal
-          open={agentModalOpen}
-          onOpenChange={setAgentModalOpen}
-          companyId={company?._id}
-          dataType="registered-agent"
-          currentData={company?.registeredAgent}
-          onUpdate={loadOrderData}
-        />
-        <AdminManualDataModal
-          open={addressModalOpen}
-          onOpenChange={setAddressModalOpen}
-          companyId={company?._id}
-          dataType="business-address"
-          currentData={company?.businessAddress}
-          onUpdate={loadOrderData}
-        />
-      </div>
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> The ITIN will be entered as provided.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setItinDialogOpen(false)} disabled={itinUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignITIN}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!itinValue.trim() || itinUpdating}
+              >
+                {itinUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <FileBarChart className="w-4 h-4 mr-2" />
+                    Assign ITIN
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={businessIdDialogOpen} onOpenChange={handleCloseBusinessIdDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign Business ID</DialogTitle>
+            <DialogDescription>
+              Assign a Business ID (State Filing Number) for {company?.name}. This identifier is issued by the state
+              after formation is complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="businessIdInput">Business ID / State Filing Number *</Label>
+              <Input
+                id="businessIdInput"
+                placeholder="L21000123456"
+                value={businessIdValue}
+                onChange={(e) => setBusinessIdValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <p className="text-xs text-slate-500">
+                Enter the business ID or filing number issued by the state (format varies by state)
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> This is the official state-issued identifier for the business entity, different
+                from the EIN.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setBusinessIdDialogOpen(false)} disabled={businessIdUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignBusinessId}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!businessIdValue.trim() || businessIdUpdating}
+              >
+                {businessIdUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <Building2 className="w-4 h-4 mr-2" />
+                    Assign Business ID
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={mailingAddressDialogOpen} onOpenChange={handleCloseMailingAddressDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Home className="w-5 h-5 text-[#dc2626]" />
+              Assign Mailing Address
+            </DialogTitle>
+            <DialogDescription>
+              Assign a mailing address to {company?.name}. This will be displayed on the user dashboard and company
+              page.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="street">Street Address *</Label>
+              <Input
+                id="street"
+                value={mailingAddress.street}
+                onChange={(e) => setMailingAddress({ ...mailingAddress, street: e.target.value })}
+                placeholder="123 Main Street"
+                disabled={addressUpdating}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="city">City *</Label>
+                <Input
+                  id="city"
+                  value={mailingAddress.city}
+                  onChange={(e) => setMailingAddress({ ...mailingAddress, city: e.target.value })}
+                  placeholder="New York"
+                  disabled={addressUpdating}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="state">State *</Label>
+                <Input
+                  id="state"
+                  value={mailingAddress.state}
+                  onChange={(e) => setMailingAddress({ ...mailingAddress, state: e.target.value })}
+                  placeholder="NY"
+                  maxLength={2}
+                  disabled={addressUpdating}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="zip">ZIP Code *</Label>
+              <Input
+                id="zip"
+                value={mailingAddress.zip}
+                onChange={(e) => setMailingAddress({ ...mailingAddress, zip: e.target.value })}
+                placeholder="10001"
+                maxLength={10}
+                disabled={addressUpdating}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMailingAddressDialogOpen(false)} disabled={addressUpdating}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssignMailingAddress}
+              disabled={addressUpdating}
+              className="bg-[#dc2626] hover:bg-[#b91c1c]"
+            >
+              {addressUpdating ? "Assigning..." : "Assign Mailing Address"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Company Details Modal */}
+      <CompanyDetailsModal
+        company={selectedCompany}
+        orderId={order?.id || ""}
+        isOpen={companyModalOpen && !!selectedCompany}
+        onClose={() => setCompanyModalOpen(false)}
+        passportDocuments={passportDocuments}
+        orderDate={order?.createdAt}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this order? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete Order"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add status update modals */}
+      <StatusUpdateModal
+        open={companyStatusDialogOpen}
+        onOpenChange={setCompanyStatusDialogOpen}
+        title="Update Company Status"
+        description="Change the overall operational status of this company"
+        currentStatus={company?.companyStatus || "pending"}
+        onUpdate={handleUpdateCompanyStatus}
+      />
+
+      <StatusUpdateModal
+        open={registeredAgentStatusDialogOpen}
+        onOpenChange={setRegisteredAgentStatusDialogOpen}
+        title="Update Registered Agent Status"
+        description="Change the status of the registered agent assignment"
+        currentStatus={company?.registeredAgentStatus || "pending"}
+        onUpdate={handleUpdateRegisteredAgentStatus}
+      />
+
+      <StatusUpdateModal
+        open={businessAddressStatusDialogOpen}
+        onOpenChange={setBusinessAddressStatusDialogOpen}
+        title="Update Business Address Status"
+        description="Change the status of the business mailing address"
+        currentStatus={company?.businessAddressStatus || "pending"}
+        onUpdate={handleUpdateBusinessAddressStatus}
+      />
+
+      <StatusUpdateModal
+        open={serviceStatusDialogOpen}
+        onOpenChange={setServiceStatusDialogOpen}
+        title="Update Service Status"
+        description="Change the overall service delivery status"
+        currentStatus={company?.serviceStatus || "pending"}
+        onUpdate={handleUpdateServiceStatus}
+      />
+
+      {/* Manual Data Modals */}
+      <AdminManualDataModal
+        open={taxModalOpen}
+        onOpenChange={setTaxModalOpen}
+        companyId={company?._id}
+        dataType="tax"
+        currentData={{
+          formationDate: company?.formationDate,
+          ein: company?.ein,
+          businessId: company?.businessId,
+          taxClassification: company?.taxClassification,
+          annualReportFilingDate: company?.annualReportFilingDate,
+          irsFilingDate: company?.irsFilingDate,
+        }}
+        onUpdate={loadOrderData}
+      />
+      <AdminManualDataModal
+        open={agentModalOpen}
+        onOpenChange={setAgentModalOpen}
+        companyId={company?._id}
+        dataType="registered-agent"
+        currentData={company?.registeredAgent}
+        onUpdate={loadOrderData}
+      />
+      <AdminManualDataModal
+        open={addressModalOpen}
+        onOpenChange={setAddressModalOpen}
+        companyId={company?._id}
+        dataType="business-address"
+        currentData={company?.businessAddress}
+        onUpdate={loadOrderData}
+      />
     </div>
   )
 }
