@@ -251,11 +251,12 @@ export async function POST(req: NextRequest) {
       type,
       state,
       status: status || "pending",
-      companyStatus: companyStatus || "pending",
+      companyStatus: companyStatus || "active",
       registeredAgentStatus: registeredAgentStatus || "pending",
       businessAddressStatus: businessAddressStatus || "pending",
       serviceStatus: serviceStatus || "pending",
       address: address || {},
+
       businessCategory: businessCategory || "",
       businessDescription: businessDescription || "",
       businessWebsite: businessWebsite || "",

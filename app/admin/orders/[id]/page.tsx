@@ -44,8 +44,8 @@ import {
   Trash2,
   Settings,
   Plus,
-  Receipt,
   DollarSign,
+  Users,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -2385,6 +2385,105 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Business Owners/Members section to display all checkout member data */}
+          {company?.members && company.members.length > 0 && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Business Owners / Members
+                </CardTitle>
+                <p className="text-sm text-slate-600 mt-1">Information from checkout</p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {company.members.map((member: any, index: number) => (
+                    <div key={member.id || index} className="border border-slate-200 rounded-lg p-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <h4 className="font-semibold text-slate-900 flex items-center gap-2">
+                          {member.name ||
+                            `${member.firstName || ""} ${member.middleName || ""} ${member.lastName || ""}`.trim() ||
+                            "Member " + (index + 1)}
+                          {member.isResponsiblePerson && (
+                            <span className="px-2 py-0.5 text-xs font-medium bg-blue-100 text-blue-700 rounded">
+                              Responsible Person
+                            </span>
+                          )}
+                        </h4>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        {member.email && (
+                          <div>
+                            <p className="text-slate-600">Email</p>
+                            <p className="text-slate-900 font-medium">{member.email}</p>
+                          </div>
+                        )}
+                        {member.phone && (
+                          <div>
+                            <p className="text-slate-600">Phone</p>
+                            <p className="text-slate-900 font-medium">{member.phone}</p>
+                          </div>
+                        )}
+                        {member.dateOfBirth && (
+                          <div>
+                            <p className="text-slate-600">Date of Birth</p>
+                            <p className="text-slate-900 font-medium">{member.dateOfBirth}</p>
+                          </div>
+                        )}
+                        {member.ssn && (
+                          <div>
+                            <p className="text-slate-600">SSN</p>
+                            <p className="text-slate-900 font-medium">***-**-{member.ssn.slice(-4)}</p>
+                          </div>
+                        )}
+                      </div>
+
+                      {(member.address || member.city || member.state) && (
+                        <div>
+                          <p className="text-sm text-slate-600">Address</p>
+                          <p className="text-sm text-slate-900">
+                            {[member.address, member.city, member.state, member.country, member.zip]
+                              .filter(Boolean)
+                              .join(", ")}
+                          </p>
+                        </div>
+                      )}
+
+                      {member.passportUrl && (
+                        <div>
+                          <p className="text-sm text-slate-600 mb-1">Passport Document</p>
+                          <a
+                            href={member.passportUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-2 text-sm text-[#880000] hover:underline"
+                          >
+                            <FileText className="w-4 h-4" />
+                            View Document
+                          </a>
+                        </div>
+                      )}
+
+                      {member.needsItin && (
+                        <div className="flex items-center gap-2 text-sm">
+                          <span className="px-2 py-1 bg-amber-100 text-amber-700 rounded text-xs font-medium">
+                            ITIN Requested
+                          </span>
+                          {member.itinAdded && (
+                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">
+                              ITIN Added
+                            </span>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -2473,10 +2572,8 @@ export default function OrderDetailPage() {
 
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Receipt className="w-5 h-5" />
-                Order Summary
-              </CardTitle>
+              <CardTitle className="text-lg font-semibold text-slate-900">Order Summary</CardTitle>
+              <p className="text-sm text-slate-600 mt-1">Key details about the order</p>
             </CardHeader>
             <CardContent>
               <div className="space-y-3">
