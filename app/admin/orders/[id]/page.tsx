@@ -594,13 +594,27 @@ export default function OrderDetailPage() {
     }
   }, [orderId, router, toast])
 
+  // Modified useEffect to include enhanced validation
   useEffect(() => {
-    if (isAuthenticated && orderId) {
-      loadOrderData()
-    } else if (!authLoading && !isAuthenticated) {
-      router.push("/login")
+    if (!isAuthenticated || authLoading || !orderId) {
+      return
     }
-  }, [orderId, isAuthenticated, authLoading, loadOrderData, router])
+
+    console.log("[v0] Order ID from params:", orderId)
+
+    if (!orderId || orderId === "undefined" || orderId === "null") {
+      setError("Invalid order ID")
+      setLoading(false)
+      toast({
+        title: "Error",
+        description: "Invalid order ID",
+        variant: "destructive",
+      })
+      return
+    }
+
+    loadOrderData() // Renamed fetchOrder to loadOrderData for consistency with original code
+  }, [isAuthenticated, authLoading, orderId, loadOrderData])
 
   // Milestones are now initialized directly in loadOrderData
 
