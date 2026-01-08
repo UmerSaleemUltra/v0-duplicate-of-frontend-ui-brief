@@ -365,7 +365,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSON.stringify({
+        body: JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -1337,8 +1337,8 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          statusType: "company",
-          status: newStatus,
+          statusType: "companyStatus",
+          statusValue: newStatus,
         }),
       })
 
@@ -1381,8 +1381,8 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          statusType: "registeredAgent",
-          status: newStatus,
+          statusType: "registeredAgentStatus",
+          statusValue: newStatus,
         }),
       })
 
@@ -1425,8 +1425,8 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          statusType: "businessAddress",
-          status: newStatus,
+          statusType: "businessAddressStatus",
+          statusValue: newStatus,
         }),
       })
 
@@ -1468,9 +1468,9 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSON.stringify({
-          statusType: "service",
-          status: newStatus,
+        body: JSON.stringify({
+          statusType: "serviceStatus",
+          statusValue: newStatus,
         }),
       })
 
