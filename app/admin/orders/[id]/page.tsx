@@ -28,6 +28,7 @@ import {
   ArrowLeft,
   Package,
   User,
+  Users,
   Building2,
   FileText,
   CheckCircle2,
@@ -183,6 +184,21 @@ export default function OrderDetailPage() {
 
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<any>(null)
+
+  const [editingCustomer, setEditingCustomer] = useState(false)
+  const [editingCompany, setEditingCompany] = useState(false)
+  const [customerForm, setCustomerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  })
+  const [companyForm, setCompanyForm] = useState({
+    name: "",
+    state: "",
+    businessCategory: "",
+    businessWebsite: "",
+    businessDescription: "",
+  })
 
   const hasEIN =
     company?.ein &&
@@ -472,13 +488,21 @@ export default function OrderDetailPage() {
       console.log("[v0] Found company:", foundCompany)
 
       // Find the user
-      const foundUser = allUsers.find((u: any) => String(u.id) === String(foundCompany.userId))
+      let foundUser = allUsers.find((u: any) => String(u.id) === String(foundCompany.userId))
 
-      console.log("[v0] Company userId:", foundCompany.userId)
-      console.log(
-        "[v0] All user IDs:",
-        allUsers.map((u: any) => u.id),
-      )
+      if (!foundUser && foundCompany.userId) {
+        console.warn("[v0] User not found for userId:", foundCompany.userId)
+        // Create a placeholder user from company members if available
+        foundUser = {
+          id: foundCompany.userId,
+          name: foundCompany.members?.[0]?.name || "User Not Found",
+          email: foundCompany.members?.[0]?.email || "no-email@example.com",
+          phone: foundCompany.members?.[0]?.phone || "N/A",
+          role: "client",
+          accountStatus: "inactive",
+        }
+      }
+
       console.log("[v0] Found user:", foundUser?.name || foundUser?.email)
 
       // Construct order data with company and user info
@@ -491,6 +515,7 @@ export default function OrderDetailPage() {
           id: foundCompany.userId,
           name: "Unknown",
           email: "N/A",
+          phone: "N/A",
         },
         passportDocuments: foundOrder.passportDocuments || [],
       }
@@ -503,10 +528,25 @@ export default function OrderDetailPage() {
         foundUser || {
           name: foundCompany.members?.[0]?.name || "Unknown User",
           email: foundCompany.members?.[0]?.email || "N/A",
+          phone: foundCompany.members?.[0]?.phone || "N/A",
         },
       )
       setUser(foundUser)
       setPassportDocuments(orderData.passportDocuments || [])
+
+      setCustomerForm({
+        name: foundUser?.name || foundCompany.members?.[0]?.name || "",
+        email: foundUser?.email || foundCompany.members?.[0]?.email || "",
+        phone: foundUser?.phone || foundCompany.members?.[0]?.phone || "",
+      })
+
+      setCompanyForm({
+        name: foundCompany?.name || "",
+        state: foundCompany?.state || "",
+        businessCategory: foundCompany?.businessCategory || "",
+        businessWebsite: foundCompany?.businessWebsite || "",
+        businessDescription: foundCompany?.businessDescription || "",
+      })
 
       if (orderData.company?.milestones) {
         console.log("[v0] Initializing milestones from company data:", orderData.company.milestones)
@@ -1914,6 +1954,110 @@ export default function OrderDetailPage() {
     })
   }
 
+  const handleSaveCustomer = async () => {
+    if (!customer?.id) {
+      toast({
+        title: "Error",
+        description: "Customer ID not found. Cannot save changes.",
+        variant: "destructive",
+      })
+      return
+    }
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/users/${customer.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: customerForm.name,
+          email: customerForm.email,
+          phone: customerForm.phone,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update customer information")
+      }
+
+      const result = await response.json()
+      setCustomer(result.data) // Update customer state with the latest data
+      setEditingCustomer(false) // Exit editing mode
+
+      toast({
+        title: "Customer Updated",
+        description: "Customer information has been successfully updated.",
+      })
+    } catch (error) {
+      console.error("[v0] Error saving customer info:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update customer information. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleSaveCompany = async () => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found. Cannot save changes.",
+        variant: "destructive",
+      })
+      return
+    }
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: companyForm.name,
+          state: companyForm.state,
+          businessCategory: companyForm.businessCategory,
+          businessWebsite: companyForm.businessWebsite,
+          businessDescription: companyForm.businessDescription,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update company information")
+      }
+
+      const result = await response.json()
+      setCompany(result.data) // Update company state with the latest data
+      setEditingCompany(false) // Exit editing mode
+
+      toast({
+        title: "Company Updated",
+        description: "Company information has been successfully updated.",
+      })
+    } catch (error) {
+      console.error("[v0] Error saving company info:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update company information. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* Header */}
@@ -1934,8 +2078,97 @@ export default function OrderDetailPage() {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-4">
-        {/* Main Content */}
+        {/* Main Content - Left Column */}
         <div className="lg:col-span-2 space-y-4">
+          {/* Customer Information Card */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Customer Information
+                </CardTitle>
+                {!editingCustomer && (
+                  <Button variant="ghost" size="sm" onClick={() => setEditingCustomer(true)} className="h-8 text-xs">
+                    <Settings className="w-4 h-4 mr-1" />
+                    Edit
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {editingCustomer ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Customer Name</Label>
+                    <Input
+                      value={customerForm.name}
+                      onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
+                      placeholder="Enter customer name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Email Address</Label>
+                    <Input
+                      type="email"
+                      value={customerForm.email}
+                      onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
+                      placeholder="Enter email"
+                    />
+                  </div>
+                  <div>
+                    <Label>Phone Number</Label>
+                    <Input
+                      value={customerForm.phone}
+                      onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleSaveCustomer} size="sm">
+                      Save Changes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingCustomer(false)
+                        setCustomerForm({
+                          name: customer?.name || "",
+                          email: customer?.email || "",
+                          phone: customer?.phone || "",
+                        })
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Customer Name</p>
+                    <p className="text-sm font-medium text-slate-900">{customer?.name || "N/A"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Email Address</p>
+                    <p className="text-sm font-medium text-slate-900">{customer?.email || "N/A"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Phone Number</p>
+                    <p className="text-sm font-medium text-slate-900">{customer?.phone || "N/A"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Account Status</p>
+                    <Badge variant={user?.accountStatus === "active" ? "default" : "secondary"}>
+                      {user?.accountStatus || "Incomplete"}
+                    </Badge>
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Order Status */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
@@ -2183,16 +2416,88 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Company Information */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                Company Information
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Company Information
+                </CardTitle>
+                {!editingCompany && (
+                  <Button variant="ghost" size="sm" onClick={() => setEditingCompany(true)} className="h-8 text-xs">
+                    <Settings className="w-4 h-4 mr-1" />
+                    Edit
+                  </Button>
+                )}
+              </div>
             </CardHeader>
             <CardContent>
-              {company ? (
+              {editingCompany ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Company Name</Label>
+                    <Input
+                      value={companyForm.name}
+                      onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
+                      placeholder="Enter company name"
+                    />
+                  </div>
+                  <div>
+                    <Label>State</Label>
+                    <Input
+                      value={companyForm.state}
+                      onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })}
+                      placeholder="Enter state"
+                    />
+                  </div>
+                  <div>
+                    <Label>Business Category</Label>
+                    <Input
+                      value={companyForm.businessCategory}
+                      onChange={(e) => setCompanyForm({ ...companyForm, businessCategory: e.target.value })}
+                      placeholder="Enter business category"
+                    />
+                  </div>
+                  <div>
+                    <Label>Business Website</Label>
+                    <Input
+                      value={companyForm.businessWebsite}
+                      onChange={(e) => setCompanyForm({ ...companyForm, businessWebsite: e.target.value })}
+                      placeholder="Enter website URL"
+                    />
+                  </div>
+                  <div>
+                    <Label>Business Description</Label>
+                    <Textarea
+                      value={companyForm.businessDescription}
+                      onChange={(e) => setCompanyForm({ ...companyForm, businessDescription: e.target.value })}
+                      placeholder="Enter business description"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleSaveCompany} size="sm">
+                      Save Changes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingCompany(false)
+                        setCompanyForm({
+                          name: company?.name || "",
+                          state: company?.state || "",
+                          businessCategory: company?.businessCategory || "",
+                          businessWebsite: company?.businessWebsite || "",
+                          businessDescription: company?.businessDescription || "",
+                        })
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
                 <div className="space-y-6">
                   {/* Basic Information Grid */}
                   <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
@@ -2236,191 +2541,207 @@ export default function OrderDetailPage() {
                       </div>
                     )}
                   </div>
+
+                  {/* Business Description */}
                   {company.businessDescription && (
                     <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
                       <p className="text-xs text-slate-600 mb-2">Business Description</p>
-                      {!company.businessDescription.toLowerCase().includes("provide a brief") &&
-                      !company.businessDescription.toLowerCase().includes("minimum") &&
-                      company.businessDescription.length > 20 ? (
-                        <p className="text-sm text-slate-700 leading-relaxed">{company.businessDescription}</p>
-                      ) : (
-                        <p className="text-sm text-slate-500 italic">No description provided</p>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Registered Agent */}
-                  {hasRegisteredAgent && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        <UserCheck className="w-4 h-4" />
-                        Registered Agent
-                      </h3>
-                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div>
-                            <p className="text-xs text-slate-600 mb-1">Agent Name</p>
-                            <p className="text-sm font-medium text-slate-900">{company.registeredAgent.name}</p>
-                          </div>
-                          {company.registeredAgent.company && (
-                            <div>
-                              <p className="text-xs text-slate-600 mb-1">Company</p>
-                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.company}</p>
-                            </div>
-                          )}
-                          <div className="md:col-span-2">
-                            <p className="text-xs text-slate-600 mb-1">Full Address</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {company.registeredAgent.address}
-                              {company.registeredAgent.city && `, ${company.registeredAgent.city}`}
-                              {company.registeredAgent.state && `, ${company.registeredAgent.state}`}
-                              {company.registeredAgent.zip && ` ${company.registeredAgent.zip}`}
-                            </p>
-                          </div>
-                          {company.registeredAgent.phone && (
-                            <div>
-                              <p className="text-xs text-slate-600 mb-1">Phone</p>
-                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.phone}</p>
-                            </div>
-                          )}
-                          {company.registeredAgent.email && (
-                            <div>
-                              <p className="text-xs text-slate-600 mb-1">Email</p>
-                              <p className="text-sm font-medium text-slate-900">{company.registeredAgent.email}</p>
-                            </div>
-                          )}
-                          <div>
-                            <p className="text-xs text-slate-600 mb-1">Service Period</p>
-                            <Badge variant="outline" className="text-xs">
-                              {company.registeredAgent.servicePeriod || "1 Year"}
-                            </Badge>
-                          </div>
-                          <div>
-                            <p className="text-xs text-slate-600 mb-1">Status</p>
-                            <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">
-                              {company.registeredAgent.status || "Active"}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {hasMailingAddress && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        <Home className="w-4 h-4" />
-                        Mailing Address
-                      </h3>
-                      <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                        <div className="grid md:grid-cols-2 gap-4">
-                          <div className="md:col-span-2">
-                            <p className="text-xs text-slate-600 mb-1">Complete Address</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {company.mailingAddress.street}
-                              <br />
-                              {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-slate-600 mb-1">Status</p>
-                            <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs">Assigned</Badge>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Tax Information */}
-                  {(hasEIN || company?.itin || company?.businessId) && (
-                    <div>
-                      <h3 className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                        <Hash className="w-4 h-4" />
-                        Tax & Business IDs
-                      </h3>
-                      <div className="grid md:grid-cols-3 gap-4">
-                        {hasEIN && (
-                          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                            <p className="text-xs text-slate-600 mb-1">EIN (Employer Identification Number)</p>
-                            <p className="text-sm font-mono font-medium text-slate-900">
-                              {formatEIN(company.ein, true)}
-                            </p>
-                          </div>
-                        )}
-                        {company?.itin && (
-                          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                            <p className="text-xs text-slate-600 mb-1">ITIN (Individual Taxpayer ID)</p>
-                            <p className="text-sm font-mono font-medium text-slate-900">{company.itin}</p>
-                          </div>
-                        )}
-                        {company?.businessId && (
-                          <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                            <p className="text-xs text-slate-600 mb-1">Business ID</p>
-                            <p className="text-sm font-mono font-medium text-slate-900">{company.businessId}</p>
-                          </div>
-                        )}
-                      </div>
+                      <p className="text-sm text-slate-900 leading-relaxed">{company.businessDescription}</p>
                     </div>
                   )}
                 </div>
-              ) : (
-                <p className="text-sm text-slate-600">No checkout data available</p>
               )}
+            </CardContent>
+          </Card>
+
+          {company?.members && company.members.length > 0 && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Business Owners / Members
+                </CardTitle>
+                <p className="text-sm text-slate-600 mt-1">
+                  {company.members.length} member{company.members.length !== 1 ? "s" : ""} registered
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {company.members.map((member: any, index: number) => (
+                    <div
+                      key={member.id || index}
+                      className={`p-4 rounded-lg border border-slate-200 ${member.responsiblePerson ? "bg-blue-50 border-blue-300" : "bg-slate-50"}`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-slate-900">{member.name || "N/A"}</h3>
+                            {member.responsiblePerson && (
+                              <Badge variant="secondary" className="mt-1 text-xs">
+                                Responsible Person
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          Member {index + 1}
+                        </Badge>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-3 mt-3">
+                        {member.email && (
+                          <div>
+                            <p className="text-xs text-slate-600">Email</p>
+                            <p className="text-sm font-medium text-slate-900">{member.email}</p>
+                          </div>
+                        )}
+                        {member.phone && (
+                          <div>
+                            <p className="text-xs text-slate-600">Phone</p>
+                            <p className="text-sm font-medium text-slate-900">{member.phone}</p>
+                          </div>
+                        )}
+                        {member.address && (
+                          <div className="sm:col-span-2">
+                            <p className="text-xs text-slate-600">Address</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {member.address}
+                              {member.city && `, ${member.city}`}
+                              {member.state && `, ${member.state}`}
+                              {member.zip && ` ${member.zip}`}
+                              {member.country && `, ${member.country}`}
+                            </p>
+                          </div>
+                        )}
+                        {member.ssn && (
+                          <div>
+                            <p className="text-xs text-slate-600">SSN/ITIN</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {member.ssn.length > 4 ? `***-**-${member.ssn.slice(-4)}` : "Provided"}
+                            </p>
+                          </div>
+                        )}
+                        {member.passportUrl && (
+                          <div>
+                            <p className="text-xs text-slate-600">Passport Document</p>
+                            <a
+                              href={member.passportUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
+                            >
+                              <FileText className="w-4 h-4" />
+                              View Document
+                            </a>
+                          </div>
+                        )}
+                        {member.itinAdded && (
+                          <div className="sm:col-span-2">
+                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800">
+                              ITIN Application Requested
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Receipt className="w-5 h-5" />
+                Order & Pricing Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Pricing Breakdown */}
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Package Price</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">State Filing Fee</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-slate-200">
+                    <p className="text-xs text-white mb-1">Total Amount</p>
+                    <p className="text-2xl font-bold text-white">
+                      ${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Payment Information */}
+                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-slate-600 mb-1">Payment Method</p>
+                      <p className="text-sm font-medium text-slate-900 capitalize">
+                        {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 mb-1">Payment Status</p>
+                      <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"}>
+                        {order?.paymentInfo?.status || "Pending"}
+                      </Badge>
+                    </div>
+                    {order?.paymentInfo?.transactionReference && (
+                      <div className="sm:col-span-2">
+                        <p className="text-xs text-slate-600 mb-1">Transaction Reference</p>
+                        <p className="text-sm font-medium text-slate-900 font-mono">
+                          {order.paymentInfo.transactionReference}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Order Date */}
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-600" />
+                    <div>
+                      <p className="text-xs text-slate-600">Order Date</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {order?.createdAt
+                          ? new Date(order.createdAt).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </CardContent>
           </Card>
         </div>
 
         {/* Right Sidebar */}
-        <div className="space-y-3">
-          {/* Customer Information */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Customer
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {customer ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Name</p>
-                    <p className="text-sm font-medium text-slate-900">{customer.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Email</p>
-                    <p className="text-sm font-medium text-slate-900">{customer.email}</p>
-                  </div>
-                  {customer.phone && (
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Phone</p>
-                      <p className="text-sm font-medium text-slate-900">{customer.phone}</p>
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    className="w-full h-10 bg-transparent"
-                    onClick={() => router.push(`/admin/customers/${customer.id}`)}
-                    disabled={
-                      statusUpdating ||
-                      agentUpdating ||
-                      addressUpdating ||
-                      einUpdating ||
-                      itinUpdating ||
-                      businessIdUpdating ||
-                      docUploading ||
-                      milestoneUpdating ||
-                      deleting
-                    }
-                  >
-                    View Customer Profile
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-sm text-slate-600">No customer information available</p>
-              )}
-            </CardContent>
-          </Card>
+        <div className="space-y-4">
+          {/* Customer Information (Moved to left column) */}
 
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
@@ -2690,58 +3011,8 @@ export default function OrderDetailPage() {
           </div>
         </div>
 
-        {/* Right Sidebar */}
-        <div className="space-y-3">
-          {/* Customer Information */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Customer
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {customer ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Name</p>
-                    <p className="text-sm font-medium text-slate-900">{customer.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Email</p>
-                    <p className="text-sm font-medium text-slate-900">{customer.email}</p>
-                  </div>
-                  {customer.phone && (
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Phone</p>
-                      <p className="text-sm font-medium text-slate-900">{customer.phone}</p>
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    className="w-full h-10 bg-transparent"
-                    onClick={() => router.push(`/admin/customers/${customer.id}`)}
-                    disabled={
-                      statusUpdating ||
-                      agentUpdating ||
-                      addressUpdating ||
-                      einUpdating ||
-                      itinUpdating ||
-                      businessIdUpdating ||
-                      docUploading ||
-                      milestoneUpdating ||
-                      deleting
-                    }
-                  >
-                    View Customer Profile
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-sm text-slate-600">No customer information available</p>
-              )}
-            </CardContent>
-          </Card>
-
+        {/* Right Sidebar - For Admin Actions and Status Management */}
+        <div className="space-y-4">
           {/* Admin Actions Card */}
           <Card className="shadow-sm border-slate-200">
             <CardHeader className="bg-slate-50/50 border-b">
@@ -2857,187 +3128,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          {/* Order Summary */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Order Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Order ID</span>
-                  <span className="text-sm font-mono font-medium text-slate-900">{order.id}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Order Date</span>
-                  <span className="text-sm font-medium text-slate-900">
-                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "Not set"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Status</span>
-                  <Badge className={getStatusColor(order.status)}>
-                    {getStatusIcon(order.status)}
-                    <span className="ml-1 capitalize">{order.status}</span>
-                  </Badge>
-                </div>
-
-                {order.purchasedAddons && order.purchasedAddons.length > 0 && (
-                  <div className="pt-3 border-t border-slate-200">
-                    <p className="text-sm font-medium text-slate-900 mb-2">Purchased Add-ons</p>
-                    <div className="space-y-2">
-                      {order.purchasedAddons.map((addon: any, index: number) => (
-                        <div key={index} className="flex items-center justify-between p-2 rounded-lg bg-slate-50">
-                          <span className="text-sm text-slate-700">{addon.name || addon.title}</span>
-                          <span className="text-sm font-semibold text-slate-900">${addon.price}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-
-                <div className="pt-3 border-t border-slate-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-900">Total Amount</span>
-                    <span className="text-lg font-semibold text-slate-900">
-                      ${order?.pricing?.total || order?.total || order?.amount || 149}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payment Receipt Section */}
-          {(order?.paymentInfo?.screenshot ||
-            order?.paymentInfo?.receiptUrl ||
-            order?.paymentScreenshot ||
-            order?.paymentReceipt ||
-            company?.paymentScreenshot ||
-            company?.paymentReceipt) && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Receipt className="w-5 h-5" />
-                  Payment Receipt
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {(order?.paymentInfo?.screenshot || order?.paymentScreenshot || company?.paymentScreenshot) && (
-                    <div>
-                      <p className="text-sm text-slate-600 mb-3">Payment Screenshot</p>
-                      <div className="relative rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
-                        <img
-                          src={order?.paymentInfo?.screenshot || order?.paymentScreenshot || company?.paymentScreenshot}
-                          alt="Payment Screenshot"
-                          className="w-full h-auto object-contain max-h-[400px]"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {(order?.paymentInfo?.receiptUrl || order?.paymentReceipt || company?.paymentReceipt) && (
-                    <div>
-                      <p className="text-sm text-slate-600 mb-2">Payment Receipt Document</p>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start h-11 hover:bg-slate-50 bg-transparent"
-                        onClick={() =>
-                          window.open(
-                            order?.paymentInfo?.receiptUrl || order?.paymentReceipt || company?.paymentReceipt,
-                            "_blank",
-                          )
-                        }
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        View Receipt Document
-                      </Button>
-                    </div>
-                  )}
-
-                  {order?.paymentInfo?.method && (
-                    <div className="pt-3 border-t border-slate-200">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-600">Payment Method</span>
-                        <span className="text-sm font-medium text-slate-900 capitalize">
-                          {order.paymentInfo.method
-                            ? order.paymentInfo.method.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
-                            : "N/A"}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {order?.paymentInfo?.paidAt && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">Payment Date</span>
-                      <span className="text-sm font-medium text-slate-900">
-                        {new Date(order.paymentInfo.paidAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Right Sidebar */}
-        <div className="space-y-3">
-          {/* Customer Information */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Customer
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {customer ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Name</p>
-                    <p className="text-sm font-medium text-slate-900">{customer.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Email</p>
-                    <p className="text-sm font-medium text-slate-900">{customer.email}</p>
-                  </div>
-                  {customer.phone && (
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Phone</p>
-                      <p className="text-sm font-medium text-slate-900">{customer.phone}</p>
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    className="w-full h-10 bg-transparent"
-                    onClick={() => router.push(`/admin/customers/${customer.id}`)}
-                    disabled={
-                      statusUpdating ||
-                      agentUpdating ||
-                      addressUpdating ||
-                      einUpdating ||
-                      itinUpdating ||
-                      businessIdUpdating ||
-                      docUploading ||
-                      milestoneUpdating ||
-                      deleting
-                    }
-                  >
-                    View Customer Profile
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-sm text-slate-600">No customer information available</p>
-              )}
-            </CardContent>
-          </Card>
-
+          {/* Status Management */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
