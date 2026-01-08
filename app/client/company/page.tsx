@@ -397,30 +397,9 @@ export default function CompanyPage() {
               <span className="text-slate-600 text-sm sm:text-base">Business Website</span>
               <span className="font-medium text-slate-900 text-sm sm:text-base">{companyData.website}</span>
             </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">Package Type</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base capitalize">
-                {companyData.packageType}
-              </span>
-            </div>
-            {hasEIN && (
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">EIN</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.ein}</span>
-              </div>
-            )}
-            {hasBusinessId && (
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">Business ID</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.businessId}</span>
-              </div>
-            )}
-            {hasITIN && (
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">ITIN</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.itin}</span>
-              </div>
-            )}
+         
+          
+          
             <div className="pt-2 border-t border-slate-100">
               <div className="text-slate-600 text-sm sm:text-base mb-2">Business Description</div>
               <p className="text-slate-900 text-sm sm:text-base leading-relaxed">{companyData.businessDescription}</p>
