@@ -387,7 +387,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSON.stringify({
+        body: JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -428,6 +428,18 @@ export default function OrderDetailPage() {
       return
     }
 
+    if (orderId.length !== 24) {
+      console.error("[v0] Order ID has invalid length:", orderId.length, "expected 24")
+      setError("Invalid order ID format")
+      setLoading(false)
+      toast({
+        title: "Error",
+        description: `Invalid order ID format. Expected 24 characters, got ${orderId.length}.`,
+        variant: "destructive",
+      })
+      return
+    }
+
     try {
       setLoading(true)
       setError(null)
@@ -440,9 +452,10 @@ export default function OrderDetailPage() {
       }
 
       console.log("[v0] Loading order data for ID:", orderId)
+      console.log("[v0] Token present:", !!token)
 
       const controller = new AbortController()
-      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 30000)
 
       const orderResponse = await fetch(`/api/orders/${orderId}`, {
         headers: {
@@ -456,14 +469,26 @@ export default function OrderDetailPage() {
       clearTimeout(timeoutId)
 
       console.log("[v0] Order response status:", orderResponse.status)
+      console.log("[v0] Order response ok:", orderResponse.ok)
 
       if (!orderResponse.ok) {
+        const errorData = await orderResponse.json().catch(() => ({ error: "Unknown error" }))
+        console.error("[v0] Order fetch error:", errorData)
+
         if (orderResponse.status === 404) {
           console.error("[v0] Order not found in database")
           setError("Order not found")
           toast({
             title: "Order Not Found",
-            description: "The order you're looking for doesn't exist.",
+            description: "The order you're looking for doesn't exist in the database.",
+            variant: "destructive",
+          })
+        } else if (orderResponse.status === 400) {
+          console.error("[v0] Bad request - invalid order ID format")
+          setError("Invalid order ID")
+          toast({
+            title: "Invalid Order ID",
+            description: errorData.details || "The order ID format is invalid.",
             variant: "destructive",
           })
         } else if (orderResponse.status === 401) {
@@ -471,16 +496,20 @@ export default function OrderDetailPage() {
           router.push("/login")
           return
         } else {
-          const errorText = await orderResponse.text()
-          console.error("[v0] Order fetch failed:", orderResponse.status, errorText)
-          throw new Error(`Failed to fetch order: ${orderResponse.status}`)
+          console.error("[v0] Order fetch failed with status:", orderResponse.status)
+          setError(`Failed to fetch order (${orderResponse.status})`)
+          toast({
+            title: "Error",
+            description: errorData.error || `Failed to fetch order (${orderResponse.status})`,
+            variant: "destructive",
+          })
         }
         setLoading(false)
         return
       }
 
       const orderData = await orderResponse.json()
-      console.log("[v0] Order API response:", orderData)
+      console.log("[v0] Order API response received:", orderData.success)
 
       if (!orderData.success || !orderData.data) {
         console.error("[v0] Invalid order data structure:", orderData)
@@ -614,11 +643,14 @@ export default function OrderDetailPage() {
     } catch (error) {
       console.error("[v0] Error loading order data:", error)
       if (error instanceof Error) {
+        console.error("[v0] Error name:", error.name)
+        console.error("[v0] Error message:", error.message)
+
         if (error.name === "AbortError") {
           setError("Request timeout")
           toast({
             title: "Timeout",
-            description: "Request took too long. Please try again.",
+            description: "Request took too long. Please check your connection and try again.",
             variant: "destructive",
           })
         } else {

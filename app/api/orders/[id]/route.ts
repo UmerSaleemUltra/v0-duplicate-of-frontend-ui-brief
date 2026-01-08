@@ -11,29 +11,54 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params
 
-    validateObjectId(id, "Order ID")
+    console.log("[v0] Fetching order with ID:", id)
+
+    try {
+      validateObjectId(id, "Order ID")
+    } catch (validationError) {
+      console.error("[v0] Order ID validation failed:", validationError)
+      return addSecurityHeaders(
+        NextResponse.json(
+          {
+            error: "Invalid Order ID format",
+            details: validationError instanceof Error ? validationError.message : "Unknown error",
+          },
+          { status: 400 },
+        ),
+      )
+    }
 
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
     if (!token) {
+      console.error("[v0] No auth token provided")
       return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
     }
 
     const decoded = verifyToken(token)
     if (!decoded) {
+      console.error("[v0] Invalid auth token")
       return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
     }
 
+    console.log("[v0] Auth successful, user:", decoded.userId, "role:", decoded.role)
+
     const { db } = await connectDB()
+
+    console.log("[v0] Connected to database, searching for order...")
 
     const orderDoc = await db.collection("orders").findOne({ _id: new ObjectId(id) })
 
     if (!orderDoc) {
+      console.error("[v0] Order not found in database for ID:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
+    console.log("[v0] Order found:", orderDoc._id.toString())
+
     if (decoded.role !== "admin" && orderDoc.userId?.toString() !== decoded.userId) {
+      console.error("[v0] User not authorized to view this order")
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
@@ -142,6 +167,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }))
     } catch (error) {}
 
+    console.log("[v0] Successfully prepared order response")
+
     const result = {
       success: true,
       data: {
@@ -178,9 +205,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     return addSecurityHeaders(NextResponse.json(result))
   } catch (error) {
-    console.log("[v0] Error in order GET:", error)
+    console.error("[v0] Error in order GET:", error)
     if (error instanceof Error) {
-      return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch order" }, { status: 500 }))
+      console.error("[v0] Error details:", error.message, error.stack)
+      return addSecurityHeaders(
+        NextResponse.json({ error: "Failed to fetch order", details: error.message }, { status: 500 }),
+      )
     }
     return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch order" }, { status: 500 }))
   }
