@@ -387,7 +387,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -1414,7 +1414,7 @@ export default function OrderDetailPage() {
     setNewMilestoneDescription("")
   }
 
-  // --- Status Update Handlers ---
+  // Status Update Handlers
   const handleUpdateCompanyStatus = async (newStatus: "pending" | "active" | "inactive") => {
     if (!company) return
 
@@ -1428,7 +1428,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Updating company status to:", newStatus)
 
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PUT",
+        method: "PATCH", // Changed from PUT to PATCH
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1455,6 +1455,8 @@ export default function OrderDetailPage() {
         title: "Status Updated",
         description: `Company status updated to ${newStatus}`,
       })
+
+      await loadOrderData()
     } catch (error) {
       console.error("[v0] Error updating company status:", error)
       toast({
@@ -1478,7 +1480,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Updating registered agent status to:", newStatus)
 
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PUT",
+        method: "PATCH", // Changed from PUT to PATCH
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1505,6 +1507,8 @@ export default function OrderDetailPage() {
         title: "Status Updated",
         description: `Registered agent status updated to ${newStatus}`,
       })
+
+      await loadOrderData()
     } catch (error) {
       console.error("[v0] Error updating registered agent status:", error)
       toast({
@@ -1528,7 +1532,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Updating business address status to:", newStatus)
 
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PUT",
+        method: "PATCH", // Changed from PUT to PATCH
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1555,6 +1559,8 @@ export default function OrderDetailPage() {
         title: "Status Updated",
         description: `Business address status updated to ${newStatus}`,
       })
+
+      await loadOrderData()
     } catch (error) {
       console.error("[v0] Error updating business address status:", error)
       toast({
@@ -1578,7 +1584,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Updating service status to:", newStatus)
 
       const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PUT",
+        method: "PATCH", // Changed from PUT to PATCH
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
@@ -1605,6 +1611,8 @@ export default function OrderDetailPage() {
         title: "Status Updated",
         description: `Service status updated to ${newStatus}`,
       })
+
+      await loadOrderData()
     } catch (error) {
       console.error("[v0] Error updating service status:", error)
       toast({
