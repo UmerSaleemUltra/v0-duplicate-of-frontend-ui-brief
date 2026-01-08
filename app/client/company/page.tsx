@@ -452,11 +452,6 @@ export default function CompanyPage() {
                       </span>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                      <span className="text-slate-600 text-sm sm:text-base">Ownership</span>
-                      <span className="font-medium text-slate-900 text-sm sm:text-base">{member.ownership}</span>
-                    </div>
-
                     {member.email && (
                       <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
                         <span className="text-slate-600 text-sm sm:text-base">Email</span>
@@ -504,24 +499,17 @@ export default function CompanyPage() {
         {/* Registered Agent */}
         {hasRegisteredAgent && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Registered Agent</h2>
+            <h2 className="text-2xl font-bold mb-6">Registered Agent</h2>
             <div className="space-y-3">
               <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">Agent Name</span>
+                <span className="text-slate-600 text-sm sm:text-base">Registered Agent</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base">
-                  {companyData.registeredAgent?.name}
+                  {companyData.registeredAgent?.company || companyData.registeredAgent?.name}
                 </span>
               </div>
-              {companyData.registeredAgent?.company && (
-                <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                  <span className="text-slate-600 text-sm sm:text-base">Company</span>
-                  <span className="font-medium text-slate-900 text-sm sm:text-base">
-                    {companyData.registeredAgent.company}
-                  </span>
-                </div>
-              )}
+
               <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">Full Address</span>
+                <span className="text-slate-600 text-sm sm:text-base">Address</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
                   {companyData.registeredAgent?.address}
                   {companyData.registeredAgent?.city && `, ${companyData.registeredAgent.city}`}
@@ -529,34 +517,37 @@ export default function CompanyPage() {
                   {companyData.registeredAgent?.zip && ` ${companyData.registeredAgent.zip}`}
                 </span>
               </div>
-              {companyData.registeredAgent?.phone && (
-                <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                  <span className="text-slate-600 text-sm sm:text-base">Phone</span>
-                  <span className="font-medium text-slate-900 text-sm sm:text-base">
-                    {companyData.registeredAgent.phone}
-                  </span>
-                </div>
-              )}
-              {companyData.registeredAgent?.email && (
-                <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                  <span className="text-slate-600 text-sm sm:text-base">Email</span>
-                  <span className="font-medium text-slate-900 text-sm sm:text-base">
-                    {companyData.registeredAgent.email}
-                  </span>
-                </div>
-              )}
+
               <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">Service Period</span>
+                <span className="text-slate-600 text-sm sm:text-base">Expiry Date</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base">
-                  {companyData.orderDate} -{" "}
                   {new Date(
                     new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                  ).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
                 </span>
               </div>
+
               <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
                 <span className="text-slate-600 text-sm sm:text-base">Status</span>
-                <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 w-fit">Active</Badge>
+                <span className="font-medium text-slate-900 text-sm sm:text-base">
+                  {(() => {
+                    const expiryDate = new Date(
+                      new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                    )
+                    const isActive = new Date() < expiryDate
+                    return (
+                      <Badge
+                        className={
+                          isActive
+                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                            : "bg-red-50 text-red-700 border-red-200"
+                        }
+                      >
+                        {isActive ? "Active" : "Expired"}
+                      </Badge>
+                    )
+                  })()}
+                </span>
               </div>
             </div>
           </div>
