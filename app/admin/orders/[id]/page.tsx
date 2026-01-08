@@ -331,6 +331,62 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleDeleteCustomMilestone = async (milestoneId: string) => {
+    if (!company) return
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      // Store previous state for rollback
+      const previousCompany = { ...company }
+
+      // Remove milestone from array
+      const updatedCustomMilestones = (company.customMilestones || []).filter((m: any) => m.id !== milestoneId)
+
+      // Optimistic update
+      setCompany({
+        ...company,
+        customMilestones: updatedCustomMilestones,
+      })
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customMilestones: updatedCustomMilestones,
+        }),
+      })
+
+      if (!response.ok) {
+        // Revert on failure
+        setCompany(previousCompany)
+        throw new Error("Failed to delete custom milestone")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+
+      toast({
+        title: "Milestone Deleted",
+        description: "Custom milestone has been removed successfully",
+      })
+    } catch (error) {
+      console.log("[v0] Error deleting custom milestone:", error)
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete custom milestone. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
   const loadOrderData = useCallback(async () => {
     if (!orderId) {
       setError("Invalid order ID")
@@ -1895,11 +1951,28 @@ export default function OrderDetailPage() {
                             )}
                           </div>
                         </div>
-                        {milestone.completed ? (
-                          <CheckCircle2 className="w-5 h-5 text-green-600" />
-                        ) : (
-                          <Clock className="w-5 h-5 text-slate-400" />
-                        )}
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCustomMilestoneToggle(milestone.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {milestone.completed ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <Clock className="w-5 h-5 text-slate-400" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteCustomMilestone(milestone.id)}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
                     ))}
                   </>
