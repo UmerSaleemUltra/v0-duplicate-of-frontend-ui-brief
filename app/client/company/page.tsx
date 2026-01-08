@@ -38,11 +38,13 @@ export default function CompanyPage() {
   const [orderDetails, setOrderDetails] = useState<any>(null)
 
   useEffect(() => {
-    const loadCompanyData = async () => {
+    const fetchCompanyData = async () => {
+      setLoading(true)
+      console.log("[v0] Fetching company details for:", selectedCompanyId)
+
       if (!selectedCompanyId) return
 
       try {
-        setLoading(true)
         setError(null)
 
         const token = authService.getToken()
@@ -174,7 +176,18 @@ export default function CompanyPage() {
       }
     }
 
-    loadCompanyData()
+    fetchCompanyData()
+
+    const handleRefresh = () => {
+      console.log("[v0] Company page refresh triggered")
+      fetchCompanyData()
+    }
+
+    window.addEventListener("client-dashboard-refresh", handleRefresh)
+
+    return () => {
+      window.removeEventListener("client-dashboard-refresh", handleRefresh)
+    }
   }, [selectedCompanyId])
 
   if (authLoading) {
