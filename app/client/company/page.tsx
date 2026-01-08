@@ -2,17 +2,7 @@
 
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ClientShell } from "@/components/client/client-shell"
-import {
-  Building2,
-  MapPin,
-  Calendar,
-  Users,
-  DollarSign,
-  ShoppingCart,
-  AlertCircle,
-  Building,
-  Package,
-} from "lucide-react"
+import { Building2, MapPin, Calendar, Users, DollarSign, AlertCircle, Building, Package } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
@@ -553,32 +543,88 @@ export default function CompanyPage() {
           </div>
         )}
 
-        {/* Purchased Add-ons Section */}
-        {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
-          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <div className="flex items-center gap-2 mb-4">
-              <ShoppingCart className="w-5 h-5 text-[#ff0d13]" />
-              <h2 className="text-base sm:text-lg font-semibold">Purchased Add-ons</h2>
+        {/* Business Address */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-2xl font-bold mb-6">Business Address</h2>
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Company Name</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
+                {companyData.businessName}
+              </span>
             </div>
 
-            <div className="grid sm:grid-cols-2 gap-3">
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Address</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
+                {companyData.registeredAgent?.address || "30 N Gould St Ste R"}
+                {companyData.registeredAgent?.city && `, ${companyData.registeredAgent.city}`}
+                {companyData.registeredAgent?.state && `, ${companyData.registeredAgent.state}`}
+                {companyData.registeredAgent?.zip && ` ${companyData.registeredAgent.zip}`}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Expiry Date</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {new Date(
+                  new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Status</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {(() => {
+                  const expiryDate = new Date(
+                    new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                  )
+                  const isActive = new Date() < expiryDate
+                  return (
+                    <Badge
+                      className={
+                        isActive
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : "bg-red-50 text-red-700 border-red-200"
+                      }
+                    >
+                      {isActive ? "Active" : "Expired"}
+                    </Badge>
+                  )
+                })()}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* Purchased Add-ons */}
+        {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <h2 className="text-2xl font-bold mb-6">Purchased Add-ons</h2>
+            <div className="space-y-3">
               {companyData.purchasedAddons.map((addon: any, index: number) => {
                 const addonName = typeof addon === "string" ? addon : addon.name || "Unknown Add-on"
-
                 const addonPrice = typeof addon === "object" && addon.price ? `$${addon.price}` : ""
-
                 const addonKey =
                   typeof addon === "string"
                     ? `${addon}-${index}`
                     : `${addon.serviceId || addon.name}-${addon.memberId || index}`
 
                 return (
-                  <div key={addonKey} className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-                    <div className="flex items-start justify-between gap-2 mb-2">
-                      <div className="font-medium text-slate-900 text-sm flex-1">{addonName}</div>
-                      {addonPrice && <div className="font-semibold text-[#ff0d13] text-sm">{addonPrice}</div>}
+                  <div key={addonKey}>
+                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                      <span className="text-slate-600 text-sm sm:text-base">{addonName}</span>
+                      <div className="flex items-center gap-2">
+                        {addonPrice && (
+                          <span className="font-semibold text-[#ff0d13] text-sm sm:text-base">{addonPrice}</span>
+                        )}
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Active</Badge>
+                      </div>
                     </div>
-                    <Badge className="bg-emerald-100 text-emerald-800 border-emerald-300 text-xs">Active</Badge>
+                    {index < companyData.purchasedAddons.length - 1 && (
+                      <div className="border-t border-slate-200 pt-1 mt-1" />
+                    )}
                   </div>
                 )
               })}
