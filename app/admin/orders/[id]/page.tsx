@@ -46,6 +46,7 @@ import {
   Trash2,
   Settings,
   Plus,
+  Receipt,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -2159,6 +2160,87 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Payment Receipt Section */}
+          {(order?.paymentInfo?.screenshot ||
+            order?.paymentInfo?.receiptUrl ||
+            order?.paymentScreenshot ||
+            order?.paymentReceipt ||
+            company?.paymentScreenshot ||
+            company?.paymentReceipt) && (
+            <Card className="bg-white border-slate-200">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Receipt className="w-5 h-5" />
+                  Payment Receipt
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {(order?.paymentInfo?.screenshot || order?.paymentScreenshot || company?.paymentScreenshot) && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-3">Payment Screenshot</p>
+                      <div className="relative rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
+                        <img
+                          src={order?.paymentInfo?.screenshot || order?.paymentScreenshot || company?.paymentScreenshot}
+                          alt="Payment Screenshot"
+                          className="w-full h-auto object-contain max-h-[400px]"
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  {(order?.paymentInfo?.receiptUrl || order?.paymentReceipt || company?.paymentReceipt) && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-2">Payment Receipt Document</p>
+                      <Button
+                        variant="outline"
+                        className="w-full justify-start h-11 hover:bg-slate-50 bg-transparent"
+                        onClick={() =>
+                          window.open(
+                            order?.paymentInfo?.receiptUrl || order?.paymentReceipt || company?.paymentReceipt,
+                            "_blank",
+                          )
+                        }
+                      >
+                        <FileText className="w-4 h-4 mr-2" />
+                        View Receipt Document
+                      </Button>
+                    </div>
+                  )}
+
+                  {order?.paymentInfo?.method && (
+                    <div className="pt-3 border-t border-slate-200">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-slate-600">Payment Method</span>
+                        <span className="text-sm font-medium text-slate-900 capitalize">
+                          {order.paymentInfo.method}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+
+                  {order?.paymentInfo?.transactionId && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Transaction ID</span>
+                      <span className="text-sm font-mono font-medium text-slate-900">
+                        {order.paymentInfo.transactionId}
+                      </span>
+                    </div>
+                  )}
+
+                  {order?.paymentInfo?.paidAt && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm text-slate-600">Payment Date</span>
+                      <span className="text-sm font-medium text-slate-900">
+                        {new Date(order.paymentInfo.paidAt).toLocaleDateString()}
+                      </span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
