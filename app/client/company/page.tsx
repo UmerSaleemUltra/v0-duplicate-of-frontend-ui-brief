@@ -297,8 +297,7 @@ export default function CompanyPage() {
 
         {/* Company Status */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
+ <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -382,6 +381,49 @@ export default function CompanyPage() {
                   {companyData.packageType}
                 </div>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Business Details */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Business Category</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">{companyData.businessCategory}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Business Website</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">{companyData.website}</span>
+            </div>
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Package Type</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base capitalize">
+                {companyData.packageType}
+              </span>
+            </div>
+            {hasEIN && (
+              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                <span className="text-slate-600 text-sm sm:text-base">EIN</span>
+                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.ein}</span>
+              </div>
+            )}
+            {hasBusinessId && (
+              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                <span className="text-slate-600 text-sm sm:text-base">Business ID</span>
+                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.businessId}</span>
+              </div>
+            )}
+            {hasITIN && (
+              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                <span className="text-slate-600 text-sm sm:text-base">ITIN</span>
+                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.itin}</span>
+              </div>
+            )}
+            <div className="pt-2 border-t border-slate-100">
+              <div className="text-slate-600 text-sm sm:text-base mb-2">Business Description</div>
+              <p className="text-slate-900 text-sm sm:text-base leading-relaxed">{companyData.businessDescription}</p>
             </div>
           </div>
         </div>
