@@ -553,7 +553,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           orders: updatedOrders,
         }),
       })
@@ -625,7 +625,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           milestones: optimisticMilestones,
         }),
       })
@@ -736,7 +736,7 @@ export default function OrderDetailPage() {
             Authorization: `Bearer ${authService.getToken()}`,
             "Content-Type": "application/json",
           },
-          body: JSON.JSONstringify({ milestones: updatedMilestones }),
+          body: JSON.stringify({ milestones: updatedMilestones }),
         })
 
         if (milestoneUpdateResponse.ok) {
@@ -802,7 +802,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           registeredAgent: {
             name: agentForm.name.trim(),
             company: agentForm.company.trim(),
@@ -908,7 +908,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           mailingAddress: {
             street: mailingAddress.street.trim(),
             city: mailingAddress.city.trim(),
@@ -972,7 +972,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           ein: einValue.trim(),
           milestones: {
             ...milestones,
@@ -1029,7 +1029,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           itin: itinValue.trim(),
           // ITIN assignment doesn't directly correspond to a core milestone,
           // but could be tied to a custom one if needed.
@@ -1083,7 +1083,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           businessId: businessIdValue.trim(),
           milestones: {
             ...milestones,
@@ -1139,7 +1139,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           [field]: input.value,
         }),
       })
@@ -1352,7 +1352,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           ein: null,
           milestones: {
             ...milestones,
@@ -1402,7 +1402,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           itin: null,
         }),
       })
@@ -1447,7 +1447,7 @@ export default function OrderDetailPage() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${authService.getToken()}`,
         },
-        body: JSON.JSONstringify({
+        body: JSON.stringify({
           businessId: null,
           milestones: {
             ...milestones,
@@ -2009,7 +2009,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Sidebar */}
-        <div className="space-y-8">
+        <div className="space-y-6">
           {/* Customer Information */}
           <Card className="bg-white border-slate-200">
             <CardHeader>
