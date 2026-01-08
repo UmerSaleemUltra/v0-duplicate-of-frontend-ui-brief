@@ -388,43 +388,91 @@ export default function CompanyPage() {
 
         {/* Business Details */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">Business Category</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base">{companyData.businessCategory}</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">Business Website</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base">{companyData.website}</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">Package Type</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base capitalize">
-                {companyData.packageType}
-              </span>
-            </div>
-            {hasEIN && (
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">EIN</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.ein}</span>
+          <h2 className="text-2xl font-bold text-slate-900 mb-6">Business Details</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-            )}
-            {hasBusinessId && (
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">Business ID</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.businessId}</span>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Business Name</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base break-words">
+                  {companyData.businessName}
+                </div>
               </div>
-            )}
-            {hasITIN && (
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">ITIN</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.itin}</span>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-            )}
-            <div className="pt-2 border-t border-slate-100">
-              <div className="text-slate-600 text-sm sm:text-base mb-2">Business Description</div>
-              <p className="text-slate-900 text-sm sm:text-base leading-relaxed">{companyData.businessDescription}</p>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Order Date</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.orderDate}</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">State of Formation</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.state}</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Entity Type</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">
+                  {companyData.entityType === "LLC" ? "Limited Liability Company (LLC)" : "S Corporation"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">EIN Number</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">
+                  {companyData.ein || "Not Assigned"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Business ID</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">
+                  {companyData.businessId || "Not Assigned"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Status</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">
+                  {orderDetails?.status || companyData.status || "Active"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Package Type</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base capitalize">
+                  {companyData.packageType}
+                </div>
+              </div>
             </div>
           </div>
         </div>
