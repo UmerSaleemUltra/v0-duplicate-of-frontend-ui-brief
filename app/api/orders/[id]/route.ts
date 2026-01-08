@@ -7,9 +7,9 @@ import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 import type { Company, User } from "@/lib/types"
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id } = params
+    const { id } = await params
 
     console.log("[v0] Fetching order with ID:", id)
 
@@ -397,9 +397,15 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const token = req.headers.get("authorization")?.replace("Bearer ", "")
+    const { id } = await params
+
+    validateObjectId(id, "Order ID")
+
+    const authHeader = req.headers.get("authorization")
+    const token = authHeader?.replace("Bearer ", "")
+
     if (!token) {
       return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
     }
@@ -409,13 +415,14 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
-    const { id } = params
-    if (!id || !validateObjectId(id)) {
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid order ID" }, { status: 400 }))
-    }
-
     const body = await req.json()
     const { db } = await connectDB()
+
+    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+
+    if (!order) {
+      return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
+    }
 
     const updateData: any = {}
 
