@@ -569,32 +569,6 @@ export default function CompanyPage() {
             </div>
           </div>
         )}
-
-        {/* ITIN Information Section */}
-        {companyData.itin && (
-          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
-                <FileText className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
-              </div>
-              <div>
-                <h2 className="text-base sm:text-lg font-semibold">ITIN Information</h2>
-                <p className="text-slate-600 text-xs sm:text-sm">Individual Taxpayer Identification Number</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">ITIN Number</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base ">{companyData.itin}</span>
-              </div>
-              <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
-                <p className="text-sm text-emerald-800">
-                  Your ITIN has been successfully processed and assigned to your company.
-                </p>
-              </div>
-            </div>
-          </div>
-        )}
       </div>
     </ClientShell>
   )
