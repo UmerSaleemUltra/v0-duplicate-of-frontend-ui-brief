@@ -485,13 +485,6 @@ export default function CompanyPage() {
           <h2 className="text-base sm:text-lg font-semibold mb-4">Tax & Compliance Information</h2>
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">EIN</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base">
-                {companyData.ein || "Not yet assigned"}
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
               <span className="text-slate-600 text-sm sm:text-base">Tax Classification</span>
               <span className="font-medium text-slate-900 text-sm sm:text-base">
                 {companyData.entityType === "LLC"
@@ -651,25 +644,10 @@ export default function CompanyPage() {
             <div className="space-y-3">
               {companyData.purchasedAddons.map((addon: any, index: number) => (
                 <div key={index}>
-                  <div className="space-y-2">
-                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                      <span className="text-slate-600 text-sm sm:text-base">Service</span>
-                      <span className="font-medium text-slate-900 text-sm sm:text-base">{addon.name}</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                      <span className="text-slate-600 text-sm sm:text-base">Price</span>
-                      <span className="font-medium text-slate-900 text-sm sm:text-base">${addon.price}</span>
-                    </div>
-                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                      <span className="text-slate-600 text-sm sm:text-base">Status</span>
-                      <div className="flex justify-start sm:justify-end">
-                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Active</Badge>
-                      </div>
-                    </div>
-                    {index < companyData.purchasedAddons.length - 1 && (
-                      <div className="border-t border-slate-200 pt-1 mt-1" />
-                    )}
+                  <div className="py-2">
+                    <span className="font-medium text-slate-900 text-sm sm:text-base">{addon.name}</span>
                   </div>
+                  {index < companyData.purchasedAddons.length - 1 && <div className="border-t border-slate-200" />}
                 </div>
               ))}
             </div>
