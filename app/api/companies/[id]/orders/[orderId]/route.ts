@@ -5,6 +5,83 @@ import { ObjectId } from "mongodb"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string; orderId: string }> }) {
+  try {
+    const authHeader = req.headers.get("authorization")
+    const token = authHeader?.replace("Bearer ", "")
+
+    if (!token) {
+      return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
+    }
+
+    const decoded = verifyToken(token)
+    if (!decoded) {
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
+    }
+
+    const { id, orderId } = await params
+    const body = await req.json()
+
+    const { db } = await connectDB()
+
+    let companyObjectId
+    try {
+      companyObjectId = new ObjectId(id)
+    } catch (error) {
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
+    }
+
+    const company = await db.collection("companies").findOne({ _id: companyObjectId })
+
+    if (!company) {
+      return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
+    }
+
+    // Check authorization - must be admin or the order owner
+    if (decoded.role !== "admin" && decoded.userId !== company.userId) {
+      return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 403 }))
+    }
+
+    const orders = company.orders || []
+    const orderIndex = orders.findIndex((order: any) => order.id === orderId)
+
+    if (orderIndex === -1) {
+      return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
+    }
+
+    // Update the order with new data
+    const updatedOrder = {
+      ...orders[orderIndex],
+      ...body,
+      updatedAt: new Date().toISOString(),
+    }
+
+    orders[orderIndex] = updatedOrder
+
+    await db.collection("companies").updateOne(
+      { _id: companyObjectId },
+      {
+        $set: {
+          orders: orders,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    )
+
+    broadcastUpdate("companies", "updated", { id: id, userId: company.userId })
+
+    return addSecurityHeaders(
+      NextResponse.json({
+        success: true,
+        order: updatedOrder,
+      }),
+    )
+  } catch (error) {
+    console.error("[v0] Error updating order:", error)
+    return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
+  }
+}
+
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string; orderId: string }> }) {
   try {
     const authHeader = req.headers.get("authorization")
