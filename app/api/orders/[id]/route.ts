@@ -13,52 +13,131 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     console.log("[v0] GET /api/orders/[id] - Order ID:", id)
 
-    validateObjectId(id, "Order ID")
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      console.log("[v0] Invalid order ID format")
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 }))
+    }
+
+    // Only validate if it looks like a MongoDB ObjectId
+    if (id.length === 24) {
+      try {
+        validateObjectId(id, "Order ID")
+      } catch (validationError) {
+        console.log("[v0] ObjectId validation failed:", validationError)
+        return addSecurityHeaders(NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 }))
+      }
+    }
 
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
     if (!token) {
+      console.log("[v0] No auth token provided")
       return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
     }
 
     const decoded = verifyToken(token)
     if (!decoded) {
+      console.log("[v0] Invalid token")
       return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
     }
 
-    const { db } = await connectDB()
+    console.log("[v0] Auth verified for user:", decoded.userId, "role:", decoded.role)
 
-    let orderDoc = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+    const { db } = await connectDB()
+    console.log("[v0] Database connected")
+
+    let orderDoc = null
+    let orderSource = null
+
+    try {
+      orderDoc = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+      if (orderDoc) {
+        orderSource = "orders collection"
+        console.log("[v0] Order found in orders collection")
+      }
+    } catch (error) {
+      console.log("[v0] Error searching orders collection:", error)
+    }
 
     if (!orderDoc) {
       console.log("[v0] Order not found in orders collection, searching companies...")
-      const companyWithOrder = await db.collection("companies").findOne({
-        "orders._id": new ObjectId(id),
-      })
+      try {
+        // Search for embedded order by string ID first
+        let companyWithOrder = await db.collection("companies").findOne({
+          "orders.id": id,
+        })
 
-      if (companyWithOrder && companyWithOrder.orders) {
-        const embeddedOrder = companyWithOrder.orders.find((order: any) => order._id.toString() === id)
+        // If not found, try with ObjectId
+        if (!companyWithOrder) {
+          companyWithOrder = await db.collection("companies").findOne({
+            "orders._id": new ObjectId(id),
+          })
+        }
 
-        if (embeddedOrder) {
-          console.log("[v0] Found embedded order in company:", companyWithOrder._id.toString())
-          orderDoc = {
-            ...embeddedOrder,
-            companyId: companyWithOrder._id,
-            userId: companyWithOrder.userId || embeddedOrder.userId,
+        // If still not found, try string comparison
+        if (!companyWithOrder) {
+          const companies = await db
+            .collection("companies")
+            .find({ orders: { $exists: true, $ne: [] } })
+            .toArray()
+
+          for (const company of companies) {
+            if (company.orders && Array.isArray(company.orders)) {
+              const embeddedOrder = company.orders.find((order: any) => {
+                const orderId = order._id?.toString() || order.id?.toString() || order.id
+                return orderId === id
+              })
+
+              if (embeddedOrder) {
+                companyWithOrder = company
+                break
+              }
+            }
           }
         }
+
+        if (companyWithOrder && companyWithOrder.orders) {
+          console.log("[v0] Found company with embedded orders:", companyWithOrder._id.toString())
+
+          const embeddedOrder = companyWithOrder.orders.find((order: any) => {
+            const orderId = order._id?.toString() || order.id?.toString() || order.id
+            return orderId === id
+          })
+
+          if (embeddedOrder) {
+            console.log("[v0] Found embedded order in company")
+            orderSource = "embedded in companies collection"
+            orderDoc = {
+              ...embeddedOrder,
+              _id: embeddedOrder._id || embeddedOrder.id,
+              companyId: companyWithOrder._id,
+              userId: companyWithOrder.userId || embeddedOrder.userId,
+            }
+          }
+        }
+      } catch (error) {
+        console.log("[v0] Error searching companies collection:", error)
       }
     }
 
     if (!orderDoc) {
       console.log("[v0] Order not found in either collection")
-      return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
+      return addSecurityHeaders(
+        NextResponse.json(
+          {
+            error: "Order not found",
+            details: `No order with ID ${id} found in database`,
+          },
+          { status: 404 },
+        ),
+      )
     }
 
-    console.log("[v0] Order found:", orderDoc._id.toString())
+    console.log("[v0] Order found:", orderDoc._id?.toString() || orderDoc.id, "from", orderSource)
 
     if (decoded.role !== "admin" && orderDoc.userId?.toString() !== decoded.userId) {
+      console.log("[v0] Access forbidden - user:", decoded.userId, "order user:", orderDoc.userId?.toString())
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
@@ -174,7 +253,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const result = {
       success: true,
       data: {
-        id: orderDoc._id.toString(),
+        id: orderDoc._id?.toString() || orderDoc.id,
         userId: orderDoc.userId?.toString(),
         companyId: orderDoc.companyId?.toString(),
         orderType: orderDoc.orderType,
@@ -209,7 +288,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   } catch (error) {
     console.log("[v0] Error in order GET:", error)
     if (error instanceof Error) {
-      return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch order" }, { status: 500 }))
+      console.log("[v0] Error message:", error.message)
+      console.log("[v0] Error stack:", error.stack)
+      return addSecurityHeaders(
+        NextResponse.json(
+          {
+            error: "Failed to fetch order",
+            details: error.message,
+          },
+          { status: 500 },
+        ),
+      )
     }
     return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch order" }, { status: 500 }))
   }
