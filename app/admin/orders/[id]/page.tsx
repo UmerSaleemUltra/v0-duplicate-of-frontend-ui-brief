@@ -1657,7 +1657,7 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -1675,11 +1675,11 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-8">
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Content */}
-        <div className="lg:col-span-2 space-y-8">
+        <div className="lg:col-span-2 space-y-6">
           {/* Order Status */}
-          <Card className="bg-white border-slate-200">
+          <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                 <Package className="w-5 h-5" />
@@ -1728,7 +1728,8 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-slate-200">
+          {/* Formation Progress */}
+          <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                 <FileCheck className="w-5 h-5" />
@@ -1755,79 +1756,150 @@ export default function OrderDetailPage() {
               </div>
 
               {/* Milestone List */}
-              <div className="space-y-3">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+              <div className="space-y-2">
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.orderProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
                   <div className="flex items-center gap-3">
                     <Package className={`w-5 h-5 ${milestones.orderProcessed ? "text-green-600" : "text-slate-400"}`} />
-                    <span className="text-sm font-medium">Order Successfully Processed</span>
+                    <span
+                      className={`text-sm font-medium ${milestones.orderProcessed ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      Order Successfully Processed
+                    </span>
                   </div>
-                  {milestones.orderProcessed && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                  {milestones.orderProcessed ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.registeredAgentAssigned ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
                   <div className="flex items-center gap-3">
                     <UserCheck
                       className={`w-5 h-5 ${milestones.registeredAgentAssigned ? "text-green-600" : "text-slate-400"}`}
                     />
-                    <span className="text-sm font-medium">Registered Agent Assigned</span>
+                    <span
+                      className={`text-sm font-medium ${milestones.registeredAgentAssigned ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      Registered Agent Assigned
+                    </span>
                   </div>
-                  {milestones.registeredAgentAssigned && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                  {milestones.registeredAgentAssigned ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.mailingAddressIssued ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
                   <div className="flex items-center gap-3">
                     <Home
                       className={`w-5 h-5 ${milestones.mailingAddressIssued ? "text-green-600" : "text-slate-400"}`}
                     />
-                    <span className="text-sm font-medium">Business Mailing Address Issued</span>
+                    <span
+                      className={`text-sm font-medium ${milestones.mailingAddressIssued ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      Business Mailing Address Issued
+                    </span>
                   </div>
-                  {milestones.mailingAddressIssued && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                  {milestones.mailingAddressIssued ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.formationCompleted ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
                   <div className="flex items-center gap-3">
                     <FileCheck
                       className={`w-5 h-5 ${milestones.formationCompleted ? "text-green-600" : "text-slate-400"}`}
                     />
-                    <span className="text-sm font-medium">Company Formation Completed</span>
+                    <span
+                      className={`text-sm font-medium ${milestones.formationCompleted ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      Company Formation Completed
+                    </span>
                   </div>
-                  {milestones.formationCompleted && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                  {milestones.formationCompleted ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.einProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
                   <div className="flex items-center gap-3">
                     <HashIcon className={`w-5 h-5 ${milestones.einProcessed ? "text-green-600" : "text-slate-400"}`} />
-                    <span className="text-sm font-medium">EIN Successfully Processed</span>
+                    <span
+                      className={`text-sm font-medium ${milestones.einProcessed ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      EIN Successfully Processed
+                    </span>
                   </div>
-                  {milestones.einProcessed && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                  {milestones.einProcessed ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
                 </div>
-                <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.boiReportFiled ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
                   <div className="flex items-center gap-3">
                     <FileBarChart
                       className={`w-5 h-5 ${milestones.boiReportFiled ? "text-green-600" : "text-slate-400"}`}
                     />
-                    <span className="text-sm font-medium">BOI Report Filed</span>
+                    <span
+                      className={`text-sm font-medium ${milestones.boiReportFiled ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      BOI Report Filed
+                    </span>
                   </div>
-                  {milestones.boiReportFiled && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                  {milestones.boiReportFiled ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
                 </div>
 
                 {company?.customMilestones && company.customMilestones.length > 0 && (
                   <>
                     <div className="pt-3 border-t border-slate-200">
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
                         Custom Milestones
                       </p>
                     </div>
                     {company.customMilestones.map((milestone) => (
-                      <div key={milestone.id} className="flex items-center justify-between p-3 rounded-lg bg-slate-50">
+                      <div
+                        key={milestone.id}
+                        className={`flex items-center justify-between p-3 rounded-lg ${milestone.completed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                      >
                         <div className="flex items-center gap-3">
                           <FileCheck
                             className={`w-5 h-5 ${milestone.completed ? "text-green-600" : "text-slate-400"}`}
                           />
                           <div>
-                            <span className="text-sm font-medium">{milestone.title}</span>
+                            <span
+                              className={`text-sm font-medium ${milestone.completed ? "text-slate-900" : "text-slate-600"}`}
+                            >
+                              {milestone.title}
+                            </span>
                             {milestone.description && (
                               <p className="text-xs text-slate-500 mt-0.5">{milestone.description}</p>
                             )}
                           </div>
                         </div>
-                        {milestone.completed && <CheckCircle2 className="w-5 h-5 text-green-600" />}
+                        {milestone.completed ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-600" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-slate-400" />
+                        )}
                       </div>
                     ))}
                   </>
@@ -1836,7 +1908,8 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-slate-200">
+          {/* Company Information */}
+          <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                 <Building2 className="w-5 h-5" />
@@ -2022,10 +2095,10 @@ export default function OrderDetailPage() {
           </Card>
         </div>
 
-        {/* Sidebar */}
+        {/* Right Sidebar */}
         <div className="space-y-4">
           {/* Customer Information */}
-          <Card className="bg-white border-slate-200">
+          <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                 <User className="w-5 h-5" />
@@ -2187,7 +2260,7 @@ export default function OrderDetailPage() {
           </Card>
 
           {/* Order Summary */}
-          <Card className="bg-white border-slate-200">
+          <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                 <FileText className="w-5 h-5" />
@@ -2232,309 +2305,7 @@ export default function OrderDetailPage() {
             order?.paymentReceipt ||
             company?.paymentScreenshot ||
             company?.paymentReceipt) && (
-            <Card className="bg-white border-slate-200">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Receipt className="w-5 h-5" />
-                  Payment Receipt
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {(order?.paymentInfo?.screenshot || order?.paymentScreenshot || company?.paymentScreenshot) && (
-                    <div>
-                      <p className="text-sm text-slate-600 mb-3">Payment Screenshot</p>
-                      <div className="relative rounded-lg overflow-hidden border border-slate-200 bg-slate-50">
-                        <img
-                          src={order?.paymentInfo?.screenshot || order?.paymentScreenshot || company?.paymentScreenshot}
-                          alt="Payment Screenshot"
-                          className="w-full h-auto object-contain max-h-[400px]"
-                        />
-                      </div>
-                    </div>
-                  )}
-
-                  {(order?.paymentInfo?.receiptUrl || order?.paymentReceipt || company?.paymentReceipt) && (
-                    <div>
-                      <p className="text-sm text-slate-600 mb-2">Payment Receipt Document</p>
-                      <Button
-                        variant="outline"
-                        className="w-full justify-start h-11 hover:bg-slate-50 bg-transparent"
-                        onClick={() =>
-                          window.open(
-                            order?.paymentInfo?.receiptUrl || order?.paymentReceipt || company?.paymentReceipt,
-                            "_blank",
-                          )
-                        }
-                      >
-                        <FileText className="w-4 h-4 mr-2" />
-                        View Receipt Document
-                      </Button>
-                    </div>
-                  )}
-
-                  {order?.paymentInfo?.method && (
-                    <div className="pt-3 border-t border-slate-200">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm text-slate-600">Payment Method</span>
-                        <span className="text-sm font-medium text-slate-900">
-                          {order.paymentInfo.method
-                            .replace(/_/g, " ")
-                            .split(" ")
-                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                            .join(" ")}
-                        </span>
-                      </div>
-                    </div>
-                  )}
-
-                  {order?.paymentInfo?.transactionId && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">Transaction ID</span>
-                      <span className="text-sm font-mono font-medium text-slate-900">
-                        {order.paymentInfo.transactionId
-                          .replace(/_/g, "-")
-                          .split("-")
-                          .map((part, index) =>
-                            index === 0
-                              ? part
-                                  .split("")
-                                  .map((char, i, arr) =>
-                                    i === 0 || arr[i - 1] === "_" ? char.toUpperCase() : char.toLowerCase(),
-                                  )
-                                  .join("")
-                              : part,
-                          )
-                          .join("-")}
-                      </span>
-                    </div>
-                  )}
-
-                  {order?.paymentInfo?.paidAt && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">Payment Date</span>
-                      <span className="text-sm font-medium text-slate-900">
-                        {new Date(order.paymentInfo.paidAt).toLocaleDateString()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Sidebar */}
-        <div className="space-y-4">
-          {/* Customer Information */}
-          <Card className="bg-white border-slate-200">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Customer
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              {customer ? (
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Name</p>
-                    <p className="text-sm font-medium text-slate-900">{customer.name}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Email</p>
-                    <p className="text-sm font-medium text-slate-900">{customer.email}</p>
-                  </div>
-                  {customer.phone && (
-                    <div>
-                      <p className="text-sm text-slate-600 mb-1">Phone</p>
-                      <p className="text-sm font-medium text-slate-900">{customer.phone}</p>
-                    </div>
-                  )}
-                  <Button
-                    variant="outline"
-                    className="w-full h-10 bg-transparent"
-                    onClick={() => router.push(`/admin/customers/${customer.id}`)}
-                    disabled={
-                      statusUpdating ||
-                      agentUpdating ||
-                      addressUpdating ||
-                      einUpdating ||
-                      itinUpdating ||
-                      businessIdUpdating ||
-                      docUploading ||
-                      milestoneUpdating ||
-                      deleting
-                    }
-                  >
-                    View Customer Profile
-                  </Button>
-                </div>
-              ) : (
-                <p className="text-sm text-slate-600">No customer information available</p>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Admin Actions Card */}
-          <Card className="shadow-sm border-slate-200">
-            <CardHeader className="bg-slate-50/50 border-b">
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Admin Actions
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <Button
-                  onClick={() => setCustomMilestoneDialogOpen(true)}
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Milestone
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setRegisteredAgentDialogOpen(true)}
-                  disabled={agentUpdating || !company}
-                >
-                  <UserCheck className="w-4 h-4" />
-                  <span className="font-medium">Assign Registered Agent</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMailingAddressDialogOpen(true)}
-                  disabled={addressUpdating || !company}
-                >
-                  <MapPin className="w-4 h-4" />
-                  <span className="font-medium">Assign Mailing Address</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setEinDialogOpen(true)}
-                  disabled={einUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setItinDialogOpen(true)}
-                  disabled={itinUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setBusinessIdDialogOpen(true)}
-                  disabled={businessIdUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMilestonesDialogOpen(true)}
-                  disabled={milestoneUpdating}
-                >
-                  <FileCheck className="w-4 h-4" />
-                  <span className="font-medium">Manage Milestones</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => {
-                    generateInvoice()
-                  }}
-                  disabled={deleting}
-                >
-                  <Download className="w-4 h-4" />
-                  <span className="font-medium">Download Invoice</span>
-                </Button>
-
-                <Button
-                  variant="destructive"
-                  className="w-full justify-start h-11 hover:bg-red-600"
-                  onClick={() => setDeleteDialogOpen(true)}
-                  disabled={deleting}
-                >
-                  {deleting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4" />
-                      Delete Order
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Order Summary */}
-          <Card className="bg-white border-slate-200">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <FileText className="w-5 h-5" />
-                Order Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Order ID</span>
-                  <span className="text-sm font-mono font-medium text-slate-900">{order.id}</span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Order Date</span>
-                  <span className="text-sm font-medium text-slate-900">
-                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "Not set"}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600">Status</span>
-                  <Badge className={getStatusColor(order.status)}>
-                    {getStatusIcon(order.status)}
-                    <span className="ml-1 capitalize">{order.status}</span>
-                  </Badge>
-                </div>
-                <div className="pt-3 border-t border-slate-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-semibold text-slate-900">Total Amount</span>
-                    <span className="text-lg font-semibold text-slate-900">
-                      ${order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 149}
-                    </span>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Payment Receipt Section */}
-          {(order?.paymentInfo?.screenshot ||
-            order?.paymentInfo?.receiptUrl ||
-            order?.paymentScreenshot ||
-            order?.paymentReceipt ||
-            company?.paymentScreenshot ||
-            company?.paymentReceipt) && (
-            <Card className="bg-white border-slate-200">
+            <Card className="bg-white border-slate-200 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                   <Receipt className="w-5 h-5" />
@@ -3241,7 +3012,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Standard Milestones */}
-        <Card className="bg-white border-slate-200">
+        <Card className="bg-white border-slate-200 shadow-sm">
           <CardHeader>
             <CardTitle className="text-base font-semibold text-slate-900">Standard Progress</CardTitle>
           </CardHeader>
@@ -3276,7 +3047,7 @@ export default function OrderDetailPage() {
 
         {/* Custom Milestones */}
         {company?.customMilestones && company.customMilestones.length > 0 && (
-          <Card className="bg-white border-slate-200">
+          <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-base font-semibold text-slate-900">Custom Milestones</CardTitle>
             </CardHeader>
