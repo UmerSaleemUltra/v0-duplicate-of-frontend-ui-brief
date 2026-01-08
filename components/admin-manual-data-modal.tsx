@@ -37,18 +37,35 @@ export function AdminManualDataModal({
   const [formData, setFormData] = useState<any>(currentData || {})
 
   const handleSave = async () => {
+    if (!companyId || companyId.trim() === "") {
+      toast({
+        title: "Error",
+        description: "Company ID is missing. Cannot save data.",
+        variant: "destructive",
+      })
+      return
+    }
+
     setSaving(true)
     try {
+      const token = localStorage.getItem("token")
+
       const response = await fetch(`/api/companies/${companyId}/manual-data`, {
         method: "PATCH",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
         body: JSON.stringify({
           dataType,
           data: formData,
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to update data")
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }))
+        throw new Error(errorData.error || "Failed to update data")
+      }
 
       toast({
         title: "Success",
@@ -61,7 +78,7 @@ export function AdminManualDataModal({
       console.error("[v0] Error updating manual data:", error)
       toast({
         title: "Error",
-        description: "Failed to update data",
+        description: error instanceof Error ? error.message : "Failed to update data",
         variant: "destructive",
       })
     } finally {

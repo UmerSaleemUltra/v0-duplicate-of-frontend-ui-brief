@@ -1,8 +1,7 @@
 import { ObjectId } from "mongodb"
 
 export function isValidObjectId(id: string): boolean {
-  // Just use MongoDB's built-in validation
-  return ObjectId.isValid(id) && id.length === 24
+  return ObjectId.isValid(id)
 }
 
 export function validateObjectId(id: string, fieldName = "ID"): void {

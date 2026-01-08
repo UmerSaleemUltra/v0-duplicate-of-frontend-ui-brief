@@ -423,25 +423,13 @@ export default function OrderDetailPage() {
   }
 
   const loadOrderData = useCallback(async () => {
-    if (!orderId || orderId === "undefined" || orderId === "null" || orderId.trim() === "") {
+    if (!orderId || typeof orderId !== "string" || orderId.trim() === "") {
       console.error("[v0] Invalid order ID provided:", orderId)
       setError("Invalid order ID")
       setLoading(false)
       toast({
         title: "Error",
         description: "Invalid order ID provided",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (orderId.length !== 24) {
-      console.error("[v0] Order ID has invalid length:", orderId.length, "expected 24")
-      setError("Invalid order ID format")
-      setLoading(false)
-      toast({
-        title: "Error",
-        description: `Invalid order ID format. Expected 24 characters, got ${orderId.length}.`,
         variant: "destructive",
       })
       return
@@ -491,11 +479,10 @@ export default function OrderDetailPage() {
             variant: "destructive",
           })
         } else if (orderResponse.status === 400) {
-          console.error("[v0] Bad request - invalid order ID format")
           setError("Invalid order ID")
           toast({
             title: "Invalid Order ID",
-            description: errorData.details || "The order ID format is invalid.",
+            description: errorData.details || "The order ID format is not valid. Please check the URL.",
             variant: "destructive",
           })
         } else if (orderResponse.status === 401) {
@@ -507,7 +494,7 @@ export default function OrderDetailPage() {
           setError(`Failed to fetch order (${orderResponse.status})`)
           toast({
             title: "Error",
-            description: errorData.error || `Failed to fetch order (${orderResponse.status})`,
+            description: errorData.error || `Failed to fetch order`,
             variant: "destructive",
           })
         }
@@ -3997,8 +3984,7 @@ export default function OrderDetailPage() {
         <AdminManualDataModal
           open={taxModalOpen}
           onOpenChange={setTaxModalOpen}
-          // Fixed companyId prop to use company?.id instead of company?._id
-          companyId={company?.id}
+          companyId={company?.id || ""}
           dataType="tax"
           currentData={{
             formationDate: company?.formationDate,
@@ -4013,7 +3999,7 @@ export default function OrderDetailPage() {
         <AdminManualDataModal
           open={agentModalOpen}
           onOpenChange={setAgentModalOpen}
-          companyId={company?.id}
+          companyId={company?.id || ""}
           dataType="registered-agent"
           currentData={company?.registeredAgent}
           onUpdate={loadOrderData}
@@ -4021,7 +4007,7 @@ export default function OrderDetailPage() {
         <AdminManualDataModal
           open={addressModalOpen}
           onOpenChange={setAddressModalOpen}
-          companyId={company?.id}
+          companyId={company?.id || ""}
           dataType="business-address"
           currentData={company?.businessAddress}
           onUpdate={loadOrderData}

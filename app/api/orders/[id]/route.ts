@@ -13,6 +13,19 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     console.log("[v0] Fetching order with ID:", id)
 
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      console.error("[v0] Order ID is missing or invalid")
+      return addSecurityHeaders(
+        NextResponse.json(
+          {
+            error: "Invalid Order ID format",
+            details: "Order ID is required and must be a valid string",
+          },
+          { status: 400 },
+        ),
+      )
+    }
+
     try {
       validateObjectId(id, "Order ID")
     } catch (validationError) {
@@ -21,7 +34,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
         NextResponse.json(
           {
             error: "Invalid Order ID format",
-            details: validationError instanceof Error ? validationError.message : "Unknown error",
+            details: validationError instanceof Error ? validationError.message : "Unknown validation error",
           },
           { status: 400 },
         ),
