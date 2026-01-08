@@ -5,7 +5,6 @@ import {
   Building2,
   Hash,
   Bell,
-  MapPin,
   Clock,
   Copy,
   Check,
@@ -761,10 +760,21 @@ export default function ClientDashboard() {
                 </h3>
               </div>
             </div>
-          </div>
 
-          {/* Second row for Service Status and Invoice Download */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+            {/* Order ID Card */}
+            <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
+              <div className="flex items-start justify-between mb-4">
+                <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
+                  <Hash className="w-6 h-6 text-slate-600" />
+                </div>
+              </div>
+              <div className="space-y-1">
+                <p className="text-xs text-slate-500 font-medium">Order ID</p>
+                <h3 className="text-2xl font-bold text-slate-900">{orderId}</h3>
+              </div>
+            </div>
+
+            {/* Status Card */}
             <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
                 <div className="w-12 h-12 rounded-full bg-slate-100 flex items-center justify-center">
@@ -772,7 +782,7 @@ export default function ClientDashboard() {
                 </div>
               </div>
               <div className="space-y-2">
-                <p className="text-xs text-slate-500 font-medium">Service Status</p>
+                <p className="text-xs text-slate-500 font-medium">Status</p>
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 rounded-full bg-green-500" />
                   <h3 className="text-2xl font-bold text-slate-900">Active</h3>
@@ -780,155 +790,8 @@ export default function ClientDashboard() {
               </div>
             </div>
           </div>
+
           <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h2 className="text-xl font-semibold text-slate-900">Formation Progress</h2>
-                <p className="text-sm text-slate-600 mt-1">
-                  {completedDefaultCount} of {formationMilestones.length} core milestones completed
-                </p>
-              </div>
-              <div className="text-right">
-                <div className="text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
-                  {Math.round(progressPercentage)}%
-                </div>
-                <p className="text-xs text-slate-500 mt-1">Complete</p>
-              </div>
-            </div>
-
-            {/* Progress Bar */}
-            <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-8">
-              <div
-                className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full transition-all duration-700 ease-out"
-                style={{ width: `${progressPercentage}%` }}
-              />
-            </div>
-
-            {/* Milestones Timeline */}
-            <div className="space-y-4">
-              {allMilestones.map((milestone, index) => {
-                const Icon = milestone.icon
-                const isLast = index === allMilestones.length - 1
-                const isCustom = index >= formationMilestones.length
-
-                return (
-                  <div key={milestone.id} className="relative">
-                    <div className="flex items-start gap-4">
-                      {/* Icon and Timeline Line */}
-                      <div className="relative flex flex-col items-center">
-                        <div
-                          className={`w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300 ${
-                            milestone.completed
-                              ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] shadow-lg shadow-red-500/30"
-                              : "bg-slate-100 border-2 border-slate-200"
-                          }`}
-                        >
-                          {milestone.completed ? (
-                            <CheckCircle2 className="w-5 h-5 text-white" />
-                          ) : (
-                            <Icon className="w-5 h-5 text-slate-400" />
-                          )}
-                        </div>
-                        {!isLast && (
-                          <div
-                            className={`w-0.5 h-12 mt-2 transition-all duration-300 ${
-                              milestone.completed ? "bg-gradient-to-b from-[#880000] to-[#ff0d13]" : "bg-slate-200"
-                            }`}
-                          />
-                        )}
-                      </div>
-
-                      {/* Milestone Content */}
-                      <div className="flex-1 pt-2">
-                        <div className="flex items-center gap-2">
-                          <h3
-                            className={`font-semibold transition-all duration-300 ${
-                              milestone.completed ? "text-slate-900" : "text-slate-500"
-                            }`}
-                          >
-                            {milestone.title}
-                          </h3>
-                        </div>
-                        {milestone.description && (
-                          <p className="text-xs text-slate-500 mt-1">{milestone.description}</p>
-                        )}
-                        {milestone.completed && (
-                          <p className="text-xs text-slate-500 mt-1 flex items-center gap-1">
-                            <Check className="w-3 h-3 text-green-600" />
-                            Completed
-                          </p>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Company Information Grid */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {hasRegisteredAgent && (
-              <div className="bg-gradient-to-br from-[#880000] to-[#ff0d13] rounded-2xl p-6 shadow-lg shadow-red-500/20 text-white">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                    <MapPin className="w-6 h-6 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-white">Registered Agent</h2>
-                    <p className="text-sm text-white/80">Agent address</p>
-                  </div>
-                </div>
-
-                <div className="space-y-4">
-                  <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20">
-                    <p className="text-xs text-white/70 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
-                      <MapPin className="w-3 h-3" />
-                      Address
-                    </p>
-                    <p className="text-sm leading-relaxed text-white">
-                      {registeredAgent.address}
-                      <br />
-                      {registeredAgent.city}, {registeredAgent.state} {registeredAgent.zip}
-                      <br />
-                      USA
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Mailing Address Card */}
-            {hasMailingAddress && (
-              <div className="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all duration-300">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
-                    <Home className="w-5 h-5 text-white" />
-                  </div>
-                  <div>
-                    <h2 className="text-lg font-semibold text-slate-900">Mailing Address</h2>
-                    <p className="text-xs text-slate-600">Business mailing address</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-50 rounded-xl p-4 border border-slate-100">
-                  <p className="text-xs text-slate-500 font-semibold uppercase tracking-wide mb-3 flex items-center gap-2">
-                    <Home className="w-3 h-3" />
-                    Address
-                  </p>
-                  <p className="text-sm leading-relaxed text-slate-900">
-                    {company.mailingAddress.street}
-                    <br />
-                    {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
-                    <br />
-                    USA
-                  </p>
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
                 <Clock className="w-5 h-5 text-white" />
