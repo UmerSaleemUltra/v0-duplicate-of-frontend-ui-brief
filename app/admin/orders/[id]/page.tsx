@@ -2183,7 +2183,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="space-y-4">
+        <div className="space-y-3">
           {/* Customer Information */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
@@ -2455,36 +2455,12 @@ export default function OrderDetailPage() {
                     <div className="pt-3 border-t border-slate-200">
                       <div className="flex items-center justify-between">
                         <span className="text-sm text-slate-600">Payment Method</span>
-                        <span className="text-sm font-medium text-slate-900">
+                        <span className="text-sm font-medium text-slate-900 capitalize">
                           {order.paymentInfo.method
-                            .replace(/_/g, " ")
-                            .split(" ")
-                            .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-                            .join(" ")}
+                            ? order.paymentInfo.method.replace(/_/g, " ").replace(/\b\w/g, (l) => l.toUpperCase())
+                            : "N/A"}
                         </span>
                       </div>
-                    </div>
-                  )}
-
-                  {order?.paymentInfo?.transactionId && (
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-slate-600">Transaction ID</span>
-                      <span className="text-sm font-mono font-medium text-slate-900">
-                        {order.paymentInfo.transactionId
-                          .replace(/_/g, "-")
-                          .split("-")
-                          .map((part, index) =>
-                            index === 0
-                              ? part
-                                  .split("")
-                                  .map((char, i, arr) =>
-                                    i === 0 || arr[i - 1] === "_" ? char.toUpperCase() : char.toLowerCase(),
-                                  )
-                                  .join("")
-                              : part,
-                          )
-                          .join("-")}
-                      </span>
                     </div>
                   )}
 
