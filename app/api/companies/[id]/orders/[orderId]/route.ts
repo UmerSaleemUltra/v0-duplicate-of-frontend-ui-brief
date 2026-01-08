@@ -5,7 +5,7 @@ import { ObjectId } from "mongodb"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string; orderId: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string; orderId: string }> }) {
   try {
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
@@ -23,15 +23,32 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return addSecurityHeaders(NextResponse.json({ error: "Unauthorized - Admin access required" }, { status: 403 }))
     }
 
+    const { id, orderId } = await params
+
+    console.log("[v0] DELETE order - Company ID:", id, "Order ID:", orderId)
+
     const { db } = await connectDB()
-    const company = await db.collection("companies").findOne({ _id: new ObjectId(params.id) })
+
+    let companyObjectId
+    try {
+      companyObjectId = new ObjectId(id)
+    } catch (error) {
+      console.error("[v0] Invalid company ID format:", id)
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
+    }
+
+    const company = await db.collection("companies").findOne({ _id: companyObjectId })
+
+    console.log("[v0] Company found:", company ? "Yes" : "No", company?._id?.toString())
 
     if (!company) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
     }
 
     const orders = company.orders || []
-    const orderToDelete = orders.find((order: any) => order.id === params.orderId)
+    const orderToDelete = orders.find((order: any) => order.id === orderId)
+
+    console.log("[v0] Order found in company:", orderToDelete ? "Yes" : "No")
 
     if (!orderToDelete) {
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
@@ -43,10 +60,10 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
     const newRevenue = Math.max(0, currentRevenue - orderAmount)
 
     // Remove the order from the orders array
-    const updatedOrders = orders.filter((order: any) => order.id !== params.orderId)
+    const updatedOrders = orders.filter((order: any) => order.id !== orderId)
 
     await db.collection("companies").updateOne(
-      { _id: new ObjectId(params.id) },
+      { _id: companyObjectId },
       {
         $set: {
           orders: updatedOrders,
@@ -58,7 +75,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
 
     console.log("[v0] Order deleted from company. Previous revenue:", currentRevenue, "New revenue:", newRevenue)
 
-    broadcastUpdate("companies", "updated", { id: params.id, userId: company.userId })
+    broadcastUpdate("companies", "updated", { id: id, userId: company.userId })
 
     return addSecurityHeaders(
       NextResponse.json({
