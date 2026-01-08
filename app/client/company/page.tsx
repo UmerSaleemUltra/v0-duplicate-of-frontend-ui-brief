@@ -395,7 +395,7 @@ export default function CompanyPage() {
 
         {/* Business Details */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-2xl font-bold mb-6">Business Details</h2>
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
               <span className="text-slate-600 text-sm sm:text-base">Business Category</span>
@@ -425,7 +425,7 @@ export default function CompanyPage() {
         {/* Members & Owners */}
         {companyData.members && companyData.members.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-2xl font-bold mb-6">Company Members</h2>
+            <h2 className="text-base sm:text-lg font-semibold mb-4">Company Members</h2>
             <div className="space-y-6">
               {companyData.members.map((member: MemberUI) => {
                 return (
@@ -489,8 +489,8 @@ export default function CompanyPage() {
         {/* Registered Agent */}
         {hasRegisteredAgent && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-2xl font-bold mb-6">Registered Agent</h2>
-            <div className="space-y-3">
+            <h2 className="text-base sm:text-lg font-semibold mb-4">Registered Agent</h2>
+            <div className="space-y-4">
               <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
                 <span className="text-slate-600 text-sm sm:text-base">Registered Agent</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base">
@@ -545,8 +545,8 @@ export default function CompanyPage() {
 
         {/* Business Address */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-2xl font-bold mb-6">Business Address</h2>
-          <div className="space-y-3">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Address</h2>
+          <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
               <span className="text-slate-600 text-sm sm:text-base">Company Name</span>
               <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
@@ -601,8 +601,8 @@ export default function CompanyPage() {
         {/* Purchased Add-ons */}
         {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-2xl font-bold mb-6">Purchased Add-ons</h2>
-            <div className="space-y-3">
+            <h2 className="text-base sm:text-lg font-semibold mb-4">Purchased Add-ons</h2>
+            <div className="space-y-4">
               {companyData.purchasedAddons.map((addon: any, index: number) => {
                 const addonName = typeof addon === "string" ? addon : addon.name || "Unknown Add-on"
                 const addonPrice = typeof addon === "object" && addon.price ? `$${addon.price}` : ""
@@ -634,8 +634,8 @@ export default function CompanyPage() {
 
         {/* Tax & Compliance Information */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-2xl font-bold mb-6">Tax & Compliance Information</h2>
-          <div className="space-y-3">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Tax & Compliance Information</h2>
+          <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
               <span className="text-slate-600 text-sm sm:text-base">EIN</span>
               <span className="font-medium text-slate-900 text-sm sm:text-base">
