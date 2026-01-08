@@ -3087,7 +3087,7 @@ export default function OrderDetailPage() {
         </DialogContent>
       </Dialog>
 
-      {/* Milestones Section - Keep the "Add Milestone" button */}
+      {/* Milestones Section */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
