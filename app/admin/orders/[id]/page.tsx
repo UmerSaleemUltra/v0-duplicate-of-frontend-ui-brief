@@ -2477,6 +2477,115 @@ export default function OrderDetailPage() {
             </Card>
           )}
         </div>
+
+        {/* Milestones Section - Now inside main grid */}
+        <div className="col-span-3">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5" />
+              Milestones
+            </h2>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCustomMilestoneDialogOpen(true)}
+              className="h-9"
+              disabled={
+                statusUpdating ||
+                agentUpdating ||
+                addressUpdating ||
+                einUpdating ||
+                itinUpdating ||
+                businessIdUpdating ||
+                docUploading ||
+                milestoneUpdating ||
+                deleting
+              }
+            >
+              <Clock className="w-4 h-4 mr-2" />
+              Add Milestone
+            </Button>
+          </div>
+
+          {/* Standard Milestones */}
+          <Card className="bg-white border-slate-200 shadow-sm mb-4">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold text-slate-900">Standard Progress</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {[
+                  { key: "orderProcessed", label: "Order Processed", icon: Package },
+                  { key: "registeredAgentAssigned", label: "Registered Agent Assigned", icon: UserCheck },
+                  { key: "mailingAddressIssued", label: "Mailing Address Issued", icon: Home },
+                  { key: "formationCompleted", label: "Formation Completed", icon: Building2 },
+                  { key: "einProcessed", label: "EIN Processed", icon: Hash },
+                  { key: "boiReportFiled", label: "BOI Report Filed", icon: FileCheck },
+                ].map((milestone) => (
+                  <div
+                    key={milestone.key}
+                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <milestone.icon className="w-5 h-5 text-slate-600" />
+                      <span className="text-sm font-medium text-slate-900">{milestone.label}</span>
+                    </div>
+                    <Switch
+                      checked={milestones[milestone.key as keyof typeof milestones]}
+                      onCheckedChange={() => handleMilestoneToggle(milestone.key as keyof typeof milestones)}
+                      disabled={milestoneUpdating}
+                    />
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Custom Milestones */}
+          {company?.customMilestones && company.customMilestones.length > 0 && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base font-semibold text-slate-900">Custom Milestones</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {company.customMilestones.map((customMilestone: any) => (
+                    <div
+                      key={customMilestone.id}
+                      className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
+                          {customMilestone.description && (
+                            <p className="text-xs text-slate-500 mt-0.5">{customMilestone.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Switch
+                          checked={customMilestone.completed}
+                          onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
+                          disabled={milestoneUpdating}
+                        />
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => handleDeleteCustomMilestone(customMilestone.id)}
+                          disabled={milestoneUpdating}
+                          className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
 
       {/* Upload Document Dialog - REMOVED AS PER UPDATE */}
@@ -3062,104 +3171,6 @@ export default function OrderDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Milestones Section */}
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-            <CheckCircle2 className="w-5 h-5" />
-            Milestones
-          </h2>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setCustomMilestoneDialogOpen(true)}
-            className="h-9"
-            disabled={
-              statusUpdating ||
-              agentUpdating ||
-              addressUpdating ||
-              einUpdating ||
-              itinUpdating ||
-              businessIdUpdating ||
-              docUploading ||
-              milestoneUpdating ||
-              deleting
-            }
-          >
-            <Clock className="w-4 h-4 mr-2" />
-            Add Milestone
-          </Button>
-        </div>
-
-        {/* Standard Milestones */}
-        <Card className="bg-white border-slate-200 shadow-sm">
-          <CardHeader>
-            <CardTitle className="text-base font-semibold text-slate-900">Standard Progress</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-3">
-              {[
-                { key: "orderProcessed", label: "Order Processed", icon: Package },
-                { key: "registeredAgentAssigned", label: "Registered Agent Assigned", icon: UserCheck },
-                { key: "mailingAddressIssued", label: "Mailing Address Issued", icon: Home },
-                { key: "formationCompleted", label: "Formation Completed", icon: Building2 },
-                { key: "einProcessed", label: "EIN Processed", icon: Hash },
-                { key: "boiReportFiled", label: "BOI Report Filed", icon: FileCheck },
-              ].map((milestone) => (
-                <div
-                  key={milestone.key}
-                  className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
-                >
-                  <div className="flex items-center gap-3">
-                    <milestone.icon className="w-5 h-5 text-slate-600" />
-                    <span className="text-sm font-medium text-slate-900">{milestone.label}</span>
-                  </div>
-                  <Switch
-                    checked={milestones[milestone.key as keyof typeof milestones]}
-                    onCheckedChange={() => handleMilestoneToggle(milestone.key as keyof typeof milestones)}
-                    disabled={milestoneUpdating}
-                  />
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Custom Milestones */}
-        {company?.customMilestones && company.customMilestones.length > 0 && (
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base font-semibold text-slate-900">Custom Milestones</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-3">
-                {company.customMilestones.map((customMilestone: any) => (
-                  <div
-                    key={customMilestone.id}
-                    className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
-                  >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
-                        {customMilestone.description && (
-                          <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{customMilestone.description}</p>
-                        )}
-                      </div>
-                    </div>
-                    <Switch
-                      checked={customMilestone.completed}
-                      onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
-                      disabled={milestoneUpdating}
-                    />
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-        )}
-      </div>
     </div>
   )
 }
