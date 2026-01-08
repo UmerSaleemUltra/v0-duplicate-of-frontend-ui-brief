@@ -1,6 +1,7 @@
 "use client"
 
 import { Switch } from "@/components/ui/switch"
+import { StatusUpdateModal } from "@/components/status-update-modal"
 
 import type React from "react"
 
@@ -123,6 +124,11 @@ export default function OrderDetailPage() {
   const [milestoneUpdating, setMilestoneUpdating] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+
+  const [companyStatusDialogOpen, setCompanyStatusDialogOpen] = useState(false)
+  const [registeredAgentStatusDialogOpen, setRegisteredAgentStatusDialogOpen] = useState(false)
+  const [businessAddressStatusDialogOpen, setBusinessAddressStatusDialogOpen] = useState(false)
+  const [serviceStatusDialogOpen, setServiceStatusDialogOpen] = useState(false)
 
   const [registeredAgentDialogOpen, setRegisteredAgentDialogOpen] = useState(false)
   const [mailingAddressDialogOpen, setMailingAddressDialogOpen] = useState(false)
@@ -359,7 +365,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -1312,6 +1318,124 @@ export default function OrderDetailPage() {
     setCustomMilestoneDialogOpen(false)
     setNewMilestoneTitle("")
     setNewMilestoneDescription("")
+  }
+
+  const handleUpdateCompanyStatus = async (newStatus: string) => {
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        toast({ title: "Error", description: "Authentication required", variant: "destructive" })
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ status: newStatus }),
+      })
+
+      if (!response.ok) throw new Error("Failed to update company status")
+
+      toast({ title: "Success", description: "Company status updated successfully" })
+      loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error updating company status:", error)
+      toast({ title: "Error", description: "Failed to update company status", variant: "destructive" })
+    }
+  }
+
+  const handleUpdateRegisteredAgentStatus = async (newStatus: string) => {
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        toast({ title: "Error", description: "Authentication required", variant: "destructive" })
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          registeredAgent: {
+            ...company.registeredAgent,
+            status: newStatus,
+          },
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to update registered agent status")
+
+      toast({ title: "Success", description: "Registered agent status updated successfully" })
+      loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error updating registered agent status:", error)
+      toast({ title: "Error", description: "Failed to update registered agent status", variant: "destructive" })
+    }
+  }
+
+  const handleUpdateBusinessAddressStatus = async (newStatus: string) => {
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        toast({ title: "Error", description: "Authentication required", variant: "destructive" })
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          businessAddress: {
+            ...company.businessAddress,
+            status: newStatus,
+          },
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to update business address status")
+
+      toast({ title: "Success", description: "Business address status updated successfully" })
+      loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error updating business address status:", error)
+      toast({ title: "Error", description: "Failed to update business address status", variant: "destructive" })
+    }
+  }
+
+  const handleUpdateServiceStatus = async (newStatus: string) => {
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        toast({ title: "Error", description: "Authentication required", variant: "destructive" })
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ serviceStatus: newStatus }),
+      })
+
+      if (!response.ok) throw new Error("Failed to update service status")
+
+      toast({ title: "Success", description: "Service status updated successfully" })
+      loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error updating service status:", error)
+      toast({ title: "Error", description: "Failed to update service status", variant: "destructive" })
+    }
   }
 
   // Initial loading states
@@ -3171,6 +3295,39 @@ export default function OrderDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Add status update modals */}
+      <StatusUpdateModal
+        open={companyStatusDialogOpen}
+        onOpenChange={setCompanyStatusDialogOpen}
+        title="Update Company Status"
+        currentStatus={company?.status || "pending"}
+        onUpdate={handleUpdateCompanyStatus}
+      />
+
+      <StatusUpdateModal
+        open={registeredAgentStatusDialogOpen}
+        onOpenChange={setRegisteredAgentStatusDialogOpen}
+        title="Update Registered Agent Status"
+        currentStatus={company?.registeredAgent?.status || "pending"}
+        onUpdate={handleUpdateRegisteredAgentStatus}
+      />
+
+      <StatusUpdateModal
+        open={businessAddressStatusDialogOpen}
+        onOpenChange={setBusinessAddressStatusDialogOpen}
+        title="Update Business Address Status"
+        currentStatus={company?.businessAddress?.status || "pending"}
+        onUpdate={handleUpdateBusinessAddressStatus}
+      />
+
+      <StatusUpdateModal
+        open={serviceStatusDialogOpen}
+        onOpenChange={setServiceStatusDialogOpen}
+        title="Update Service Status"
+        currentStatus={company?.serviceStatus || "pending"}
+        onUpdate={handleUpdateServiceStatus}
+      />
     </div>
   )
 }

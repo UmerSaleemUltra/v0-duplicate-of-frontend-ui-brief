@@ -157,6 +157,10 @@ export default function CompanyPage() {
             registeredAgent: selectedComp.registeredAgent,
             businessAddress: selectedComp.businessAddress,
             itin: selectedComp.itin,
+            companyStatus: selectedComp.status || "pending",
+            registeredAgentStatus: selectedComp.registeredAgent?.status || "pending",
+            businessAddressStatus: selectedComp.businessAddress?.status || "pending",
+            serviceStatus: selectedComp.serviceStatus || "pending",
           })
         } else {
           setError("Company not found")
@@ -353,7 +357,17 @@ export default function CompanyPage() {
               <div className="min-w-0 flex-1">
                 <div className="text-xs sm:text-sm text-slate-600 mb-1">Company Status</div>
                 <div className="font-medium text-slate-900 text-sm sm:text-base">
-                  {orderDetails?.status || companyData.status || "Active"}
+                  <Badge
+                    className={
+                      companyData.companyStatus === "active"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
+                        : companyData.companyStatus === "inactive"
+                          ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                          : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                    }
+                  >
+                    {companyData.companyStatus || "Pending"}
+                  </Badge>
                 </div>
               </div>
             </div>
@@ -571,23 +585,17 @@ export default function CompanyPage() {
               <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
                 <span className="text-slate-600 text-sm sm:text-base">Status</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base">
-                  {(() => {
-                    const expiryDate = new Date(
-                      new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                    )
-                    const isActive = new Date() < expiryDate
-                    return (
-                      <Badge
-                        className={
-                          isActive
-                            ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                            : "bg-red-50 text-red-700 border-red-200"
-                        }
-                      >
-                        {isActive ? "Active" : "Expired"}
-                      </Badge>
-                    )
-                  })()}
+                  <Badge
+                    className={
+                      companyData.registeredAgentStatus === "active"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
+                        : companyData.registeredAgentStatus === "inactive"
+                          ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                          : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                    }
+                  >
+                    {companyData.registeredAgentStatus || "Pending"}
+                  </Badge>
                 </span>
               </div>
             </div>
@@ -630,23 +638,17 @@ export default function CompanyPage() {
             <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
               <span className="text-slate-600 text-sm sm:text-base">Status</span>
               <span className="font-medium text-slate-900 text-sm sm:text-base">
-                {(() => {
-                  const expiryDate = new Date(
-                    new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                  )
-                  const isActive = new Date() < expiryDate
-                  return (
-                    <Badge
-                      className={
-                        isActive
-                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
-                          : "bg-red-50 text-red-700 border-red-200"
-                      }
-                    >
-                      {isActive ? "Active" : "Expired"}
-                    </Badge>
-                  )
-                })()}
+                <Badge
+                  className={
+                    companyData.businessAddressStatus === "active"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
+                      : companyData.businessAddressStatus === "inactive"
+                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                  }
+                >
+                  {companyData.businessAddressStatus || "Pending"}
+                </Badge>
               </span>
             </div>
           </div>

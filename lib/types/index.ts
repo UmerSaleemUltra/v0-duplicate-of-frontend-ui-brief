@@ -33,6 +33,10 @@ export interface Company {
   type: "LLC" | "Corporation" | "S-Corp" | "Non-Profit"
   state: string
   status: "pending" | "processing" | "active" | "suspended"
+  companyStatus?: "pending" | "active" | "inactive"
+  registeredAgentStatus?: "pending" | "active" | "inactive"
+  businessAddressStatus?: "pending" | "active" | "inactive"
+  serviceStatus?: "pending" | "active" | "inactive"
   businessCategory?: string
   businessDescription?: string
   businessWebsite?: string
