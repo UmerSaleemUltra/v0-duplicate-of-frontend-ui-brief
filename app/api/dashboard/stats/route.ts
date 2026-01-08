@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     const { db } = await connectDB()
 
-    const [orderStats, activeCompanies, pendingOrders] = await Promise.all([
+    const [orderStats, activeCompanies, pendingOrders, revenueByState] = await Promise.all([
       db
         .collection("orders")
         .aggregate([
@@ -35,6 +35,45 @@ export async function GET(req: NextRequest) {
         .toArray(),
       db.collection("companies").countDocuments({ status: "active" }),
       db.collection("orders").countDocuments({ status: "pending" }),
+      db
+        .collection("companies")
+        .aggregate([
+          {
+            $lookup: {
+              from: "orders",
+              localField: "_id",
+              foreignField: "companyId",
+              as: "orders",
+            },
+          },
+          {
+            $unwind: {
+              path: "$orders",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+          {
+            $group: {
+              _id: "$state",
+              totalRevenue: {
+                $sum: {
+                  $cond: [{ $eq: ["$orders.paymentStatus", "paid"] }, "$orders.total", 0],
+                },
+              },
+              companyCount: { $sum: 1 },
+            },
+          },
+          {
+            $project: {
+              state: "$_id",
+              totalRevenue: 1,
+              companyCount: 1,
+              _id: 0,
+            },
+          },
+          { $sort: { totalRevenue: -1 } },
+        ])
+        .toArray(),
     ])
 
     const totalRevenue = orderStats[0]?.totalRevenue || 0
@@ -49,6 +88,7 @@ export async function GET(req: NextRequest) {
       ordersChange: 8.3,
       companiesChange: 15.2,
       pendingChange: -5.4,
+      revenueByState: revenueByState || [],
     }
 
     const result = {
@@ -60,6 +100,7 @@ export async function GET(req: NextRequest) {
     addSecurityHeaders(response)
     return response
   } catch (error) {
+    console.error("[v0] Error fetching dashboard stats:", error)
     return NextResponse.json({ error: "Failed to fetch dashboard stats" }, { status: 500 })
   }
 }

@@ -416,39 +416,63 @@ export default function OrderDetailPage() {
   }
 
   const loadOrderData = useCallback(async () => {
-    if (!orderId) {
+    if (!orderId || orderId === "undefined" || orderId === "null" || orderId.trim() === "") {
+      console.error("[v0] Invalid order ID provided:", orderId)
       setError("Invalid order ID")
       setLoading(false)
+      toast({
+        title: "Error",
+        description: "Invalid order ID provided",
+        variant: "destructive",
+      })
       return
     }
 
     try {
       setLoading(true)
+      setError(null)
       const token = authService.getToken()
 
       if (!token) {
+        console.error("[v0] No authentication token found")
         router.push("/login")
         return
       }
 
       console.log("[v0] Loading order data for ID:", orderId)
 
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+
       const orderResponse = await fetch(`/api/orders/${orderId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
           "Cache-Control": "no-cache, no-store, must-revalidate",
         },
+        signal: controller.signal,
       })
+
+      clearTimeout(timeoutId)
+
+      console.log("[v0] Order response status:", orderResponse.status)
 
       if (!orderResponse.ok) {
         if (orderResponse.status === 404) {
+          console.error("[v0] Order not found in database")
           setError("Order not found")
           toast({
-            title: "Error",
-            description: "Order not found",
+            title: "Order Not Found",
+            description: "The order you're looking for doesn't exist.",
             variant: "destructive",
           })
+        } else if (orderResponse.status === 401) {
+          console.error("[v0] Unauthorized - redirecting to login")
+          router.push("/login")
+          return
         } else {
+          const errorText = await orderResponse.text()
+          console.error("[v0] Order fetch failed:", orderResponse.status, errorText)
           throw new Error(`Failed to fetch order: ${orderResponse.status}`)
         }
         setLoading(false)
@@ -459,7 +483,13 @@ export default function OrderDetailPage() {
       console.log("[v0] Order API response:", orderData)
 
       if (!orderData.success || !orderData.data) {
+        console.error("[v0] Invalid order data structure:", orderData)
         setError("Invalid order data")
+        toast({
+          title: "Error",
+          description: "Received invalid order data from server",
+          variant: "destructive",
+        })
         setLoading(false)
         return
       }
@@ -583,12 +613,23 @@ export default function OrderDetailPage() {
       setError(null)
     } catch (error) {
       console.error("[v0] Error loading order data:", error)
-      setError("Failed to load order")
-      toast({
-        title: "Error",
-        description: "Failed to load order details. Please try again.",
-        variant: "destructive",
-      })
+      if (error instanceof Error) {
+        if (error.name === "AbortError") {
+          setError("Request timeout")
+          toast({
+            title: "Timeout",
+            description: "Request took too long. Please try again.",
+            variant: "destructive",
+          })
+        } else {
+          setError("Failed to load order")
+          toast({
+            title: "Error",
+            description: error.message || "Failed to load order details. Please try again.",
+            variant: "destructive",
+          })
+        }
+      }
     } finally {
       setLoading(false)
     }
@@ -2006,7 +2047,14 @@ export default function OrderDetailPage() {
   }
 
   const handleSaveCompany = async () => {
-    if (!company) return
+    if (!company || !companyForm.name.trim()) {
+      toast({
+        title: "Validation Error",
+        description: "Company name is required",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
       const token = authService.getToken()
@@ -2015,13 +2063,23 @@ export default function OrderDetailPage() {
         return
       }
 
+      const stateChanged = company.state !== companyForm.state
+      const oldState = company.state
+      const newState = companyForm.state
+
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(companyForm),
+        body: JSON.stringify({
+          name: companyForm.name,
+          state: companyForm.state,
+          businessCategory: companyForm.businessCategory,
+          businessWebsite: companyForm.businessWebsite,
+          businessDescription: companyForm.businessDescription,
+        }),
       })
 
       if (!response.ok) {
@@ -2029,19 +2087,45 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
-      console.log("[v0] Company updated:", result)
+
+      if (stateChanged && order?.pricing?.total) {
+        console.log("[v0] State changed from", oldState, "to", newState, "- updating revenue tracking")
+
+        try {
+          await fetch("/api/analytics/update", {
+            method: "POST",
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+              type: "state_change",
+              oldState,
+              newState,
+              revenue: order.pricing.total,
+              companyId: company.id,
+              orderId: order.id,
+            }),
+          })
+          console.log("[v0] Analytics updated for state change")
+        } catch (analyticsError) {
+          console.error("[v0] Failed to update analytics (non-critical):", analyticsError)
+        }
+      }
 
       setCompany(result.data)
       setEditingCompany(false)
 
       toast({
         title: "Success",
-        description: "Company information updated",
+        description: "Company information updated successfully",
       })
+
+      await loadOrderData()
     } catch (error) {
       console.error("[v0] Error updating company:", error)
       toast({
-        title: "Update Failed",
+        title: "Error",
         description: "Failed to update company information",
         variant: "destructive",
       })
