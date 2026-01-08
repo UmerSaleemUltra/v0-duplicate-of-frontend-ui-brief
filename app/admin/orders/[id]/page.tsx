@@ -39,9 +39,7 @@ import {
   FileCheck,
   HashIcon,
   FileBarChart,
-  Users,
   Loader2,
-  Eye,
   MapPin,
   Trash2,
   Settings,
@@ -55,6 +53,20 @@ import { CompanyDetailsModal } from "@/components/modals/company-details-modal"
 const getDisplayValue = (value: any, defaultValue = "N/A"): string => {
   if (value === null || value === undefined || value === "") return defaultValue
   if (typeof value === "string" && value.trim() === "") return defaultValue
+  const placeholderPatterns = [
+    /^Provide a brief overview/i,
+    /minimum \d+ characters/i,
+    /^[^a-zA-Z0-9\s]*$/, // Only special characters
+    /^[a-z]{1,5}$/i, // Very short random strings like "hdhfu"
+  ]
+
+  if (typeof value === "string") {
+    for (const pattern of placeholderPatterns) {
+      if (pattern.test(value.trim())) {
+        return defaultValue
+      }
+    }
+  }
   return String(value)
 }
 
@@ -1865,7 +1877,13 @@ export default function OrderDetailPage() {
                   {company.businessDescription && (
                     <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
                       <p className="text-xs text-slate-600 mb-2">Business Description</p>
-                      <p className="text-sm text-slate-700 leading-relaxed">{company.businessDescription}</p>
+                      {!company.businessDescription.toLowerCase().includes("provide a brief") &&
+                      !company.businessDescription.toLowerCase().includes("minimum") &&
+                      company.businessDescription.length > 20 ? (
+                        <p className="text-sm text-slate-700 leading-relaxed">{company.businessDescription}</p>
+                      ) : (
+                        <p className="text-sm text-slate-500 italic">No description provided</p>
+                      )}
                     </div>
                   )}
 
@@ -2083,15 +2101,46 @@ export default function OrderDetailPage() {
                 <Button
                   variant="outline"
                   className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setEinDialogOpen(true)}
+                  disabled={einUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setItinDialogOpen(true)}
+                  disabled={itinUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setBusinessIdDialogOpen(true)}
+                  disabled={businessIdUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
                   onClick={() => setMilestonesDialogOpen(true)}
                   disabled={milestoneUpdating}
                 >
                   <FileCheck className="w-4 h-4" />
                   <span className="font-medium">Manage Milestones</span>
                 </Button>
+
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-11 hover:bg-red-50 hover:text-red-600 hover:border-red-200 bg-transparent"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
                   onClick={() => {
                     generateInvoice()
                   }}
@@ -2100,6 +2149,7 @@ export default function OrderDetailPage() {
                   <Download className="w-4 h-4" />
                   <span className="font-medium">Download Invoice</span>
                 </Button>
+
                 <Button
                   variant="destructive"
                   className="w-full justify-start h-11 hover:bg-red-600"
@@ -2821,174 +2871,6 @@ export default function OrderDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Order Documents - REMOVED AS PER UPDATES, NOW PART OF MEMBERS CARD */}
-
-      {/* Members & Passport Documents - Single consolidated card */}
-      <Card className="bg-white border-slate-200">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <Users className="w-5 h-5" />
-            Members & Passport Documents
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {company?.members && company.members.length > 0 ? (
-            <div className="space-y-4">
-              {company.members.map((member: any, index: number) => {
-                const passport = passportDocuments.find(
-                  (p: any) =>
-                    p.memberId === member.id ||
-                    p.memberName === member.name ||
-                    p.memberName === `${member.firstName} ${member.lastName}` ||
-                    p.memberName === `${member.firstName} ${member.middleName} ${member.lastName}`,
-                )
-
-                const fullName =
-                  member.name ||
-                  [member.firstName, member.middleName, member.lastName].filter(Boolean).join(" ") ||
-                  "N/A"
-
-                const extractFilename = (url: string) => {
-                  if (!url) return "Passport Document"
-                  try {
-                    const urlParts = url.split("/")
-                    const filename = urlParts[urlParts.length - 1]
-                    return decodeURIComponent(filename)
-                      .replace(/^passports\//, "")
-                      .replace(/-[a-zA-Z0-9]{10,}\.(pdf|jpg|jpeg|png)$/i, ".$1")
-                  } catch {
-                    return "Passport Document"
-                  }
-                }
-
-                return (
-                  <div
-                    key={index}
-                    className="p-4 border border-slate-200 rounded-lg hover:border-slate-300 transition-colors"
-                  >
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="space-y-1.5">
-                        <h4 className="font-semibold text-slate-900 text-base">{fullName}</h4>
-                        {member.isResponsiblePerson && (
-                          <Badge variant="secondary" className="text-xs">
-                            Responsible Person
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Address */}
-                    <div className="mt-3 p-3 bg-slate-50 rounded-lg border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Address</p>
-                      <p className="text-sm text-slate-700 leading-relaxed">
-                        {member.address}
-                        {member.city && `, ${member.city}`}
-                        {member.state && `, ${member.state}`}
-                        {member.zip && ` ${member.zip}`}
-                      </p>
-                    </div>
-
-                    {/* Passport Document */}
-                    {passport ? (
-                      <div className="mt-3 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-2 flex-1 min-w-0">
-                            <FileText className="w-4 h-4 text-blue-600 flex-shrink-0" />
-                            <span className="text-sm font-medium text-slate-900 truncate">
-                              {extractFilename(passport.fileName || passport.fileUrl || "")}
-                            </span>
-                          </div>
-                          {passport.fileUrl && (
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              onClick={() => window.open(passport.fileUrl, "_blank")}
-                              className="h-8 text-xs ml-2 flex-shrink-0"
-                            >
-                              <Eye className="w-3.5 h-3.5 mr-1" />
-                              View
-                            </Button>
-                          )}
-                        </div>
-                        {passport.uploadedAt && (
-                          <p className="text-xs text-slate-500 mt-2">
-                            Uploaded: {new Date(passport.uploadedAt).toLocaleDateString()}
-                          </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div className="mt-3 p-3 bg-amber-50 border border-amber-200 rounded-lg">
-                        <div className="flex items-center gap-2">
-                          <AlertCircle className="w-4 h-4 text-amber-600" />
-                          <p className="text-sm text-amber-800">No passport document uploaded</p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Users className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-slate-500">No members or documents found</p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {hasRegisteredAgent && (
-        <Card className="bg-white border-slate-200">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-              <UserCheck className="w-5 h-5" />
-              Registered Agent
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <p className="text-xs text-slate-600 mb-1">Agent Name</p>
-                <p className="text-sm font-medium text-slate-900">{company.registeredAgent.name}</p>
-              </div>
-              {company.registeredAgent.company && (
-                <div>
-                  <p className="text-xs text-slate-600 mb-1">Company</p>
-                  <p className="text-sm font-medium text-slate-900">{company.registeredAgent.company}</p>
-                </div>
-              )}
-              <div className="md:col-span-2">
-                <p className="text-xs text-slate-600 mb-1">Full Address</p>
-                <p className="text-sm font-medium text-slate-900">
-                  {company.registeredAgent.address}
-                  {company.registeredAgent.city && `, ${company.registeredAgent.city}`}
-                  {company.registeredAgent.state && `, ${company.registeredAgent.state}`}
-                  {company.registeredAgent.zip && ` ${company.registeredAgent.zip}`}
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {!hasRegisteredAgent && (
-        <Card className="bg-white border-slate-200">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-              <UserCheck className="w-5 h-5" />
-              Registered Agent
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-              <p className="text-sm text-amber-800">
-                <strong>Not Yet Assigned</strong> - Registered agent will be assigned during formation process
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Company Details Modal */}
       <CompanyDetailsModal

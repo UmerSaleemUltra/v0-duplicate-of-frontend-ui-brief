@@ -488,7 +488,13 @@ export default function OrdersPage() {
                                 <Building2 className="h-4 w-4 mr-2" />
                                 View Company
                               </DropdownMenuItem>
-                              <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteOrder(order.id)}>
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                onSelect={(e) => {
+                                  e.preventDefault()
+                                  handleDeleteOrder(order.id)
+                                }}
+                              >
                                 <Trash2 className="h-4 w-4 mr-2" />
                                 Delete Order
                               </DropdownMenuItem>
