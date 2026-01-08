@@ -1221,7 +1221,10 @@ export default function OrderDetailPage() {
   }
 
   const handleDeleteOrder = async () => {
+    console.log("[v0] Delete order initiated", { orderId: order?.id, companyId: company?.id })
+
     if (!order?.id || !company?.id) {
+      console.log("[v0] Delete failed - missing IDs", { orderId: order?.id, companyId: company?.id })
       toast({
         title: "Error",
         description: "Cannot delete order - missing order or company ID",
@@ -1235,6 +1238,10 @@ export default function OrderDetailPage() {
       const token = localStorage.getItem("token")
       if (!token) throw new Error("No authentication token")
 
+      console.log("[v0] Sending delete request to API", {
+        url: `/api/companies/${company.id}/orders/${order.id}`,
+      })
+
       const response = await fetch(`/api/companies/${company.id}/orders/${order.id}`, {
         method: "DELETE",
         headers: {
@@ -1242,12 +1249,16 @@ export default function OrderDetailPage() {
         },
       })
 
+      console.log("[v0] Delete response status:", response.status)
+
       if (!response.ok) {
         const error = await response.json()
+        console.log("[v0] Delete error response:", error)
         throw new Error(error.error || "Failed to delete order")
       }
 
       const result = await response.json()
+      console.log("[v0] Delete successful:", result)
 
       toast({
         title: "Success",
@@ -2316,7 +2327,10 @@ export default function OrderDetailPage() {
                 <Button
                   variant="destructive"
                   className="w-full justify-start h-11 hover:bg-red-600"
-                  onClick={() => setDeleteDialogOpen(true)}
+                  onClick={() => {
+                    console.log("[v0] Delete button clicked")
+                    setDeleteDialogOpen(true)
+                  }}
                   disabled={deleting}
                 >
                   {deleting ? (
