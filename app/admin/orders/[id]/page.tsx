@@ -2,6 +2,7 @@
 
 import { Switch } from "@/components/ui/switch"
 import { StatusUpdateModal } from "@/components/status-update-modal"
+import { AdminManualDataModal } from "@/components/admin-manual-data-modal"
 
 import type React from "react"
 
@@ -45,6 +46,7 @@ import {
   Settings,
   Plus,
   Receipt,
+  Calendar,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -139,6 +141,10 @@ export default function OrderDetailPage() {
   const [milestonesDialogOpen, setMilestonesDialogOpen] = useState(false)
   const [customMilestoneDialogOpen, setCustomMilestoneDialogOpen] = useState(false)
   // Removed duplicate addMilestoneDialogOpen state
+
+  const [taxModalOpen, setTaxModalOpen] = useState(false)
+  const [agentModalOpen, setAgentModalOpen] = useState(false)
+  const [addressModalOpen, setAddressModalOpen] = useState(false)
 
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
@@ -2416,6 +2422,326 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Status Management
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">
+                Manage company, registered agent, business address, and service statuses
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Company Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Company Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Overall company operational status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.companyStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.companyStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.companyStatus || "pending"}
+                  </Badge>
+                  <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)} className="h-8">
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Registered Agent Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Registered Agent Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Agent assignment and service status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.registeredAgentStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.registeredAgentStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.registeredAgentStatus || "pending"}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRegisteredAgentStatusDialogOpen(true)}
+                    className="h-8"
+                  >
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Business Address Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Business Address Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Mailing address setup status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.businessAddressStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.businessAddressStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.businessAddressStatus || "pending"}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setBusinessAddressStatusDialogOpen(true)}
+                    className="h-8"
+                  >
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Service Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Service Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Overall service delivery status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.serviceStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.serviceStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.serviceStatus || "pending"}
+                  </Badge>
+                  <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
+                    Update
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Admin Manual Data Section - Add after Status Management card */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                <Hash className="w-4 h-4" />
+                Manual Admin Data
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-3">
+                  <Calendar className="w-4 h-4 text-slate-600" />
+                  <span className="text-sm text-slate-700">Tax & Compliance Info</span>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setTaxModalOpen(true)} disabled={statusUpdating}>
+                  Edit
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-3">
+                  <Building2 className="w-4 h-4 text-slate-600" />
+                  <span className="text-sm text-slate-700">Registered Agent</span>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setAgentModalOpen(true)} disabled={statusUpdating}>
+                  Edit
+                </Button>
+              </div>
+              <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                <div className="flex items-center gap-3">
+                  <MapPin className="w-4 h-4 text-slate-600" />
+                  <span className="text-sm text-slate-700">Business Address</span>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setAddressModalOpen(true)} disabled={statusUpdating}>
+                  Edit
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Milestones Section - Now inside main grid */}
+          <div className="col-span-3">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
+                <CheckCircle2 className="w-5 h-5" />
+                Milestones
+              </h2>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setCustomMilestoneDialogOpen(true)}
+                className="h-9"
+                disabled={
+                  statusUpdating ||
+                  agentUpdating ||
+                  addressUpdating ||
+                  einUpdating ||
+                  itinUpdating ||
+                  businessIdUpdating ||
+                  docUploading ||
+                  milestoneUpdating ||
+                  deleting
+                }
+              >
+                <Clock className="w-4 h-4 mr-2" />
+                Add Milestone
+              </Button>
+            </div>
+
+            {/* Standard Milestones */}
+            <Card className="bg-white border-slate-200 shadow-sm mb-4">
+              <CardHeader>
+                <CardTitle className="text-base font-semibold text-slate-900">Standard Progress</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  {[
+                    { key: "orderProcessed", label: "Order Processed", icon: Package },
+                    { key: "registeredAgentAssigned", label: "Registered Agent Assigned", icon: UserCheck },
+                    { key: "mailingAddressIssued", label: "Mailing Address Issued", icon: Home },
+                    { key: "formationCompleted", label: "Formation Completed", icon: Building2 },
+                    { key: "einProcessed", label: "EIN Processed", icon: Hash },
+                    { key: "boiReportFiled", label: "BOI Report Filed", icon: FileCheck },
+                  ].map((milestone) => (
+                    <div
+                      key={milestone.key}
+                      className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <milestone.icon className="w-5 h-5 text-slate-600" />
+                        <span className="text-sm font-medium text-slate-900">{milestone.label}</span>
+                      </div>
+                      <Switch
+                        checked={milestones[milestone.key as keyof typeof milestones]}
+                        onCheckedChange={() => handleMilestoneToggle(milestone.key as keyof typeof milestones)}
+                        disabled={milestoneUpdating}
+                      />
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Custom Milestones */}
+            {company?.customMilestones && company.customMilestones.length > 0 && (
+              <Card className="bg-white border-slate-200 shadow-sm">
+                <CardHeader>
+                  <CardTitle className="text-base font-semibold text-slate-900">Custom Milestones</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    {company.customMilestones.map((customMilestone: any) => (
+                      <div
+                        key={customMilestone.id}
+                        className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
+                      >
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
+                            {customMilestone.description && (
+                              <p className="text-xs text-slate-500 mt-0.5">{customMilestone.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Switch
+                            checked={customMilestone.completed}
+                            onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
+                            disabled={milestoneUpdating}
+                          />
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteCustomMilestone(customMilestone.id)}
+                            disabled={milestoneUpdating}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="space-y-3">
+          {/* Customer Information */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <User className="w-5 h-5" />
+                Customer
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {customer ? (
+                <div className="space-y-4">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Name</p>
+                    <p className="text-sm font-medium text-slate-900">{customer.name}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Email</p>
+                    <p className="text-sm font-medium text-slate-900">{customer.email}</p>
+                  </div>
+                  {customer.phone && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Phone</p>
+                      <p className="text-sm font-medium text-slate-900">{customer.phone}</p>
+                    </div>
+                  )}
+                  <Button
+                    variant="outline"
+                    className="w-full h-10 bg-transparent"
+                    onClick={() => router.push(`/admin/customers/${customer.id}`)}
+                    disabled={
+                      statusUpdating ||
+                      agentUpdating ||
+                      addressUpdating ||
+                      einUpdating ||
+                      itinUpdating ||
+                      businessIdUpdating ||
+                      docUploading ||
+                      milestoneUpdating ||
+                      deleting
+                    }
+                  >
+                    View Customer Profile
+                  </Button>
+                </div>
+              ) : (
+                <p className="text-sm text-slate-600">No customer information available</p>
+              )}
+            </CardContent>
+          </Card>
+
           {/* Admin Actions Card */}
           <Card className="shadow-sm border-slate-200">
             <CardHeader className="bg-slate-50/50 border-b">
@@ -2830,115 +3156,6 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Milestones Section - Now inside main grid */}
-          <div className="col-span-3">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-xl font-semibold text-slate-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" />
-                Milestones
-              </h2>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setCustomMilestoneDialogOpen(true)}
-                className="h-9"
-                disabled={
-                  statusUpdating ||
-                  agentUpdating ||
-                  addressUpdating ||
-                  einUpdating ||
-                  itinUpdating ||
-                  businessIdUpdating ||
-                  docUploading ||
-                  milestoneUpdating ||
-                  deleting
-                }
-              >
-                <Clock className="w-4 h-4 mr-2" />
-                Add Milestone
-              </Button>
-            </div>
-
-            {/* Standard Milestones */}
-            <Card className="bg-white border-slate-200 shadow-sm mb-4">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-slate-900">Standard Progress</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-3">
-                  {[
-                    { key: "orderProcessed", label: "Order Processed", icon: Package },
-                    { key: "registeredAgentAssigned", label: "Registered Agent Assigned", icon: UserCheck },
-                    { key: "mailingAddressIssued", label: "Mailing Address Issued", icon: Home },
-                    { key: "formationCompleted", label: "Formation Completed", icon: Building2 },
-                    { key: "einProcessed", label: "EIN Processed", icon: Hash },
-                    { key: "boiReportFiled", label: "BOI Report Filed", icon: FileCheck },
-                  ].map((milestone) => (
-                    <div
-                      key={milestone.key}
-                      className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
-                    >
-                      <div className="flex items-center gap-3">
-                        <milestone.icon className="w-5 h-5 text-slate-600" />
-                        <span className="text-sm font-medium text-slate-900">{milestone.label}</span>
-                      </div>
-                      <Switch
-                        checked={milestones[milestone.key as keyof typeof milestones]}
-                        onCheckedChange={() => handleMilestoneToggle(milestone.key as keyof typeof milestones)}
-                        disabled={milestoneUpdating}
-                      />
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Custom Milestones */}
-            {company?.customMilestones && company.customMilestones.length > 0 && (
-              <Card className="bg-white border-slate-200 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-base font-semibold text-slate-900">Custom Milestones</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-3">
-                    {company.customMilestones.map((customMilestone: any) => (
-                      <div
-                        key={customMilestone.id}
-                        className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
-                      >
-                        <div className="flex items-center gap-3 flex-1 min-w-0">
-                          <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
-                            {customMilestone.description && (
-                              <p className="text-xs text-slate-500 mt-0.5">{customMilestone.description}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Switch
-                            checked={customMilestone.completed}
-                            onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
-                            disabled={milestoneUpdating}
-                          />
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteCustomMilestone(customMilestone.id)}
-                            disabled={milestoneUpdating}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
         </div>
 
         {/* Manage Milestones Dialog */}
@@ -3560,6 +3777,39 @@ export default function OrderDetailPage() {
           description="Change the overall service delivery status"
           currentStatus={company?.serviceStatus || "pending"}
           onUpdate={handleServiceStatusUpdate}
+        />
+
+        {/* Manual Data Modals */}
+        <AdminManualDataModal
+          open={taxModalOpen}
+          onOpenChange={setTaxModalOpen}
+          companyId={company?._id}
+          dataType="tax"
+          currentData={{
+            formationDate: company?.formationDate,
+            ein: company?.ein,
+            businessId: company?.businessId,
+            taxClassification: company?.taxClassification,
+            annualReportFilingDate: company?.annualReportFilingDate,
+            irsFilingDate: company?.irsFilingDate,
+          }}
+          onUpdate={loadOrderData}
+        />
+        <AdminManualDataModal
+          open={agentModalOpen}
+          onOpenChange={setAgentModalOpen}
+          companyId={company?._id}
+          dataType="registered-agent"
+          currentData={company?.registeredAgent}
+          onUpdate={loadOrderData}
+        />
+        <AdminManualDataModal
+          open={addressModalOpen}
+          onOpenChange={setAddressModalOpen}
+          companyId={company?._id}
+          dataType="business-address"
+          currentData={company?.businessAddress}
+          onUpdate={loadOrderData}
         />
       </div>
     </div>
