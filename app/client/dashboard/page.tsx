@@ -772,8 +772,18 @@ export default function ClientDashboard() {
               <div className="space-y-2">
                 <p className="text-xs text-slate-500 font-medium">Service Status</p>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 rounded-full bg-green-500" />
-                  <h3 className="text-2xl font-bold text-slate-900">Active</h3>
+                  <div
+                    className={`w-2 h-2 rounded-full ${
+                      company?.serviceStatus === "active"
+                        ? "bg-green-500"
+                        : company?.serviceStatus === "inactive"
+                          ? "bg-red-500"
+                          : "bg-yellow-500"
+                    }`}
+                  />
+                  <h3 className="text-2xl font-bold text-slate-900 capitalize">
+                    {company?.serviceStatus || "Pending"}
+                  </h3>
                 </div>
               </div>
             </div>

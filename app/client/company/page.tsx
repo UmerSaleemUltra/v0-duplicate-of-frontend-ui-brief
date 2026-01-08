@@ -158,8 +158,8 @@ export default function CompanyPage() {
             businessAddress: selectedComp.businessAddress,
             itin: selectedComp.itin,
             companyStatus: selectedComp.status || "pending",
-            registeredAgentStatus: selectedComp.registeredAgent?.status || "pending",
-            businessAddressStatus: selectedComp.businessAddress?.status || "pending",
+            registeredAgentStatus: selectedComp.registeredAgentStatus || "pending",
+            businessAddressStatus: selectedComp.businessAddressStatus || "pending",
             serviceStatus: selectedComp.serviceStatus || "pending",
           })
         } else {
