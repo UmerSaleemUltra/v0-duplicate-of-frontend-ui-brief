@@ -284,6 +284,7 @@ export default function CompanyPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
           <h2 className="text-base sm:text-lg font-semibold mb-4">Business Status</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
+            {/* Business Name */}
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -295,15 +296,8 @@ export default function CompanyPage() {
                 </div>
               </div>
             </div>
-            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs sm:text-sm text-slate-600 mb-1">Order Date</div>
-                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.orderDate}</div>
-              </div>
-            </div>
+
+            {/* State of Formation */}
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <MapPin className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -313,6 +307,8 @@ export default function CompanyPage() {
                 <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.state}</div>
               </div>
             </div>
+
+            {/* Entity Type */}
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <Users className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -324,6 +320,45 @@ export default function CompanyPage() {
                 </div>
               </div>
             </div>
+
+            {/* Package Type */}
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Package Type</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base capitalize">
+                  {companyData.packageType}
+                </div>
+              </div>
+            </div>
+
+            {/* Order Date */}
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Order Date</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.orderDate}</div>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Company Status</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">
+                  {orderDetails?.status || companyData.status || "Active"}
+                </div>
+              </div>
+            </div>
+
+            {/* EIN Number */}
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -335,6 +370,8 @@ export default function CompanyPage() {
                 </div>
               </div>
             </div>
+
+            {/* Business ID */}
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -343,28 +380,6 @@ export default function CompanyPage() {
                 <div className="text-xs sm:text-sm text-slate-600 mb-1">Business ID</div>
                 <div className="font-medium text-slate-900 text-sm sm:text-base">
                   {companyData.businessId || "Not Assigned"}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs sm:text-sm text-slate-600 mb-1">Status</div>
-                <div className="font-medium text-slate-900 text-sm sm:text-base">
-                  {orderDetails?.status || companyData.status || "Active"}
-                </div>
-              </div>
-            </div>
-            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <Package className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs sm:text-sm text-slate-600 mb-1">Package Type</div>
-                <div className="font-medium text-slate-900 text-sm sm:text-base capitalize">
-                  {companyData.packageType}
                 </div>
               </div>
             </div>
