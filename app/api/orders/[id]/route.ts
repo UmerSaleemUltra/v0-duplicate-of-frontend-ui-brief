@@ -7,9 +7,9 @@ import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 import type { Company, User } from "@/lib/types"
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params
+    const { id } = params
 
     console.log("[v0] Fetching order with ID:", id)
 
@@ -298,9 +298,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params
+    const { id } = params
 
     validateObjectId(id, "Order ID")
 
@@ -384,9 +384,84 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params
+    const token = req.headers.get("authorization")?.replace("Bearer ", "")
+    if (!token) {
+      return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
+    }
+
+    const decoded = verifyToken(token)
+    if (!decoded || decoded.role !== "admin") {
+      return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
+    }
+
+    const { id } = params
+    if (!id || !validateObjectId(id)) {
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid order ID" }, { status: 400 }))
+    }
+
+    const body = await req.json()
+    const { db } = await connectDB()
+
+    const updateData: any = {}
+
+    if (body.pricing) {
+      updateData.pricing = body.pricing
+      updateData.packagePrice = body.pricing.packagePrice
+      updateData.stateFilingFee = body.pricing.stateFilingFee
+      updateData.addonsTotal = body.pricing.addonsTotal
+      updateData.subtotal = body.pricing.subtotal
+      updateData.total = body.pricing.total
+      updateData.amount = body.pricing.total
+    }
+
+    if (body.status) {
+      updateData.status = body.status
+    }
+
+    updateData.updatedAt = new Date().toISOString()
+
+    console.log("[v0] Updating order with data:", updateData)
+
+    // Try to update in orders collection first
+    let result = await db.collection("orders").updateOne({ _id: new ObjectId(id) }, { $set: updateData })
+
+    // If not found in orders collection, try updating embedded order in companies
+    if (result.matchedCount === 0) {
+      console.log("[v0] Order not in orders collection, updating embedded order...")
+
+      result = await db.collection("companies").updateOne(
+        { "orders.id": id },
+        {
+          $set: {
+            "orders.$.pricing": body.pricing,
+            "orders.$.status": body.status,
+            "orders.$.updatedAt": new Date().toISOString(),
+          },
+        },
+      )
+    }
+
+    if (result.matchedCount === 0) {
+      return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
+    }
+
+    return addSecurityHeaders(
+      NextResponse.json({
+        success: true,
+        message: "Order updated successfully",
+      }),
+    )
+  } catch (error) {
+    console.error("[v0] Error updating order:", error)
+    return addSecurityHeaders(NextResponse.json({ error: "Internal server error" }, { status: 500 }))
+  }
+}
+
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+  try {
+    const { id } = params
 
     validateObjectId(id, "Order ID")
 
