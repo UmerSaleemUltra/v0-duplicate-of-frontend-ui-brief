@@ -2,7 +2,17 @@
 
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ClientShell } from "@/components/client/client-shell"
-import { Building2, MapPin, Calendar, Users, DollarSign, ShoppingCart, AlertCircle, Building } from "lucide-react"
+import {
+  Building2,
+  MapPin,
+  Calendar,
+  Users,
+  DollarSign,
+  ShoppingCart,
+  AlertCircle,
+  Building,
+  Package,
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
@@ -359,6 +369,17 @@ export default function CompanyPage() {
                 <div className="text-xs sm:text-sm text-slate-600 mb-1">Status</div>
                 <div className="font-medium text-slate-900 text-sm sm:text-base">
                   {orderDetails?.status || companyData.status || "Active"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Package className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Package Type</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base capitalize">
+                  {companyData.packageType}
                 </div>
               </div>
             </div>
