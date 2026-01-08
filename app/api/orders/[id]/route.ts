@@ -48,14 +48,61 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     console.log("[v0] Connected to database, searching for order...")
 
-    const orderDoc = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+    let orderDoc = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+    let isEmbeddedOrder = false
+    let companyDoc: any = null
+
+    if (!orderDoc) {
+      console.log("[v0] Order not found in orders collection, searching embedded orders in companies...")
+
+      companyDoc = await db.collection("companies").findOne({
+        "orders.id": id,
+      })
+
+      if (companyDoc && companyDoc.orders) {
+        // Find the specific order in the embedded orders array
+        const embeddedOrder = companyDoc.orders.find((o: any) => o.id === id)
+        if (embeddedOrder) {
+          console.log("[v0] Found embedded order in company:", companyDoc._id.toString())
+          isEmbeddedOrder = true
+          // Convert embedded order to orderDoc format
+          orderDoc = {
+            _id: { toString: () => id }, // Mock ObjectId
+            id: embeddedOrder.id,
+            userId: companyDoc.userId,
+            companyId: companyDoc._id.toString(),
+            orderType: embeddedOrder.orderType,
+            packageType: embeddedOrder.packageType,
+            state: embeddedOrder.state,
+            status: embeddedOrder.status,
+            pricing: embeddedOrder.pricing,
+            selectedAddons: embeddedOrder.selectedAddons || [],
+            purchasedAddons: embeddedOrder.selectedAddons || [],
+            paymentInfo: embeddedOrder.paymentInfo,
+            paymentMethod: embeddedOrder.paymentInfo?.method,
+            paymentStatus: embeddedOrder.paymentInfo?.status,
+            transactionId: embeddedOrder.paymentInfo?.transactionId,
+            transactionReference: embeddedOrder.paymentInfo?.transactionId,
+            paymentDate: embeddedOrder.paymentInfo?.date,
+            amount: embeddedOrder.pricing?.total,
+            total: embeddedOrder.pricing?.total,
+            packagePrice: embeddedOrder.pricing?.packagePrice,
+            stateFilingFee: embeddedOrder.pricing?.stateFilingFee,
+            addonsTotal: embeddedOrder.pricing?.addonsTotal,
+            subtotal: embeddedOrder.pricing?.subtotal,
+            createdAt: embeddedOrder.createdAt,
+            updatedAt: embeddedOrder.updatedAt,
+          }
+        }
+      }
+    }
 
     if (!orderDoc) {
       console.error("[v0] Order not found in database for ID:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
-    console.log("[v0] Order found:", orderDoc._id.toString())
+    console.log("[v0] Order found:", id, "Type:", isEmbeddedOrder ? "embedded" : "standalone")
 
     if (decoded.role !== "admin" && orderDoc.userId?.toString() !== decoded.userId) {
       console.error("[v0] User not authorized to view this order")
@@ -67,47 +114,82 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     let passportDocuments: any[] = []
 
     try {
-      if (orderDoc.companyId) {
+      if (companyDoc) {
+        company = {
+          id: companyDoc._id.toString(),
+          name: companyDoc.name,
+          type: companyDoc.type,
+          state: companyDoc.state,
+          status: companyDoc.status,
+          members: companyDoc.members || [],
+          address: companyDoc.address,
+          businessCategory: companyDoc.businessCategory,
+          businessDescription: companyDoc.businessDescription,
+          businessWebsite: companyDoc.businessWebsite,
+          packageType: companyDoc.packageType,
+          transactionReference: companyDoc.transactionReference,
+          userId: companyDoc.userId?.toString(),
+          ein: companyDoc.ein || null,
+          itin: companyDoc.itin || null,
+          businessId: companyDoc.businessId || null,
+          entityType: companyDoc.entityType,
+          formationDate: companyDoc.formationDate,
+          milestones: {
+            orderProcessed: companyDoc.milestones?.orderProcessed || true,
+            registeredAgentAssigned: companyDoc.milestones?.registeredAgentAssigned || false,
+            mailingAddressIssued: companyDoc.milestones?.mailingAddressIssued || false,
+            formationCompleted: companyDoc.milestones?.formationCompleted || false,
+            einProcessed: companyDoc.milestones?.einProcessed || false,
+            boiReportFiled: companyDoc.milestones?.boiReportFiled || false,
+          },
+          customMilestones: companyDoc.customMilestones || [],
+          registeredAgent: companyDoc.registeredAgent || null,
+          mailingAddress: companyDoc.mailingAddress || null,
+          purchasedAddons: companyDoc.purchasedAddons || [],
+          createdAt: companyDoc.createdAt,
+          updatedAt: companyDoc.updatedAt,
+        } as Company
+      } else if (orderDoc.companyId) {
         const companyLookupValue =
           typeof orderDoc.companyId === "string" && ObjectId.isValid(orderDoc.companyId)
             ? new ObjectId(orderDoc.companyId)
             : orderDoc.companyId
 
-        const companyDoc = await db.collection("companies").findOne({ _id: companyLookupValue })
-        if (companyDoc) {
+        const foundCompanyDoc = await db.collection("companies").findOne({ _id: companyLookupValue })
+        if (foundCompanyDoc) {
           company = {
-            id: companyDoc._id.toString(),
-            name: companyDoc.name,
-            type: companyDoc.type,
-            state: companyDoc.state,
-            status: companyDoc.status,
-            members: companyDoc.members || [],
-            address: companyDoc.address,
-            businessCategory: companyDoc.businessCategory,
-            businessDescription: companyDoc.businessDescription,
-            businessWebsite: companyDoc.businessWebsite,
-            packageType: companyDoc.packageType,
-            transactionReference: companyDoc.transactionReference,
-            userId: companyDoc.userId?.toString(),
-            ein: companyDoc.ein || null,
-            itin: companyDoc.itin || null,
-            businessId: companyDoc.businessId || null,
-            entityType: companyDoc.entityType,
-            formationDate: companyDoc.formationDate,
+            id: foundCompanyDoc._id.toString(),
+            name: foundCompanyDoc.name,
+            type: foundCompanyDoc.type,
+            state: foundCompanyDoc.state,
+            status: foundCompanyDoc.status,
+            members: foundCompanyDoc.members || [],
+            address: foundCompanyDoc.address,
+            businessCategory: foundCompanyDoc.businessCategory,
+            businessDescription: foundCompanyDoc.businessDescription,
+            businessWebsite: foundCompanyDoc.businessWebsite,
+            packageType: foundCompanyDoc.packageType,
+            transactionReference: foundCompanyDoc.transactionReference,
+            userId: foundCompanyDoc.userId?.toString(),
+            ein: foundCompanyDoc.ein || null,
+            itin: foundCompanyDoc.itin || null,
+            businessId: foundCompanyDoc.businessId || null,
+            entityType: foundCompanyDoc.entityType,
+            formationDate: foundCompanyDoc.formationDate,
             milestones: {
-              orderProcessed: companyDoc.milestones?.orderProcessed || true,
-              registeredAgentAssigned: companyDoc.milestones?.registeredAgentAssigned || false,
-              mailingAddressIssued: companyDoc.milestones?.mailingAddressIssued || false,
-              formationCompleted: companyDoc.milestones?.formationCompleted || false,
-              einProcessed: companyDoc.milestones?.einProcessed || false,
-              boiReportFiled: companyDoc.milestones?.boiReportFiled || false,
+              orderProcessed: foundCompanyDoc.milestones?.orderProcessed || true,
+              registeredAgentAssigned: foundCompanyDoc.milestones?.registeredAgentAssigned || false,
+              mailingAddressIssued: foundCompanyDoc.milestones?.mailingAddressIssued || false,
+              formationCompleted: foundCompanyDoc.milestones?.formationCompleted || false,
+              einProcessed: foundCompanyDoc.milestones?.einProcessed || false,
+              boiReportFiled: foundCompanyDoc.milestones?.boiReportFiled || false,
             },
-            customMilestones: companyDoc.customMilestones || [],
-            registeredAgent: companyDoc.registeredAgent || null,
-            mailingAddress: companyDoc.mailingAddress || null,
-            purchasedAddons: companyDoc.purchasedAddons || [],
-            createdAt: companyDoc.createdAt,
-            updatedAt: companyDoc.updatedAt,
+            customMilestones: foundCompanyDoc.customMilestones || [],
+            registeredAgent: foundCompanyDoc.registeredAgent || null,
+            mailingAddress: foundCompanyDoc.mailingAddress || null,
+            purchasedAddons: foundCompanyDoc.purchasedAddons || [],
+            createdAt: foundCompanyDoc.createdAt,
+            updatedAt: foundCompanyDoc.updatedAt,
           } as Company
         }
       }
@@ -172,7 +254,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const result = {
       success: true,
       data: {
-        id: orderDoc._id.toString(),
+        id: orderDoc.id,
         userId: orderDoc.userId?.toString(),
         companyId: orderDoc.companyId?.toString(),
         orderType: orderDoc.orderType,
