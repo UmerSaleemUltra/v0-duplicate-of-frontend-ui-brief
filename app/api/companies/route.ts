@@ -124,14 +124,37 @@ export async function POST(req: NextRequest) {
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
-    if (!token) {
-      return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
+    console.log("[v0] POST /api/companies - Auth header present:", !!authHeader)
+    console.log("[v0] POST /api/companies - Token extracted:", !!token)
+
+    if (!token || token.trim() === "") {
+      console.log("[v0] POST /api/companies - REJECTED: No token provided")
+      return addSecurityHeaders(
+        NextResponse.json(
+          {
+            error: "Unauthorized",
+            message: "Authentication token is required to create a company",
+          },
+          { status: 401 },
+        ),
+      )
     }
 
     const decoded = verifyToken(token)
-    if (!decoded) {
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
+    if (!decoded || !decoded.userId) {
+      console.log("[v0] POST /api/companies - REJECTED: Invalid or expired token")
+      return addSecurityHeaders(
+        NextResponse.json(
+          {
+            error: "Invalid token",
+            message: "Your session has expired or the authentication token is invalid",
+          },
+          { status: 401 },
+        ),
+      )
     }
+
+    console.log("[v0] POST /api/companies - Authenticated user:", decoded.userId, "Role:", decoded.role)
 
     const body = await req.json()
 
@@ -180,6 +203,7 @@ export async function POST(req: NextRequest) {
       ? [
           {
             id: new ObjectId().toString(),
+            userId: decoded.userId, // Force use of authenticated user ID
             orderType: orderData.orderType || `${type} Formation`,
             packageType: orderData.packageType || packageType || "basic",
             state: state,
@@ -210,7 +234,7 @@ export async function POST(req: NextRequest) {
     const totalRevenue = initialOrders.reduce((sum, order) => sum + (order.pricing?.total || 0), 0)
 
     const newCompany = {
-      userId: decoded.userId,
+      userId: decoded.userId, // Always use authenticated user ID
       name,
       type,
       state,
@@ -243,6 +267,8 @@ export async function POST(req: NextRequest) {
     const companyId = result.insertedId.toString()
 
     const createdCompany = { id: companyId, ...newCompany }
+
+    console.log("[v0] POST /api/companies - Company created successfully:", companyId, "for user:", decoded.userId)
 
     broadcastUpdate("companies", "created", createdCompany)
 
@@ -286,6 +312,7 @@ export async function POST(req: NextRequest) {
       }),
     )
   } catch (error: any) {
+    console.error("[v0] POST /api/companies error:", error)
     return addSecurityHeaders(
       NextResponse.json(
         {
