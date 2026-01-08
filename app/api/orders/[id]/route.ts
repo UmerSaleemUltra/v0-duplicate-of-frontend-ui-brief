@@ -11,6 +11,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params
 
+    console.log("[v0] GET /api/orders/[id] - Order ID:", id)
+
     validateObjectId(id, "Order ID")
 
     const authHeader = req.headers.get("authorization")
@@ -27,11 +29,34 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const { db } = await connectDB()
 
-    const orderDoc = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+    let orderDoc = await db.collection("orders").findOne({ _id: new ObjectId(id) })
 
     if (!orderDoc) {
+      console.log("[v0] Order not found in orders collection, searching companies...")
+      const companyWithOrder = await db.collection("companies").findOne({
+        "orders._id": new ObjectId(id),
+      })
+
+      if (companyWithOrder && companyWithOrder.orders) {
+        const embeddedOrder = companyWithOrder.orders.find((order: any) => order._id.toString() === id)
+
+        if (embeddedOrder) {
+          console.log("[v0] Found embedded order in company:", companyWithOrder._id.toString())
+          orderDoc = {
+            ...embeddedOrder,
+            companyId: companyWithOrder._id,
+            userId: companyWithOrder.userId || embeddedOrder.userId,
+          }
+        }
+      }
+    }
+
+    if (!orderDoc) {
+      console.log("[v0] Order not found in either collection")
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
+
+    console.log("[v0] Order found:", orderDoc._id.toString())
 
     if (decoded.role !== "admin" && orderDoc.userId?.toString() !== decoded.userId) {
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
@@ -79,7 +104,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             },
             customMilestones: companyDoc.customMilestones || [],
             registeredAgent: companyDoc.registeredAgent || null,
+            registeredAgentStatus: companyDoc.registeredAgentStatus || "pending",
             mailingAddress: companyDoc.mailingAddress || null,
+            businessAddressStatus: companyDoc.businessAddressStatus || "pending",
+            companyStatus: companyDoc.companyStatus || "pending",
+            serviceStatus: companyDoc.serviceStatus || "pending",
             purchasedAddons: companyDoc.purchasedAddons || [],
             createdAt: companyDoc.createdAt,
             updatedAt: companyDoc.updatedAt,
