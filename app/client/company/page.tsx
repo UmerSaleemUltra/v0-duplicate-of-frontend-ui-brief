@@ -2,7 +2,18 @@
 
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ClientShell } from "@/components/client/client-shell"
-import { Building2, MapPin, Calendar, Users, DollarSign, ShoppingCart, AlertCircle, FileText, Mail } from "lucide-react"
+import {
+  Building2,
+  MapPin,
+  Calendar,
+  Users,
+  DollarSign,
+  ShoppingCart,
+  AlertCircle,
+  FileText,
+  Mail,
+  Building,
+} from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
@@ -269,9 +280,6 @@ export default function CompanyPage() {
 
   const hasITIN = companyData?.itin && companyData.itin.trim() !== ""
 
-  const hasAddons = companyData.purchasedAddons && companyData.purchasedAddons.length > 0
-  const addonsArray = companyData.purchasedAddons || []
-
   return (
     <ClientShell>
       <div className="space-y-6 md:space-8">
@@ -351,6 +359,28 @@ export default function CompanyPage() {
               <div className="min-w-0 flex-1">
                 <div className="text-xs sm:text-sm text-slate-600 mb-1">Documents</div>
                 <div className="font-medium text-slate-900 text-sm sm:text-base">{documentCount} items</div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">EIN Number</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">
+                  {companyData.ein || "Not Assigned"}
+                </div>
+              </div>
+            </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Business ID</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">
+                  {companyData.businessId || "Not Assigned"}
+                </div>
               </div>
             </div>
           </div>
@@ -541,24 +571,23 @@ export default function CompanyPage() {
         )}
 
         {/* Purchased Add-ons Section */}
-        {hasAddons && (
-          <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-            <div className="bg-gradient-to-r from-[#ff0d13] to-[#d00a10] p-6 text-white">
-              <div className="flex items-center gap-3">
-                <div className="p-3 bg-white/20 rounded-lg">
-                  <ShoppingCart className="h-6 w-6" />
-                </div>
-                <div>
-                  <h2 className="text-2xl font-bold">Purchased Add-ons</h2>
-                  <p className="text-white/90 text-sm">Additional services for your business</p>
-                </div>
-              </div>
+        {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <div className="flex items-center gap-2 mb-4">
+              <ShoppingCart className="w-5 h-5 text-[#ff0d13]" />
+              <h2 className="text-base sm:text-lg font-semibold">Purchased Add-ons</h2>
             </div>
-            <div className="p-6 space-y-3">
-              {addonsArray.map((addon: any) => {
-                const addonName = typeof addon === "object" ? addon.name : addon
-                const addonPrice = typeof addon === "object" && addon.price ? `$${addon.price}` : null
-                const addonKey = typeof addon === "object" ? addon.serviceId || addon.name : addon
+
+            <div className="grid sm:grid-cols-2 gap-3">
+              {companyData.purchasedAddons.map((addon: any, index: number) => {
+                const addonName = typeof addon === "string" ? addon : addon.name || "Unknown Add-on"
+
+                const addonPrice = typeof addon === "object" && addon.price ? `$${addon.price}` : ""
+
+                const addonKey =
+                  typeof addon === "string"
+                    ? `${addon}-${index}`
+                    : `${addon.serviceId || addon.name}-${addon.memberId || index}`
 
                 return (
                   <div key={addonKey} className="p-3 rounded-lg bg-emerald-50 border border-emerald-200">
@@ -573,51 +602,6 @@ export default function CompanyPage() {
             </div>
           </div>
         )}
-
-        {/* Business ID/EIN Information section */}
-        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-          <div className="p-6">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="p-3 bg-[#ff0d13]/10 rounded-lg">
-                <FileText className="h-6 w-6 text-[#ff0d13]" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-slate-900">Tax Identification</h2>
-                <p className="text-slate-600 text-sm">Business identification numbers</p>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              {companyData?.ein && companyData.ein !== "Not yet" && companyData.ein !== "Pending" && (
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="text-sm font-medium text-slate-600 mb-1">EIN (Employer Identification Number)</div>
-                  <div className="text-lg font-semibold text-slate-900">{companyData.ein}</div>
-                  <div className="mt-3 p-3 rounded-md bg-emerald-50 border border-emerald-200">
-                    <p className="text-sm text-emerald-700">
-                      Your EIN has been successfully processed and assigned to your company.
-                    </p>
-                  </div>
-                </div>
-              )}
-
-              {companyData?.businessId && companyData.businessId !== "BIZ-PENDING" && (
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="text-sm font-medium text-slate-600 mb-1">Business ID</div>
-                  <div className="text-lg font-semibold text-slate-900">{companyData.businessId}</div>
-                </div>
-              )}
-
-              {(!companyData?.ein || companyData.ein === "Not yet" || companyData.ein === "Pending") &&
-                (!companyData?.businessId || companyData.businessId === "BIZ-PENDING") && (
-                  <div className="p-4 rounded-lg bg-amber-50 border border-amber-200">
-                    <p className="text-sm text-amber-700">
-                      Your tax identification numbers are being processed and will be assigned soon.
-                    </p>
-                  </div>
-                )}
-            </div>
-          </div>
-        </div>
       </div>
     </ClientShell>
   )
