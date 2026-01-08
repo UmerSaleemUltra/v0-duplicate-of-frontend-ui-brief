@@ -269,11 +269,15 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     return () => clearTimeout(timer)
   }, [])
 
-  const handleSelectCompany = async (company: any) => {
-    console.log("[v0] Selecting company:", company.name, company.id)
+  const handleSelectCompany = (company: any) => {
+    console.log("[v0] Switching to company:", company.id, company.name)
     setSelectedCompanyId(company.id)
     setCompanyModalOpen(false)
-    window.dispatchEvent(new Event("client-dashboard-refresh"))
+
+    // Force refresh the page to reload data for new company
+    setTimeout(() => {
+      window.location.reload()
+    }, 100)
   }
 
   const handleAddNewCompany = () => {
@@ -492,18 +496,18 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                         truncateMode="smart"
                       />
                       <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-slate-600">
+                        <span className="truncate max-w-[80px] sm:max-w-none">{company.entityType}</span>
+                        <span className="hidden xs:inline">•</span>
                         <span className="truncate max-w-[80px] sm:max-w-none">{company.state}</span>
                         <Badge
                           variant="outline"
                           className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 ${
-                            company.serviceStatus === "active"
+                            company.status === "active"
                               ? "bg-green-50 text-green-700 border-green-200"
-                              : company.serviceStatus === "inactive"
-                                ? "bg-red-50 text-red-700 border-red-200"
-                                : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                              : "bg-yellow-50 text-yellow-700 border-yellow-200"
                           }`}
                         >
-                          {company.serviceStatus || "pending"}
+                          {company.status}
                         </Badge>
                       </div>
                     </div>

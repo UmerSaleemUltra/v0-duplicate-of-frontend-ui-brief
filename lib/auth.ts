@@ -256,21 +256,3 @@ export const authService = {
     }
   },
 }
-
-export async function verifyToken(token: string): Promise<{ id: string; role: string; email: string } | null> {
-  try {
-    const response = await ApiClient.auth.me(token)
-    if (!response) return null
-
-    const userId = response.id || response._id
-    if (!userId) return null
-
-    return {
-      id: userId,
-      role: response.role,
-      email: response.email,
-    }
-  } catch {
-    return null
-  }
-}

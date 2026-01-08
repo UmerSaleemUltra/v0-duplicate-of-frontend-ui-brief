@@ -38,13 +38,11 @@ export default function CompanyPage() {
   const [orderDetails, setOrderDetails] = useState<any>(null)
 
   useEffect(() => {
-    const fetchCompanyData = async () => {
-      setLoading(true)
-      console.log("[v0] Fetching company details for:", selectedCompanyId)
-
+    const loadCompanyData = async () => {
       if (!selectedCompanyId) return
 
       try {
+        setLoading(true)
         setError(null)
 
         const token = authService.getToken()
@@ -176,18 +174,7 @@ export default function CompanyPage() {
       }
     }
 
-    fetchCompanyData()
-
-    const handleRefresh = () => {
-      console.log("[v0] Company page refresh triggered")
-      fetchCompanyData()
-    }
-
-    window.addEventListener("client-dashboard-refresh", handleRefresh)
-
-    return () => {
-      window.removeEventListener("client-dashboard-refresh", handleRefresh)
-    }
+    loadCompanyData()
   }, [selectedCompanyId])
 
   if (authLoading) {
@@ -278,13 +265,6 @@ export default function CompanyPage() {
     companyData.registeredAgent.name !== "BuzzFiling Services Inc." &&
     companyData.registeredAgent.name !== "BuzzFiling Services" &&
     companyData.registeredAgent.name !== "BuzzFiling Registered Agent Services"
-
-  const hasBusinessAddress =
-    companyData?.businessAddress &&
-    companyData.businessAddress.address &&
-    companyData.businessAddress.address.trim() !== "" &&
-    companyData.businessAddress.address !== "Not yet" &&
-    companyData.businessAddress.address !== "Not Yet Assigned"
 
   const hasITIN = companyData?.itin && companyData.itin.trim() !== ""
 
@@ -623,55 +603,56 @@ export default function CompanyPage() {
         )}
 
         {/* Business Address */}
-        {hasBusinessAddress && (
-          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Business Address</h2>
-            <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">Company Name</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base sm:text-right">
-                  {companyData.businessName}
-                </span>
-              </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Address</h2>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Company Name</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base sm:text-right">
+                {companyData.businessName}
+              </span>
+            </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">Address</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base sm:text-right">
-                  {companyData.businessAddress?.address}
-                  {companyData.businessAddress?.city && `, ${companyData.businessAddress.city}`}
-                  {companyData.businessAddress?.state && `, ${companyData.businessAddress.state}`}
-                  {companyData.businessAddress?.zip && ` ${companyData.businessAddress.zip}`}
-                </span>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Address</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base sm:text-right">
+                {companyData.businessAddress?.address || companyData.registeredAgent?.address || "Not Yet Assigned"}
+                {(companyData.businessAddress?.city || companyData.registeredAgent?.city) &&
+                  `, ${companyData.businessAddress?.city || companyData.registeredAgent?.city}`}
+                {(companyData.businessAddress?.state || companyData.registeredAgent?.state) &&
+                  `, ${companyData.businessAddress?.state || companyData.registeredAgent?.state}`}
+                {(companyData.businessAddress?.zip || companyData.registeredAgent?.zip) &&
+                  ` ${companyData.businessAddress?.zip || companyData.registeredAgent?.zip}`}
+              </span>
+            </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">Expiry Date</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base">
-                  {new Date(
-                    new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                  ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-                </span>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Expiry Date</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {new Date(
+                  new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+              </span>
+            </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                <span className="text-slate-600 text-sm sm:text-base">Status</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base">
-                  <Badge
-                    className={
-                      companyData.businessAddressStatus === "active"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
-                        : companyData.businessAddressStatus === "inactive"
-                          ? "bg-red-50 text-red-700 border-red-200 capitalize"
-                          : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
-                    }
-                  >
-                    {companyData.businessAddressStatus || "Pending"}
-                  </Badge>
-                </span>
-              </div>
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Status</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                <Badge
+                  className={
+                    companyData.businessAddressStatus === "active"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
+                      : companyData.businessAddressStatus === "inactive"
+                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                  }
+                >
+                  {companyData.businessAddressStatus || "Pending"}
+                </Badge>
+              </span>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Purchased Add-ons */}
         {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
