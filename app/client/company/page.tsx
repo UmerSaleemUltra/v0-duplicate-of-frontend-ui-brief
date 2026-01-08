@@ -297,7 +297,7 @@ export default function CompanyPage() {
 
         {/* Company Status */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Status</h2>
           <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
@@ -402,6 +402,35 @@ export default function CompanyPage() {
             </div>
           </div>
         )}
+
+        {/* Business Details */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-2xl font-bold mb-6">Business Details</h2>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Business Category</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {companyData.businessCategory || "Not specified"}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Business Website</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {companyData.website || "Not yet"}
+              </span>
+            </div>
+
+            {companyData.businessDescription && (
+              <div className="flex flex-col py-2 gap-2">
+                <span className="text-slate-600 text-sm sm:text-base">Business Description</span>
+                <span className="font-medium text-slate-900 text-sm sm:text-base">
+                  {companyData.businessDescription}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Members & Owners */}
         {companyData.members && companyData.members.length > 0 && (
