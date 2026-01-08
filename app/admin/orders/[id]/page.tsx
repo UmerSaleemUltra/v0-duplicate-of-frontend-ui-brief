@@ -46,6 +46,8 @@ import {
   Plus,
   DollarSign,
   Users,
+  CreditCard,
+  ShoppingCart,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -2240,6 +2242,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Company Information - Updated to show more details */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -2262,7 +2265,9 @@ export default function OrderDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Entity Type</p>
-                  <p className="text-sm font-medium text-slate-900">{getDisplayValue(company?.entityType)}</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {getDisplayValue(company?.type || company?.entityType)}
+                  </p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Business Category</p>
@@ -2283,28 +2288,163 @@ export default function OrderDetailPage() {
                 </div>
                 <div>
                   <p className="text-sm text-slate-600 mb-1">Business Website</p>
-                  {company?.website || order.businessWebsite ? (
+                  {company?.businessWebsite || company?.website || order.businessWebsite ? (
                     <a
-                      href={company?.website || order.businessWebsite}
+                      href={company?.businessWebsite || company?.website || order.businessWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-sm font-medium text-[#880000] hover:underline"
                     >
-                      {company?.website || order.businessWebsite}
+                      {company?.businessWebsite || company?.website || order.businessWebsite}
                     </a>
                   ) : (
                     <p className="text-sm font-medium text-slate-900">N/A</p>
                   )}
                 </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Transaction Reference</p>
+                  <p className="text-sm font-medium text-slate-900">{getDisplayValue(company?.transactionReference)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Revenue</p>
+                  <p className="text-sm font-medium text-[#880000]">${formatPrice(company?.revenue || 0)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Created Date</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {company?.createdAt
+                      ? new Date(company.createdAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "N/A"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Last Updated</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    {company?.updatedAt
+                      ? new Date(company.updatedAt).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })
+                      : "N/A"}
+                  </p>
+                </div>
               </div>
               <div className="mt-4">
                 <p className="text-sm text-slate-600 mb-1">Business Description</p>
                 <p className="text-sm text-slate-700">
-                  {getDisplayValue(company?.description || order.businessDescription)}
+                  {getDisplayValue(company?.businessDescription || company?.description || order.businessDescription)}
                 </p>
               </div>
             </CardContent>
           </Card>
+
+          {/* Business Address section to display company address */}
+          {company?.address && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Home className="w-5 h-5" />
+                  Business Address
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {company.address.street && (
+                    <p className="text-sm text-slate-900">
+                      <span className="text-slate-600">Street:</span> {company.address.street}
+                    </p>
+                  )}
+                  <p className="text-sm text-slate-900">
+                    {[company.address.city, company.address.state, company.address.zip].filter(Boolean).join(", ") ||
+                      "Address not yet assigned"}
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Payment Information section to show complete payment details including WhatsApp phone */}
+          {order?.paymentInfo && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <CreditCard className="w-5 h-5" />
+                  Payment Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Payment Method</p>
+                    <p className="text-sm font-medium text-slate-900 capitalize">
+                      {order.paymentInfo.method?.replace(/_/g, " ") || "N/A"}
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 mb-1">Payment Status</p>
+                    <Badge
+                      className={`${
+                        order.paymentInfo.status === "paid"
+                          ? "bg-green-100 text-green-700"
+                          : "bg-yellow-100 text-yellow-700"
+                      } capitalize`}
+                    >
+                      {order.paymentInfo.status}
+                    </Badge>
+                  </div>
+                  {order.paymentInfo.whatsappPhone && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">WhatsApp Phone</p>
+                      <p className="text-sm font-medium text-slate-900">{order.paymentInfo.whatsappPhone}</p>
+                    </div>
+                  )}
+                  {order.paymentInfo.transactionId && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Transaction ID</p>
+                      <p className="text-sm font-medium text-slate-900">{order.paymentInfo.transactionId}</p>
+                    </div>
+                  )}
+                  {order.paymentInfo.date && (
+                    <div>
+                      <p className="text-sm text-slate-600 mb-1">Payment Date</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {new Date(order.paymentInfo.date).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "short",
+                          day: "numeric",
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </p>
+                    </div>
+                  )}
+                  {order.paymentInfo.receiptUrl && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-slate-600 mb-1">Receipt</p>
+                      <a
+                        href={order.paymentInfo.receiptUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 text-sm text-[#880000] hover:underline"
+                      >
+                        <FileText className="w-4 h-4" />
+                        View Receipt
+                      </a>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           {/* Order & Pricing Details */}
           {order?.pricing && (
@@ -2600,6 +2740,33 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Purchased Add-ons section */}
+          {company?.purchasedAddons && company.purchasedAddons.length > 0 && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <ShoppingCart className="w-5 h-5" />
+                  Purchased Add-ons
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {company.purchasedAddons.map((addon: any, index: number) => (
+                    <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
+                      <div>
+                        <p className="text-sm font-medium text-slate-900">{addon.name || addon}</p>
+                        {addon.description && <p className="text-xs text-slate-600 mt-1">{addon.description}</p>}
+                      </div>
+                      {addon.price && (
+                        <span className="text-sm font-semibold text-slate-900">${formatPrice(addon.price)}</span>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
