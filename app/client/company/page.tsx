@@ -465,7 +465,7 @@ export default function CompanyPage() {
 
                     <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
                       <span className="text-slate-600 text-sm sm:text-base">Address</span>
-                      <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
+                      <span className="font-medium text-slate-900 text-sm sm:text-base sm:text-right">
                         {member.address}, {member.city}, {member.state} {member.zip}, {member.country}
                       </span>
                     </div>
@@ -481,6 +481,54 @@ export default function CompanyPage() {
           </div>
         )}
 
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Tax & Compliance Information</h2>
+          <div className="space-y-4">
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">EIN</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {companyData.ein || "Not yet assigned"}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Tax Classification</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {companyData.entityType === "LLC"
+                  ? "Limited Liability Company"
+                  : companyData.entityType === "S-Corp"
+                    ? "S Corporation"
+                    : "Not specified"}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Annual Report Filing Date</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {new Date(
+                  new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">IRS Tax Return Filing Date</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {(() => {
+                  const orderDate = new Date(companyData.orderDate)
+                  const taxFilingDate = new Date(orderDate)
+                  taxFilingDate.setMonth(orderDate.getMonth() + 15)
+                  return taxFilingDate.toLocaleDateString("en-US", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })
+                })()}
+              </span>
+            </div>
+          </div>
+        </div>
+
         {/* Registered Agent */}
         {hasRegisteredAgent && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
@@ -495,7 +543,7 @@ export default function CompanyPage() {
 
               <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
                 <span className="text-slate-600 text-sm sm:text-base">Address</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
+                <span className="font-medium text-slate-900 text-sm sm:text-base sm:text-right">
                   {companyData.registeredAgent?.address}
                   {companyData.registeredAgent?.city && `, ${companyData.registeredAgent.city}`}
                   {companyData.registeredAgent?.state && `, ${companyData.registeredAgent.state}`}
@@ -544,14 +592,14 @@ export default function CompanyPage() {
           <div className="space-y-4">
             <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
               <span className="text-slate-600 text-sm sm:text-base">Company Name</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
+              <span className="font-medium text-slate-900 text-sm sm:text-base sm:text-right">
                 {companyData.businessName}
               </span>
             </div>
 
             <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
               <span className="text-slate-600 text-sm sm:text-base">Address</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
+              <span className="font-medium text-slate-900 text-sm sm:text-base sm:text-right">
                 {companyData.businessAddress?.address || companyData.registeredAgent?.address || "Not Yet Assigned"}
                 {(companyData.businessAddress?.city || companyData.registeredAgent?.city) &&
                   `, ${companyData.businessAddress?.city || companyData.registeredAgent?.city}`}
@@ -600,23 +648,21 @@ export default function CompanyPage() {
         {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
             <h2 className="text-base sm:text-lg font-semibold mb-4">Purchased Add-ons</h2>
-            <div className="space-y-4">
-              {companyData.purchasedAddons.map((addon: any, index: number) => {
-                const addonName = typeof addon === "string" ? addon : addon.name || "Unknown Add-on"
-                const addonPrice = typeof addon === "object" && addon.price ? `$${addon.price}` : ""
-                const addonKey =
-                  typeof addon === "string"
-                    ? `${addon}-${index}`
-                    : `${addon.serviceId || addon.name}-${addon.memberId || index}`
-
-                return (
-                  <div key={addonKey}>
+            <div className="space-y-3">
+              {companyData.purchasedAddons.map((addon: any, index: number) => (
+                <div key={index}>
+                  <div className="space-y-2">
                     <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-                      <span className="text-slate-600 text-sm sm:text-base">{addonName}</span>
-                      <div className="flex items-center gap-2">
-                        {addonPrice && (
-                          <span className="font-semibold text-[#ff0d13] text-sm sm:text-base">{addonPrice}</span>
-                        )}
+                      <span className="text-slate-600 text-sm sm:text-base">Service</span>
+                      <span className="font-medium text-slate-900 text-sm sm:text-base">{addon.name}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                      <span className="text-slate-600 text-sm sm:text-base">Price</span>
+                      <span className="font-medium text-slate-900 text-sm sm:text-base">${addon.price}</span>
+                    </div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                      <span className="text-slate-600 text-sm sm:text-base">Status</span>
+                      <div className="flex justify-start sm:justify-end">
                         <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Active</Badge>
                       </div>
                     </div>
@@ -624,60 +670,11 @@ export default function CompanyPage() {
                       <div className="border-t border-slate-200 pt-1 mt-1" />
                     )}
                   </div>
-                )
-              })}
+                </div>
+              ))}
             </div>
           </div>
         )}
-
-        {/* Tax & Compliance Information */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Tax & Compliance Information</h2>
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">EIN</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base">
-                {companyData.ein || "Not yet assigned"}
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">Tax Classification</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base">
-                {companyData.entityType === "LLC"
-                  ? "Limited Liability Company"
-                  : companyData.entityType === "S-Corp"
-                    ? "S Corporation"
-                    : "Not specified"}
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">Annual Report Filing Date</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base">
-                {new Date(
-                  new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">IRS Tax Return Filing Date</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base">
-                {(() => {
-                  const orderDate = new Date(companyData.orderDate)
-                  const taxFilingDate = new Date(orderDate)
-                  taxFilingDate.setMonth(orderDate.getMonth() + 15)
-                  return taxFilingDate.toLocaleDateString("en-US", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })
-                })()}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
     </ClientShell>
   )
