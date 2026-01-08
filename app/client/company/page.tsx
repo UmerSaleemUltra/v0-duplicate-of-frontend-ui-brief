@@ -288,7 +288,7 @@ export default function CompanyPage() {
         {/* Company Status */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
           <div className="text-xs sm:text-sm text-slate-600 mb-1">Company Status</div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
