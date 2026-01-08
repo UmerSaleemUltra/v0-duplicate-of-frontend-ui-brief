@@ -297,7 +297,8 @@ export default function CompanyPage() {
 
         {/* Company Status */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
- <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
             <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
               <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                 <Building2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
@@ -385,28 +386,6 @@ export default function CompanyPage() {
           </div>
         </div>
 
-        {/* Business Details */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>
-          <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">Business Category</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base">{companyData.businessCategory}</span>
-            </div>
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
-              <span className="text-slate-600 text-sm sm:text-base">Business Website</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base">{companyData.website}</span>
-            </div>
-         
-          
-          
-            <div className="pt-2 border-t border-slate-100">
-              <div className="text-slate-600 text-sm sm:text-base mb-2">Business Description</div>
-              <p className="text-slate-900 text-sm sm:text-base leading-relaxed">{companyData.businessDescription}</p>
-            </div>
-          </div>
-        </div>
-
         {/* Additional Services */}
         {companyData.needsResellerCertificate && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
@@ -427,59 +406,65 @@ export default function CompanyPage() {
         {/* Members & Owners */}
         {companyData.members && companyData.members.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Members & Owners</h2>
-            <div className="space-y-4">
+            <h2 className="text-2xl font-bold mb-6">Company Members</h2>
+            <div className="space-y-6">
               {companyData.members.map((member: MemberUI) => {
                 return (
-                  <div
-                    key={member.id}
-                    className="p-4 sm:p-6 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200 space-y-4"
-                  >
-                    <div className="flex flex-col sm:flex-row sm:items-center gap-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <div className="font-medium text-slate-900 text-sm sm:text-base">{member.name}</div>
-                          {member.isResponsiblePerson && (
-                            <Badge className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 text-xs">
-                              Responsible Person
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-xs sm:text-sm text-slate-600">Member</div>
-                      </div>
+                  <div key={member.id} className="space-y-3">
+                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                      <span className="text-slate-600 text-sm sm:text-base">Member Name</span>
+                      <span className="font-medium text-slate-900 text-sm sm:text-base flex items-center gap-2">
+                        {member.name}
+                        {member.isResponsiblePerson && (
+                          <Badge className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 text-xs">
+                            Responsible Person
+                          </Badge>
+                        )}
+                      </span>
                     </div>
 
-                    <div className="grid sm:grid-cols-2 gap-3 pt-3 border-t border-slate-200">
-                      {member.email && (
-                        <div>
-                          <div className="text-xs text-slate-600 mb-1">Email</div>
-                          <div className="text-sm text-slate-900">{member.email}</div>
-                        </div>
-                      )}
-                      {member.phone && (
-                        <div>
-                          <div className="text-xs text-slate-600 mb-1">Phone</div>
-                          <div className="text-sm text-slate-900">{member.phone}</div>
-                        </div>
-                      )}
-                      <div>
-                        <div className="text-xs text-slate-600 mb-1">SSN/ITIN</div>
-                        <div className="text-sm text-slate-900 ">{member.ssn}</div>
+                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                      <span className="text-slate-600 text-sm sm:text-base">Ownership</span>
+                      <span className="font-medium text-slate-900 text-sm sm:text-base">{member.ownership}</span>
+                    </div>
+
+                    {member.email && (
+                      <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                        <span className="text-slate-600 text-sm sm:text-base">Email</span>
+                        <span className="font-medium text-slate-900 text-sm sm:text-base">{member.email}</span>
+                      </div>
+                    )}
+
+                    {member.phone && (
+                      <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                        <span className="text-slate-600 text-sm sm:text-base">Phone</span>
+                        <span className="font-medium text-slate-900 text-sm sm:text-base">{member.phone}</span>
+                      </div>
+                    )}
+
+                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                      <span className="text-slate-600 text-sm sm:text-base">SSN/ITIN</span>
+                      <span className="font-medium text-slate-900 text-sm sm:text-base">
+                        {member.ssn}
                         {member.itinAdded && (
-                          <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs mt-2">
+                          <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs ml-2">
                             ITIN Application Added
                           </Badge>
                         )}
-                      </div>
-                      <div className="sm:col-span-2">
-                        <div className="text-xs text-slate-600 mb-1">Address</div>
-                        <div className="text-sm text-slate-900">{member.address}</div>
-                        <div className="text-sm text-slate-900">
-                          {member.city}, {member.state} {member.zip}
-                        </div>
-                        <div className="text-sm text-slate-900">{member.country}</div>
-                      </div>
+                      </span>
                     </div>
+
+                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                      <span className="text-slate-600 text-sm sm:text-base">Address</span>
+                      <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
+                        {member.address}, {member.city}, {member.state} {member.zip}, {member.country}
+                      </span>
+                    </div>
+
+                    {companyData.members.length > 1 &&
+                      member !== companyData.members[companyData.members.length - 1] && (
+                        <div className="border-t border-slate-200 pt-4 mt-4" />
+                      )}
                   </div>
                 )
               })}
