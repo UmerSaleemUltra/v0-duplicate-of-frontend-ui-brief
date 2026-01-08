@@ -631,6 +631,55 @@ export default function CompanyPage() {
             </div>
           </div>
         )}
+
+        {/* Tax & Compliance Information */}
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-2xl font-bold mb-6">Tax & Compliance Information</h2>
+          <div className="space-y-3">
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">EIN</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {companyData.ein || "Not yet assigned"}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Tax Classification</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {companyData.entityType === "LLC"
+                  ? "Limited Liability Company"
+                  : companyData.entityType === "S-Corp"
+                    ? "S Corporation"
+                    : "Not specified"}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">Annual Report Filing Date</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {new Date(
+                  new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+              </span>
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <span className="text-slate-600 text-sm sm:text-base">IRS Tax Return Filing Date</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base">
+                {(() => {
+                  const orderDate = new Date(companyData.orderDate)
+                  const taxFilingDate = new Date(orderDate)
+                  taxFilingDate.setMonth(orderDate.getMonth() + 15)
+                  return taxFilingDate.toLocaleDateString("en-US", {
+                    day: "numeric",
+                    month: "long",
+                    year: "numeric",
+                  })
+                })()}
+              </span>
+            </div>
+          </div>
+        </div>
       </div>
     </ClientShell>
   )
