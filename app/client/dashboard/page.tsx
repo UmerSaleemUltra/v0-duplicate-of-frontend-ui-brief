@@ -5,7 +5,6 @@ import {
   Building2,
   Hash,
   Bell,
-  MapPin,
   Clock,
   Copy,
   Check,
@@ -763,7 +762,6 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-          {/* Second row for Service Status and Invoice Download */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
               <div className="flex items-start justify-between mb-4">
@@ -780,6 +778,7 @@ export default function ClientDashboard() {
               </div>
             </div>
           </div>
+
           <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <div>
@@ -866,8 +865,6 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-         
-           
           <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
             <div className="flex items-center gap-3 mb-6">
               <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
