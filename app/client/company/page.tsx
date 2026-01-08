@@ -154,13 +154,8 @@ export default function CompanyPage() {
             selectedAddons: selectedComp.addons || [],
             purchasedAddons: selectedComp.purchasedAddons || [],
             members: builtMembers,
-            registeredAgent: selectedComp.registeredAgent || {
-              name: "BuzzFiling Services Inc.",
-              address: "100 Ambition Parkway",
-              city: "New York",
-              state: "NY",
-              zip: "10001",
-            },
+            registeredAgent: selectedComp.registeredAgent,
+            businessAddress: selectedComp.businessAddress,
             itin: selectedComp.itin,
           })
         } else {
@@ -557,10 +552,13 @@ export default function CompanyPage() {
             <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
               <span className="text-slate-600 text-sm sm:text-base">Address</span>
               <span className="font-medium text-slate-900 text-sm sm:text-base text-right">
-                {companyData.registeredAgent?.address || "30 N Gould St Ste R"}
-                {companyData.registeredAgent?.city && `, ${companyData.registeredAgent.city}`}
-                {companyData.registeredAgent?.state && `, ${companyData.registeredAgent.state}`}
-                {companyData.registeredAgent?.zip && ` ${companyData.registeredAgent.zip}`}
+                {companyData.businessAddress?.address || companyData.registeredAgent?.address || "Not Yet Assigned"}
+                {(companyData.businessAddress?.city || companyData.registeredAgent?.city) &&
+                  `, ${companyData.businessAddress?.city || companyData.registeredAgent?.city}`}
+                {(companyData.businessAddress?.state || companyData.registeredAgent?.state) &&
+                  `, ${companyData.businessAddress?.state || companyData.registeredAgent?.state}`}
+                {(companyData.businessAddress?.zip || companyData.registeredAgent?.zip) &&
+                  ` ${companyData.businessAddress?.zip || companyData.registeredAgent?.zip}`}
               </span>
             </div>
 
