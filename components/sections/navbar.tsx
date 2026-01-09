@@ -20,6 +20,7 @@ export default function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userRole, setUserRole] = useState<"admin" | "client" | null>(null)
+  const comingSoonUrl = "/coming-soon"
 
   useEffect(() => {
     const authUserCookie = getCookie("auth_user")
@@ -86,7 +87,7 @@ export default function Navbar() {
             <div className="flex items-center justify-end gap-3 xl:gap-4 pr-4 lg:pr-0">
               {!isAuthenticated && (
                 <Link
-                  href="/coming-soon"
+                  href={comingSoonUrl}
                   className="hidden lg:flex items-center justify-center text-base xl:text-lg text-white border-2 border-white rounded-full px-6 xl:px-8 py-2 xl:py-2.5 hover:bg-white/10 transition-colors font-semibold whitespace-nowrap"
                 >
                   Login
@@ -94,7 +95,7 @@ export default function Navbar() {
               )}
 
               <Link
-                href={isAuthenticated ? dashboardUrl : "/coming-soon"}
+                href={comingSoonUrl}
                 className="hidden lg:flex items-center justify-center gap-2 text-base xl:text-lg text-[#ff0d13] bg-white rounded-full px-6 xl:px-8 py-2.5 xl:py-3 hover:bg-white/90 transition-colors font-semibold shadow-lg whitespace-nowrap"
               >
                 <span>{isAuthenticated ? "Your Dashboard" : "Start Your Business"}</span>
@@ -171,7 +172,7 @@ export default function Navbar() {
                 <div className="flex flex-col gap-2.5 sm:gap-3 mt-4 sm:mt-5 md:mt-6 pt-4 sm:pt-5 border-t border-white/20">
                   {!isAuthenticated && (
                     <Link
-                      href="/coming-soon"
+                      href={comingSoonUrl}
                       className="flex items-center justify-center text-sm sm:text-base md:text-lg text-white border-2 border-white rounded-full px-5 sm:px-6 py-3 sm:py-3.5 md:py-4 hover:bg-white/10 active:bg-white/20 transition-colors font-semibold"
                       onClick={() => setIsMenuOpen(false)}
                     >
@@ -180,7 +181,7 @@ export default function Navbar() {
                   )}
 
                   <Link
-                    href={isAuthenticated ? dashboardUrl : "/coming-soon"}
+                    href={comingSoonUrl}
                     className="flex items-center justify-center gap-2 text-sm sm:text-base md:text-lg text-[#ff0d13] bg-white rounded-full px-5 sm:px-6 py-3 sm:py-3.5 md:py-4 hover:bg-white/90 active:bg-white/80 transition-colors font-semibold shadow-lg"
                     onClick={() => setIsMenuOpen(false)}
                   >
