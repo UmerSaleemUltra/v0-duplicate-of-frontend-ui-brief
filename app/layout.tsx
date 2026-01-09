@@ -1,5 +1,6 @@
 import type React from "react"
 import { Unbounded } from "next/font/google"
+import Script from "next/script"
 import "./globals.css"
 import { AuthProvider } from "@/components/auth/auth-provider"
 import { CompanyProvider } from "@/components/client/company-provider"
@@ -136,6 +137,17 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={unbounded.variable}>
       <head>
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-9NH7KYTZH5" strategy="afterInteractive" />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-9NH7KYTZH5');
+            gtag('config', 'GT-MBLBWX43');
+          `}
+        </Script>
+
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta httpEquiv="X-Frame-Options" content="SAMEORIGIN" />
         <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
