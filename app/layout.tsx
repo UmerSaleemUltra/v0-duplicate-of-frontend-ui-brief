@@ -12,12 +12,14 @@ const unbounded = Unbounded({
 
 export const metadata = {
   metadataBase: new URL("https://buzzfiling.com"),
+
   title: {
-    default: "BuzzFiling | US LLC & C-Corp Formation for Pakistani & International Founders",
-    template: "%s | BuzzFiling",
+    default: "Buzz Filing | US LLC & C-Corp Formation for Pakistani & International Founders",
+    template: "%s | Buzz Filing",
   },
+
   description:
-    "BuzzFiling helps Pakistani and international entrepreneurs register US LLCs and C-Corporations. Services include EIN assistance, registered agent, US business address, ITIN support, and ongoing compliance guidance.",
+    "Buzz Filing helps Pakistani and international entrepreneurs register US LLCs and C-Corporations. Services include EIN assistance, registered agent, US business address, ITIN support, and ongoing compliance guidance.",
 
   keywords: [
     "US LLC formation Pakistan",
@@ -25,7 +27,7 @@ export const metadata = {
     "US company registration Pakistan",
     "US business formation service",
     "register US company online",
-    "BuzzFiling",
+    "Buzz Filing",
     "US C-Corp formation",
     "foreign owned LLC USA",
     "US LLC for non residents",
@@ -48,9 +50,9 @@ export const metadata = {
     "US business setup Pakistan",
   ],
 
-  authors: [{ name: "BuzzFiling", url: "https://buzzfiling.com" }],
-  creator: "BuzzFiling",
-  publisher: "BuzzFiling",
+  authors: [{ name: "Buzz Filing", url: "https://buzzfiling.com" }],
+  creator: "Buzz Filing",
+  publisher: "Buzz Filing",
 
   formatDetection: {
     email: false,
@@ -62,23 +64,23 @@ export const metadata = {
     type: "website",
     locale: "en_US",
     url: "https://buzzfiling.com",
-    siteName: "BuzzFiling",
-    title: "BuzzFiling | US LLC & C-Corp Formation for Pakistani & International Founders",
+    siteName: "Buzz Filing",
+    title: "Buzz Filing | US LLC & C-Corp Formation for Pakistani & International Founders",
     description:
-      "Register your US LLC or C-Corporation with BuzzFiling. Get help with EIN, registered agent, US business address, ITIN support, and compliance guidance for non-resident founders.",
+      "Register your US LLC or C-Corporation with Buzz Filing. Get help with EIN, registered agent, US business address, ITIN support, and compliance guidance for non-resident founders.",
     images: [
       {
         url: "https://buzzfiling.com/images/buzzfiling-logo.png",
         width: 1200,
         height: 630,
-        alt: "BuzzFiling – US Company Formation & Compliance Support",
+        alt: "Buzz Filing – US Company Formation & Compliance Support",
       },
     ],
   },
 
   twitter: {
     card: "summary_large_image",
-    title: "BuzzFiling | US Company Formation for Pakistani Founders",
+    title: "Buzz Filing | US Company Formation for Pakistani Founders",
     description:
       "US LLC & C-Corp formation with EIN assistance, registered agent, US business address, ITIN support, and compliance guidance for non-resident founders.",
     images: ["https://buzzfiling.com/images/buzzfiling-logo.png"],
@@ -104,21 +106,11 @@ export const metadata = {
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/images/buzzfiling-logo.png", sizes: "192x192", type: "image/png" },
-      { url: "/favicon-16x16.png", type: "image/svg+xml" },
     ],
     apple: [
       { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-      { url: "/images/buzzfiling-logo.png", sizes: "192x192", type: "image/png" },
     ],
     shortcut: ["/favicon.ico"],
-    other: [
-      {
-        rel: "icon",
-        type: "image/png",
-        sizes: "512x512",
-        url: "/images/buzzfiling-logo.png",
-      },
-    ],
   },
 
   manifest: "/site.webmanifest",
@@ -139,7 +131,7 @@ export const metadata = {
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   },
     generator: 'v0.app'
-}
+};
 
 export const viewport = {
   width: "device-width",
