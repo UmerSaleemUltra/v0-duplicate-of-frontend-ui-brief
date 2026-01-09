@@ -43,8 +43,6 @@ export function NotificationDropdown() {
         return
       }
 
-      console.log("[v0] Loading notifications for user:", currentUser.id, "company:", selectedCompany?.name || "none")
-
       const response = await ApiClient.notifications.getAll(token)
 
       let userNotifications = (response.data || []).filter((n: any) => n.userId === currentUser.id)
@@ -54,14 +52,6 @@ export function NotificationDropdown() {
           const notificationCompanyId = n.metadata?.companyId || n.companyId
           return notificationCompanyId === selectedCompany.id
         })
-        console.log(
-          "[v0] Filtered notifications for company:",
-          selectedCompany.name,
-          "count:",
-          userNotifications.length,
-        )
-      } else {
-        console.log("[v0] No company selected, showing all notifications:", userNotifications.length)
       }
 
       setNotifications(userNotifications)
@@ -144,7 +134,10 @@ export function NotificationDropdown() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0">
+      <DropdownMenuContent
+        align="end"
+        className="w-[calc(100vw-2rem)] max-w-[340px] sm:max-w-[380px] md:max-w-[420px] p-0"
+      >
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-slate-200">
           <div>

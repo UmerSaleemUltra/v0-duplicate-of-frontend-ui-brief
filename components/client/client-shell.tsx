@@ -254,12 +254,20 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
               </div>
               <div className="flex-1 min-w-0 text-left overflow-hidden">
                 <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-0.5 truncate">Current Company</p>
-                <BusinessNameDisplay
-                  name={selectedCompany?.name || "No company"}
-                  maxLength={18}
-                  className="text-xs sm:text-sm font-semibold text-white truncate"
-                  truncateMode="smart"
-                />
+                {isLoadingCompanies ? (
+                  <span className="text-xs sm:text-sm font-semibold text-white/60 truncate">Loading...</span>
+                ) : selectedCompany ? (
+                  <BusinessNameDisplay
+                    name={selectedCompany.name}
+                    maxLength={18}
+                    className="text-xs sm:text-sm font-semibold text-white truncate"
+                    truncateMode="smart"
+                  />
+                ) : allCompanies.length > 0 ? (
+                  <span className="text-xs sm:text-sm font-semibold text-white/80 truncate">Select a company</span>
+                ) : (
+                  <span className="text-xs sm:text-sm font-semibold text-white/80 truncate">No companies yet</span>
+                )}
               </div>
             </div>
             <ChevronDown className="w-4 h-4 text-white/70 group-hover:text-white transition-colors flex-shrink-0 ml-1" />
