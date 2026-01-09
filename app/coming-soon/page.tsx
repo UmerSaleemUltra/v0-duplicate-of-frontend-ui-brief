@@ -91,23 +91,6 @@ export default function ComingSoonPage() {
             {subscribed && <p className="mt-3 text-sm text-green-600">Thanks! We'll notify you when we launch.</p>}
           </div>
 
-          {/* CTA Buttons */}
-          <div className="flex flex-col items-center gap-4 sm:flex-row sm:justify-center">
-            <Button
-              onClick={() => (window.location.href = "/")}
-              className="rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] px-8 py-6 text-lg font-semibold text-white shadow-lg transition-all hover:shadow-xl"
-            >
-              Back to Home
-            </Button>
-            <Button
-              onClick={() => (window.location.href = "/#contact")}
-              variant="outline"
-              className="rounded-full border-2 border-[#ff0d13] px-8 py-6 text-lg font-semibold text-[#ff0d13] transition-all hover:bg-[#ff0d13] hover:text-white"
-            >
-              Contact Us
-            </Button>
-          </div>
-
           {/* Launch Timer (Optional) */}
           <div className="mt-12 text-sm text-gray-500">
             <p>Expected launch: Q1 2026</p>

@@ -39,7 +39,7 @@ export default function HeroSection() {
 
   const dashboardUrl = userRole === "admin" ? "/admin" : "/client/dashboard"
   const buttonText = isAuthenticated ? "Go to Dashboard" : "Start Your Business"
-  const buttonLink = isAuthenticated ? dashboardUrl : "/coming-soon"
+  const buttonLink = isAuthenticated ? dashboardUrl : "/checkout"
 
   const handleCalculatorClick = () => {
     if (isAuthenticated) {
