@@ -26,16 +26,12 @@ import Image from "next/image"
 import { authService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import { NoCompanyState } from "@/components/client/no-company-state"
+import { toast } from "@/components/ui/use-toast"
 import { OrderCelebration } from "@/components/celebration/order-celebration"
 
 export default function ClientDashboard() {
-  const {
-    selectedCompanyId,
-    setSelectedCompanyId,
-    selectedCompany,
-    companies: userCompanies,
-    isLoadingCompanies,
-  } = useSelectedCompany()
+  const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
+  const [company, setCompany] = useState<any>(null)
   const [order, setOrder] = useState<any>(null)
   const [documents, setDocuments] = useState<any[]>([])
   const [mailItems, setMailItems] = useState<any[]>([])
@@ -44,7 +40,9 @@ export default function ClientDashboard() {
   const [copiedEIN, setCopiedEIN] = useState(false)
   const [copiedBusinessId, setCopiedBusinessId] = useState(false)
   const [isLoadingData, setIsLoadingData] = useState(false)
+  const [dataLoaded, setDataLoaded] = useState(false)
   const [isAuthenticating, setIsAuthenticating] = useState(true)
+  const [hasNoCompanies, setHasNoCompanies] = useState(false)
   const [isFirstVisit, setIsFirstVisit] = useState(false)
   const router = useRouter()
   const [showCelebration, setShowCelebration] = useState(false)
@@ -84,27 +82,26 @@ export default function ClientDashboard() {
   }, [router])
 
   useEffect(() => {
-    if (isAuthenticating || isLoadingCompanies) {
+    if (isAuthenticating) {
       return
     }
 
-    if (!selectedCompanyId) {
-      console.log("[v0] Dashboard: No company selected")
-      return
+    if (selectedCompanyId && selectedCompanyId !== lastLoadedCompanyId) {
+      console.log("[v0] Dashboard: Company changed, resetting dataLoaded state")
+      setDataLoaded(false)
     }
 
-    if (!selectedCompany) {
-      console.log("[v0] Dashboard: Waiting for company data from context")
-      return
-    }
-
-    if (selectedCompanyId === lastLoadedCompanyId) {
-      console.log("[v0] Dashboard: Data already loaded for this company")
+    if (dataLoaded && selectedCompanyId === lastLoadedCompanyId) {
+      console.log("[v0] Dashboard: Data already loaded for this company, skipping reload")
       return
     }
 
     const loadData = async () => {
-      setIsLoadingData(true)
+      const startTime = Date.now()
+
+      if (!dataLoaded) {
+        setIsLoadingData(true)
+      }
 
       try {
         const token = authService.getToken()
@@ -113,64 +110,206 @@ export default function ClientDashboard() {
           return
         }
 
-        console.log("[v0] Dashboard: Loading data for company:", selectedCompanyId)
+        let userId = currentUser?.id
 
-        const [ordersResponse, documentsResponse, mailResponse] = await Promise.allSettled([
-          fetch(`/api/orders?companyId=${selectedCompanyId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }).then((res) => res.json()),
-          fetch(`/api/documents?companyId=${selectedCompanyId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }).then((res) => res.json()),
-          fetch(`/api/mail?companyId=${selectedCompanyId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }).then((res) => res.json()),
-        ])
+        if (!userId && typeof window !== "undefined") {
+          const storedUserId = localStorage.getItem("user_id")
+          const storedUserData = localStorage.getItem("user_data")
 
-        if (ordersResponse.status === "fulfilled") {
-          const orders = ordersResponse.value.data || ordersResponse.value.orders || []
-          const companyOrder = orders.find((o: any) => o.companyId === selectedCompanyId)
-          setOrder(companyOrder || null)
+          if (storedUserId) {
+            userId = storedUserId
+            console.log("[v0] Dashboard: Retrieved userId from localStorage:", userId)
+          } else if (storedUserData) {
+            try {
+              const userData = JSON.parse(storedUserData)
+              userId = userData.id
+              console.log("[v0] Dashboard: Retrieved userId from stored user data:", userId)
+            } catch (e) {
+              console.error("[v0] Dashboard: Error parsing user data:", e)
+            }
+          }
+
+          // Try to decode token as last resort
+          if (!userId && token) {
+            try {
+              const tokenParts = token.split(".")
+              if (tokenParts.length === 3) {
+                const payload = JSON.parse(atob(tokenParts[1]))
+                userId = payload.userId || payload.id
+                console.log("[v0] Dashboard: Retrieved userId from token:", userId)
+              }
+            } catch (e) {
+              console.error("[v0] Dashboard: Error decoding token:", e)
+            }
+          }
         }
 
-        if (documentsResponse.status === "fulfilled") {
-          const docs = documentsResponse.value.data || []
-          setDocuments(docs.filter((d: any) => !d.isMailDocument))
+        if (!userId) {
+          console.error("[v0] Dashboard: CRITICAL - No userId found anywhere!")
+          console.log("[v0] Dashboard: currentUser:", currentUser)
+          console.log("[v0] Dashboard: localStorage user_id:", localStorage.getItem("user_id"))
+          console.log("[v0] Dashboard: localStorage user_data:", localStorage.getItem("user_data"))
+          return
         }
 
-        if (mailResponse.status === "fulfilled") {
-          const mail = mailResponse.value.data || mailResponse.value.mail || []
-          setMailItems(mail)
+        console.log("[v0] Dashboard: Loading companies for userId:", userId)
+
+        const cacheBuster = `?t=${Date.now()}`
+        const companiesResponse = await fetch(`/api/companies${cacheBuster}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+            Pragma: "no-cache",
+          },
+        }).then((res) => res.json())
+
+        const allCompanies = companiesResponse.data || companiesResponse.companies || []
+
+        console.log("[v0] Dashboard: Total companies fetched from API:", allCompanies.length)
+        console.log(
+          "[v0] Dashboard: All companies details:",
+          allCompanies.map((c: any) => ({
+            id: c.id,
+            name: c.name,
+            userId: c.userId,
+            userIdType: typeof c.userId,
+            createdAt: c.createdAt,
+          })),
+        )
+
+        console.log("[v0] Dashboard: Current userId for filtering:", userId, "Type:", typeof userId)
+
+        const userCompanies = allCompanies.filter((c: any) => {
+          const companyUserId = String(c.userId).trim()
+          const currentUserId = String(userId).trim()
+          const match = companyUserId === currentUserId
+
+          console.log("[v0] Dashboard: Comparing company:", {
+            companyName: c.name,
+            companyUserId,
+            currentUserId,
+            match,
+            companyUserIdLength: companyUserId.length,
+            currentUserIdLength: currentUserId.length,
+          })
+
+          return match
+        })
+
+        console.log("[v0] Dashboard: User companies after filtering:", userCompanies.length)
+        console.log(
+          "[v0] Dashboard: Filtered company names:",
+          userCompanies.map((c: any) => c.name),
+        )
+
+        if (userCompanies.length === 0) {
+          console.log("[v0] Dashboard: User has no companies - showing no company state")
+          setHasNoCompanies(true)
+          setIsLoadingData(false)
+          setDataLoaded(true)
+          return
         }
 
-        setLastLoadedCompanyId(selectedCompanyId)
+        setHasNoCompanies(false)
+
+        let companyToLoad = selectedCompanyId
+
+        // If user has only one company, auto-select it
+        if (userCompanies.length === 1) {
+          companyToLoad = userCompanies[0].id
+          if (companyToLoad !== selectedCompanyId) {
+            console.log("[v0] Auto-selecting single company:", companyToLoad)
+            setSelectedCompanyId(companyToLoad)
+            if (typeof window !== "undefined") {
+              localStorage.setItem("selectedCompanyId", companyToLoad)
+            }
+          }
+        }
+        // If no company is selected or selected company doesn't exist in user's companies
+        else if (!companyToLoad || !userCompanies.find((c: any) => c.id === companyToLoad)) {
+          const sortedCompanies = userCompanies.sort((a: any, b: any) => {
+            return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          })
+          companyToLoad = sortedCompanies[0].id
+          console.log("[v0] Auto-selecting most recent company:", companyToLoad)
+          setSelectedCompanyId(companyToLoad)
+          if (typeof window !== "undefined") {
+            localStorage.setItem("selectedCompanyId", companyToLoad)
+          }
+        }
+
+        if (companyToLoad) {
+          const [selectedComp, companyDocuments, companyMail, companyNotifications] = await Promise.all([
+            ApiClient.companies.getById(companyToLoad, token),
+            ApiClient.documents.getAll(token, companyToLoad),
+            ApiClient.mail.getAll(token, companyToLoad),
+            ApiClient.notifications.getAll(token, companyToLoad),
+          ])
+
+          setCompany(selectedComp.data)
+          setNotifications(companyNotifications.data || [])
+
+          const companyOrders = selectedComp.data?.orders || []
+          if (companyOrders.length > 0) {
+            setOrder(companyOrders[0])
+          }
+
+          setDocuments(companyDocuments.data || [])
+          setMailItems(companyMail.data || [])
+          setLastLoadedCompanyId(companyToLoad)
+          console.log("[v0] Dashboard data loaded successfully for company:", companyToLoad)
+        }
+
+        setDataLoaded(true)
+
+        const loadTime = Date.now() - startTime
+        if (loadTime < 100) {
+          setIsLoadingData(false)
+        } else {
+          setTimeout(() => setIsLoadingData(false), 300)
+        }
       } catch (error) {
-        console.error("[v0] Dashboard: Error loading data:", error)
-      } finally {
+        console.error("[v0] Error loading dashboard data:", error)
+        if (error instanceof Error && error.message.includes("Unauthorized")) {
+          authService.logout()
+          router.push("/login")
+        }
+        if (error instanceof Error && error.message.includes("Company not found")) {
+          if (typeof window !== "undefined") {
+            localStorage.removeItem("selectedCompanyId")
+          }
+          setSelectedCompanyId(null)
+          setLastLoadedCompanyId(null)
+        }
         setIsLoadingData(false)
+        toast({
+          title: "Error",
+          description: "Failed to load dashboard data. Please refresh the page.",
+          variant: "destructive",
+        })
       }
     }
 
     loadData()
-  }, [selectedCompanyId, selectedCompany, lastLoadedCompanyId, isAuthenticating, isLoadingCompanies, router])
+  }, [isAuthenticating, currentUser, selectedCompanyId, router, setSelectedCompanyId, lastLoadedCompanyId])
 
   useEffect(() => {
-    if (!selectedCompany) return
+    if (!company) return
 
     const defaultMilestones = [
-      selectedCompany.milestones?.orderProcessed,
-      selectedCompany.milestones?.registeredAgentAssigned,
-      selectedCompany.milestones?.mailingAddressIssued,
-      selectedCompany.milestones?.formationCompleted,
-      selectedCompany.milestones?.einProcessed,
-      selectedCompany.milestones?.boiReportFiled,
+      company.milestones?.orderProcessed,
+      company.milestones?.registeredAgentAssigned,
+      company.milestones?.mailingAddressIssued,
+      company.milestones?.formationCompleted,
+      company.milestones?.einProcessed,
+      company.milestones?.boiReportFiled,
     ]
 
-    const customMilestoneValues = Object.values(selectedCompany.milestones?.custom || {}).map((m: any) => m.completed)
+    const customMilestoneValues = Object.values(company.milestones?.custom || {}).map((m: any) => m.completed)
     const allMilestones = [...defaultMilestones, ...customMilestoneValues]
 
     console.log("[v0] All milestones values:", allMilestones)
-    console.log("[v0] Company milestones:", selectedCompany.milestones)
+    console.log("[v0] Company milestones:", company.milestones)
     console.log("[v0] Default milestones:", defaultMilestones)
     console.log("[v0] Custom milestone values:", customMilestoneValues)
 
@@ -185,7 +324,7 @@ export default function ClientDashboard() {
 
     if (allDefaultMilestonesComplete && !celebrationShown) {
       // Check localStorage to see if celebration was already shown for this company
-      const celebrationKey = `celebration_shown_${selectedCompany.id}`
+      const celebrationKey = `celebration_shown_${company.id}`
       const wasShown = localStorage.getItem(celebrationKey)
 
       console.log("[v0] Celebration key:", celebrationKey, "Was shown:", wasShown)
@@ -209,10 +348,10 @@ export default function ClientDashboard() {
                   userId: user.id,
                   type: "order_completed",
                   title: "Order Completed Successfully",
-                  message: `Congratulations! All milestones for ${selectedCompany.name} have been completed. Your business is ready to launch!`,
+                  message: `Congratulations! All milestones for ${company.name} have been completed. Your business is ready to launch!`,
                   metadata: {
-                    companyId: selectedCompany.id,
-                    companyName: selectedCompany.name,
+                    companyId: company.id,
+                    companyName: company.name,
                   },
                 },
                 token,
@@ -236,7 +375,7 @@ export default function ClientDashboard() {
       )
       console.log("  - No undefined/null:", defaultMilestones.filter((m) => m === undefined || m === null).length === 0)
     }
-  }, [selectedCompany, celebrationShown])
+  }, [company, celebrationShown])
 
   const handleCloseCelebration = () => {
     console.log("[v0] Closing celebration modal")
@@ -254,7 +393,7 @@ export default function ClientDashboard() {
     }> = []
 
     // Add completed milestones
-    const milestones = selectedCompany?.milestones || {}
+    const milestones = company?.milestones || {}
     const milestoneKeys = Object.keys(milestones)
     milestoneKeys.forEach((key) => {
       if (milestones[key]) {
@@ -291,35 +430,35 @@ export default function ClientDashboard() {
         return 0
       })
       .slice(0, 6)
-  }, [selectedCompany, notifications])
+  }, [company, notifications])
 
-  if (isAuthenticating || isLoadingCompanies) {
+  if (isAuthenticating) {
     return (
       <ClientShell>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading your dashboard...</p>
+            <p className="text-slate-600">Verifying authentication...</p>
           </div>
         </div>
       </ClientShell>
     )
   }
 
-  if (selectedCompanyId && !selectedCompany && !isLoadingData) {
+  if (isLoadingData && !dataLoaded) {
     return (
       <ClientShell>
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading company data...</p>
+            <p className="text-slate-600">Loading dashboard...</p>
           </div>
         </div>
       </ClientShell>
     )
   }
 
-  if (userCompanies.length === 0) {
+  if (!isLoadingData && hasNoCompanies) {
     return (
       <ClientShell>
         <NoCompanyState />
@@ -328,37 +467,37 @@ export default function ClientDashboard() {
   }
 
   const responsibleMemberName = currentUser?.name || "User"
-  const businessName = selectedCompany?.name || "Your Company"
-  const entityType = selectedCompany?.entityType || "LLC"
-  const stateName = selectedCompany?.state || getDisplayValue(null, "Not yet")
+  const businessName = company?.name || "Your Company"
+  const entityType = company?.entityType || "LLC"
+  const stateName = company?.state || getDisplayValue(null, "Not yet")
 
   const ein =
-    selectedCompany?.ein &&
-    selectedCompany.ein.trim() !== "" &&
-    selectedCompany.ein !== "Pending" &&
-    selectedCompany.ein !== "Not yet" &&
-    selectedCompany.ein !== "Not Yet Assigned" &&
-    selectedCompany.ein !== "Not provided" &&
-    !selectedCompany.ein.includes("PENDING") &&
-    !selectedCompany.ein.includes("pending")
-      ? formatEIN(selectedCompany.ein, true)
+    company?.ein &&
+    company.ein.trim() !== "" &&
+    company.ein !== "Pending" &&
+    company.ein !== "Not yet" &&
+    company.ein !== "Not Yet Assigned" &&
+    company.ein !== "Not provided" &&
+    !company.ein.includes("PENDING") &&
+    !company.ein.includes("pending")
+      ? formatEIN(company.ein, true)
       : null
 
   const businessId =
-    selectedCompany?.businessId &&
-    selectedCompany.businessId.trim() !== "" &&
-    !selectedCompany.businessId.includes("PENDING") &&
-    !selectedCompany.businessId.includes("pending") &&
-    selectedCompany.businessId !== "BIZ-PENDING" &&
-    selectedCompany.businessId !== "Not yet" &&
-    selectedCompany.businessId !== "Not Yet Assigned" &&
-    selectedCompany.businessId !== "Not provided"
-      ? selectedCompany.businessId
+    company?.businessId &&
+    company.businessId.trim() !== "" &&
+    !company.businessId.includes("PENDING") &&
+    !company.businessId.includes("pending") &&
+    company.businessId !== "BIZ-PENDING" &&
+    company.businessId !== "Not yet" &&
+    company.businessId !== "Not Yet Assigned" &&
+    company.businessId !== "Not provided"
+      ? company.businessId
       : null
 
   const orderId = order?.id || "ORD-XXXX-XXXX"
 
-  const milestones = selectedCompany?.milestones || {
+  const milestones = company?.milestones || {
     orderProcessed: true,
     registeredAgentAssigned: true,
     mailingAddressIssued: true,
@@ -367,7 +506,7 @@ export default function ClientDashboard() {
     boiReportFiled: false,
   }
 
-  const registeredAgent = selectedCompany?.registeredAgent
+  const registeredAgent = company?.registeredAgent
   const hasRegisteredAgent =
     registeredAgent &&
     registeredAgent.name &&
@@ -418,7 +557,7 @@ export default function ClientDashboard() {
     },
   ]
 
-  const customMilestones = (selectedCompany?.customMilestones || []).map((m, index) => ({
+  const customMilestones = (company?.customMilestones || []).map((m, index) => ({
     id: `custom-${index + 7}`,
     title: m.title,
     description: m.description,
@@ -512,16 +651,16 @@ export default function ClientDashboard() {
 
   // Define hasMailingAddress for conditional rendering
   const hasMailingAddress =
-    selectedCompany?.mailingAddress &&
-    selectedCompany.mailingAddress.street &&
-    selectedCompany.mailingAddress.city &&
-    selectedCompany.mailingAddress.state &&
-    selectedCompany.mailingAddress.zip
+    company?.mailingAddress &&
+    company.mailingAddress.street &&
+    company.mailingAddress.city &&
+    company.mailingAddress.state &&
+    company.mailingAddress.zip
 
   return (
     <ClientShell>
       <TooltipProvider>
-        <OrderCelebration show={showCelebration} onClose={handleCloseCelebration} companyName={selectedCompany?.name} />
+        <OrderCelebration show={showCelebration} onClose={handleCloseCelebration} companyName={company?.name} />
 
         <div className="space-y-6 pb-16 sm:pb-24 lg:pb-8">
           <div>
@@ -584,12 +723,12 @@ export default function ClientDashboard() {
                     variant="ghost"
                     size="icon"
                     className="h-8 w-8 -mr-2 -mt-2"
-                    onClick={() => handleCopy(selectedCompany.ein, setCopiedEIN)}
+                    onClick={() => handleCopy(company.ein, setCopiedEIN)}
                   >
                     {copiedEIN ? (
                       <Check className="w-4 h-4 text-green-600" />
                     ) : (
-                      <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                      <Copy className="w-4 h-4 text-slate-400" />
                     )}
                   </Button>
                 )}
@@ -620,7 +759,7 @@ export default function ClientDashboard() {
                     {copiedBusinessId ? (
                       <Check className="w-4 h-4 text-green-600" />
                     ) : (
-                      <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                      <Copy className="w-4 h-4 text-slate-400" />
                     )}
                   </Button>
                 )}
@@ -648,15 +787,15 @@ export default function ClientDashboard() {
                 <div className="flex items-center gap-2">
                   <div
                     className={`w-2 h-2 rounded-full ${
-                      selectedCompany?.serviceStatus === "active"
+                      company?.serviceStatus === "active"
                         ? "bg-green-500"
-                        : selectedCompany?.serviceStatus === "inactive"
+                        : company?.serviceStatus === "inactive"
                           ? "bg-red-500"
                           : "bg-yellow-500"
                     }`}
                   />
                   <h3 className="text-2xl font-bold text-slate-900 capitalize">
-                    {selectedCompany?.serviceStatus || "Pending"}
+                    {company?.serviceStatus || "Pending"}
                   </h3>
                 </div>
               </div>
