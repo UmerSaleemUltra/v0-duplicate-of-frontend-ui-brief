@@ -13,67 +13,79 @@ const unbounded = Unbounded({
 export const metadata = {
   metadataBase: new URL("https://buzzfiling.com"),
   title: {
-    default: "BuzzFiling - Pakistan's #1 US Business Formation Service | Form Your LLC in 4 Weeks",
-    template: "%s | BuzzFiling - US Business Formation",
+    default: "BuzzFiling | US LLC & C-Corp Formation for Pakistani & International Founders",
+    template: "%s | BuzzFiling",
   },
   description:
-    "BuzzFiling is Pakistan's leading US business formation service. Form your US LLC or Corporation in just 4 weeks with EIN, registered agent, business address, and full compliance support. Trusted by 10,000+ Pakistani entrepreneurs to establish their American business presence.",
+    "BuzzFiling helps Pakistani and international entrepreneurs register US LLCs and C-Corporations. Services include EIN assistance, registered agent, US business address, ITIN support, and ongoing compliance guidance.",
+
   keywords: [
     "US LLC formation Pakistan",
     "form US LLC from Pakistan",
     "US company registration Pakistan",
     "US business formation service",
-    "EIN application Pakistan",
-    "registered agent service",
-    "US corporation formation",
-    "BuzzFiling Pakistan",
-    "American LLC formation",
-    "US business setup Pakistan",
-    "LLC registration service",
-    "US business address",
-    "Delaware LLC formation",
+    "register US company online",
+    "BuzzFiling",
+    "US C-Corp formation",
+    "foreign owned LLC USA",
+    "US LLC for non residents",
+    "EIN application service",
+    "apply EIN from Pakistan",
+    "ITIN application service",
+    "apply ITIN from Pakistan",
+    "US registered agent service",
+    "US business address service",
+    "virtual business address USA",
+    "New Mexico LLC formation",
+    "Florida LLC formation",
+    "Montana LLC formation",
     "Wyoming LLC formation",
-    "business compliance service",
-    "Pakistani entrepreneurs US business",
-    "form US company online",
-    "US business bank account",
-    "ITIN application",
-    "US tax compliance",
+    "start US business from Pakistan",
+    "open US company from Pakistan",
+    "US company for ecommerce",
+    "US company for Amazon sellers",
+    "LLC registration service",
+    "US business setup Pakistan",
   ],
+
   authors: [{ name: "BuzzFiling", url: "https://buzzfiling.com" }],
   creator: "BuzzFiling",
   publisher: "BuzzFiling",
+
   formatDetection: {
     email: false,
     address: false,
     telephone: false,
   },
+
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://buzzfiling.com",
     siteName: "BuzzFiling",
-    title: "BuzzFiling - Pakistan's #1 US Business Formation Service | Form Your LLC in 4 Weeks",
+    title: "BuzzFiling | US LLC & C-Corp Formation for Pakistani & International Founders",
     description:
-      "Form your US LLC or Corporation in just 4 weeks with Pakistan's most trusted business formation service. Get EIN, registered agent, business address, and full compliance support. Start your American business today.",
+      "Register your US LLC or C-Corporation with BuzzFiling. Get help with EIN, registered agent, US business address, ITIN support, and compliance guidance for non-resident founders.",
     images: [
       {
         url: "https://buzzfiling.com/images/buzzfiling-logo.png",
         width: 1200,
         height: 630,
-        alt: "BuzzFiling - US Business Formation Service for Pakistani Entrepreneurs",
+        alt: "BuzzFiling – US Company Formation & Compliance Support",
       },
     ],
   },
+
   twitter: {
     card: "summary_large_image",
-    title: "BuzzFiling - Pakistan's #1 US Business Formation Service",
+    title: "BuzzFiling | US Company Formation for Pakistani Founders",
     description:
-      "Form your US LLC or Corporation in 4 weeks. EIN, registered agent & compliance support. Trusted by 10,000+ Pakistani entrepreneurs.",
+      "US LLC & C-Corp formation with EIN assistance, registered agent, US business address, ITIN support, and compliance guidance for non-resident founders.",
     images: ["https://buzzfiling.com/images/buzzfiling-logo.png"],
     creator: "@buzzfiling",
     site: "@buzzfiling",
   },
+
   robots: {
     index: true,
     follow: true,
@@ -85,6 +97,7 @@ export const metadata = {
       "max-snippet": -1,
     },
   },
+
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -107,15 +120,20 @@ export const metadata = {
       },
     ],
   },
+
   manifest: "/site.webmanifest",
+
   verification: {
     google: "75c07262157089ce",
   },
+
   alternates: {
     canonical: "https://buzzfiling.com",
   },
+
   category: "Business Services",
-  classification: "Business Formation Service",
+  classification: "US Company Formation & Compliance",
+
   other: {
     "X-DNS-Prefetch-Control": "on",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
