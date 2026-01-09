@@ -251,10 +251,10 @@ export async function POST(req: NextRequest) {
       type,
       state,
       status: status || "pending",
-      companyStatus: companyStatus || "pending",
+      companyStatus: companyStatus || "active", // Changed from "pending" to "active"
       registeredAgentStatus: registeredAgentStatus || "pending",
       businessAddressStatus: businessAddressStatus || "pending",
-      serviceStatus: serviceStatus || "pending",
+      serviceStatus: serviceStatus || "pending", // Explicitly set to "pending"
       address: address || {},
       businessCategory: businessCategory || "",
       businessDescription: businessDescription || "",

@@ -441,16 +441,16 @@ export default function CompanyPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
           <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+            <div className="flex flex-col py-2 gap-2">
               <span className="text-slate-600 text-sm sm:text-base text-left">Business Category</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                 {companyData.businessCategory || "Not specified"}
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+            <div className="flex flex-col py-2 gap-2">
               <span className="text-slate-600 text-sm sm:text-base text-left">Business Website</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                 {companyData.website || "Not yet"}
               </span>
             </div>
@@ -474,9 +474,9 @@ export default function CompanyPage() {
               {companyData.members.map((member: MemberUI) => {
                 return (
                   <div key={member.id} className="space-y-3">
-                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                    <div className="flex flex-col py-2 gap-2">
                       <span className="text-slate-600 text-sm sm:text-base text-left">Member Name</span>
-                      <span className="font-medium text-slate-900 text-sm sm:text-base flex items-center gap-2 text-left sm:text-right">
+                      <span className="font-medium text-slate-900 text-sm sm:text-base flex items-center gap-2 text-left">
                         {member.name}
                         {member.isResponsiblePerson && (
                           <Badge className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 text-xs">
@@ -487,26 +487,26 @@ export default function CompanyPage() {
                     </div>
 
                     {member.email && (
-                      <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                      <div className="flex flex-col py-2 gap-2">
                         <span className="text-slate-600 text-sm sm:text-base text-left">Email</span>
-                        <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                        <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                           {member.email}
                         </span>
                       </div>
                     )}
 
                     {member.phone && (
-                      <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                      <div className="flex flex-col py-2 gap-2">
                         <span className="text-slate-600 text-sm sm:text-base text-left">Phone</span>
-                        <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                        <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                           {member.phone}
                         </span>
                       </div>
                     )}
 
-                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                    <div className="flex flex-col py-2 gap-2">
                       <span className="text-slate-600 text-sm sm:text-base text-left">SSN/ITIN</span>
-                      <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                      <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                         {member.ssn}
                         {member.itinAdded && (
                           <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs ml-2">
@@ -516,9 +516,9 @@ export default function CompanyPage() {
                       </span>
                     </div>
 
-                    <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+                    <div className="flex flex-col py-2 gap-2">
                       <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
-                      <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                      <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                         {member.address}, {member.city}, {member.state} {member.zip}, {member.country}
                       </span>
                     </div>
@@ -537,9 +537,9 @@ export default function CompanyPage() {
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
           <h2 className="text-base sm:text-lg font-semibold mb-4">Tax & Compliance Information</h2>
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+            <div className="flex flex-col py-2 gap-2">
               <span className="text-slate-600 text-sm sm:text-base text-left">Tax Classification</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                 {companyData.entityType === "LLC"
                   ? "Limited Liability Company"
                   : companyData.entityType === "S-Corp"
@@ -548,18 +548,18 @@ export default function CompanyPage() {
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+            <div className="flex flex-col py-2 gap-2">
               <span className="text-slate-600 text-sm sm:text-base text-left">Annual Report Filing Date</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                 {new Date(
                   new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
                 ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+            <div className="flex flex-col py-2 gap-2">
               <span className="text-slate-600 text-sm sm:text-base text-left">IRS Tax Return Filing Date</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                 {(() => {
                   const orderDate = new Date(companyData.orderDate)
                   const taxFilingDate = new Date(orderDate)
@@ -580,16 +580,16 @@ export default function CompanyPage() {
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
             <h2 className="text-base sm:text-lg font-semibold mb-4">Registered Agent</h2>
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Registered Agent</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   {companyData.registeredAgent?.company || companyData.registeredAgent?.name}
                 </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   {companyData.registeredAgent?.address}
                   {companyData.registeredAgent?.city && `, ${companyData.registeredAgent.city}`}
                   {companyData.registeredAgent?.state && `, ${companyData.registeredAgent.state}`}
@@ -597,18 +597,18 @@ export default function CompanyPage() {
                 </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   {new Date(
                     new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
                   ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
                 </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Status</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   <Badge
                     className={
                       companyData.registeredAgentStatus === "active"
@@ -631,16 +631,16 @@ export default function CompanyPage() {
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
             <h2 className="text-base sm:text-lg font-semibold mb-4">Business Address</h2>
             <div className="space-y-4">
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Company Name</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   {companyData.businessName}
                 </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   {companyData.businessAddress?.address}
                   {companyData.businessAddress?.city && `, ${companyData.businessAddress.city}`}
                   {companyData.businessAddress?.state && `, ${companyData.businessAddress.state}`}
@@ -648,18 +648,18 @@ export default function CompanyPage() {
                 </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   {new Date(
                     new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
                   ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
                 </span>
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:justify-between py-2 gap-1 sm:gap-0">
+              <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Status</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left sm:text-right">
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   <Badge
                     className={
                       companyData.businessAddressStatus === "active"

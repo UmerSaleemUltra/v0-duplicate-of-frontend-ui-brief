@@ -10,7 +10,7 @@ import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { authService } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -132,6 +132,11 @@ export default function OrderDetailPage() {
   const [registeredAgentStatusDialogOpen, setRegisteredAgentStatusDialogOpen] = useState(false)
   const [businessAddressStatusDialogOpen, setBusinessAddressStatusDialogOpen] = useState(false)
   const [serviceStatusDialogOpen, setServiceStatusDialogOpen] = useState(false)
+
+  // Corrected undeclared variables:
+  const [agentStatusModalOpen, setAgentStatusModalOpen] = useState(false)
+  const [addressStatusModalOpen, setAddressStatusModalOpen] = useState(false)
+  const [serviceStatusModalOpen, setServiceStatusModalOpen] = useState(false)
 
   const [registeredAgentDialogOpen, setRegisteredAgentDialogOpen] = useState(false)
   const [mailingAddressDialogOpen, setMailingAddressDialogOpen] = useState(false)
@@ -387,7 +392,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSON.stringify({
+        body: JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -3073,7 +3078,7 @@ export default function OrderDetailPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setRegisteredAgentStatusDialogOpen(true)}
+                    onClick={() => setAgentStatusModalOpen(true)} // Corrected: use the declared state variable
                     className="h-8"
                   >
                     Update
@@ -3102,7 +3107,7 @@ export default function OrderDetailPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setBusinessAddressStatusDialogOpen(true)}
+                    onClick={() => setAddressStatusModalOpen(true)} // Corrected: use the declared state variable
                     className="h-8"
                   >
                     Update
@@ -3128,7 +3133,12 @@ export default function OrderDetailPage() {
                   >
                     {company?.serviceStatus || "pending"}
                   </Badge>
-                  <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setServiceStatusModalOpen(true)} // Corrected: use the declared state variable
+                    className="h-8"
+                  >
                     Update
                   </Button>
                 </div>
@@ -3137,65 +3147,61 @@ export default function OrderDetailPage() {
           </Card>
         </div>
 
-        {/* Status Management */}
-        <Card className="bg-white border-slate-200 shadow-sm">
+        {/* Status Management (FIRST INSTANCE) */}
+        <Card>
           <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-              <Settings className="w-5 h-5" />
-              Status Management
+            <CardTitle className="flex items-center justify-between">
+              <span>Status Management</span>
             </CardTitle>
-            <p className="text-sm text-slate-600 mt-1">
-              Manage company, registered agent, business address, and service statuses
-            </p>
+            <CardDescription>Manage company, registered agent, business address, and service statuses</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-3">
+          <CardContent className="space-y-6">
             {/* Company Status */}
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <div>
-                <p className="text-sm font-medium text-slate-900">Company Status</p>
-                <p className="text-xs text-slate-500 mt-0.5">Overall company operational status</p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="company-status" className="text-sm font-medium">
+                Company Status
+              </Label>
+              <p className="text-xs text-muted-foreground">Overall company operational status</p>
               <div className="flex items-center gap-2">
                 <Badge
-                  className={`${
+                  className={
                     company?.companyStatus === "active"
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-green-50 text-green-700 border-green-200 capitalize"
                       : company?.companyStatus === "inactive"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
-                  }`}
+                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                  }
                 >
                   {company?.companyStatus || "pending"}
                 </Badge>
-                <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)} className="h-8">
+                <Button variant="outline" size="sm" onClick={() => setCompanyStatusDialogOpen(true)}>
                   Update
                 </Button>
               </div>
             </div>
 
             {/* Registered Agent Status */}
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <div>
-                <p className="text-sm font-medium text-slate-900">Registered Agent Status</p>
-                <p className="text-xs text-slate-500 mt-0.5">Agent assignment and service status</p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="agent-status" className="text-sm font-medium">
+                Registered Agent Status
+              </Label>
+              <p className="text-xs text-muted-foreground">Agent assignment and service status</p>
               <div className="flex items-center gap-2">
                 <Badge
-                  className={`${
+                  className={
                     company?.registeredAgentStatus === "active"
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-green-50 text-green-700 border-green-200 capitalize"
                       : company?.registeredAgentStatus === "inactive"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
-                  }`}
+                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                  }
                 >
                   {company?.registeredAgentStatus || "pending"}
                 </Badge>
                 <Button
-                  size="sm"
                   variant="outline"
-                  onClick={() => setRegisteredAgentStatusDialogOpen(true)}
-                  className="h-8"
+                  size="sm"
+                  onClick={() => setAgentStatusModalOpen(true)} // Corrected: use the declared state variable
                 >
                   Update
                 </Button>
@@ -3203,28 +3209,27 @@ export default function OrderDetailPage() {
             </div>
 
             {/* Business Address Status */}
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <div>
-                <p className="text-sm font-medium text-slate-900">Business Address Status</p>
-                <p className="text-xs text-slate-500 mt-0.5">Mailing address setup status</p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="address-status" className="text-sm font-medium">
+                Business Address Status
+              </Label>
+              <p className="text-xs text-muted-foreground">Mailing address service status</p>
               <div className="flex items-center gap-2">
                 <Badge
-                  className={`${
+                  className={
                     company?.businessAddressStatus === "active"
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-green-50 text-green-700 border-green-200 capitalize"
                       : company?.businessAddressStatus === "inactive"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
-                  }`}
+                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                  }
                 >
                   {company?.businessAddressStatus || "pending"}
                 </Badge>
                 <Button
-                  size="sm"
                   variant="outline"
-                  onClick={() => setBusinessAddressStatusDialogOpen(true)}
-                  className="h-8"
+                  size="sm"
+                  onClick={() => setAddressStatusModalOpen(true)} // Corrected: use the declared state variable
                 >
                   Update
                 </Button>
@@ -3232,24 +3237,28 @@ export default function OrderDetailPage() {
             </div>
 
             {/* Service Status */}
-            <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-              <div>
-                <p className="text-sm font-medium text-slate-900">Service Status</p>
-                <p className="text-xs text-slate-500 mt-0.5">Overall service delivery status</p>
-              </div>
+            <div className="space-y-2">
+              <Label htmlFor="service-status" className="text-sm font-medium">
+                Service Status
+              </Label>
+              <p className="text-xs text-muted-foreground">Overall service delivery status</p>
               <div className="flex items-center gap-2">
                 <Badge
-                  className={`${
+                  className={
                     company?.serviceStatus === "active"
-                      ? "bg-green-100 text-green-700"
+                      ? "bg-green-50 text-green-700 border-green-200 capitalize"
                       : company?.serviceStatus === "inactive"
-                        ? "bg-red-100 text-red-700"
-                        : "bg-yellow-100 text-yellow-700"
-                  }`}
+                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                  }
                 >
                   {company?.serviceStatus || "pending"}
                 </Badge>
-                <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setServiceStatusModalOpen(true)} // Corrected: use the declared state variable
+                >
                   Update
                 </Button>
               </div>
