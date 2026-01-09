@@ -93,6 +93,11 @@ export default function ClientDashboard() {
       return
     }
 
+    if (!selectedCompany) {
+      console.log("[v0] Dashboard: Waiting for company data from context")
+      return
+    }
+
     if (selectedCompanyId === lastLoadedCompanyId) {
       console.log("[v0] Dashboard: Data already loaded for this company")
       return
@@ -147,7 +152,7 @@ export default function ClientDashboard() {
     }
 
     loadData()
-  }, [selectedCompanyId, lastLoadedCompanyId, isAuthenticating, isLoadingCompanies, router])
+  }, [selectedCompanyId, selectedCompany, lastLoadedCompanyId, isAuthenticating, isLoadingCompanies, router])
 
   useEffect(() => {
     if (!selectedCompany) return
@@ -295,6 +300,19 @@ export default function ClientDashboard() {
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
             <p className="text-slate-600">Loading your dashboard...</p>
+          </div>
+        </div>
+      </ClientShell>
+    )
+  }
+
+  if (selectedCompanyId && !selectedCompany && !isLoadingData) {
+    return (
+      <ClientShell>
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
+            <p className="text-slate-600">Loading company data...</p>
           </div>
         </div>
       </ClientShell>
