@@ -4,7 +4,6 @@ import type React from "react"
 
 import Link from "next/link"
 import { useState, useEffect } from "react"
-import StateFeesCalculatorModal from "@/components/modals/state-fees-calculator-modal"
 
 function getCookie(name: string): string | null {
   if (typeof window === "undefined") return null
@@ -39,7 +38,7 @@ export default function HeroSection() {
 
   const dashboardUrl = userRole === "admin" ? "/admin" : "/client/dashboard"
   const buttonText = isAuthenticated ? "Go to Dashboard" : "Start Your Business"
-  const buttonLink = isAuthenticated ? dashboardUrl : "/checkout"
+  const buttonLink = isAuthenticated ? dashboardUrl : "/coming-soon"
 
   const handleCalculatorClick = () => {
     if (isAuthenticated) {
@@ -50,15 +49,7 @@ export default function HeroSection() {
   }
 
   const handleStartBusinessClick = (e: React.MouseEvent) => {
-    if (!isAuthenticated) {
-      e.preventDefault()
-      const hasLoggedOut = typeof window !== "undefined" && localStorage.getItem("onetime_logout")
-      if (hasLoggedOut) {
-        window.location.href = "/checkout"
-      } else {
-        setShowCalculator(true)
-      }
-    }
+    // No additional logic needed, link will redirect to /coming-soon
   }
 
   return (
@@ -114,7 +105,7 @@ export default function HeroSection() {
         </main>
       </div>
 
-      <StateFeesCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} />
+      {/* <StateFeesCalculatorModal isOpen={showCalculator} onClose={() => setShowCalculator(false)} /> */}
     </>
   )
 }
