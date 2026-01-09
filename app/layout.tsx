@@ -108,8 +108,7 @@ export const metadata = {
   },
   manifest: "/site.webmanifest",
   verification: {
-    google: "your-google-verification-code",
-    yandex: "your-yandex-verification-code",
+    google: "75c07262157089ce",
   },
   alternates: {
     canonical: "https://buzzfiling.com",
