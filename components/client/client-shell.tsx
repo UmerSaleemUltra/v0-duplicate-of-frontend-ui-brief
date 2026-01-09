@@ -44,7 +44,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
-  const [allCompanies, setAllCompanies] = useState<any[]>([])
   const [userInitials, setUserInitials] = useState("U")
   const [userName, setUserName] = useState("")
   const [isAdminView, setIsAdminView] = useState(false)
@@ -53,8 +52,13 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isPageReady, setIsPageReady] = useState(false)
 
-  const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
-  const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
+  const {
+    selectedCompanyId,
+    setSelectedCompanyId,
+    companies: allCompanies,
+    selectedCompany,
+    isLoadingCompanies,
+  } = useSelectedCompany()
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -93,133 +97,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
     loadUserData()
   }, [])
-
-  useEffect(() => {
-    const loadCompanies = async () => {
-      const token = authService.getToken()
-      if (!token) {
-        console.log("[v0] Sidebar: No token found")
-        return
-      }
-
-      try {
-        const currentUser = authService.getCurrentUser()
-        let userId = currentUser?.id
-
-        if (!userId && typeof window !== "undefined") {
-          const storedUserId = localStorage.getItem("user_id")
-          const storedUserData = localStorage.getItem("user_data")
-
-          if (storedUserId) {
-            userId = storedUserId
-            console.log("[v0] Sidebar: Retrieved userId from localStorage:", userId)
-          } else if (storedUserData) {
-            try {
-              const userData = JSON.parse(storedUserData)
-              userId = userData.id
-              console.log("[v0] Sidebar: Retrieved userId from stored user data:", userId)
-            } catch (e) {
-              console.error("[v0] Sidebar: Error parsing stored user data:", e)
-            }
-          }
-
-          // Try to decode token as last resort
-          if (!userId && token) {
-            try {
-              const tokenParts = token.split(".")
-              if (tokenParts.length === 3) {
-                const payload = JSON.parse(atob(tokenParts[1]))
-                userId = payload.userId || payload.id
-                console.log("[v0] Sidebar: Retrieved userId from token:", userId)
-              }
-            } catch (e) {
-              console.error("[v0] Sidebar: Error decoding token:", e)
-            }
-          }
-        }
-
-        if (!userId) {
-          console.error("[v0] Sidebar: CRITICAL - No userId found!")
-          console.log("[v0] Sidebar: currentUser:", currentUser)
-          console.log("[v0] Sidebar: localStorage user_id:", localStorage.getItem("user_id"))
-          return
-        }
-
-        console.log("[v0] Sidebar: Loading companies for userId:", userId)
-
-        const cacheBuster = `?t=${Date.now()}`
-        const response = await fetch(`/api/companies${cacheBuster}`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
-          },
-        }).then((res) => res.json())
-
-        const allCompaniesData = response.data || response.companies || []
-
-        console.log("[v0] Sidebar: Total companies fetched:", allCompaniesData.length)
-        console.log(
-          "[v0] Sidebar: All companies details:",
-          allCompaniesData.map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            userId: c.userId,
-            userIdType: typeof c.userId,
-            createdAt: c.createdAt,
-          })),
-        )
-
-        console.log("[v0] Sidebar: Current userId for filtering:", userId, "Type:", typeof userId)
-
-        const userCompanies = allCompaniesData.filter((c: any) => {
-          const companyUserId = String(c.userId).trim()
-          const currentUserId = String(userId).trim()
-          const match = companyUserId === currentUserId
-
-          console.log("[v0] Sidebar: Comparing company:", {
-            companyName: c.name,
-            companyUserId,
-            currentUserId,
-            match,
-          })
-
-          return match
-        })
-
-        console.log("[v0] Sidebar: User's companies after filtering:", userCompanies.length)
-        console.log(
-          "[v0] Sidebar: Filtered company names:",
-          userCompanies.map((c: any) => c.name),
-        )
-
-        setAllCompanies(userCompanies)
-
-        if (!selectedCompanyId && userCompanies.length > 0) {
-          console.log("[v0] Sidebar: Auto-selecting first company:", userCompanies[0].id)
-          setSelectedCompanyId(userCompanies[0].id)
-        } else if (userCompanies.length === 0) {
-          console.log("[v0] Sidebar: User has no companies")
-          setSelectedCompanyId(null)
-        }
-      } catch (error) {
-        console.error("[v0] Sidebar: Error loading companies:", error)
-      }
-    }
-
-    loadCompanies()
-
-    const handleRefresh = () => {
-      console.log("[v0] Sidebar: Refresh event triggered, reloading companies")
-      loadCompanies()
-    }
-
-    window.addEventListener("client-dashboard-refresh", handleRefresh)
-
-    return () => {
-      window.removeEventListener("client-dashboard-refresh", handleRefresh)
-    }
-  }, [selectedCompanyId, setSelectedCompanyId])
 
   useEffect(() => {
     const handleFocus = () => {
