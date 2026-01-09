@@ -40,9 +40,30 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const isClientPage = pathname.startsWith("/client")
 
   const selectedCompany = useMemo(() => {
-    if (!selectedCompanyId || companies.length === 0) return null
-    return companies.find((c) => (c.id || c._id) === selectedCompanyId) || null
-  }, [selectedCompanyId, companies])
+    console.log("[v0] CompanyProvider: Calculating selectedCompany", {
+      selectedCompanyId,
+      companiesCount: companies.length,
+      loading,
+    })
+
+    if (!selectedCompanyId) {
+      console.log("[v0] CompanyProvider: No selectedCompanyId")
+      return null
+    }
+
+    if (companies.length === 0) {
+      console.log("[v0] CompanyProvider: Companies not loaded yet")
+      return null
+    }
+
+    const found = companies.find((c) => {
+      const companyId = c.id || c._id
+      return String(companyId) === String(selectedCompanyId)
+    })
+
+    console.log("[v0] CompanyProvider: Found company:", found ? "YES" : "NO")
+    return found || null
+  }, [selectedCompanyId, companies, loading])
 
   const loadCompanies = useCallback(async () => {
     if (companiesLoaded || isPublicPage || !isClientPage) {
@@ -77,18 +98,23 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
       if (userCompanies.length > 0) {
         const storedCompanyId = localStorage.getItem(SELECTED_COMPANY_KEY)
+        console.log("[v0] CompanyProvider: Stored company ID:", storedCompanyId)
 
         if (storedCompanyId) {
-          const companyExists = userCompanies.some((c: any) => (c.id || c._id) === storedCompanyId)
+          const companyExists = userCompanies.some((c: any) => String(c.id || c._id) === String(storedCompanyId))
+
           if (companyExists) {
+            console.log("[v0] CompanyProvider: Found stored company, setting it")
             setSelectedCompanyIdState(storedCompanyId)
           } else {
-            const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
+            console.log("[v0] CompanyProvider: Stored company not found, selecting first")
+            const firstCompanyId = String(userCompanies[0].id || userCompanies[0]._id)
             setSelectedCompanyIdState(firstCompanyId)
             localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
           }
-        } else if (!selectedCompanyId) {
-          const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
+        } else {
+          console.log("[v0] CompanyProvider: No stored company, selecting first")
+          const firstCompanyId = String(userCompanies[0].id || userCompanies[0]._id)
           setSelectedCompanyIdState(firstCompanyId)
           localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
         }
@@ -98,7 +124,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setLoading(false)
     }
-  }, [companiesLoaded, isPublicPage, isClientPage, selectedCompanyId])
+  }, [companiesLoaded, isPublicPage, isClientPage])
 
   useEffect(() => {
     if (!isPublicPage && isClientPage && !companiesLoaded) {
