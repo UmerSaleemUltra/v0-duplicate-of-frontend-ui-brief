@@ -4,22 +4,22 @@ import { Mail, Phone, MapPin, Instagram, Linkedin, Youtube, Facebook } from "luc
 
 const footerLinks = {
   services: [
-    { name: "LLC Formation", href: "/checkout" },
-    { name: "EIN Registration", href: "/checkout" },
-    { name: "Bank Account", href: "/checkout" },
-    { name: "Registered Agent", href: "/checkout" },
-    { name: "Business Address", href: "/checkout" },
+    { name: "LLC Formation", href: "/#services" },
+    { name: "EIN Registration", href: "/#services" },
+    { name: "Bank Account", href: "/#services" },
+    { name: "Registered Agent", href: "/#services" },
+    { name: "Business Address", href: "/#services" },
   ],
   company: [
-    { name: "About Us", href: "#about" },
-    { name: "Pricing", href: "#pricing" },
-    { name: "Process", href: "#process" },
-    { name: "Contact", href: "#contact" },
+    { name: "About Us", href: "/#about" },
+    { name: "Pricing", href: "/#pricing" },
+    { name: "Process", href: "/#services" },
+    { name: "Contact", href: "/#contact" },
   ],
   legal: [
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Terms & Conditions", href: "/terms" },
-    { name: "Refund Policy", href: "/privacy" },
+    { name: "Refund Policy", href: "/refund" },
   ],
 }
 

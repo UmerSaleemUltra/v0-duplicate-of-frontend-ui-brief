@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-import { Check, Menu, X, Save } from 'lucide-react'
+import { Check, Menu, X, Save } from "lucide-react"
 import Link from "next/link"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import type { CheckoutData } from "@/app/checkout/page"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
@@ -20,6 +20,16 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string>("")
 
+  useEffect(() => {
+    console.log("[v0] Checkout: Current step:", currentStep)
+    console.log("[v0] Checkout: Data state:", data?.state?.name || "No state selected")
+
+    // Clear save message when step changes
+    if (saveMessage) {
+      setSaveMessage("")
+    }
+  }, [currentStep, data])
+
   const stepDescriptions = [
     "Create Your Account",
     "Choose Your State & Package",
@@ -30,9 +40,10 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
   ]
 
   const handleSaveProgress = () => {
+    console.log("[v0] Checkout: Saving progress at step:", currentStep)
     const result = saveProgress()
     setSaveMessage(result.message)
-    
+
     setTimeout(() => {
       setSaveMessage("")
     }, 3000)
@@ -71,8 +82,8 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
                   index === currentStep
                     ? "opacity-100 scale-100"
                     : index < currentStep
-                    ? "opacity-90 scale-[0.98]"
-                    : "opacity-60 scale-95"
+                      ? "opacity-90 scale-[0.98]"
+                      : "opacity-60 scale-95"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -81,8 +92,8 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
                       index < currentStep
                         ? "bg-white/25 text-white backdrop-blur-sm"
                         : index === currentStep
-                        ? "bg-white text-[#ff0d13] ring-4 ring-white/40 shadow-xl scale-110"
-                        : "bg-white/10 text-white/60 backdrop-blur-sm"
+                          ? "bg-white text-[#ff0d13] ring-4 ring-white/40 shadow-xl scale-110"
+                          : "bg-white/10 text-white/60 backdrop-blur-sm"
                     }`}
                     aria-current={index === currentStep ? "step" : undefined}
                   >
@@ -157,16 +168,12 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
         <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 max-w-7xl w-full mx-auto">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-7 lg:p-8">
             <div className="flex justify-end mb-4">
-              <Button
-                onClick={handleSaveProgress}
-                variant="outline"
-                className="gap-2 text-sm"
-              >
+              <Button onClick={handleSaveProgress} variant="outline" className="gap-2 text-sm bg-transparent">
                 <Save className="w-4 h-4" />
                 Save Progress
               </Button>
             </div>
-            
+
             {saveMessage && (
               <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200">
                 <p className="text-sm text-green-700">{saveMessage}</p>

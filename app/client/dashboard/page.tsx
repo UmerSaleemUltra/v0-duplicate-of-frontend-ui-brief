@@ -48,6 +48,7 @@ export default function ClientDashboard() {
   const [showCelebration, setShowCelebration] = useState(false)
   const [notifications, setNotifications] = useState<any[]>([])
   const [celebrationShown, setCelebrationShown] = useState(false)
+  const [lastLoadedCompanyId, setLastLoadedCompanyId] = useState<string | null>(null)
 
   useEffect(() => {
     const checkAuth = () => {
@@ -82,6 +83,16 @@ export default function ClientDashboard() {
 
   useEffect(() => {
     if (isAuthenticating) {
+      return
+    }
+
+    if (selectedCompanyId && selectedCompanyId !== lastLoadedCompanyId) {
+      console.log("[v0] Dashboard: Company changed, resetting dataLoaded state")
+      setDataLoaded(false)
+    }
+
+    if (dataLoaded && selectedCompanyId === lastLoadedCompanyId) {
+      console.log("[v0] Dashboard: Data already loaded for this company, skipping reload")
       return
     }
 
@@ -245,7 +256,8 @@ export default function ClientDashboard() {
 
           setDocuments(companyDocuments.data || [])
           setMailItems(companyMail.data || [])
-          console.log("[v0] Dashboard data loaded successfully")
+          setLastLoadedCompanyId(companyToLoad)
+          console.log("[v0] Dashboard data loaded successfully for company:", companyToLoad)
         }
 
         setDataLoaded(true)
@@ -267,6 +279,7 @@ export default function ClientDashboard() {
             localStorage.removeItem("selectedCompanyId")
           }
           setSelectedCompanyId(null)
+          setLastLoadedCompanyId(null)
         }
         setIsLoadingData(false)
         toast({
@@ -278,7 +291,7 @@ export default function ClientDashboard() {
     }
 
     loadData()
-  }, [isAuthenticating, currentUser, selectedCompanyId, dataLoaded, router, setSelectedCompanyId])
+  }, [isAuthenticating, currentUser, selectedCompanyId, router, setSelectedCompanyId, lastLoadedCompanyId])
 
   useEffect(() => {
     if (!company) return
