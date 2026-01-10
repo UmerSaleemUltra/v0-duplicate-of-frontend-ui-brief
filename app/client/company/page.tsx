@@ -292,10 +292,10 @@ export default function CompanyPage() {
 
   const hasMailingAddress =
     companyData?.mailingAddress &&
-    companyData.mailingAddress.address &&
-    companyData.mailingAddress.address.trim() !== "" &&
-    companyData.mailingAddress.address !== "Not yet" &&
-    companyData.mailingAddress.address !== "Not Yet Assigned"
+    (companyData.mailingAddress.street || companyData.mailingAddress.address) &&
+    (companyData.mailingAddress.street || companyData.mailingAddress.address).trim() !== "" &&
+    (companyData.mailingAddress.street || companyData.mailingAddress.address) !== "Not yet" &&
+    (companyData.mailingAddress.street || companyData.mailingAddress.address) !== "Not Yet Assigned"
 
   return (
     <ClientShell>
@@ -614,7 +614,14 @@ export default function CompanyPage() {
             <div className="flex flex-col py-2 gap-2">
               <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
               <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                {companyData.mailingAddress?.address ? (
+                {companyData.mailingAddress?.street ? (
+                  <>
+                    {companyData.mailingAddress.street}
+                    {companyData.mailingAddress?.city && `, ${companyData.mailingAddress.city}`}
+                    {companyData.mailingAddress?.state && `, ${companyData.mailingAddress.state}`}
+                    {companyData.mailingAddress?.zip && ` ${companyData.mailingAddress.zip}`}
+                  </>
+                ) : companyData.mailingAddress?.address ? (
                   <>
                     {companyData.mailingAddress.address}
                     {companyData.mailingAddress?.city && `, ${companyData.mailingAddress.city}`}
