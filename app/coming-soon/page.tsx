@@ -2,23 +2,13 @@
 
 import Navbar from "@/components/sections/navbar"
 import Footer from "@/components/sections/footer"
-import { useState } from "react"
 import { Bell, Clock, Rocket } from "lucide-react"
 import { Button } from "@/components/ui/button"
 
 export default function ComingSoonPage() {
-  const [email, setEmail] = useState("")
-  const [subscribed, setSubscribed] = useState(false)
-
-  const handleNotifyMe = async () => {
+  const handleNotifyMe = async (email: string) => {
     if (!email) return
-
     console.log("[v0] Notify me clicked for:", email)
-    setSubscribed(true)
-    setEmail("")
-
-    // Reset after 3 seconds
-    setTimeout(() => setSubscribed(false), 3000)
   }
 
   return (
@@ -76,22 +66,22 @@ export default function ComingSoonPage() {
               <input
                 type="email"
                 placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                id="email-input"
                 className="flex-1 rounded-full border-2 border-gray-300 px-6 py-3 text-base focus:border-[#ff0d13] focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20"
               />
               <Button
-                onClick={handleNotifyMe}
-                disabled={!email || subscribed}
-                className="rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] px-8 py-3 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl disabled:opacity-50"
+                onClick={() => {
+                  const email = (document.getElementById("email-input") as HTMLInputElement)?.value
+                  handleNotifyMe(email)
+                }}
+                className="rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] px-8 py-3 text-base font-semibold text-white shadow-lg transition-all hover:shadow-xl"
               >
-                {subscribed ? "✓ Subscribed!" : "Notify Me"}
+                Notify Me
               </Button>
             </div>
-            {subscribed && <p className="mt-3 text-sm text-green-600">Thanks! We'll notify you when we launch.</p>}
           </div>
 
-          {/* Launch Timer (Optional) */}
+          {/* Launch Timer */}
           <div className="mt-12 text-sm text-gray-500">
             <p>Expected launch: Q1 2026</p>
           </div>

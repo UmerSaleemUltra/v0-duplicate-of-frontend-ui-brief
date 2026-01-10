@@ -3078,7 +3078,7 @@ export default function OrderDetailPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setAgentStatusModalOpen(true)} // Corrected: use the declared state variable
+                    onClick={() => setRegisteredAgentStatusDialogOpen(true)}
                     className="h-8"
                   >
                     Update
@@ -3107,7 +3107,7 @@ export default function OrderDetailPage() {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setAddressStatusModalOpen(true)} // Corrected: use the declared state variable
+                    onClick={() => setBusinessAddressStatusDialogOpen(true)}
                     className="h-8"
                   >
                     Update
@@ -3133,12 +3133,7 @@ export default function OrderDetailPage() {
                   >
                     {company?.serviceStatus || "pending"}
                   </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setServiceStatusModalOpen(true)} // Corrected: use the declared state variable
-                    className="h-8"
-                  >
+                  <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
                     Update
                   </Button>
                 </div>
