@@ -4,6 +4,7 @@ import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 import { ObjectId } from "mongodb"
+import { sendEmail, emailTemplates } from "@/config/email"
 
 export async function GET(req: NextRequest) {
   try {
@@ -303,6 +304,7 @@ export async function POST(req: NextRequest) {
 
     if (isFirstCompany) {
       try {
+        // Create welcome notification
         await db.collection("notifications").insertOne({
           userId: decoded.userId,
           companyId: companyId,
@@ -317,8 +319,69 @@ export async function POST(req: NextRequest) {
           createdAt: new Date().toISOString(),
         })
 
+        // Get user email from database
+        const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.userId) })
+
+        // Send welcome email
+        if (user && user.email) {
+          const emailTemplate = emailTemplates.welcome(user.name || "Valued User")
+          await sendEmail({
+            to: user.email,
+            subject: emailTemplate.subject,
+            html: emailTemplate.html,
+          })
+          console.log("[v0] Welcome email sent to:", user.email)
+        }
+
         broadcastUpdate("notifications", "created", { userId: decoded.userId })
-      } catch (notificationError) {}
+      } catch (notificationError) {
+        console.error("[v0] Error sending welcome notification/email:", notificationError)
+      }
+    }
+
+    if (initialOrders.length > 0) {
+      try {
+        const order = initialOrders[0]
+
+        // Create order placed notification
+        await db.collection("notifications").insertOne({
+          userId: decoded.userId,
+          companyId: companyId,
+          type: "order_placed",
+          title: "Order Placed Successfully",
+          message: `Your ${order.orderType} order has been placed successfully. Order ID: ${order.id}. Total: $${order.pricing.total.toFixed(2)}`,
+          read: false,
+          metadata: {
+            companyId: companyId,
+            orderId: order.id,
+            orderTotal: order.pricing.total,
+          },
+          createdAt: new Date().toISOString(),
+        })
+
+        // Get user email and send order confirmation email
+        const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.userId) })
+
+        if (user && user.email) {
+          const emailTemplate = emailTemplates.orderPlacementConfirmation(
+            user.name || "Valued User",
+            name,
+            order.orderType,
+            order.pricing.total,
+            order.id,
+          )
+          await sendEmail({
+            to: user.email,
+            subject: emailTemplate.subject,
+            html: emailTemplate.html,
+          })
+          console.log("[v0] Order confirmation email sent to:", user.email)
+        }
+
+        broadcastUpdate("notifications", "created", { userId: decoded.userId, companyId })
+      } catch (orderError) {
+        console.error("[v0] Error sending order notification/email:", orderError)
+      }
     }
 
     return addSecurityHeaders(

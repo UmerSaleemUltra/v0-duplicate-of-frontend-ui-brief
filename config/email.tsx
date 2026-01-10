@@ -748,4 +748,114 @@ export const emailTemplates = {
     </html>
   `,
   }),
+
+  orderPlacementConfirmation: (
+    name: string,
+    companyName: string,
+    orderType: string,
+    total: number,
+    orderId: string,
+  ) => ({
+    subject: "Order Confirmation — Your U.S. Business Formation Has Been Initiated 📋",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+                
+                <tr>
+                  <td style="padding: 32px 40px 16px 40px; text-align: center;">
+                    <img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 160px; height: auto;" />
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 32px 40px 32px 40px; text-align: center; background: linear-gradient(135deg, #8b0000 0%, #a00000 100%);">
+                    <div style="width: 60px; height: 60px; background-color: #ffffff; border-radius: 12px; margin: 0 auto; display: inline-flex; align-items: center; justify-content: center;">
+                      <span style="font-size: 32px;">✅</span>
+                    </div>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 40px 40px;">
+                    <h1 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #1a1a1a; line-height: 1.3;">
+                      Order Confirmed, ${name}! 📋
+                    </h1>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #4a4a4a; line-height: 1.6;">
+                      Your order has been successfully placed and we've received your payment. We're now processing your ${orderType} formation.
+                    </p>
+                    
+                    <div style="background-color: #f8f9fa; border-left: 4px solid #8b0000; padding: 24px; border-radius: 8px; margin: 32px 0;">
+                      <h2 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">
+                        Order Details
+                      </h2>
+                      
+                      <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0;">
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                          <td style="padding: 12px 0; font-size: 14px; color: #6b7280;">Order ID:</td>
+                          <td style="padding: 12px 0; font-size: 14px; font-weight: 600; color: #1a1a1a; text-align: right;">${orderId}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                          <td style="padding: 12px 0; font-size: 14px; color: #6b7280;">Company:</td>
+                          <td style="padding: 12px 0; font-size: 14px; font-weight: 600; color: #1a1a1a; text-align: right;">${companyName}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                          <td style="padding: 12px 0; font-size: 14px; color: #6b7280;">Service Type:</td>
+                          <td style="padding: 12px 0; font-size: 14px; font-weight: 600; color: #1a1a1a; text-align: right;">${orderType}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 12px 0; font-size: 16px; color: #1a1a1a; font-weight: 700;">Total Amount:</td>
+                          <td style="padding: 12px 0; font-size: 16px; font-weight: 700; color: #8b0000; text-align: right;">$${total.toFixed(2)}</td>
+                        </tr>
+                      </table>
+                    </div>
+                    
+                    <p style="margin: 32px 0 0 0; font-size: 16px; color: #4a4a4a; line-height: 1.6;">
+                      What happens next? We'll begin processing your formation immediately. You'll receive updates in your dashboard and via email as we progress through each milestone.
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px; text-align: center;">
+                    <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #8b0000 0%, #a00000 100%); border-radius: 8px; padding: 16px 32px;">
+                          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://buzzfiling.com"}/client/dashboard" style="color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; display: inline-block;">
+                            View Your Dashboard →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 32px 40px; text-align: center; background-color: #f8f9fa; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280;">
+                      Need help? Contact us at <a href="mailto:support@buzzfiling.com" style="color: #8b0000; text-decoration: none; font-weight: 500;">support@buzzfiling.com</a>
+                    </p>
+                    <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                      All rights reserved © 2026 | <span style="color: #8b0000; font-weight: 600;">BuzzFiling</span>
+                    </p>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `,
+  }),
 }
