@@ -10,7 +10,7 @@ import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { authService } from "@/lib/auth"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -3140,126 +3140,9 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Removed duplicate Status Management section */}
         </div>
-
-        {/* Status Management (FIRST INSTANCE) */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <span>Status Management</span>
-            </CardTitle>
-            <CardDescription>Manage company, registered agent, business address, and service statuses</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Company Status */}
-            <div className="space-y-2">
-              <Label htmlFor="company-status" className="text-sm font-medium">
-                Company Status
-              </Label>
-              <p className="text-xs text-muted-foreground">Overall company operational status</p>
-              <div className="flex items-center gap-2">
-                <Badge
-                  className={
-                    company?.companyStatus === "active"
-                      ? "bg-green-50 text-green-700 border-green-200 capitalize"
-                      : company?.companyStatus === "inactive"
-                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
-                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
-                  }
-                >
-                  {company?.companyStatus || "pending"}
-                </Badge>
-                <Button variant="outline" size="sm" onClick={() => setCompanyStatusDialogOpen(true)}>
-                  Update
-                </Button>
-              </div>
-            </div>
-
-            {/* Registered Agent Status */}
-            <div className="space-y-2">
-              <Label htmlFor="agent-status" className="text-sm font-medium">
-                Registered Agent Status
-              </Label>
-              <p className="text-xs text-muted-foreground">Agent assignment and service status</p>
-              <div className="flex items-center gap-2">
-                <Badge
-                  className={
-                    company?.registeredAgentStatus === "active"
-                      ? "bg-green-50 text-green-700 border-green-200 capitalize"
-                      : company?.registeredAgentStatus === "inactive"
-                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
-                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
-                  }
-                >
-                  {company?.registeredAgentStatus || "pending"}
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setAgentStatusModalOpen(true)} // Corrected: use the declared state variable
-                >
-                  Update
-                </Button>
-              </div>
-            </div>
-
-            {/* Business Address Status */}
-            <div className="space-y-2">
-              <Label htmlFor="address-status" className="text-sm font-medium">
-                Business Address Status
-              </Label>
-              <p className="text-xs text-muted-foreground">Mailing address service status</p>
-              <div className="flex items-center gap-2">
-                <Badge
-                  className={
-                    company?.businessAddressStatus === "active"
-                      ? "bg-green-50 text-green-700 border-green-200 capitalize"
-                      : company?.businessAddressStatus === "inactive"
-                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
-                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
-                  }
-                >
-                  {company?.businessAddressStatus || "pending"}
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setAddressStatusModalOpen(true)} // Corrected: use the declared state variable
-                >
-                  Update
-                </Button>
-              </div>
-            </div>
-
-            {/* Service Status */}
-            <div className="space-y-2">
-              <Label htmlFor="service-status" className="text-sm font-medium">
-                Service Status
-              </Label>
-              <p className="text-xs text-muted-foreground">Overall service delivery status</p>
-              <div className="flex items-center gap-2">
-                <Badge
-                  className={
-                    company?.serviceStatus === "active"
-                      ? "bg-green-50 text-green-700 border-green-200 capitalize"
-                      : company?.serviceStatus === "inactive"
-                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
-                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
-                  }
-                >
-                  {company?.serviceStatus || "pending"}
-                </Badge>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setServiceStatusModalOpen(true)} // Corrected: use the declared state variable
-                >
-                  Update
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
       </div>
 
       {/* Manage Milestones Dialog */}
