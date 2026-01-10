@@ -600,59 +600,9 @@ export default function CompanyPage() {
           </div>
         )}
 
-        {/* Mailing Address */}
-        {hasMailingAddress && (
-          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Mailing Address</h2>
-            <div className="space-y-4">
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {companyData.mailingAddress?.address ? (
-                    <>
-                      {companyData.mailingAddress.address}
-                      {companyData.mailingAddress?.city && `, ${companyData.mailingAddress.city}`}
-                      {companyData.mailingAddress?.state && `, ${companyData.mailingAddress.state}`}
-                      {companyData.mailingAddress?.zip && ` ${companyData.mailingAddress.zip}`}
-                    </>
-                  ) : (
-                    "Not Yet"
-                  )}
-                </span>
-              </div>
-
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {new Date(
-                    new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                  ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-                </span>
-              </div>
-
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Status</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  <Badge
-                    className={
-                      companyData.mailingAddressStatus === "active"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
-                        : companyData.mailingAddressStatus === "inactive"
-                          ? "bg-red-50 text-red-700 border-red-200 capitalize"
-                          : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
-                    }
-                  >
-                    {companyData.mailingAddressStatus || "Pending"}
-                  </Badge>
-                </span>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* Business Address */}
+        {/* Business Mailing Address */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Address</h2>
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Mailing Address</h2>
           <div className="space-y-4">
             <div className="flex flex-col py-2 gap-2">
               <span className="text-slate-600 text-sm sm:text-base text-left">Company Name</span>
@@ -664,7 +614,14 @@ export default function CompanyPage() {
             <div className="flex flex-col py-2 gap-2">
               <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
               <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                {companyData.businessAddress?.address ? (
+                {companyData.mailingAddress?.address ? (
+                  <>
+                    {companyData.mailingAddress.address}
+                    {companyData.mailingAddress?.city && `, ${companyData.mailingAddress.city}`}
+                    {companyData.mailingAddress?.state && `, ${companyData.mailingAddress.state}`}
+                    {companyData.mailingAddress?.zip && ` ${companyData.mailingAddress.zip}`}
+                  </>
+                ) : companyData.businessAddress?.address ? (
                   <>
                     {companyData.businessAddress.address}
                     {companyData.businessAddress?.city && `, ${companyData.businessAddress.city}`}
@@ -691,14 +648,15 @@ export default function CompanyPage() {
               <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                 <Badge
                   className={
-                    companyData.businessAddressStatus === "active"
+                    companyData.mailingAddressStatus === "active" || companyData.businessAddressStatus === "active"
                       ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
-                      : companyData.businessAddressStatus === "inactive"
+                      : companyData.mailingAddressStatus === "inactive" ||
+                          companyData.businessAddressStatus === "inactive"
                         ? "bg-red-50 text-red-700 border-red-200 capitalize"
                         : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
                   }
                 >
-                  {companyData.businessAddressStatus || "Pending"}
+                  {companyData.mailingAddressStatus || companyData.businessAddressStatus || "Pending"}
                 </Badge>
               </span>
             </div>
