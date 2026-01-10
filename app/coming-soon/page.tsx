@@ -20,7 +20,6 @@ export default function ComingSoonPage() {
           {/* Icon */}
           <div className="mb-8 flex justify-center">
             <div className="relative">
-              <div className="absolute inset-0 animate-ping rounded-full bg-[#ff0d13]/20" />
               <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] shadow-2xl">
                 <Rocket className="h-12 w-12 text-white" />
               </div>
