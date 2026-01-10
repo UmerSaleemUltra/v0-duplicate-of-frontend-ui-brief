@@ -534,47 +534,6 @@ export default function CompanyPage() {
           </div>
         )}
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Tax & Compliance Information</h2>
-          <div className="space-y-4">
-            <div className="flex flex-col py-2 gap-2">
-              <span className="text-slate-600 text-sm sm:text-base text-left">Tax Classification</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                {companyData.entityType === "LLC"
-                  ? "Limited Liability Company"
-                  : companyData.entityType === "S-Corp"
-                    ? "S Corporation"
-                    : "Not specified"}
-              </span>
-            </div>
-
-            <div className="flex flex-col py-2 gap-2">
-              <span className="text-slate-600 text-sm sm:text-base text-left">Annual Report Filing Date</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                {new Date(
-                  new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-              </span>
-            </div>
-
-            <div className="flex flex-col py-2 gap-2">
-              <span className="text-slate-600 text-sm sm:text-base text-left">IRS Tax Return Filing Date</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                {(() => {
-                  const orderDate = new Date(companyData.orderDate)
-                  const taxFilingDate = new Date(orderDate)
-                  taxFilingDate.setMonth(orderDate.getMonth() + 15)
-                  return taxFilingDate.toLocaleDateString("en-US", {
-                    day: "numeric",
-                    month: "long",
-                    year: "numeric",
-                  })
-                })()}
-              </span>
-            </div>
-          </div>
-        </div>
-
         {/* Registered Agent */}
         {hasRegisteredAgent && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
@@ -583,17 +542,23 @@ export default function CompanyPage() {
               <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Registered Agent</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {companyData.registeredAgent?.company || companyData.registeredAgent?.name}
+                  {companyData.registeredAgent?.company || companyData.registeredAgent?.name || "Not Yet"}
                 </span>
               </div>
 
               <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {companyData.registeredAgent?.address}
-                  {companyData.registeredAgent?.city && `, ${companyData.registeredAgent.city}`}
-                  {companyData.registeredAgent?.state && `, ${companyData.registeredAgent.state}`}
-                  {companyData.registeredAgent?.zip && ` ${companyData.registeredAgent.zip}`}
+                  {companyData.registeredAgent?.address ? (
+                    <>
+                      {companyData.registeredAgent.address}
+                      {companyData.registeredAgent?.city && `, ${companyData.registeredAgent.city}`}
+                      {companyData.registeredAgent?.state && `, ${companyData.registeredAgent.state}`}
+                      {companyData.registeredAgent?.zip && ` ${companyData.registeredAgent.zip}`}
+                    </>
+                  ) : (
+                    "Not Yet"
+                  )}
                 </span>
               </div>
 
@@ -627,55 +592,59 @@ export default function CompanyPage() {
         )}
 
         {/* Business Address */}
-        {hasBusinessAddress && (
-          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Business Address</h2>
-            <div className="space-y-4">
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Company Name</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {companyData.businessName}
-                </span>
-              </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Address</h2>
+          <div className="space-y-4">
+            <div className="flex flex-col py-2 gap-2">
+              <span className="text-slate-600 text-sm sm:text-base text-left">Company Name</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                {companyData.businessName}
+              </span>
+            </div>
 
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {companyData.businessAddress?.address}
-                  {companyData.businessAddress?.city && `, ${companyData.businessAddress.city}`}
-                  {companyData.businessAddress?.state && `, ${companyData.businessAddress.state}`}
-                  {companyData.businessAddress?.zip && ` ${companyData.businessAddress.zip}`}
-                </span>
-              </div>
+            <div className="flex flex-col py-2 gap-2">
+              <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                {companyData.businessAddress?.address ? (
+                  <>
+                    {companyData.businessAddress.address}
+                    {companyData.businessAddress?.city && `, ${companyData.businessAddress.city}`}
+                    {companyData.businessAddress?.state && `, ${companyData.businessAddress.state}`}
+                    {companyData.businessAddress?.zip && ` ${companyData.businessAddress.zip}`}
+                  </>
+                ) : (
+                  "Not Yet"
+                )}
+              </span>
+            </div>
 
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {new Date(
-                    new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                  ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-                </span>
-              </div>
+            <div className="flex flex-col py-2 gap-2">
+              <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                {new Date(
+                  new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+              </span>
+            </div>
 
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Status</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  <Badge
-                    className={
-                      companyData.businessAddressStatus === "active"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
-                        : companyData.businessAddressStatus === "inactive"
-                          ? "bg-red-50 text-red-700 border-red-200 capitalize"
-                          : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
-                    }
-                  >
-                    {companyData.businessAddressStatus || "Pending"}
-                  </Badge>
-                </span>
-              </div>
+            <div className="flex flex-col py-2 gap-2">
+              <span className="text-slate-600 text-sm sm:text-base text-left">Status</span>
+              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                <Badge
+                  className={
+                    companyData.businessAddressStatus === "active"
+                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
+                      : companyData.businessAddressStatus === "inactive"
+                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                  }
+                >
+                  {companyData.businessAddressStatus || "Pending"}
+                </Badge>
+              </span>
             </div>
           </div>
-        )}
+        </div>
 
         {/* Purchased Add-ons */}
         {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
