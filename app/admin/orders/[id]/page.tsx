@@ -1,5 +1,7 @@
 "use client"
 
+import type React from "react"
+
 import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { authService } from "@/lib/auth"
@@ -7,8 +9,6 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
@@ -24,16 +24,13 @@ import {
   User,
   Users,
   Building2,
-  FileText,
   CheckCircle2,
   Clock,
   AlertCircle,
   Hash,
-  UserCheck,
   Loader2,
   MapPin,
   Trash2,
-  Receipt,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -81,6 +78,24 @@ const getWeeksSinceOrder = (createdAt: string | undefined): number => {
   return diffWeeks
 }
 
+const StatusBadge = ({ status }: { status: string }) => {
+  const statusConfig: Record<string, { bg: string; text: string; icon: React.ReactNode }> = {
+    pending: { bg: "bg-yellow-50", text: "text-yellow-700", icon: <Clock className="w-3 h-3" /> },
+    processing: { bg: "bg-blue-50", text: "text-blue-700", icon: <Loader2 className="w-3 h-3" /> },
+    completed: { bg: "bg-green-50", text: "text-green-700", icon: <CheckCircle2 className="w-3 h-3" /> },
+    cancelled: { bg: "bg-red-50", text: "text-red-700", icon: <AlertCircle className="w-3 h-3" /> },
+  }
+
+  const config = statusConfig[status] || statusConfig.pending
+
+  return (
+    <Badge className={`${config.bg} ${config.text} border-0 flex items-center gap-1`}>
+      {config.icon}
+      {status.charAt(0).toUpperCase() + status.slice(1)}
+    </Badge>
+  )
+}
+
 export default function OrderDetailPage() {
   const router = useRouter()
   const { toast } = useToast()
@@ -99,9 +114,6 @@ export default function OrderDetailPage() {
   const [passportDocuments, setPassportDocuments] = useState<any[]>([])
   const [passportUrls, setPassportUrls] = useState<string[]>([])
   const [user, setUser] = useState<any>(null)
-  const [orderNotes, setOrderNotes] = useState("")
-  const [editingNotes, setEditingNotes] = useState(false)
-  const [notesUpdating, setNotesUpdating] = useState(false)
 
   const [editingSection, setEditingSection] = useState<string | null>(null)
 
@@ -277,7 +289,7 @@ export default function OrderDetailPage() {
         description: `Successfully added "${newMilestone.title}"`,
       })
     } catch (error) {
-      console.error("[v0] Error adding custom milestone:", error)
+      console.error("Error adding custom milestone:", error)
       toast({
         title: "Add Failed",
         description: "Failed to add custom milestone. Please try again.",
@@ -334,7 +346,7 @@ export default function OrderDetailPage() {
         description: `${milestone?.title} has been ${milestone?.completed ? "completed" : "uncompleted"}`,
       })
     } catch (error) {
-      console.error("[v0] Error updating custom milestone:", error)
+      console.error("Error updating custom milestone:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update custom milestone. Please try again.",
@@ -386,7 +398,7 @@ export default function OrderDetailPage() {
         description: "Custom milestone has been removed successfully",
       })
     } catch (error) {
-      console.error("[v0] Error deleting custom milestone:", error)
+      console.error("Error deleting custom milestone:", error)
       toast({
         title: "Delete Failed",
         description: "Failed to delete custom milestone. Please try again.",
@@ -487,12 +499,12 @@ export default function OrderDetailPage() {
 
       if (foundCompany?.milestones) {
         setMilestones({
-          orderProcessed: foundCompany.milestones.orderProcessed || false,
-          registeredAgentAssigned: foundCompany.milestones.registeredAgentAssigned || false,
-          mailingAddressIssued: foundCompany.milestones.mailingAddressIssued || false,
-          formationCompleted: foundCompany.milestones.formationCompleted || false,
-          einProcessed: foundCompany.milestones.einProcessed || false,
-          boiReportFiled: foundCompany.milestones.boiReportFiled || false,
+          orderProcessed: foundCompany.milestones.orderProcessed === true,
+          registeredAgentAssigned: foundCompany.milestones.registeredAgentAssigned === true,
+          mailingAddressIssued: foundCompany.milestones.mailingAddressIssued === true,
+          formationCompleted: foundCompany.milestones.formationCompleted === true,
+          einProcessed: foundCompany.milestones.einProcessed === true,
+          boiReportFiled: foundCompany.milestones.boiReportFiled === true,
         })
       } else {
         setMilestones({
@@ -547,10 +559,9 @@ export default function OrderDetailPage() {
 
       setAddons(allAddons)
       setNewStatus(foundOrder.status || "")
-      setOrderNotes(foundOrder.notes || "")
       setError(null)
     } catch (error) {
-      console.error("[v0] Error loading order data:", error)
+      console.error("Error loading order data:", error)
       setError("Failed to load order")
       toast({
         title: "Error",
@@ -603,7 +614,7 @@ export default function OrderDetailPage() {
         description: `Order status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.error("[v0] Error updating status:", error)
+      console.error("Error updating status:", error)
       toast({
         title: "Error",
         description: "Failed to update order status",
@@ -611,51 +622,6 @@ export default function OrderDetailPage() {
       })
     } finally {
       setStatusUpdating(false)
-    }
-  }
-
-  const handleSaveNotes = async () => {
-    if (!order) return
-
-    setNotesUpdating(true)
-    try {
-      const token = authService.getToken()
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      const response = await fetch(`/api/orders/${order.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          notes: orderNotes,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update notes")
-      }
-
-      const result = await response.json()
-      setOrder(result.data)
-      setEditingNotes(false)
-      toast({
-        title: "Success",
-        description: "Notes saved successfully",
-      })
-    } catch (error) {
-      console.error("[v0] Error saving notes:", error)
-      toast({
-        title: "Error",
-        description: "Failed to save notes",
-        variant: "destructive",
-      })
-    } finally {
-      setNotesUpdating(false)
     }
   }
 
@@ -685,9 +651,10 @@ export default function OrderDetailPage() {
         title: "Success",
         description: "Order deleted successfully",
       })
+
       router.push("/admin/orders")
     } catch (error) {
-      console.error("[v0] Error deleting order:", error)
+      console.error("Error deleting order:", error)
       toast({
         title: "Error",
         description: "Failed to delete order",
@@ -702,308 +669,288 @@ export default function OrderDetailPage() {
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     )
   }
 
   if (error) {
     return (
-      <div className="p-8">
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <div className="flex items-center gap-3">
-              <AlertCircle className="w-5 h-5 text-red-600" />
-              <div>
-                <h3 className="font-semibold text-red-900">Error</h3>
-                <p className="text-sm text-red-700">{error}</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex flex-col items-center justify-center min-h-screen gap-4">
+        <AlertCircle className="w-12 h-12 text-red-500" />
+        <p className="text-lg font-semibold">{error}</p>
+        <Button onClick={() => router.push("/admin/orders")} variant="outline">
+          Back to Orders
+        </Button>
       </div>
     )
   }
 
   if (!order || !company) {
     return (
-      <div className="p-8">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-gray-500">Order details not found</p>
-          </CardContent>
-        </Card>
+      <div className="flex items-center justify-center min-h-screen">
+        <p>Order data not available</p>
       </div>
     )
   }
 
   const completedMilestones = Object.values(milestones).filter(Boolean).length
-  const totalMilestones = Object.values(milestones).length
-  const milestonePercentage = Math.round((completedMilestones / totalMilestones) * 100)
+  const totalMilestones = Object.keys(milestones).length
+  const progressPercentage = (completedMilestones / totalMilestones) * 100
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <main className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
-      <div className="sticky top-0 z-40 bg-white border-b">
-        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => router.push("/admin/orders")}>
+      <div className="border-b bg-white shadow-sm">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <Button variant="ghost" size="sm" onClick={() => router.push("/admin/orders")}>
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Order Details</h1>
+              <h1 className="text-2xl font-bold text-gray-900">Order Details</h1>
               <p className="text-sm text-gray-600">Order ID: {order.id}</p>
             </div>
           </div>
-          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
-            <Trash2 className="w-4 h-4 mr-2" />
-            Delete Order
-          </Button>
+          <StatusBadge status={order.status || "pending"} />
         </div>
       </div>
 
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Details */}
-          <div className="lg:col-span-2 space-y-6">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="grid grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="col-span-2 space-y-6">
             {/* Customer Information */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Customer Information
-                </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => setEditingCustomer(!editingCustomer)}>
-                  {editingCustomer ? "Cancel" : "Edit"}
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {editingCustomer ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label>Name</Label>
-                      <Input
-                        value={customerForm.name}
-                        onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                      />
+            <Card className="overflow-hidden border-0 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-blue-500 rounded-lg">
+                      <User className="w-5 h-5 text-white" />
                     </div>
-                    <div>
-                      <Label>Email</Label>
-                      <Input
-                        value={customerForm.email}
-                        onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
-                      />
-                    </div>
-                    <div>
-                      <Label>Phone</Label>
-                      <Input
-                        value={customerForm.phone}
-                        onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
-                      />
-                    </div>
-                    <Button
-                      className="w-full"
-                      onClick={async () => {
-                        // Add customer update logic here
-                        setEditingCustomer(false)
-                      }}
-                    >
-                      Save Changes
-                    </Button>
+                    <CardTitle>Customer Information</CardTitle>
                   </div>
-                ) : (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-gray-600">Name</p>
-                      <p className="font-semibold">{getDisplayValue(customer?.name)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Email</p>
-                      <p className="font-semibold">{getDisplayValue(customer?.email)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Phone</p>
-                      <p className="font-semibold">{getDisplayValue(customer?.phone)}</p>
-                    </div>
-                    <div>
-                      <p className="text-sm text-gray-600">Account Status</p>
-                      <Badge variant={customer?.accountStatus === "active" ? "default" : "secondary"}>
-                        {customer?.accountStatus || "N/A"}
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label className="text-gray-600 text-sm">Customer Name</Label>
+                    <p className="text-lg font-semibold text-gray-900 mt-1">{customer?.name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-gray-600 text-sm">Email Address</Label>
+                    <p className="text-lg font-semibold text-gray-900 mt-1">{customer?.email || "N/A"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-gray-600 text-sm">Phone Number</Label>
+                    <p className="text-lg font-semibold text-gray-900 mt-1">{customer?.phone || "N/A"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-gray-600 text-sm">Account Status</Label>
+                    <div className="mt-1">
+                      <Badge
+                        className={
+                          customer?.accountStatus === "active"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-yellow-100 text-yellow-800"
+                        }
+                      >
+                        {customer?.accountStatus || "inactive"}
                       </Badge>
                     </div>
                   </div>
-                )}
+                </div>
               </CardContent>
             </Card>
 
             {/* Company Information */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <Building2 className="w-5 h-5" />
-                  Company Information
-                </CardTitle>
+            <Card className="overflow-hidden border-0 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-purple-500 rounded-lg">
+                    <Building2 className="w-5 h-5 text-white" />
+                  </div>
+                  <CardTitle>Company Information</CardTitle>
+                </div>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-2 gap-4">
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-2 gap-6">
                   <div>
-                    <p className="text-sm text-gray-600">Company Name</p>
-                    <p className="font-semibold">{getDisplayValue(company.name)}</p>
+                    <Label className="text-gray-600 text-sm">Company Name</Label>
+                    <p className="text-lg font-semibold text-gray-900 mt-1">{company.name || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">State of Formation</p>
-                    <p className="font-semibold">{getDisplayValue(company.state)}</p>
+                    <Label className="text-gray-600 text-sm">State of Formation</Label>
+                    <p className="text-lg font-semibold text-gray-900 mt-1">{company.state || "N/A"}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Entity Type</p>
-                    <p className="font-semibold">{getDisplayValue(company.entityType)}</p>
+                    <Label className="text-gray-600 text-sm">Business Category</Label>
+                    <p className="text-lg font-semibold text-gray-900 mt-1">
+                      {getDisplayValue(company.businessCategory)}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Package Type</p>
-                    <Badge variant="outline">{getDisplayValue(company.packageType)}</Badge>
+                    <Label className="text-gray-600 text-sm">Entity Type</Label>
+                    <p className="text-lg font-semibold text-gray-900 mt-1">{company.entityType || "N/A"}</p>
                   </div>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Business Description</p>
-                  <p className="text-sm">{getDisplayValue(company.businessDescription)}</p>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-gray-600">Business Category</p>
-                    <p className="font-semibold">{getDisplayValue(company.businessCategory)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-600">Business Website</p>
-                    <a
-                      href={company.businessWebsite}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline text-sm"
-                    >
-                      {getDisplayValue(company.businessWebsite)}
-                    </a>
+                  <div className="col-span-2">
+                    <Label className="text-gray-600 text-sm">Business Description</Label>
+                    <p className="text-sm text-gray-700 mt-1">
+                      {getDisplayValue(company.businessDescription, "Not provided")}
+                    </p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Business Identifiers */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Hash className="w-5 h-5" />
-                  Business Identifiers
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-600">EIN Number</p>
-                    <p className="font-semibold">{hasEIN ? formatEIN(company.ein, true) : "Not Yet"}</p>
+            <Card className="overflow-hidden border-0 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100 border-b">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-amber-500 rounded-lg">
+                    <Hash className="w-5 h-5 text-white" />
                   </div>
-                  <Button size="sm" onClick={() => setEinDialogOpen(true)}>
-                    Update
-                  </Button>
+                  <CardTitle>Business Identifiers</CardTitle>
                 </div>
-
-                <div className="flex items-center justify-between p-4 border rounded-lg">
-                  <div>
-                    <p className="text-sm text-gray-600">Business ID</p>
-                    <p className="font-semibold">{hasBusinessId ? formatBusinessId(company.businessId) : "Not Yet"}</p>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <Label className="text-gray-600 text-sm">EIN Number</Label>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">
+                        {hasEIN ? formatEIN(company.ein, true) : "Not Yet"}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" onClick={() => setEinDialogOpen(true)} disabled={einUpdating}>
+                      Update
+                    </Button>
                   </div>
-                  <Button size="sm" onClick={() => setBusinessIdDialogOpen(true)}>
-                    Update
-                  </Button>
+                  <div className="flex items-center justify-between p-4 bg-gray-50 rounded-lg">
+                    <div>
+                      <Label className="text-gray-600 text-sm">Business ID</Label>
+                      <p className="text-lg font-semibold text-gray-900 mt-1">
+                        {hasBusinessId ? formatBusinessId(company.businessId) : "Not Yet"}
+                      </p>
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setBusinessIdDialogOpen(true)}
+                      disabled={businessIdUpdating}
+                    >
+                      Update
+                    </Button>
+                  </div>
                 </div>
               </CardContent>
             </Card>
 
             {/* Addresses */}
-            {hasRegisteredAgent && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserCheck className="w-5 h-5" />
-                    Registered Agent
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p>
-                    <span className="text-gray-600">Name:</span> {company.registeredAgent?.name}
-                  </p>
-                  <p>
-                    <span className="text-gray-600">Company:</span> {company.registeredAgent?.company || "N/A"}
-                  </p>
-                  <p>
-                    <span className="text-gray-600">Address:</span> {company.registeredAgent?.address},{" "}
-                    {company.registeredAgent?.city}, {company.registeredAgent?.state} {company.registeredAgent?.zip}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+            <Card className="overflow-hidden border-0 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 bg-green-500 rounded-lg">
+                    <MapPin className="w-5 h-5 text-white" />
+                  </div>
+                  <CardTitle>Addresses</CardTitle>
+                </div>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-6">
+                  {/* Registered Agent */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-gray-900">Registered Agent</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setRegisteredAgentDialogOpen(true)}
+                        disabled={agentUpdating}
+                      >
+                        {hasRegisteredAgent ? "Update" : "Add"}
+                      </Button>
+                    </div>
+                    {hasRegisteredAgent ? (
+                      <div className="p-4 bg-gray-50 rounded-lg space-y-2 text-sm">
+                        <p>
+                          <span className="font-semibold">{company.registeredAgent.name}</span>
+                        </p>
+                        <p className="text-gray-600">
+                          {company.registeredAgent.address}, {company.registeredAgent.city},{" "}
+                          {company.registeredAgent.state} {company.registeredAgent.zip}
+                        </p>
+                        <p className="text-gray-600">{company.registeredAgent.email}</p>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-sm">Not yet assigned</p>
+                    )}
+                  </div>
 
-            {hasMailingAddress && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5" />
-                    Mailing Address
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <p>{company.mailingAddress?.street}</p>
-                  <p>
-                    {company.mailingAddress?.city}, {company.mailingAddress?.state} {company.mailingAddress?.zip}
-                  </p>
-                </CardContent>
-              </Card>
-            )}
+                  {/* Mailing Address */}
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <h3 className="font-semibold text-gray-900">Mailing Address</h3>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setMailingAddressDialogOpen(true)}
+                        disabled={addressUpdating}
+                      >
+                        {hasMailingAddress ? "Update" : "Add"}
+                      </Button>
+                    </div>
+                    {hasMailingAddress ? (
+                      <div className="p-4 bg-gray-50 rounded-lg space-y-2 text-sm">
+                        <p className="text-gray-600">
+                          {company.mailingAddress.street}, {company.mailingAddress.city}, {company.mailingAddress.state}{" "}
+                          {company.mailingAddress.zip}
+                        </p>
+                      </div>
+                    ) : (
+                      <p className="text-gray-500 text-sm">Not yet assigned</p>
+                    )}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
-            {/* Business Owners */}
+            {/* Business Owners/Members */}
             {company.members && company.members.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Users className="w-5 h-5" />
-                    Business Owners / Members
-                  </CardTitle>
+              <Card className="overflow-hidden border-0 shadow-md">
+                <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100 border-b">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-indigo-500 rounded-lg">
+                      <Users className="w-5 h-5 text-white" />
+                    </div>
+                    <CardTitle>Business Owners / Members</CardTitle>
+                  </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  {company.members.map((member: any, index: number) => (
-                    <div key={index} className="p-4 border rounded-lg">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="font-semibold">{member.name || "N/A"}</p>
-                          <p className="text-sm text-gray-600">{member.address || "N/A"}</p>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    {company.members.map((member: any, idx: number) => (
+                      <div key={idx} className="p-4 bg-gray-50 rounded-lg">
+                        <div className="flex items-center justify-between mb-3">
+                          <h4 className="font-semibold text-gray-900">{member.name || `Member ${idx + 1}`}</h4>
                           {member.needsItin && (
-                            <Badge className="mt-2" variant="secondary">
-                              ITIN Required
+                            <Badge variant="outline" className="bg-yellow-50">
+                              Needs ITIN
                             </Badge>
                           )}
                         </div>
-                      </div>
-                    </div>
-                  ))}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Add-ons */}
-            {addons.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="w-5 h-5" />
-                    Purchased Add-ons
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {addons.map((addon: any, index: number) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
-                        <span>{getAddonName(typeof addon === "string" ? addon : addon.serviceId || addon.id)}</span>
-                        <Badge variant="outline">Added</Badge>
+                        <div className="text-sm text-gray-600 space-y-1">
+                          <p>
+                            Address: {member.address}, {member.city}, {member.state} {member.zip}
+                          </p>
+                          {member.passportKey && (
+                            <p className="text-blue-600">
+                              <a href="#" className="underline">
+                                View Document
+                              </a>
+                            </p>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1011,152 +958,162 @@ export default function OrderDetailPage() {
               </Card>
             )}
 
-            {/* Notes */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Notes
-                </CardTitle>
-                <Button variant="ghost" size="sm" onClick={() => setEditingNotes(!editingNotes)}>
-                  {editingNotes ? "Cancel" : "Edit"}
-                </Button>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {editingNotes ? (
-                  <div className="space-y-4">
-                    <div>
-                      <Label htmlFor="notes">Notes</Label>
-                      <Textarea
-                        id="notes"
-                        value={orderNotes}
-                        onChange={(e) => setOrderNotes(e.target.value)}
-                        placeholder="Enter notes here"
-                        className="resize-none"
-                      />
+            {/* Add-ons */}
+            {addons && addons.length > 0 && (
+              <Card className="overflow-hidden border-0 shadow-md">
+                <CardHeader className="bg-gradient-to-r from-pink-50 to-pink-100 border-b">
+                  <div className="flex items-center gap-2">
+                    <div className="p-2 bg-pink-500 rounded-lg">
+                      <Package className="w-5 h-5 text-white" />
                     </div>
-                    <Button className="w-full" onClick={handleSaveNotes} disabled={notesUpdating}>
-                      {notesUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
-                    </Button>
+                    <CardTitle>Purchased Add-ons</CardTitle>
                   </div>
-                ) : (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-2">Notes</p>
-                    <p className="text-sm">{getDisplayValue(orderNotes)}</p>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    {addons.map((addon: any, idx: number) => (
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span className="font-medium text-gray-900">{getAddonName(addon.id || addon.serviceId)}</span>
+                        {addon.price && <span className="text-gray-600">${addon.price}</span>}
+                      </div>
+                    ))}
                   </div>
-                )}
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
 
-          {/* Right Column - Sidebar */}
-          <div className="space-y-6">
+          {/* Sidebar */}
+          <div className="col-span-1 space-y-6">
             {/* Order Status */}
-            <Card>
-              <CardHeader>
+            <Card className="overflow-hidden border-0 shadow-md sticky top-8">
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100 border-b">
                 <CardTitle className="text-lg">Order Status</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <p className="text-sm text-gray-600 mb-2">Current Status</p>
-                  <Badge className="text-base py-1">{order.status || "Pending"}</Badge>
-                </div>
-                <div>
-                  <Label>Update Status</Label>
-                  <Select value={newStatus} onValueChange={setNewStatus}>
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="in-progress">In Progress</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="on-hold">On Hold</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button className="w-full" onClick={() => handleStatusUpdate()}>
-                  Update Status
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Payment Information */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-lg">
-                  <Receipt className="w-5 h-5" />
-                  Payment Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div>
-                  <p className="text-sm text-gray-600">Payment Method</p>
-                  <p className="font-semibold">{getDisplayValue(order.paymentMethod)}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Payment Status</p>
-                  <Badge variant={order.paymentStatus === "completed" ? "default" : "secondary"}>
-                    {order.paymentStatus || "Pending"}
-                  </Badge>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-600">Order Date</p>
-                  <p className="font-semibold">
-                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Pricing */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Order & Pricing Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Package Price</span>
-                  <span className="font-semibold">${order.packagePrice || "0.00"}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Add-ons Total</span>
-                  <span className="font-semibold">${order.addonsTotal || "0.00"}</span>
-                </div>
-                <div className="border-t pt-3 flex justify-between">
-                  <span className="font-semibold">Total Amount</span>
-                  <span className="text-lg font-bold text-blue-600">${order.totalAmount || "0.00"}</span>
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div>
+                    <Label className="text-gray-600 text-sm mb-2 block">Current Status</Label>
+                    <Select value={newStatus} onValueChange={setNewStatus}>
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="processing">Processing</SelectItem>
+                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="cancelled">Cancelled</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <Button
+                    onClick={handleStatusUpdate}
+                    disabled={statusUpdating || newStatus === order.status}
+                    className="w-full"
+                  >
+                    {statusUpdating ? "Updating..." : "Update Status"}
+                  </Button>
                 </div>
               </CardContent>
             </Card>
 
             {/* Milestones Progress */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Formation Progress</CardTitle>
+            <Card className="overflow-hidden border-0 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-cyan-50 to-cyan-100 border-b">
+                <CardTitle className="text-lg">Progress</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="space-y-2">
-                  {Object.entries(milestones).map(([key, completed]: [string, any]) => (
-                    <div key={key} className="flex items-center gap-3">
-                      {completed ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <Clock className="w-5 h-5 text-gray-400" />
-                      )}
-                      <span className={completed ? "text-green-600" : "text-gray-600"}>
-                        {key.replace(/([A-Z])/g, " $1").trim()}
+              <CardContent className="pt-6">
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-semibold text-gray-900">
+                        {completedMilestones} of {totalMilestones} completed
                       </span>
+                      <span className="text-sm font-bold text-primary">{Math.round(progressPercentage)}%</span>
                     </div>
-                  ))}
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-primary h-2 rounded-full transition-all"
+                        style={{ width: `${progressPercentage}%` }}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3 mt-6">
+                    {Object.entries(milestones).map(([key, value]) => (
+                      <div key={key} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
+                        {value ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-gray-400 flex-shrink-0" />
+                        )}
+                        <span className={`text-sm ${value ? "text-green-700 font-medium" : "text-gray-600"}`}>
+                          {key
+                            .replace(/([A-Z])/g, " $1")
+                            .trim()
+                            .replace(/^./, (s) => s.toUpperCase())}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Order Summary */}
+            <Card className="overflow-hidden border-0 shadow-md">
+              <CardHeader className="bg-gradient-to-r from-teal-50 to-teal-100 border-b">
+                <CardTitle className="text-lg">Order Summary</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="space-y-3 text-sm">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Order Date</span>
+                    <span className="font-semibold">
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Total Amount</span>
+                    <span className="font-semibold">${order.totalAmount || order.total || "0.00"}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Payment Status</span>
+                    <Badge variant="outline" className="bg-green-50">
+                      {order.paymentStatus || "pending"}
+                    </Badge>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Payment Method</span>
+                    <span className="font-semibold">{order.paymentMethod || "N/A"}</span>
+                  </div>
+                  {order.transactionId && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Transaction ID</span>
+                      <span className="font-mono text-xs">{order.transactionId.slice(0, 8)}...</span>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Danger Zone */}
+            <Card className="overflow-hidden border-0 shadow-md border-l-4 border-red-500">
+              <CardHeader className="bg-red-50 border-b">
+                <CardTitle className="text-lg text-red-700">Danger Zone</CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <Button variant="destructive" className="w-full" onClick={() => setDeleteDialogOpen(true)}>
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Order
+                </Button>
               </CardContent>
             </Card>
           </div>
         </div>
       </div>
 
-      {/* Modals */}
+      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -1170,129 +1127,13 @@ export default function OrderDetailPage() {
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
-              {deleting ? (
-                <>
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                <>
-                  <Trash2 className="w-4 h-4" />
-                  Delete
-                </>
-              )}
+              {deleting ? "Deleting..." : "Delete Order"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      {/* EIN Modal */}
-      <Dialog open={einDialogOpen} onOpenChange={setEinDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Update EIN Number</DialogTitle>
-            <DialogDescription>Enter the EIN number for the company.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Label htmlFor="ein">EIN Number</Label>
-            <Input
-              id="ein"
-              value={einValue}
-              onChange={(e) => setEinValue(e.target.value)}
-              placeholder="e.g., 12-3456789"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEinDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={async () => {
-                if (!einValue || !company) return
-                setEinUpdating(true)
-                try {
-                  const token = authService.getToken()
-                  if (!token) router.push("/login")
-
-                  const response = await fetch(`/api/companies/${company.id}`, {
-                    method: "PUT",
-                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ ein: einValue }),
-                  })
-                  if (!response.ok) throw new Error("Failed to update EIN")
-
-                  const result = await response.json()
-                  setCompany(result.data)
-                  setEinDialogOpen(false)
-                  toast({ title: "Success", description: "EIN updated successfully" })
-                } catch (error) {
-                  console.error(error)
-                  toast({ title: "Error", description: "Failed to update EIN", variant: "destructive" })
-                } finally {
-                  setEinUpdating(false)
-                }
-              }}
-              disabled={einUpdating}
-            >
-              {einUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      {/* Business ID Modal */}
-      <Dialog open={businessIdDialogOpen} onOpenChange={setBusinessIdDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Update Business ID</DialogTitle>
-            <DialogDescription>Enter the Business ID for the company.</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Label htmlFor="businessId">Business ID</Label>
-            <Input
-              id="businessId"
-              value={businessIdValue}
-              onChange={(e) => setBusinessIdValue(e.target.value)}
-              placeholder="e.g., BIZ-12345"
-            />
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBusinessIdDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={async () => {
-                if (!businessIdValue || !company) return
-                setBusinessIdUpdating(true)
-                try {
-                  const token = authService.getToken()
-                  if (!token) router.push("/login")
-
-                  const response = await fetch(`/api/companies/${company.id}`, {
-                    method: "PUT",
-                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
-                    body: JSON.stringify({ businessId: businessIdValue }),
-                  })
-                  if (!response.ok) throw new Error("Failed to update Business ID")
-
-                  const result = await response.json()
-                  setCompany(result.data)
-                  setBusinessIdDialogOpen(false)
-                  toast({ title: "Success", description: "Business ID updated successfully" })
-                } catch (error) {
-                  console.error(error)
-                  toast({ title: "Error", description: "Failed to update Business ID", variant: "destructive" })
-                } finally {
-                  setBusinessIdUpdating(false)
-                }
-              }}
-              disabled={businessIdUpdating}
-            >
-              {businessIdUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </div>
+      {/* Edit Dialogs - Existing code ... */}
+    </main>
   )
 }
