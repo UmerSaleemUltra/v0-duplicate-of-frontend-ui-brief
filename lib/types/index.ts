@@ -118,17 +118,10 @@ export interface Company {
 
   // Members - fetched (F) with some manual fields (M)
   members?: Array<{
-    firstName: string // (F)
-    middleName?: string // (F)
-    lastName: string // (F)
-    email: string // (F)
-    phone: string // (F)
     address: string // (F)
     city: string // (F)
     state?: string // (F)
     zip: string // (F)
-    ssn?: string // (F/M) - Can be fetched or manually added
-    dateOfBirth?: string // (F)
     isResponsiblePerson: boolean // (F)
     needsItin?: boolean // (F)
     passportKey?: string
