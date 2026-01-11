@@ -15,7 +15,7 @@ import FAQSection from "@/components/sections/faq"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "BuzzFiling - US Business Formation for Entrepreneurs",
+  title: "Buzz Filing - US Business Formation for Entrepreneurs",
   description:
     "Professional US LLC and Corporation formation service for Pakistani entrepreneurs. Get your US business registered in 4 weeks with full compliance support.",
   other: {
