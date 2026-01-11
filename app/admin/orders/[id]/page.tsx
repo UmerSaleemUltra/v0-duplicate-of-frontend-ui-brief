@@ -1,8 +1,5 @@
 "use client"
 
-import { Switch } from "@/components/ui/switch"
-import { StatusUpdateModal } from "@/components/status-update-modal"
-
 import type React from "react"
 
 import { useEffect, useState, useCallback } from "react"
@@ -23,10 +20,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ArrowLeft, CheckCircle2, Clock, AlertCircle, Download, Loader2, Trash2 } from "lucide-react"
+import { ArrowLeft, CheckCircle2, Clock, AlertCircle, Download, Loader2, Trash2, Check } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { CompanyDetailsModal } from "@/components/modals/company-details-modal"
+import { StatusUpdateModal } from "@/components/status-update-modal"
+import { Switch } from "@/components/ui/switch"
 
 const getDisplayValue = (value: any, defaultValue = "N/A"): string => {
   if (value === null || value === undefined || value === "") return defaultValue
@@ -71,6 +70,32 @@ const getWeeksSinceOrder = (createdAt: string | undefined): number => {
   return diffWeeks
 }
 
+const getStatusColor = (status: string) => {
+  const statusMap: Record<string, string> = {
+    active: "bg-green-100 text-green-800",
+    pending: "bg-yellow-100 text-yellow-800",
+    inactive: "bg-gray-100 text-gray-800",
+    completed: "bg-blue-100 text-blue-800",
+    processing: "bg-blue-50 text-blue-700 border-blue-200", // Added for order status
+    cancelled: "bg-red-50 text-red-700 border-red-200", // Added for order status
+  }
+  return statusMap[status?.toLowerCase()] || "bg-gray-100 text-gray-800"
+}
+
+const getMilestoneStatus = (value: boolean) => {
+  return value ? (
+    <div className="flex items-center gap-2 text-green-600">
+      <Check className="w-5 h-5" />
+      <span>Completed</span>
+    </div>
+  ) : (
+    <div className="flex items-center gap-2 text-amber-600">
+      <Clock className="w-5 h-5" />
+      <span>Pending</span>
+    </div>
+  )
+}
+
 export default function OrderDetailPage() {
   const router = useRouter()
   const { toast } = useToast()
@@ -108,7 +133,6 @@ export default function OrderDetailPage() {
   const [businessAddressStatusDialogOpen, setBusinessAddressStatusDialogOpen] = useState(false)
   const [serviceStatusDialogOpen, setServiceStatusDialogOpen] = useState(false)
 
-  // Corrected undeclared variables:
   const [agentStatusModalOpen, setAgentStatusModalOpen] = useState(false)
   const [addressStatusModalOpen, setAddressStatusModalOpen] = useState(false)
   const [serviceStatusModalOpen, setServiceStatusModalOpen] = useState(false)
@@ -121,7 +145,6 @@ export default function OrderDetailPage() {
   const [uploadDocDialogOpen, setUploadDocDialogOpen] = useState(false)
   const [milestonesDialogOpen, setMilestonesDialogOpen] = useState(false)
   const [customMilestoneDialogOpen, setCustomMilestoneDialogOpen] = useState(false)
-  // Removed duplicate addMilestoneDialogOpen state
 
   const [taxModalOpen, setTaxModalOpen] = useState(false)
   const [agentModalOpen, setAgentModalOpen] = useState(false)
@@ -161,6 +184,9 @@ export default function OrderDetailPage() {
     einProcessed: false,
     boiReportFiled: false,
   })
+
+  // Renamed milestoneData to milestones for consistency with the original state
+  const [milestoneData, setMilestoneData] = useState<any>(null)
 
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<any>(null)
@@ -486,7 +512,6 @@ export default function OrderDetailPage() {
         })
         console.log("[v0] Milestones initialized to defaults (no data found)")
       }
-      // </CHANGE>
 
       if (orderData.company?.registeredAgent) {
         const agent = orderData.company.registeredAgent
@@ -541,7 +566,6 @@ export default function OrderDetailPage() {
           businessDescription: desc === "N/A" ? "" : desc,
         }))
       }
-      // </CHANGE>
     } catch (error) {
       console.error("[v0] Error loading order:", error)
       setError(error instanceof Error ? error.message : "Failed to load order")
@@ -555,15 +579,147 @@ export default function OrderDetailPage() {
     }
   }, [orderId, router, toast])
 
+  // useEffect hook for loading data (conditionally)
   useEffect(() => {
-    if (isAuthenticated && orderId) {
-      loadOrderData()
-    } else if (!authLoading && !isAuthenticated) {
-      router.push("/login")
-    }
-  }, [orderId, isAuthenticated, authLoading, loadOrderData, router])
+    if (!isAuthenticated) return
 
-  // Milestones are now initialized directly in loadOrderData
+    const loadOrder = async () => {
+      try {
+        setLoading(true)
+        const token = authService.getToken()
+        if (!token) {
+          router.push("/login")
+          return
+        }
+        const response = await fetch(`/api/orders/${orderId}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
+        })
+        if (!response.ok) {
+          if (response.status === 404) throw new Error("Order not found")
+          throw new Error(`Failed to load order: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log("[v0] Order loaded:", data)
+        setOrder(data)
+
+        // Extract company, customer, and user data
+        setCompany(data.company)
+        setCustomer(
+          data.user || {
+            name: data.company?.members?.[0]?.name || "Unknown User",
+            email: data.company?.members?.[0]?.email || "N/A",
+            phone: data.company?.members?.[0]?.phone || "N/A",
+          },
+        )
+        setUser(data.user)
+        setPassportDocuments(data.passportDocuments || [])
+
+        // Initialize forms with existing data
+        setCustomerForm({
+          name: data.user?.name || data.company?.members?.[0]?.name || "",
+          email: data.user?.email || data.company?.members?.[0]?.email || "",
+          phone: data.user?.phone || data.company?.members?.[0]?.phone || "",
+        })
+        setCompanyForm({
+          name: data.company?.name || "",
+          state: data.company?.state || "",
+          businessCategory: data.company?.businessCategory || "",
+          businessWebsite: data.company?.businessWebsite || "",
+          businessDescription: data.company?.businessDescription || "",
+        })
+
+        // Initialize milestones from company data
+        if (data.company?.milestones) {
+          console.log("[v0] Initializing milestones from company data:", data.company.milestones)
+          const milestonesData = data.company.milestones
+          setMilestones({
+            orderProcessed: milestonesData.orderProcessed === true,
+            registeredAgentAssigned: milestonesData.registeredAgentAssigned === true,
+            mailingAddressIssued: milestonesData.mailingAddressIssued === true,
+            formationCompleted: milestonesData.formationCompleted === true,
+            einProcessed: milestonesData.einProcessed === true,
+            boiReportFiled: milestonesData.boiReportFiled === true,
+          })
+          console.log("[v0] Milestones initialized:", milestonesData)
+        } else {
+          setMilestones({
+            orderProcessed: false,
+            registeredAgentAssigned: false,
+            mailingAddressIssued: false,
+            formationCompleted: false,
+            einProcessed: false,
+            boiReportFiled: false,
+          })
+          console.log("[v0] Milestones initialized to defaults (no data found)")
+        }
+
+        // Pre-populate registered agent form
+        if (data.company?.registeredAgent) {
+          const agent = data.company.registeredAgent
+          console.log("[v0] Pre-populating registered agent form:", agent)
+          setAgentForm({
+            name: agent.name || "",
+            company: agent.company || "",
+            address: agent.address || "",
+            city: agent.city || "",
+            state: agent.state || "",
+            zip: agent.zip || "",
+            phone: agent.phone || "",
+            email: agent.email || "",
+            servicePeriod: agent.servicePeriod || "1 Year",
+          })
+        }
+
+        // Pre-populate mailing address form
+        if (data.company?.mailingAddress) {
+          const address = data.company.mailingAddress
+          console.log("[v0] Pre-populating mailing address form:", address)
+          setMailingAddress({
+            street: address.street || "",
+            city: address.city || "",
+            state: address.state || "",
+            zip: address.zip || "",
+          })
+        }
+
+        // Process addons
+        const orderAddons = data.purchasedAddons || data.selectedAddons || []
+        const companyAddons = data.company?.purchasedAddons || []
+        const allAddons = [...orderAddons]
+        companyAddons.forEach((companyAddon: any) => {
+          const addonId = typeof companyAddon === "object" ? companyAddon.serviceId : companyAddon
+          const alreadyExists = allAddons.some((orderAddon: any) => {
+            const orderAddonId = typeof orderAddon === "object" ? orderAddon.serviceId : orderAddon
+            return orderAddonId === addonId
+          })
+          if (!alreadyExists) allAddons.push(companyAddon)
+        })
+        setAddons(allAddons)
+
+        // Set order status
+        setNewStatus(data.status || "")
+        setError(null)
+
+        // Handle business description
+        if (data.company?.businessDescription) {
+          const desc = getDisplayValue(data.company.businessDescription)
+          setCompanyForm((prev) => ({ ...prev, businessDescription: desc === "N/A" ? "" : desc }))
+        }
+      } catch (err) {
+        console.error("[v0] Error loading order:", err)
+        setError(err instanceof Error ? err.message : "Error loading order")
+        toast({ title: "Error", description: error, variant: "destructive" })
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    loadOrder()
+  }, [orderId, isAuthenticated, router, toast, authLoading])
 
   const handleStatusUpdate = async () => {
     if (!order || !newStatus || !company) return
@@ -1527,7 +1683,8 @@ export default function OrderDetailPage() {
   }
 
   // Helper function to get status color
-  const getStatusColor = (status: string) => {
+  const getStatusColorOrder = (status: string) => {
+    // Renamed to avoid conflict
     switch (status) {
       case "completed":
         return "bg-emerald-50 text-emerald-700 border-emerald-200"
@@ -1535,6 +1692,8 @@ export default function OrderDetailPage() {
         return "bg-blue-50 text-blue-700 border-blue-200"
       case "pending":
         return "bg-amber-50 text-amber-700 border-amber-200"
+      case "cancelled":
+        return "bg-red-50 text-red-700 border-red-200"
       default:
         return "bg-slate-50 text-slate-700 border-slate-200"
     }
@@ -1555,8 +1714,8 @@ export default function OrderDetailPage() {
   }
 
   // Milestone progress calculation
-  const completedDefaultMilestones = Object.values(milestones).filter(Boolean).length
-  const totalDefaultMilestones = Object.keys(milestones).length
+  const completedDefaultMilestones = milestoneData ? Object.values(milestoneData).filter(Boolean).length : 0
+  const totalDefaultMilestones = 6 // Assuming 6 default milestones
   const completionPercentage =
     totalDefaultMilestones > 0 ? Math.round((completedDefaultMilestones / totalDefaultMilestones) * 100) : 0
 
@@ -2211,519 +2370,376 @@ export default function OrderDetailPage() {
     }
   }
 
-  return (
-    <div className="container mx-auto p-4">
-      {/* Back Button */}
-      <Button variant="outline" onClick={() => router.push("/admin/orders")} className="mb-6">
-        <ArrowLeft className="mr-2 h-4 w-4" /> Back to Orders
-      </Button>
+  // Helper function to get status icon (from original file)
+  const getStatusIconOrder = (status: string) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle2 className="w-4 h-4" />
+      case "processing":
+        return <Clock className="w-4 h-4" />
+      case "pending":
+        return <AlertCircle className="w-4 h-4" />
+      default:
+        return null
+    }
+  }
 
-      {/* Order Header */}
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Order Details</h1>
-        <div className="flex items-center gap-2">
-          <Button onClick={generateInvoice} variant="secondary">
-            <Download className="mr-2 h-4 w-4" /> Download Invoice
-          </Button>
-          <Button onClick={() => setDeleteDialogOpen(true)} variant="destructive" disabled={deleting}>
-            {deleting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />} Delete Order
-          </Button>
+  // Updated main return block to match the new structure and simplified UI
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Header */}
+      <div className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-6 py-6">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button variant="ghost" size="icon" onClick={() => router.back()}>
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <h1 className="text-2xl font-bold text-gray-900">Order Details</h1>
+                <p className="text-sm text-gray-600">Order ID: {orderId ? orderId.slice(0, 8) + "..." : "N/A"}</p>
+              </div>
+            </div>
+            <Badge className={`${getStatusColor(company?.companyStatus || "pending")} text-lg px-4 py-2`}>
+              {company?.companyStatus || "Pending"}
+            </Badge>
+          </div>
         </div>
       </div>
 
-      {/* Order Summary */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Order Summary</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div>
-              <Label className="text-muted-foreground">Order ID:</Label>
-              <p className="font-semibold">{order.id}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Customer:</Label>
-              <p className="font-semibold">{customer?.name || "N/A"}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Company:</Label>
-              <p className="font-semibold">{company?.name || "N/A"}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Created At:</Label>
-              <p className="font-semibold">{new Date(order.createdAt).toLocaleDateString()}</p>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Status:</Label>
-              <Badge className={`border-0 ${getStatusColor(order.status)}`}>
-                {getStatusIcon(order.status)}
-                {order.status}
-              </Badge>
-            </div>
-            <div>
-              <Label className="text-muted-foreground">Weeks Since Order:</Label>
-              <p className="font-semibold">
-                {weeksSinceOrder} weeks {isOverdue && <span className="text-red-500">(Overdue)</span>}
-              </p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Customer Information Section */}
-      <Card className="mb-6">
-        <CardHeader className="flex flex-row justify-between items-center">
-          <CardTitle>Customer Information</CardTitle>
-          <Button variant="ghost" onClick={() => setEditingCustomer(!editingCustomer)}>
-            {editingCustomer ? "Cancel" : "Edit"}
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {editingCustomer ? (
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <Label htmlFor="customerName">Name</Label>
-                <Input
-                  id="customerName"
-                  value={customerForm.name}
-                  onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="customerEmail">Email</Label>
-                <Input
-                  id="customerEmail"
-                  type="email"
-                  value={customerForm.email}
-                  onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="customerPhone">Phone</Label>
-                <Input
-                  id="customerPhone"
-                  type="tel"
-                  value={customerForm.phone}
-                  onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
-                />
-              </div>
-              <Button onClick={handleSaveCustomer} disabled={!customer?.id}>
-                Save Changes
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-muted-foreground">Name:</Label>
-                <p className="font-semibold">{getDisplayValue(customer?.name)}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Email:</Label>
-                <p className="font-semibold">{getDisplayValue(customer?.email)}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Phone:</Label>
-                <p className="font-semibold">{getDisplayValue(customer?.phone)}</p>
-              </div>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Company Information Section */}
-      <Card className="mb-6">
-        <CardHeader className="flex flex-row justify-between items-center">
-          <CardTitle>Company Information</CardTitle>
-          <Button variant="ghost" onClick={() => setEditingCompany(!editingCompany)}>
-            {editingCompany ? "Cancel" : "Edit"}
-          </Button>
-        </CardHeader>
-        <CardContent>
-          {editingCompany ? (
-            <div className="grid grid-cols-1 gap-4">
-              <div>
-                <Label htmlFor="companyName">Company Name</Label>
-                <Input
-                  id="companyName"
-                  value={companyForm.name}
-                  onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="companyState">State</Label>
-                <Input
-                  id="companyState"
-                  value={companyForm.state}
-                  onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="companyCategory">Business Category</Label>
-                <Input
-                  id="companyCategory"
-                  value={companyForm.businessCategory}
-                  onChange={(e) => setCompanyForm({ ...companyForm, businessCategory: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="companyWebsite">Business Website</Label>
-                <Input
-                  id="companyWebsite"
-                  value={companyForm.businessWebsite}
-                  onChange={(e) => setCompanyForm({ ...companyForm, businessWebsite: e.target.value })}
-                />
-              </div>
-              <div>
-                <Label htmlFor="companyDescription">Business Description</Label>
-                <Textarea
-                  id="companyDescription"
-                  value={companyForm.businessDescription}
-                  onChange={(e) => setCompanyForm({ ...companyForm, businessDescription: e.target.value })}
-                />
-              </div>
-              <Button onClick={handleSaveCompany} disabled={!company?.id}>
-                Save Changes
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <Label className="text-muted-foreground">Name:</Label>
-                <p className="font-semibold">{getDisplayValue(company?.name)}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">State:</Label>
-                <p className="font-semibold">{getDisplayValue(company?.state)}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Business Category:</Label>
-                <p className="font-semibold">{getDisplayValue(company?.businessCategory)}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Business Website:</Label>
-                <p className="font-semibold">{getDisplayValue(company?.businessWebsite)}</p>
-              </div>
-              <div>
-                <Label className="text-muted-foreground">Business Description:</Label>
-                <p className="font-semibold">{getDisplayValue(company?.businessDescription)}</p>
-              </div>
-              <Button variant="outline" onClick={handleViewCompanyDetails}>
-                View Company Details
-              </Button>
-            </div>
-          )}
-        </CardContent>
-      </Card>
-
-      {/* Addons Section */}
-      {addons && addons.length > 0 && (
-        <Card className="mb-6">
-          <CardHeader>
-            <CardTitle>Selected Add-ons</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {addons.map((addon: any, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-secondary rounded-md">
-                  <p className="font-medium">{getAddonName(addon.serviceId || addon.id || addon)}</p>
-                  <p>${addon.price ? addon.price.toFixed(2) : "N/A"}</p>
+      <div className="max-w-7xl mx-auto px-6 py-8">
+        <div className="grid grid-cols-3 gap-6">
+          {/* Main Content */}
+          <div className="col-span-2 space-y-6">
+            {/* Customer Information */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Customer Information</CardTitle>
+                  <Button variant="outline" size="sm" onClick={() => setEditingCustomer(true)}>
+                    Edit
+                  </Button>
                 </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Company Status Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Company Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center justify-between">
-              <Label>Company Status</Label>
-              <Badge className={`border-0 ${getStatusColor(company?.companyStatus || "pending")}`}>
-                {getStatusIcon(company?.companyStatus || "pending")}
-                {company?.companyStatus || "Pending"}
-              </Badge>
-              <Button variant="outline" size="sm" onClick={() => setCompanyStatusDialogOpen(true)}>
-                Update
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <Label>Registered Agent Status</Label>
-              <Badge className={`border-0 ${getStatusColor(company?.registeredAgentStatus || "pending")}`}>
-                {getStatusIcon(company?.registeredAgentStatus || "pending")}
-                {company?.registeredAgentStatus || "Pending"}
-              </Badge>
-              <Button variant="outline" size="sm" onClick={() => setRegisteredAgentStatusDialogOpen(true)}>
-                Update
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <Label>Business Address Status</Label>
-              <Badge className={`border-0 ${getStatusColor(company?.businessAddressStatus || "pending")}`}>
-                {getStatusIcon(company?.businessAddressStatus || "pending")}
-                {company?.businessAddressStatus || "Pending"}
-              </Badge>
-              <Button variant="outline" size="sm" onClick={() => setBusinessAddressStatusDialogOpen(true)}>
-                Update
-              </Button>
-            </div>
-            <div className="flex items-center justify-between">
-              <Label>Service Status</Label>
-              <Badge className={`border-0 ${getStatusColor(company?.serviceStatus || "pending")}`}>
-                {getStatusIcon(company?.serviceStatus || "pending")}
-                {company?.serviceStatus || "Pending"}
-              </Badge>
-              <Button variant="outline" size="sm" onClick={() => setServiceStatusDialogOpen(true)}>
-                Update
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Milestones Section */}
-      <Card className="mb-6">
-        <CardHeader className="flex flex-row justify-between items-center">
-          <CardTitle>Milestones</CardTitle>
-          <Button variant="outline" onClick={() => setMilestonesDialogOpen(true)}>
-            Manage Milestones
-          </Button>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            {Object.entries(milestones).map(([key, value]) => (
-              <div key={key} className="flex items-center justify-between">
-                <Label className="capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</Label>
-                <Switch checked={value} onCheckedChange={() => handleMilestoneToggle(key as keyof typeof milestones)} />
-              </div>
-            ))}
-          </div>
-          <div className="flex items-center justify-between">
-            <Label>Custom Milestones:</Label>
-            <Button variant="outline" onClick={() => setCustomMilestoneDialogOpen(true)}>
-              Add Custom Milestone
-            </Button>
-          </div>
-          {company?.customMilestones && company.customMilestones.length > 0 && (
-            <div className="mt-4 space-y-2">
-              {company.customMilestones.map((milestone: any) => (
-                <div key={milestone.id} className="flex items-center justify-between p-3 bg-secondary rounded-md">
-                  <div className="flex flex-col">
-                    <span className="font-medium">{milestone.title}</span>
-                    {milestone.description && (
-                      <span className="text-sm text-muted-foreground">{milestone.description}</span>
-                    )}
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Full Name</p>
+                    <p className="text-lg text-gray-900">{getDisplayValue(customer?.name)}</p>
                   </div>
-                  <div className="flex items-center gap-2">
-                    <Switch
-                      checked={milestone.completed}
-                      onCheckedChange={() => handleCustomMilestoneToggle(milestone.id)}
-                    />
-                    <Button variant="outline" size="icon" onClick={() => handleDeleteCustomMilestone(milestone.id)}>
-                      <Trash2 className="h-4 w-4" />
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Email</p>
+                    <p className="text-lg text-gray-900">{getDisplayValue(customer?.email)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Phone</p>
+                    <p className="text-lg text-gray-900">{getDisplayValue(customer?.phone)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Account Status</p>
+                    <Badge className={getStatusColor(customer?.accountStatus || "pending")}>
+                      {customer?.accountStatus || "Pending"}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Company Information */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle>Company Information</CardTitle>
+                  <Button variant="outline" size="sm" onClick={() => setEditingCompany(true)}>
+                    Edit
+                  </Button>
+                </div>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-3 gap-4">
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Company Name</p>
+                    <p className="text-lg text-gray-900 font-semibold">{getDisplayValue(company?.name)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">State</p>
+                    <p className="text-lg text-gray-900">{getDisplayValue(company?.state)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Entity Type</p>
+                    <p className="text-lg text-gray-900">{getDisplayValue(company?.entityType)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Business Category</p>
+                    <p className="text-lg text-gray-900">{getDisplayValue(company?.businessCategory)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Business Website</p>
+                    <p className="text-lg text-blue-600 truncate">{getDisplayValue(company?.businessWebsite)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-600">Package Type</p>
+                    <p className="text-lg text-gray-900">{getDisplayValue(company?.packageType)}</p>
+                  </div>
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-600">Business Description</p>
+                  <p className="text-gray-900 mt-2">{getDisplayValue(company?.businessDescription, "Not provided")}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Formation Progress */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Formation Progress</CardTitle>
+                <p className="text-sm text-gray-600">
+                  {completedDefaultMilestones} of {totalDefaultMilestones} milestones completed
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div
+                    className="bg-blue-600 h-2 rounded-full transition-all"
+                    style={{ width: `${(completedDefaultMilestones / totalDefaultMilestones) * 100}%` }}
+                  />
+                </div>
+                <div className="space-y-3">
+                  {[
+                    { key: "orderProcessed", label: "Order Successfully Processed" },
+                    { key: "registeredAgentAssigned", label: "Registered Agent Assigned" },
+                    { key: "mailingAddressIssued", label: "Business Mailing Address Issued" },
+                    { key: "formationCompleted", label: "Company Formation Completed" },
+                    { key: "einProcessed", label: "EIN Successfully Processed" },
+                    { key: "boiReportFiled", label: "BOI Report Filed" },
+                  ].map((milestone) => (
+                    <div key={milestone.key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <span className="text-gray-700">{milestone.label}</span>
+                      {getMilestoneStatus(milestones[milestone.key as keyof typeof milestones] || false)}
+                    </div>
+                  ))}
+                </div>
+                <div className="flex justify-end gap-2">
+                  <Button variant="outline" size="sm" onClick={() => setMilestonesDialogOpen(true)}>
+                    Manage Milestones
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setCustomMilestoneDialogOpen(true)}>
+                    Add Custom
+                  </Button>
+                  <Button variant="outline" size="sm" onClick={() => setUploadDocDialogOpen(true)}>
+                    Upload Document
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Business Members */}
+            {company?.members && company.members.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Business Owners / Members</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {company.members.map((member: any, idx: number) => (
+                      <div key={idx} className="p-4 border rounded-lg">
+                        <div className="flex items-start justify-between">
+                          <div>
+                            <p className="font-semibold text-gray-900">{member.name || "N/A"}</p>
+                            <p className="text-sm text-gray-600">{member.email || "N/A"}</p>
+                            <p className="text-sm text-gray-600">{member.address || "N/A"}</p>
+                          </div>
+                          {member.isResponsiblePerson && (
+                            <Badge className="bg-red-100 text-red-800">Responsible Person</Badge>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Pricing Details */}
+            <Card>
+              <CardHeader>
+                <CardTitle>Order & Pricing Details</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-3">
+                  <div className="flex justify-between text-gray-700">
+                    <span>Package Price</span>
+                    <span className="font-semibold">
+                      ${getDisplayValue(order?.pricing?.packagePrice || order?.packagePrice || "0.00")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>State Filing Fee</span>
+                    <span className="font-semibold">
+                      ${getDisplayValue(order?.pricing?.stateFilingFee || order?.stateFilingFee || "0.00")}
+                    </span>
+                  </div>
+                  <div className="flex justify-between text-gray-700">
+                    <span>Add-ons Total</span>
+                    <span className="font-semibold">
+                      $
+                      {getDisplayValue(
+                        order?.pricing?.addonsTotal ||
+                          (order?.selectedAddons || []).reduce(
+                            (sum: number, addon: any) => sum + (addon.price || 0),
+                            0,
+                          ) ||
+                          "0.00",
+                      )}
+                    </span>
+                  </div>
+                  <div className="border-t pt-3 flex justify-between text-lg font-bold">
+                    <span>Total Amount</span>
+                    <span className="text-blue-600">
+                      $
+                      {getDisplayValue(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || "0.00")}
+                    </span>
+                  </div>
+                  <div className="mt-4 space-y-2 text-sm">
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Method</span>
+                      <span className="text-gray-900">{getDisplayValue(order?.paymentMethod)}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Payment Status</span>
+                      <Badge className={getStatusColor(order?.paymentStatus || "pending")}>
+                        {getDisplayValue(order?.paymentStatus, "Pending")}
+                      </Badge>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* Status Management */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Status Management</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-600">Company Status</p>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <Badge className={getStatusColor(company?.companyStatus || "pending")}>
+                      {company?.companyStatus || "Pending"}
+                    </Badge>
+                    <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)}>
+                      Update
                     </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          )}
-          <div className="mt-4 pt-4 border-t">
-            <p className="text-sm font-semibold">Overall Progress:</p>
-            <div className="flex items-center gap-2 mt-1">
-              <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
-                <div className="bg-blue-600 h-2.5 rounded-full" style={{ width: `${completionPercentage}%` }}></div>
-              </div>
-              <span className="text-sm font-medium text-blue-600">{completionPercentage}%</span>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
 
-      {/* Key Information Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Key Information</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <div className="flex flex-col justify-between p-3 bg-secondary rounded-md">
-              <Label className="text-muted-foreground">Registered Agent</Label>
-              <p className="font-semibold mt-1">{getDisplayValue(company?.registeredAgent?.name)}</p>
-              <p className="text-sm">{getDisplayValue(company?.registeredAgent?.company)}</p>
-              <p className="text-sm text-muted-foreground">{getDisplayValue(company?.registeredAgent?.address)}</p>
-              {hasRegisteredAgent && (
-                <Button variant="outline" size="sm" onClick={() => setRegisteredAgentDialogOpen(true)} className="mt-2">
-                  Manage Agent
-                </Button>
-              )}
-            </div>
-
-            <div className="flex flex-col justify-between p-3 bg-secondary rounded-md">
-              <Label className="text-muted-foreground">Mailing Address</Label>
-              <p className="font-semibold mt-1">{getDisplayValue(company?.mailingAddress?.street)}</p>
-              <p className="text-sm">
-                {getDisplayValue(company?.mailingAddress?.city)}, {getDisplayValue(company?.mailingAddress?.state)}{" "}
-                {getDisplayValue(company?.mailingAddress?.zip)}
-              </p>
-              {hasMailingAddress && (
-                <Button variant="outline" size="sm" onClick={() => setMailingAddressDialogOpen(true)} className="mt-2">
-                  Manage Address
-                </Button>
-              )}
-            </div>
-
-            <div className="flex flex-col justify-between p-3 bg-secondary rounded-md">
-              <Label className="text-muted-foreground">EIN</Label>
-              <p className="font-semibold mt-1">{getDisplayValue(formatEIN(company?.ein, true))}</p>
-              {hasEIN && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRemoveEIN}
-                  disabled={einUpdating}
-                  className="mt-2 bg-transparent"
-                >
-                  {einUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Remove EIN"}
-                </Button>
-              )}
-              {!hasEIN && (
-                <Button variant="outline" size="sm" onClick={() => setEinDialogOpen(true)} className="mt-2">
-                  Assign EIN
-                </Button>
-              )}
-            </div>
-
-            <div className="flex flex-col justify-between p-3 bg-secondary rounded-md">
-              <Label className="text-muted-foreground">ITIN</Label>
-              <p className="font-semibold mt-1">{getDisplayValue(company?.itin)}</p>
-              {company?.itin && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRemoveITIN}
-                  disabled={itinUpdating}
-                  className="mt-2 bg-transparent"
-                >
-                  {itinUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Remove ITIN"}
-                </Button>
-              )}
-              {!company?.itin && (
-                <Button variant="outline" size="sm" onClick={() => setItinDialogOpen(true)} className="mt-2">
-                  Assign ITIN
-                </Button>
-              )}
-            </div>
-
-            <div className="flex flex-col justify-between p-3 bg-secondary rounded-md">
-              <Label className="text-muted-foreground">Business ID</Label>
-              <p className="font-semibold mt-1">{getDisplayValue(formatBusinessId(company?.businessId))}</p>
-              {hasBusinessId && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={handleRemoveBusinessId}
-                  disabled={businessIdUpdating}
-                  className="mt-2 bg-transparent"
-                >
-                  {businessIdUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Remove ID"}
-                </Button>
-              )}
-              {!hasBusinessId && (
-                <Button variant="outline" size="sm" onClick={() => setBusinessIdDialogOpen(true)} className="mt-2">
-                  Assign Business ID
-                </Button>
-              )}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Documents Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Documents</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center justify-between mb-4">
-            <Label>Passport Documents:</Label>
-            <Button variant="outline" onClick={() => setUploadDocDialogOpen(true)}>
-              Upload Document
-            </Button>
-          </div>
-          {passportDocuments && passportDocuments.length > 0 ? (
-            <div className="space-y-2">
-              {passportDocuments.map((doc: any, index) => (
-                <div key={index} className="flex items-center justify-between p-3 bg-secondary rounded-md">
-                  <p className="font-medium">{doc.fileName || doc.name}</p>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" size="icon">
-                      <Download className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="text-red-500 bg-transparent">
-                      <Trash2 className="h-4 w-4" />
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-600">Registered Agent Status</p>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <Badge className={getStatusColor(company?.registeredAgentStatus || "pending")}>
+                      {company?.registeredAgentStatus || "pending"}
+                    </Badge>
+                    <Button size="sm" variant="outline" onClick={() => setRegisteredAgentStatusDialogOpen(true)}>
+                      Update
                     </Button>
                   </div>
                 </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-muted-foreground">No passport documents uploaded yet.</p>
-          )}
-        </CardContent>
-      </Card>
 
-      {/* Status Update Section */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Update Order Status</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex items-center gap-4">
-            <Select value={newStatus} onValueChange={setNewStatus}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="Select new status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="pending">Pending</SelectItem>
-                <SelectItem value="processing">Processing</SelectItem>
-                <SelectItem value="completed">Completed</SelectItem>
-                <SelectItem value="cancelled">Cancelled</SelectItem>
-              </SelectContent>
-            </Select>
-            <Button onClick={handleStatusUpdate} disabled={!newStatus || statusUpdating}>
-              {statusUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Status"}
-            </Button>
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-600">Business Address Status</p>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <Badge className={getStatusColor(company?.businessAddressStatus || "pending")}>
+                      {company?.businessAddressStatus || "pending"}
+                    </Badge>
+                    <Button size="sm" variant="outline" onClick={() => setBusinessAddressStatusDialogOpen(true)}>
+                      Update
+                    </Button>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <p className="text-sm font-medium text-gray-600">Service Status</p>
+                  <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                    <Badge className={getStatusColor(company?.serviceStatus || "pending")}>
+                      {company?.serviceStatus || "pending"}
+                    </Badge>
+                    <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)}>
+                      Update
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Admin Actions */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Admin Actions</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-2">
+                <Button
+                  variant="outline"
+                  className="w-full justify-start bg-transparent"
+                  size="sm"
+                  onClick={generateInvoice}
+                >
+                  <Download className="w-4 h-4 mr-2" />
+                  Download Invoice
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="w-full justify-start"
+                  size="sm"
+                  onClick={() => setDeleteDialogOpen(true)}
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete Order
+                </Button>
+              </CardContent>
+            </Card>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Dialogs */}
+      {/* Status Update Modals */}
       <StatusUpdateModal
         isOpen={companyStatusDialogOpen}
         onClose={() => setCompanyStatusDialogOpen(false)}
-        onUpdate={(status) => handleUpdateCompanyStatus(status as any)}
+        onUpdate={(status) => handleCompanyStatusUpdate(status as any)}
+        statusType="Company Status"
+        currentStatus={company?.companyStatus}
+        orderId={orderId}
       />
       <StatusUpdateModal
         isOpen={registeredAgentStatusDialogOpen}
         onClose={() => setRegisteredAgentStatusDialogOpen(false)}
-        onUpdate={(status) => handleUpdateRegisteredAgentStatus(status as any)}
+        onUpdate={(status) => handleRegisteredAgentStatusUpdate(status as any)}
+        statusType="Registered Agent Status"
+        currentStatus={company?.registeredAgentStatus}
+        orderId={orderId}
       />
       <StatusUpdateModal
         isOpen={businessAddressStatusDialogOpen}
         onClose={() => setBusinessAddressStatusDialogOpen(false)}
-        onUpdate={(status) => handleUpdateBusinessAddressStatus(status as any)}
+        onUpdate={(status) => handleBusinessAddressStatusUpdate(status as any)}
+        statusType="Business Address Status"
+        currentStatus={company?.businessAddressStatus}
+        orderId={orderId}
       />
       <StatusUpdateModal
         isOpen={serviceStatusDialogOpen}
         onClose={() => setServiceStatusDialogOpen(false)}
-        onUpdate={(status) => handleUpdateServiceStatus(status as any)}
+        onUpdate={(status) => handleServiceStatusUpdate(status as any)}
+        statusType="Service Status"
+        currentStatus={company?.serviceStatus}
+        orderId={orderId}
       />
 
+      {/* Other Dialogs */}
       <Dialog open={registeredAgentDialogOpen} onOpenChange={handleCloseRegisteredAgentDialog}>
         <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
@@ -3060,6 +3076,18 @@ export default function OrderDetailPage() {
               <div key={key} className="flex items-center justify-between">
                 <Label className="capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</Label>
                 <Switch checked={value} onCheckedChange={() => handleMilestoneToggle(key as keyof typeof milestones)} />
+              </div>
+            ))}
+            {company?.customMilestones?.map((milestone: any) => (
+              <div key={milestone.id} className="flex items-center justify-between">
+                <Label className="capitalize">{milestone.title}</Label>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm text-gray-500">{milestone.completed ? "Completed" : "Pending"}</span>
+                  <Switch
+                    checked={milestone.completed}
+                    onCheckedChange={() => handleCustomMilestoneToggle(milestone.id)}
+                  />
+                </div>
               </div>
             ))}
           </div>
