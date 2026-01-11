@@ -232,7 +232,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSON.stringify({
+        body: JSON.stringify({
           milestones: updatedMilestones,
         }),
       })
@@ -498,6 +498,28 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
+          {/* Business Owners / Members */}
+          {company?.members && company.members.length > 0 && (
+            <Card>
+              <CardHeader>
+                <CardTitle>Business Owners / Members</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {company.members.map((member: any, index: number) => (
+                    <div key={index} className="p-3 border rounded-lg">
+                      <p className="font-semibold">{member.name || `Member ${index + 1}`}</p>
+                      <p className="text-sm text-gray-600">
+                        {member.address && `${member.address}, ${member.city}, ${member.state} ${member.zip}`}
+                      </p>
+                      {member.passportKey && <p className="text-sm text-blue-600 cursor-pointer">📄 View Document</p>}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           {/* Business Mailing Address */}
           {company?.mailingAddress && (
             <Card>
@@ -562,6 +584,24 @@ export default function OrderDetailPage() {
                     <p>{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}</p>
                   </div>
                   <div>
+                    <Label>Order ID</Label>
+                    <p className="font-mono text-sm">{order._id || order.id}</p>
+                  </div>
+                  {order.transactionId && (
+                    <div>
+                      <Label>Transaction ID</Label>
+                      <p className="font-mono text-sm">{order.transactionId}</p>
+                    </div>
+                  )}
+                  {order.receiptNumber && (
+                    <div>
+                      <Label>Receipt Number</Label>
+                      <p className="font-mono text-sm">{order.receiptNumber}</p>
+                    </div>
+                  )}
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
                     <Label>Package Price</Label>
                     <p>${order.packagePrice || "0.00"}</p>
                   </div>
@@ -569,6 +609,23 @@ export default function OrderDetailPage() {
                     <Label>Filing Fee</Label>
                     <p>${order.filingFee || "0.00"}</p>
                   </div>
+                  {order.addOns && order.addOns.length > 0 ? (
+                    <div>
+                      <Label>Add-ons</Label>
+                      <div className="space-y-1">
+                        {order.addOns.map((addon: any, idx: number) => (
+                          <p key={idx} className="text-sm">
+                            ${addon.price || "0.00"} - {addon.name || "Add-on"}
+                          </p>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <Label>Add-ons</Label>
+                      <p className="text-sm text-gray-600">No add-ons</p>
+                    </div>
+                  )}
                   <div>
                     <Label>Add-ons Total</Label>
                     <p>${order.addonsTotal || "0.00"}</p>
@@ -693,7 +750,7 @@ export default function OrderDetailPage() {
         title="Update Company Status"
         currentStatus={company?.status}
         onUpdate={(status) => {
-          // Update company status
+          handleStatusUpdate()
           setCompanyStatusDialogOpen(false)
         }}
       />
@@ -704,7 +761,6 @@ export default function OrderDetailPage() {
         title="Update Registered Agent Status"
         currentStatus={company?.registeredAgent?.status}
         onUpdate={(status) => {
-          // Update agent status
           setRegisteredAgentStatusDialogOpen(false)
         }}
       />
@@ -715,7 +771,6 @@ export default function OrderDetailPage() {
         title="Update Business Address Status"
         currentStatus={company?.mailingAddress?.status}
         onUpdate={(status) => {
-          // Update address status
           setBusinessAddressStatusDialogOpen(false)
         }}
       />
@@ -726,7 +781,6 @@ export default function OrderDetailPage() {
         title="Update Service Status"
         currentStatus={company?.serviceStatus}
         onUpdate={(status) => {
-          // Update service status
           setServiceStatusDialogOpen(false)
         }}
       />
