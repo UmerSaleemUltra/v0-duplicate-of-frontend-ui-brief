@@ -1,4 +1,5 @@
 "use client"
+
 import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { authService } from "@/lib/auth"
@@ -6,6 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
@@ -27,15 +29,14 @@ import {
   Clock,
   AlertCircle,
   Hash,
+  UserCheck,
   Loader2,
   MapPin,
   Trash2,
-  Settings,
-  Plus,
+  Receipt,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
-import { DollarSign } from "lucide-react" // Import DollarSign
 
 const getDisplayValue = (value: any, defaultValue = "N/A"): string => {
   if (value === null || value === undefined || value === "") return defaultValue
@@ -96,14 +97,68 @@ export default function OrderDetailPage() {
   const [error, setError] = useState<string | null>(null)
   const [addons, setAddons] = useState<any[]>([])
   const [passportDocuments, setPassportDocuments] = useState<any[]>([])
+  const [passportUrls, setPassportUrls] = useState<string[]>([])
   const [user, setUser] = useState<any>(null)
+  const [orderNotes, setOrderNotes] = useState("")
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [notesUpdating, setNotesUpdating] = useState(false)
+
+  const [editingSection, setEditingSection] = useState<string | null>(null)
 
   const [statusUpdating, setStatusUpdating] = useState(false)
+  const [agentUpdating, setAgentUpdating] = useState(false)
+  const [addressUpdating, setAddressUpdating] = useState(false)
+  const [einUpdating, setEinUpdating] = useState(false)
+  const [itinUpdating, setItinUpdating] = useState(false)
+  const [businessIdUpdating, setBusinessIdUpdating] = useState(false)
+  const [docUploading, setDocUploading] = useState(false)
+  const [milestoneUpdating, setMilestoneUpdating] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [editingNotes, setEditingNotes] = useState(false)
-  const [orderNotes, setOrderNotes] = useState("")
-  const [notesUpdating, setNotesUpdating] = useState(false)
+
+  const [companyStatusDialogOpen, setCompanyStatusDialogOpen] = useState(false)
+  const [registeredAgentStatusDialogOpen, setRegisteredAgentStatusDialogOpen] = useState(false)
+  const [businessAddressStatusDialogOpen, setBusinessAddressStatusDialogOpen] = useState(false)
+  const [serviceStatusDialogOpen, setServiceStatusDialogOpen] = useState(false)
+
+  const [registeredAgentDialogOpen, setRegisteredAgentDialogOpen] = useState(false)
+  const [mailingAddressDialogOpen, setMailingAddressDialogOpen] = useState(false)
+  const [einDialogOpen, setEinDialogOpen] = useState(false)
+  const [itinDialogOpen, setItinDialogOpen] = useState(false)
+  const [businessIdDialogOpen, setBusinessIdDialogOpen] = useState(false)
+  const [uploadDocDialogOpen, setUploadDocDialogOpen] = useState(false)
+  const [milestonesDialogOpen, setMilestonesDialogOpen] = useState(false)
+  const [customMilestoneDialogOpen, setCustomMilestoneDialogOpen] = useState(false)
+
+  const [taxModalOpen, setTaxModalOpen] = useState(false)
+  const [agentModalOpen, setAgentModalOpen] = useState(false)
+  const [addressModalOpen, setAddressModalOpen] = useState(false)
+
+  const [einValue, setEinValue] = useState("")
+  const [itinValue, setItinValue] = useState("")
+  const [businessIdValue, setBusinessIdValue] = useState("")
+  const [newMilestoneTitle, setNewMilestoneTitle] = useState("")
+  const [newMilestoneDescription, setNewMilestoneDescription] = useState("")
+  const [uploadDocType, setUploadDocType] = useState("general")
+
+  const [mailingAddress, setMailingAddress] = useState({
+    street: "",
+    city: "",
+    state: "",
+    zip: "",
+  })
+
+  const [agentForm, setAgentForm] = useState({
+    name: "",
+    company: "",
+    address: "",
+    city: "",
+    state: "",
+    zip: "",
+    phone: "",
+    email: "",
+    servicePeriod: "1 Year",
+  })
 
   const [milestones, setMilestones] = useState({
     orderProcessed: false,
@@ -112,6 +167,24 @@ export default function OrderDetailPage() {
     formationCompleted: false,
     einProcessed: false,
     boiReportFiled: false,
+  })
+
+  const [companyModalOpen, setCompanyModalOpen] = useState(false)
+  const [selectedCompany, setSelectedCompany] = useState<any>(null)
+
+  const [editingCustomer, setEditingCustomer] = useState(false)
+  const [editingCompany, setEditingCompany] = useState(false)
+  const [customerForm, setCustomerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  })
+  const [companyForm, setCompanyForm] = useState({
+    name: "",
+    state: "",
+    businessCategory: "",
+    businessWebsite: "",
+    businessDescription: "",
   })
 
   const hasEIN =
@@ -142,10 +215,184 @@ export default function OrderDetailPage() {
   const getAddonName = (addonId: string) => {
     const addon = addons.find((a) => a.id === addonId)
     if (addon) return addon.name
+
     if (addonId.startsWith("itin-")) return "ITIN Application"
     if (addonId === "reseller-certificate") return "Reseller Certificate"
     if (addonId === "business-website") return "Business Website"
+
     return addonId
+  }
+
+  const handleAddCustomMilestone = async () => {
+    if (!newMilestoneTitle || !company) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a milestone title",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const newMilestone = {
+        id: Date.now().toString(),
+        title: newMilestoneTitle,
+        description: newMilestoneDescription || "",
+        completed: false,
+        createdAt: new Date().toISOString(),
+      }
+
+      const updatedCustomMilestones = [...(company.customMilestones || []), newMilestone]
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customMilestones: updatedCustomMilestones,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to add custom milestone")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setCustomMilestoneDialogOpen(false)
+
+      setNewMilestoneTitle("")
+      setNewMilestoneDescription("")
+
+      toast({
+        title: "Custom Milestone Added",
+        description: `Successfully added "${newMilestone.title}"`,
+      })
+    } catch (error) {
+      console.error("[v0] Error adding custom milestone:", error)
+      toast({
+        title: "Add Failed",
+        description: "Failed to add custom milestone. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleCustomMilestoneToggle = async (milestoneId: string) => {
+    if (!company) return
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const previousCompany = { ...company }
+
+      const updatedCustomMilestones = (company.customMilestones || []).map((m: any) =>
+        m.id === milestoneId
+          ? { ...m, completed: !m.completed, completedAt: !m.completed ? new Date().toISOString() : undefined }
+          : m,
+      )
+
+      setCompany({
+        ...company,
+        customMilestones: updatedCustomMilestones,
+      })
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customMilestones: updatedCustomMilestones,
+        }),
+      })
+
+      if (!response.ok) {
+        setCompany(previousCompany)
+        throw new Error("Failed to update custom milestone")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+
+      const milestone = updatedCustomMilestones.find((m) => m.id === milestoneId)
+      toast({
+        title: "Milestone Updated",
+        description: `${milestone?.title} has been ${milestone?.completed ? "completed" : "uncompleted"}`,
+      })
+    } catch (error) {
+      console.error("[v0] Error updating custom milestone:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update custom milestone. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleDeleteCustomMilestone = async (milestoneId: string) => {
+    if (!company) return
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const previousCompany = { ...company }
+
+      const updatedCustomMilestones = (company.customMilestones || []).filter((m: any) => m.id !== milestoneId)
+
+      setCompany({
+        ...company,
+        customMilestones: updatedCustomMilestones,
+      })
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          customMilestones: updatedCustomMilestones,
+        }),
+      })
+
+      if (!response.ok) {
+        setCompany(previousCompany)
+        throw new Error("Failed to delete custom milestone")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+
+      toast({
+        title: "Milestone Deleted",
+        description: "Custom milestone has been removed successfully",
+      })
+    } catch (error) {
+      console.error("[v0] Error deleting custom milestone:", error)
+      toast({
+        title: "Delete Failed",
+        description: "Failed to delete custom milestone. Please try again.",
+        variant: "destructive",
+      })
+    }
   }
 
   const loadOrderData = useCallback(async () => {
@@ -223,7 +470,20 @@ export default function OrderDetailPage() {
       setCustomer(customerData)
       setUser(foundUser)
       setPassportDocuments(foundPassportDocuments || [])
-      setOrderNotes(foundOrder.notes || "")
+
+      setCustomerForm({
+        name: customerData?.name || "",
+        email: customerData?.email || "",
+        phone: customerData?.phone || "",
+      })
+
+      setCompanyForm({
+        name: foundCompany?.name || "",
+        state: foundCompany?.state || "",
+        businessCategory: foundCompany?.businessCategory || "",
+        businessWebsite: foundCompany?.businessWebsite || "",
+        businessDescription: foundCompany?.businessDescription || "",
+      })
 
       if (foundCompany?.milestones) {
         setMilestones({
@@ -233,6 +493,40 @@ export default function OrderDetailPage() {
           formationCompleted: foundCompany.milestones.formationCompleted || false,
           einProcessed: foundCompany.milestones.einProcessed || false,
           boiReportFiled: foundCompany.milestones.boiReportFiled || false,
+        })
+      } else {
+        setMilestones({
+          orderProcessed: false,
+          registeredAgentAssigned: false,
+          mailingAddressIssued: false,
+          formationCompleted: false,
+          einProcessed: false,
+          boiReportFiled: false,
+        })
+      }
+
+      if (foundCompany?.registeredAgent) {
+        const agent = foundCompany.registeredAgent
+        setAgentForm({
+          name: agent.name || "",
+          company: agent.company || "",
+          address: agent.address || "",
+          city: agent.city || "",
+          state: agent.state || "",
+          zip: agent.zip || "",
+          phone: agent.phone || "",
+          email: agent.email || "",
+          servicePeriod: agent.servicePeriod || "1 Year",
+        })
+      }
+
+      if (foundCompany?.mailingAddress) {
+        const address = foundCompany.mailingAddress
+        setMailingAddress({
+          street: address.street || "",
+          city: address.city || "",
+          state: address.state || "",
+          zip: address.zip || "",
         })
       }
 
@@ -253,6 +547,7 @@ export default function OrderDetailPage() {
 
       setAddons(allAddons)
       setNewStatus(foundOrder.status || "")
+      setOrderNotes(foundOrder.notes || "")
       setError(null)
     } catch (error) {
       console.error("[v0] Error loading order data:", error)
@@ -407,29 +702,35 @@ export default function OrderDetailPage() {
   if (authLoading || loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin mx-auto mb-2" />
-          <p>Loading order details...</p>
-        </div>
+        <Loader2 className="w-8 h-8 animate-spin" />
       </div>
     )
   }
 
-  if (error || !order || !company) {
+  if (error) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Card className="w-full max-w-md">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-red-600">
-              <AlertCircle className="w-5 h-5" />
-              Error
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="mb-4">{error || "Failed to load order details"}</p>
-            <Button onClick={() => router.push("/admin/orders")} variant="outline" className="w-full">
-              Back to Orders
-            </Button>
+      <div className="p-8">
+        <Card className="border-red-200 bg-red-50">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-3">
+              <AlertCircle className="w-5 h-5 text-red-600" />
+              <div>
+                <h3 className="font-semibold text-red-900">Error</h3>
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  if (!order || !company) {
+    return (
+      <div className="p-8">
+        <Card>
+          <CardContent className="pt-6">
+            <p className="text-center text-gray-500">Order details not found</p>
           </CardContent>
         </Card>
       </div>
@@ -441,470 +742,421 @@ export default function OrderDetailPage() {
   const milestonePercentage = Math.round((completedMilestones / totalMilestones) * 100)
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 p-6">
-      <div className="max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex items-center justify-between">
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <div className="sticky top-0 z-40 bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => router.push("/admin/orders")}
-              className="hover:bg-slate-200"
-            >
-              <ArrowLeft className="w-5 h-5" />
+            <Button variant="ghost" size="icon" onClick={() => router.push("/admin/orders")}>
+              <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold text-slate-900">Order Details</h1>
-              <p className="text-sm text-slate-600">ID: {order.id}</p>
+              <h1 className="text-2xl font-bold">Order Details</h1>
+              <p className="text-sm text-gray-600">Order ID: {order.id}</p>
             </div>
           </div>
-          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)} className="gap-2">
-            <Trash2 className="w-4 h-4" />
+          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
+            <Trash2 className="w-4 h-4 mr-2" />
             Delete Order
           </Button>
         </div>
+      </div>
 
-        {/* Main Content Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Customer & Company Info */}
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Details */}
           <div className="lg:col-span-2 space-y-6">
             {/* Customer Information */}
-            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
-                <div className="flex items-center gap-2">
-                  <User className="w-5 h-5 text-blue-600" />
-                  <CardTitle>Customer Information</CardTitle>
-                </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Customer Information
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setEditingCustomer(!editingCustomer)}>
+                  {editingCustomer ? "Cancel" : "Edit"}
+                </Button>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 gap-6">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Name</p>
-                    <p className="text-lg font-semibold">{getDisplayValue(customer?.name)}</p>
+              <CardContent className="space-y-4">
+                {editingCustomer ? (
+                  <div className="space-y-4">
+                    <div>
+                      <Label>Name</Label>
+                      <Input
+                        value={customerForm.name}
+                        onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Email</Label>
+                      <Input
+                        value={customerForm.email}
+                        onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
+                      />
+                    </div>
+                    <div>
+                      <Label>Phone</Label>
+                      <Input
+                        value={customerForm.phone}
+                        onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
+                      />
+                    </div>
+                    <Button
+                      className="w-full"
+                      onClick={async () => {
+                        // Add customer update logic here
+                        setEditingCustomer(false)
+                      }}
+                    >
+                      Save Changes
+                    </Button>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Email</p>
-                    <p className="text-lg font-semibold">{getDisplayValue(customer?.email)}</p>
+                ) : (
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-600">Name</p>
+                      <p className="font-semibold">{getDisplayValue(customer?.name)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Email</p>
+                      <p className="font-semibold">{getDisplayValue(customer?.email)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Phone</p>
+                      <p className="font-semibold">{getDisplayValue(customer?.phone)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-600">Account Status</p>
+                      <Badge variant={customer?.accountStatus === "active" ? "default" : "secondary"}>
+                        {customer?.accountStatus || "N/A"}
+                      </Badge>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Phone</p>
-                    <p className="text-lg font-semibold">{getDisplayValue(customer?.phone)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">Account Status</p>
-                    <Badge className="mt-1" variant={customer?.accountStatus === "active" ? "default" : "secondary"}>
-                      {customer?.accountStatus || "Unknown"}
-                    </Badge>
-                  </div>
-                </div>
+                )}
               </CardContent>
             </Card>
 
             {/* Company Information */}
-            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
-                <div className="flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-purple-600" />
-                  <CardTitle>Company Information</CardTitle>
-                </div>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Company Information
+                </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 gap-6">
+              <CardContent className="space-y-6">
+                <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">Company Name</p>
-                    <p className="text-lg font-semibold">{getDisplayValue(company?.name)}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 mb-1">State of Formation</p>
-                    <p className="text-lg font-semibold">{getDisplayValue(company?.state)}</p>
+                    <p className="text-sm text-gray-600">Company Name</p>
+                    <p className="font-semibold">{getDisplayValue(company.name)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">Entity Type</p>
-                    <p className="text-lg font-semibold">{getDisplayValue(company?.entityType)}</p>
+                    <p className="text-sm text-gray-600">State of Formation</p>
+                    <p className="font-semibold">{getDisplayValue(company.state)}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">Business Category</p>
-                    <p className="text-lg font-semibold">{getDisplayValue(company?.businessCategory)}</p>
+                    <p className="text-sm text-gray-600">Entity Type</p>
+                    <p className="font-semibold">{getDisplayValue(company.entityType)}</p>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-sm text-slate-600 mb-1">Business Website</p>
-                    {company?.businessWebsite ? (
-                      <a
-                        href={company.businessWebsite}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600 underline"
-                      >
-                        {company.businessWebsite}
-                      </a>
-                    ) : (
-                      <p className="text-slate-500">Not provided</p>
-                    )}
+                  <div>
+                    <p className="text-sm text-gray-600">Package Type</p>
+                    <Badge variant="outline">{getDisplayValue(company.packageType)}</Badge>
                   </div>
-                  <div className="col-span-2">
-                    <p className="text-sm text-slate-600 mb-1">Business Description</p>
-                    <p className="text-sm text-slate-700">
-                      {getDisplayValue(company?.businessDescription, "Not provided")}
-                    </p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Business Description</p>
+                  <p className="text-sm">{getDisplayValue(company.businessDescription)}</p>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-gray-600">Business Category</p>
+                    <p className="font-semibold">{getDisplayValue(company.businessCategory)}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-600">Business Website</p>
+                    <a
+                      href={company.businessWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline text-sm"
+                    >
+                      {getDisplayValue(company.businessWebsite)}
+                    </a>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Identifiers Section */}
-            <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
-                <div className="flex items-center gap-2">
-                  <Hash className="w-5 h-5 text-green-600" />
-                  <CardTitle>Business Identifiers</CardTitle>
-                </div>
+            {/* Business Identifiers */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Hash className="w-5 h-5" />
+                  Business Identifiers
+                </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="grid grid-cols-2 gap-6">
+              <CardContent className="space-y-4">
+                <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">EIN Number</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-lg font-semibold">{hasEIN ? formatEIN(company?.ein, true) : "Not Yet"}</p>
-                      {hasEIN ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <Clock className="w-5 h-5 text-amber-600" />
-                      )}
-                    </div>
+                    <p className="text-sm text-gray-600">EIN Number</p>
+                    <p className="font-semibold">{hasEIN ? formatEIN(company.ein, true) : "Not Yet"}</p>
                   </div>
+                  <Button size="sm" onClick={() => setEinDialogOpen(true)}>
+                    Update
+                  </Button>
+                </div>
+
+                <div className="flex items-center justify-between p-4 border rounded-lg">
                   <div>
-                    <p className="text-sm text-slate-600 mb-1">Business ID</p>
-                    <div className="flex items-center gap-2">
-                      <p className="text-lg font-semibold">
-                        {hasBusinessId ? formatBusinessId(company?.businessId) : "Not Yet"}
-                      </p>
-                      {hasBusinessId ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <Clock className="w-5 h-5 text-amber-600" />
-                      )}
-                    </div>
+                    <p className="text-sm text-gray-600">Business ID</p>
+                    <p className="font-semibold">{hasBusinessId ? formatBusinessId(company.businessId) : "Not Yet"}</p>
                   </div>
+                  <Button size="sm" onClick={() => setBusinessIdDialogOpen(true)}>
+                    Update
+                  </Button>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Address Information */}
-            {(hasRegisteredAgent || hasMailingAddress) && (
-              <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100 border-b">
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5 text-orange-600" />
-                    <CardTitle>Address Information</CardTitle>
-                  </div>
+            {/* Addresses */}
+            {hasRegisteredAgent && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <UserCheck className="w-5 h-5" />
+                    Registered Agent
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="space-y-6">
-                    {hasRegisteredAgent && (
-                      <div>
-                        <p className="font-semibold mb-3">Registered Agent</p>
-                        <div className="space-y-2 text-sm">
-                          <p>
-                            <span className="text-slate-600">Name:</span> {company.registeredAgent.name}
-                          </p>
-                          <p>
-                            <span className="text-slate-600">Company:</span>{" "}
-                            {getDisplayValue(company.registeredAgent.company)}
-                          </p>
-                          <p>
-                            <span className="text-slate-600">Address:</span>{" "}
-                            {getDisplayValue(company.registeredAgent.address)}
-                          </p>
-                          <p>
-                            <span className="text-slate-600">City, State, ZIP:</span>{" "}
-                            {getDisplayValue(company.registeredAgent.city)},{" "}
-                            {getDisplayValue(company.registeredAgent.state)}{" "}
-                            {getDisplayValue(company.registeredAgent.zip)}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                    {hasMailingAddress && (
-                      <div>
-                        <p className="font-semibold mb-3">Mailing Address</p>
-                        <div className="space-y-2 text-sm">
-                          <p>
-                            <span className="text-slate-600">Street:</span> {company.mailingAddress.street}
-                          </p>
-                          <p>
-                            <span className="text-slate-600">City, State, ZIP:</span> {company.mailingAddress.city},{" "}
-                            {company.mailingAddress.state} {company.mailingAddress.zip}
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
+                <CardContent className="space-y-2">
+                  <p>
+                    <span className="text-gray-600">Name:</span> {company.registeredAgent?.name}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Company:</span> {company.registeredAgent?.company || "N/A"}
+                  </p>
+                  <p>
+                    <span className="text-gray-600">Address:</span> {company.registeredAgent?.address},{" "}
+                    {company.registeredAgent?.city}, {company.registeredAgent?.state} {company.registeredAgent?.zip}
+                  </p>
                 </CardContent>
               </Card>
             )}
 
-            {/* Business Owners/Members */}
-            {company?.members && company.members.length > 0 && (
-              <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100 border-b">
-                  <div className="flex items-center gap-2">
-                    <Users className="w-5 h-5 text-indigo-600" />
-                    <CardTitle>Business Owners / Members</CardTitle>
-                  </div>
+            {hasMailingAddress && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5" />
+                    Mailing Address
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-6">
-                  <div className="space-y-4">
-                    {company.members.map((member: any, idx: number) => (
-                      <div key={idx} className="border-b last:border-b-0 pb-4 last:pb-0">
-                        <div className="flex items-start justify-between mb-2">
-                          <p className="font-semibold">{member.name || `Member ${idx + 1}`}</p>
-                          <Badge variant="outline">
-                            {member.isResponsiblePerson ? "Responsible Person" : "Member"}
-                          </Badge>
-                        </div>
-                        <div className="text-sm text-slate-600">
-                          {member.address && (
-                            <p>
-                              {member.address}, {member.city}, {member.state} {member.zip}
-                            </p>
-                          )}
+                <CardContent className="space-y-2">
+                  <p>{company.mailingAddress?.street}</p>
+                  <p>
+                    {company.mailingAddress?.city}, {company.mailingAddress?.state} {company.mailingAddress?.zip}
+                  </p>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Business Owners */}
+            {company.members && company.members.length > 0 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Users className="w-5 h-5" />
+                    Business Owners / Members
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  {company.members.map((member: any, index: number) => (
+                    <div key={index} className="p-4 border rounded-lg">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="font-semibold">{member.name || "N/A"}</p>
+                          <p className="text-sm text-gray-600">{member.address || "N/A"}</p>
                           {member.needsItin && (
-                            <Badge variant="secondary" className="mt-2">
-                              Needs ITIN
+                            <Badge className="mt-2" variant="secondary">
+                              ITIN Required
                             </Badge>
                           )}
                         </div>
                       </div>
-                    ))}
-                  </div>
+                    </div>
+                  ))}
                 </CardContent>
               </Card>
             )}
 
             {/* Add-ons */}
             {addons.length > 0 && (
-              <Card className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardHeader className="bg-gradient-to-r from-rose-50 to-rose-100 border-b">
-                  <div className="flex items-center gap-2">
-                    <Package className="w-5 h-5 text-rose-600" />
-                    <CardTitle>Purchased Add-ons</CardTitle>
-                  </div>
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <Package className="w-5 h-5" />
+                    Purchased Add-ons
+                  </CardTitle>
                 </CardHeader>
-                <CardContent className="pt-6">
+                <CardContent>
                   <div className="space-y-2">
-                    {addons.map((addon: any, idx: number) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                        <span className="font-medium">
-                          {getAddonName(typeof addon === "string" ? addon : addon.serviceId)}
-                        </span>
-                        {addon.price && <span className="text-sm text-slate-600">${addon.price}</span>}
+                    {addons.map((addon: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded">
+                        <span>{getAddonName(typeof addon === "string" ? addon : addon.serviceId || addon.id)}</span>
+                        <Badge variant="outline">Added</Badge>
                       </div>
                     ))}
                   </div>
                 </CardContent>
               </Card>
             )}
+
+            {/* Notes */}
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5" />
+                  Notes
+                </CardTitle>
+                <Button variant="ghost" size="sm" onClick={() => setEditingNotes(!editingNotes)}>
+                  {editingNotes ? "Cancel" : "Edit"}
+                </Button>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {editingNotes ? (
+                  <div className="space-y-4">
+                    <div>
+                      <Label htmlFor="notes">Notes</Label>
+                      <Textarea
+                        id="notes"
+                        value={orderNotes}
+                        onChange={(e) => setOrderNotes(e.target.value)}
+                        placeholder="Enter notes here"
+                        className="resize-none"
+                      />
+                    </div>
+                    <Button className="w-full" onClick={handleSaveNotes} disabled={notesUpdating}>
+                      {notesUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save Changes"}
+                    </Button>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-2">Notes</p>
+                    <p className="text-sm">{getDisplayValue(orderNotes)}</p>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Right Column - Status & Actions */}
+          {/* Right Column - Sidebar */}
           <div className="space-y-6">
             {/* Order Status */}
-            <Card className="border-0 shadow-sm sticky top-6">
-              <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-700 text-white border-b-0 rounded-t-lg">
-                <CardTitle>Order Status</CardTitle>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Order Status</CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-4">
-                  <div>
-                    <p className="text-sm text-slate-600 mb-2">Current Status</p>
-                    <Badge className="text-lg px-3 py-1" variant={order.status === "pending" ? "secondary" : "default"}>
-                      {order.status || "Unknown"}
-                    </Badge>
-                  </div>
-                  <div>
-                    <Label className="text-sm mb-2 block">Update Status</Label>
-                    <Select value={newStatus} onValueChange={setNewStatus}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="processing">Processing</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <Button
-                    onClick={handleStatusUpdate}
-                    disabled={statusUpdating || newStatus === order.status}
-                    className="w-full gap-2"
-                  >
-                    {statusUpdating ? (
-                      <>
-                        <Loader2 className="w-4 h-4 animate-spin" />
-                        Updating...
-                      </>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-4 h-4" />
-                        Update Status
-                      </>
-                    )}
-                  </Button>
+              <CardContent className="space-y-4">
+                <div>
+                  <p className="text-sm text-gray-600 mb-2">Current Status</p>
+                  <Badge className="text-base py-1">{order.status || "Pending"}</Badge>
                 </div>
+                <div>
+                  <Label>Update Status</Label>
+                  <Select value={newStatus} onValueChange={setNewStatus}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="in-progress">In Progress</SelectItem>
+                      <SelectItem value="completed">Completed</SelectItem>
+                      <SelectItem value="on-hold">On Hold</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <Button className="w-full" onClick={() => handleStatusUpdate()}>
+                  Update Status
+                </Button>
               </CardContent>
             </Card>
 
-            {/* Order Details */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-slate-100 to-slate-50 border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <FileText className="w-5 h-5" />
-                  Order Details
+            {/* Payment Information */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <Receipt className="w-5 h-5" />
+                  Payment Details
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-4 text-sm">
-                  <div>
-                    <p className="text-slate-600 mb-1">Order Date</p>
-                    <p className="font-semibold">
-                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-slate-600 mb-1">Payment Status</p>
-                    <Badge variant={order.paymentStatus === "completed" ? "default" : "secondary"}>
-                      {order.paymentStatus || "Unknown"}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-slate-600 mb-1">Payment Method</p>
-                    <p className="font-semibold">{getDisplayValue(order.paymentMethod)}</p>
-                  </div>
-                  {order.transactionId && (
-                    <div>
-                      <p className="text-slate-600 mb-1">Transaction ID</p>
-                      <p className="font-semibold text-xs break-all">{order.transactionId}</p>
-                    </div>
-                  )}
+              <CardContent className="space-y-3">
+                <div>
+                  <p className="text-sm text-gray-600">Payment Method</p>
+                  <p className="font-semibold">{getDisplayValue(order.paymentMethod)}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Payment Status</p>
+                  <Badge variant={order.paymentStatus === "completed" ? "default" : "secondary"}>
+                    {order.paymentStatus || "Pending"}
+                  </Badge>
+                </div>
+                <div>
+                  <p className="text-sm text-gray-600">Order Date</p>
+                  <p className="font-semibold">
+                    {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
+                  </p>
                 </div>
               </CardContent>
             </Card>
 
             {/* Pricing */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-100 border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <DollarSign className="w-5 h-5 text-emerald-600" />
-                  Pricing
-                </CardTitle>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Order & Pricing Details</CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="space-y-3 text-sm">
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">Package Price</span>
-                    <span className="font-semibold">${order.packagePrice || "0.00"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">State Filing Fee</span>
-                    <span className="font-semibold">${order.stateFilingFee || "0.00"}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-slate-600">Add-ons Total</span>
-                    <span className="font-semibold">${order.addonsTotal || "0.00"}</span>
-                  </div>
-                  <div className="border-t pt-3 flex justify-between text-base font-bold">
-                    <span>Total Amount</span>
-                    <span className="text-emerald-600">${order.totalAmount || "0.00"}</span>
-                  </div>
+              <CardContent className="space-y-3">
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Package Price</span>
+                  <span className="font-semibold">${order.packagePrice || "0.00"}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-600">Add-ons Total</span>
+                  <span className="font-semibold">${order.addonsTotal || "0.00"}</span>
+                </div>
+                <div className="border-t pt-3 flex justify-between">
+                  <span className="font-semibold">Total Amount</span>
+                  <span className="text-lg font-bold text-blue-600">${order.totalAmount || "0.00"}</span>
                 </div>
               </CardContent>
             </Card>
 
             {/* Milestones Progress */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-cyan-50 to-cyan-100 border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <CheckCircle2 className="w-5 h-5 text-cyan-600" />
-                  Formation Progress
-                </CardTitle>
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Formation Progress</CardTitle>
               </CardHeader>
-              <CardContent className="pt-6">
-                <div className="mb-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <p className="text-sm font-semibold">
-                      {completedMilestones} of {totalMilestones} milestones completed
-                    </p>
-                    <span className="text-sm font-bold text-cyan-600">{milestonePercentage}%</span>
-                  </div>
-                  <div className="w-full bg-slate-200 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-cyan-500 to-cyan-600 h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${milestonePercentage}%` }}
-                    />
-                  </div>
-                </div>
+              <CardContent className="space-y-3">
                 <div className="space-y-2">
-                  {Object.entries(milestones).map(([key, value]) => (
-                    <div key={key} className="flex items-center gap-2 text-sm">
-                      {value ? (
-                        <CheckCircle2 className="w-4 h-4 text-green-600" />
+                  {Object.entries(milestones).map(([key, completed]: [string, any]) => (
+                    <div key={key} className="flex items-center gap-3">
+                      {completed ? (
+                        <CheckCircle2 className="w-5 h-5 text-green-600" />
                       ) : (
-                        <Clock className="w-4 h-4 text-amber-600" />
+                        <Clock className="w-5 h-5 text-gray-400" />
                       )}
-                      <span className={value ? "text-slate-700" : "text-slate-600"}>
-                        {key.replace(/([A-Z])/g, " $1").replace(/^./, (str) => str.toUpperCase())}
+                      <span className={completed ? "text-green-600" : "text-gray-600"}>
+                        {key.replace(/([A-Z])/g, " $1").trim()}
                       </span>
                     </div>
                   ))}
                 </div>
               </CardContent>
             </Card>
-
-            {/* Admin Notes */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100 border-b">
-                <CardTitle className="flex items-center gap-2">
-                  <Settings className="w-5 h-5 text-amber-600" />
-                  Admin Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-6">
-                {editingNotes ? (
-                  <div className="space-y-3">
-                    <Textarea
-                      value={orderNotes}
-                      onChange={(e) => setOrderNotes(e.target.value)}
-                      placeholder="Add admin notes here..."
-                      className="min-h-[120px]"
-                    />
-                    <div className="flex gap-2">
-                      <Button onClick={handleSaveNotes} disabled={notesUpdating} size="sm" className="flex-1">
-                        {notesUpdating ? "Saving..." : "Save"}
-                      </Button>
-                      <Button onClick={() => setEditingNotes(false)} variant="outline" size="sm" className="flex-1">
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <div>
-                    <p className="text-sm text-slate-600 mb-3">{orderNotes || "No notes added"}</p>
-                    <Button onClick={() => setEditingNotes(true)} variant="outline" size="sm" className="w-full gap-2">
-                      <Plus className="w-4 h-4" />
-                      Edit Notes
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
           </div>
         </div>
       </div>
 
-      {/* Delete Confirmation Dialog */}
+      {/* Modals */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
@@ -917,7 +1169,7 @@ export default function OrderDetailPage() {
             <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Cancel
             </Button>
-            <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting} className="gap-2">
+            <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
               {deleting ? (
                 <>
                   <Loader2 className="w-4 h-4 animate-spin" />
@@ -929,6 +1181,114 @@ export default function OrderDetailPage() {
                   Delete
                 </>
               )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* EIN Modal */}
+      <Dialog open={einDialogOpen} onOpenChange={setEinDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update EIN Number</DialogTitle>
+            <DialogDescription>Enter the EIN number for the company.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Label htmlFor="ein">EIN Number</Label>
+            <Input
+              id="ein"
+              value={einValue}
+              onChange={(e) => setEinValue(e.target.value)}
+              placeholder="e.g., 12-3456789"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEinDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!einValue || !company) return
+                setEinUpdating(true)
+                try {
+                  const token = authService.getToken()
+                  if (!token) router.push("/login")
+
+                  const response = await fetch(`/api/companies/${company.id}`, {
+                    method: "PUT",
+                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ ein: einValue }),
+                  })
+                  if (!response.ok) throw new Error("Failed to update EIN")
+
+                  const result = await response.json()
+                  setCompany(result.data)
+                  setEinDialogOpen(false)
+                  toast({ title: "Success", description: "EIN updated successfully" })
+                } catch (error) {
+                  console.error(error)
+                  toast({ title: "Error", description: "Failed to update EIN", variant: "destructive" })
+                } finally {
+                  setEinUpdating(false)
+                }
+              }}
+              disabled={einUpdating}
+            >
+              {einUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Business ID Modal */}
+      <Dialog open={businessIdDialogOpen} onOpenChange={setBusinessIdDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Business ID</DialogTitle>
+            <DialogDescription>Enter the Business ID for the company.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <Label htmlFor="businessId">Business ID</Label>
+            <Input
+              id="businessId"
+              value={businessIdValue}
+              onChange={(e) => setBusinessIdValue(e.target.value)}
+              placeholder="e.g., BIZ-12345"
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setBusinessIdDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={async () => {
+                if (!businessIdValue || !company) return
+                setBusinessIdUpdating(true)
+                try {
+                  const token = authService.getToken()
+                  if (!token) router.push("/login")
+
+                  const response = await fetch(`/api/companies/${company.id}`, {
+                    method: "PUT",
+                    headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ businessId: businessIdValue }),
+                  })
+                  if (!response.ok) throw new Error("Failed to update Business ID")
+
+                  const result = await response.json()
+                  setCompany(result.data)
+                  setBusinessIdDialogOpen(false)
+                  toast({ title: "Success", description: "Business ID updated successfully" })
+                } catch (error) {
+                  console.error(error)
+                  toast({ title: "Error", description: "Failed to update Business ID", variant: "destructive" })
+                } finally {
+                  setBusinessIdUpdating(false)
+                }
+              }}
+              disabled={businessIdUpdating}
+            >
+              {businessIdUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
             </Button>
           </DialogFooter>
         </DialogContent>
