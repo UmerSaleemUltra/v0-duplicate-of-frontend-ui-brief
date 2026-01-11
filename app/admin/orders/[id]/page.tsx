@@ -464,13 +464,22 @@ export default function OrderDetailPage() {
 
       setOrder(orderData)
       setCompany(orderData.company)
-      setCustomer(
-        orderData.user || {
-          name: orderData.company?.members?.[0]?.name || "Unknown User",
-          email: orderData.company?.members?.[0]?.email || "N/A",
-          phone: orderData.company?.members?.[0]?.phone || "N/A",
-        },
-      )
+
+      if (orderData?.company?.members?.[0]) {
+        const firstMember = orderData.company.members[0]
+        setCustomer({
+          name: firstMember.name || "N/A",
+          email: orderData.user?.email || "N/A",
+          phone: orderData.user?.phone || "N/A",
+        })
+      } else {
+        setCustomer({
+          name: "Unknown User",
+          email: "N/A",
+          phone: "N/A",
+        })
+      }
+
       setUser(orderData.user)
       setPassportDocuments(orderData.passportDocuments || [])
 
@@ -608,13 +617,20 @@ export default function OrderDetailPage() {
 
         // Extract company, customer, and user data
         setCompany(data.company)
-        setCustomer(
-          data.user || {
-            name: data.company?.members?.[0]?.name || "Unknown User",
-            email: data.company?.members?.[0]?.email || "N/A",
-            phone: data.company?.members?.[0]?.phone || "N/A",
-          },
-        )
+        if (data?.company?.members?.[0]) {
+          const firstMember = data.company.members[0]
+          setCustomer({
+            name: firstMember.name || "N/A",
+            email: data.user?.email || "N/A",
+            phone: data.user?.phone || "N/A",
+          })
+        } else {
+          setCustomer({
+            name: "Unknown User",
+            email: "N/A",
+            phone: "N/A",
+          })
+        }
         setUser(data.user)
         setPassportDocuments(data.passportDocuments || [])
 

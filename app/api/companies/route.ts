@@ -206,10 +206,13 @@ export async function POST(req: NextRequest) {
     const isFirstCompany = existingCompaniesCount === 0
 
     const processedMembers = Array.isArray(members)
-      ? members.map((member) => ({
-          ...member,
-          passportUrl: member.passportUrl || null,
-        }))
+      ? members.map((member) => {
+          const { dateOfBirth, Ssn, firstName, middleName, lastName, email, phone, ...safeMember } = member
+          return {
+            ...safeMember,
+            passportUrl: member.passportUrl || null,
+          }
+        })
       : []
 
     const initialOrders = orderData
