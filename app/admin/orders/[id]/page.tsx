@@ -367,7 +367,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.JSON.stringify({
+        body: JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -533,6 +533,15 @@ export default function OrderDetailPage() {
       setAddons(allAddons)
       setNewStatus(orderData.status || "")
       setError(null)
+
+      if (orderData.company?.businessDescription) {
+        const desc = getDisplayValue(orderData.company.businessDescription)
+        setCompanyForm((prev) => ({
+          ...prev,
+          businessDescription: desc === "N/A" ? "" : desc,
+        }))
+      }
+      // </CHANGE>
     } catch (error) {
       console.error("[v0] Error loading order:", error)
       setError(error instanceof Error ? error.message : "Failed to load order")

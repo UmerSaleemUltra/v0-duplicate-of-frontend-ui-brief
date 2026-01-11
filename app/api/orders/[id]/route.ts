@@ -325,55 +325,87 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const body = await req.json()
     const { db } = await connectDB()
 
-    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+    // Search for order in both collections
+    let order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+    let isEmbeddedOrder = false
+    let companyId: ObjectId | string | null = null
+
+    if (!order) {
+      // Search in companies for embedded order
+      const companies = await db
+        .collection("companies")
+        .find({ orders: { $exists: true, $ne: [] } })
+        .toArray()
+
+      for (const company of companies) {
+        const embeddedOrder = company.orders?.find((o: any) => o._id?.toString() === id || o.id === id)
+        if (embeddedOrder) {
+          order = embeddedOrder
+          isEmbeddedOrder = true
+          companyId = company._id
+          break
+        }
+      }
+    }
 
     if (!order) {
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
-    if (decoded.role !== "admin" && order.userId !== decoded.userId) {
+    if (decoded.role !== "admin" && order.userId?.toString() !== decoded.userId) {
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
-    const updateData = {
-      ...body,
+    const allowedUpdateFields = ["status", "paymentStatus", "paymentMethod", "notes"]
+    const updateData: any = {
       updatedAt: new Date().toISOString(),
     }
 
-    if (body.status === "completed" && order.companyId) {
-      try {
-        const companyIdObj =
-          typeof order.companyId === "string" && ObjectId.isValid(order.companyId)
-            ? new ObjectId(order.companyId)
-            : order.companyId
-
-        if (companyIdObj) {
-          await db.collection("companies").updateOne(
-            { _id: companyIdObj },
-            {
-              $set: {
-                status: "completed",
-                updatedAt: new Date().toISOString(),
-              },
-            },
-          )
-          console.log("[v0] Company status updated to completed")
-        }
-      } catch (error) {
-        console.log("[v0] Error updating company status:", error)
+    for (const field of allowedUpdateFields) {
+      if (field in body) {
+        updateData[field] = body[field]
       }
     }
 
-    const result = await db
-      .collection("orders")
-      .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
+    if (body.status === "completed" && (order.companyId || companyId)) {
+      const cId = order.companyId || companyId
+      const companyIdObj = typeof cId === "string" && ObjectId.isValid(cId) ? new ObjectId(cId) : cId
+
+      if (companyIdObj) {
+        await db.collection("companies").updateOne(
+          { _id: companyIdObj },
+          {
+            $set: {
+              companyStatus: "completed",
+              updatedAt: new Date().toISOString(),
+            },
+          },
+        )
+      }
+    }
+
+    let result
+    if (isEmbeddedOrder && companyId) {
+      // Update embedded order in company
+      result = await db
+        .collection("companies")
+        .findOneAndUpdate(
+          { _id: companyId, "orders._id": new ObjectId(id) },
+          { $set: { "orders.$": { ...order, ...updateData } } },
+          { returnDocument: "after" },
+        )
+    } else {
+      // Update standalone order
+      result = await db
+        .collection("orders")
+        .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
+    }
 
     if (!result) {
       return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
     }
 
-    const updatedOrder = { id: result._id.toString(), ...result }
-
+    const updatedOrder = { id: result._id?.toString() || id, ...result }
     broadcastUpdate("orders", "updated", updatedOrder)
 
     return addSecurityHeaders(
@@ -383,9 +415,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }),
     )
   } catch (error) {
-    if (error instanceof Error) {
-      return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
-    }
+    console.log("[v0] PUT Error:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
   }
 }
