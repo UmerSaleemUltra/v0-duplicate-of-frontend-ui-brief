@@ -29,9 +29,17 @@ import {
   ChevronRight,
   Building2,
   Flag,
+  Mail,
+  Phone,
+  Globe,
+  Shield,
+  FileBarChart,
+  Plus,
+  Users,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
+import { Textarea } from "@/components/ui/textarea"
 
 const getStatusColor = (status: string) => {
   const statusMap: Record<string, string> = {
@@ -74,6 +82,12 @@ export default function OrderDetailPage() {
   const [deleting, setDeleting] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [newStatus, setNewStatus] = useState("")
+
+  const [passportDocuments, setPassportDocuments] = useState<any[]>([])
+  const [addons, setAddons] = useState<any[]>([])
+  const [editingNotes, setEditingNotes] = useState(false)
+  const [orderNotes, setOrderNotes] = useState("")
+  const [notesUpdating, setNotesUpdating] = useState(false)
 
   const [milestones, setMilestones] = useState({
     orderProcessed: false,
@@ -118,6 +132,23 @@ export default function OrderDetailPage() {
       setCompany(orderData.company)
       setUser(orderData.user)
       setNewStatus(orderData.status || "pending")
+      setOrderNotes(orderData.notes || "")
+      setPassportDocuments(orderData.passportDocuments || [])
+
+      const orderAddons = orderData.purchasedAddons || orderData.selectedAddons || []
+      const companyAddons = orderData.company?.purchasedAddons || []
+      const allAddons = [...orderAddons]
+      companyAddons.forEach((companyAddon: any) => {
+        const addonId = typeof companyAddon === "object" ? companyAddon.serviceId : companyAddon
+        const alreadyExists = allAddons.some((orderAddon: any) => {
+          const orderAddonId = typeof orderAddon === "object" ? orderAddon.serviceId : orderAddon
+          return orderAddonId === addonId
+        })
+        if (!alreadyExists) {
+          allAddons.push(companyAddon)
+        }
+      })
+      setAddons(allAddons)
 
       if (orderData.company?.milestones) {
         setMilestones({
@@ -230,6 +261,49 @@ export default function OrderDetailPage() {
         description: error instanceof Error ? error.message : "Failed to update milestone",
         variant: "destructive",
       })
+    }
+  }
+
+  const handleNotesUpdate = async () => {
+    if (!order) return
+
+    setNotesUpdating(true)
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/orders/${order._id || order.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ notes: orderNotes }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update notes")
+      }
+
+      const result = await response.json()
+      setOrder(result.data)
+      setEditingNotes(false)
+
+      toast({
+        title: "Success",
+        description: "Order notes updated",
+      })
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update notes",
+        variant: "destructive",
+      })
+    } finally {
+      setNotesUpdating(false)
     }
   }
 
@@ -365,13 +439,19 @@ export default function OrderDetailPage() {
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Email</p>
-                  <p className="text-base font-mono text-slate-700">{user?.email || "—"}</p>
+                  <div className="flex items-center gap-2">
+                    <Mail className="w-4 h-4 text-slate-400" />
+                    <p className="text-base font-mono text-slate-700 truncate">{user?.email || "—"}</p>
+                  </div>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Phone</p>
-                  <p className="text-base font-semibold text-slate-900">
-                    {user?.phone || paymentInfo?.whatsappPhone || "—"}
-                  </p>
+                  <div className="flex items-center gap-2">
+                    <Phone className="w-4 h-4 text-slate-400" />
+                    <p className="text-base font-semibold text-slate-900">
+                      {user?.phone || mainOrder?.paymentInfo?.whatsappPhone || "—"}
+                    </p>
+                  </div>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Account Status</p>
@@ -383,22 +463,24 @@ export default function OrderDetailPage() {
               </div>
             </div>
 
-            {/* Company Card */}
+            {/* Company Information Card */}
             <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
               <div className="flex items-center gap-3 p-6 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-transparent">
                 <div className="p-2 bg-purple-100 rounded-lg">
                   <Building2 className="w-5 h-5 text-purple-600" />
                 </div>
-                <h2 className="text-lg font-semibold text-slate-900">Company</h2>
+                <h2 className="text-lg font-semibold text-slate-900">Company Information</h2>
               </div>
               <div className="p-6 grid grid-cols-2 gap-6">
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Name</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Company Name</p>
                   <p className="text-base font-semibold text-slate-900">{company?.name || "—"}</p>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Entity Type</p>
-                  <p className="text-base font-semibold text-slate-900">{company?.type || "—"}</p>
+                  <Badge variant="outline" className="capitalize">
+                    {company?.type || "—"}
+                  </Badge>
                 </div>
                 <div>
                   <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">State</p>
@@ -408,14 +490,18 @@ export default function OrderDetailPage() {
                   </div>
                 </div>
                 <div>
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Package</p>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Package Type</p>
                   <Badge variant="outline" className="capitalize">
                     {company?.packageType || "—"}
                   </Badge>
                 </div>
-                <div className="col-span-2">
-                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Category</p>
-                  <p className="text-sm text-slate-700">{company?.businessCategory || "—"}</p>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">EIN</p>
+                  <p className="text-base font-mono text-slate-700">{company?.ein || "Not Yet"}</p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Business ID</p>
+                  <p className="text-base font-mono text-slate-700">{company?.businessId || "Not Yet"}</p>
                 </div>
                 {company?.businessWebsite && (
                   <div className="col-span-2">
@@ -424,32 +510,72 @@ export default function OrderDetailPage() {
                       href={company.businessWebsite}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-1"
+                      className="text-blue-600 hover:text-blue-700 font-medium flex items-center gap-2"
                     >
+                      <Globe className="w-4 h-4" />
                       {company.businessWebsite}
                       <ChevronRight className="w-3 h-3" />
                     </a>
                   </div>
                 )}
+                {company?.businessCategory && (
+                  <div className="col-span-2">
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Category</p>
+                    <p className="text-sm text-slate-700">{company.businessCategory}</p>
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Address Card */}
-            {company?.address && (
+            {/* Mailing Address Card */}
+            {company?.mailingAddress && (
               <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
-                <div className="flex items-center gap-3 p-6 border-b border-slate-200 bg-gradient-to-r from-green-50 to-transparent">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <MapPin className="w-5 h-5 text-green-600" />
+                <div className="flex items-center gap-3 p-6 border-b border-slate-200 bg-gradient-to-r from-cyan-50 to-transparent">
+                  <div className="p-2 bg-cyan-100 rounded-lg">
+                    <MapPin className="w-5 h-5 text-cyan-600" />
                   </div>
-                  <h2 className="text-lg font-semibold text-slate-900">Business Address</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">Mailing Address</h2>
                 </div>
                 <div className="p-6 space-y-3">
-                  <p className="text-base font-semibold text-slate-900">{company.address.street || "Not assigned"}</p>
+                  <p className="text-base font-semibold text-slate-900">{company.mailingAddress.street || "Not Yet"}</p>
                   <p className="text-sm text-slate-600">
-                    {company.address.city && company.address.state
-                      ? `${company.address.city}, ${company.address.state} ${company.address.zip}`
-                      : "Not assigned"}
+                    {company.mailingAddress.city && company.mailingAddress.state
+                      ? `${company.mailingAddress.city}, ${company.mailingAddress.state} ${company.mailingAddress.zip}`
+                      : "Not Yet"}
                   </p>
+                </div>
+              </div>
+            )}
+
+            {/* Registered Agent Card */}
+            {company?.registeredAgent?.name && (
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-3 p-6 border-b border-slate-200 bg-gradient-to-r from-emerald-50 to-transparent">
+                  <div className="p-2 bg-emerald-100 rounded-lg">
+                    <Shield className="w-5 h-5 text-emerald-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-slate-900">Registered Agent</h2>
+                </div>
+                <div className="p-6 space-y-4">
+                  <div>
+                    <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Name</p>
+                    <p className="text-base font-semibold text-slate-900">{company.registeredAgent.name}</p>
+                  </div>
+                  {company.registeredAgent.address && (
+                    <div>
+                      <p className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Address</p>
+                      <p className="text-sm text-slate-700">
+                        {company.registeredAgent.address}, {company.registeredAgent.city},{" "}
+                        {company.registeredAgent.state} {company.registeredAgent.zip}
+                      </p>
+                    </div>
+                  )}
+                  {company.registeredAgent.phone && (
+                    <div className="flex items-center gap-2">
+                      <Phone className="w-4 h-4 text-slate-400" />
+                      <p className="text-sm font-mono text-slate-700">{company.registeredAgent.phone}</p>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
@@ -459,9 +585,9 @@ export default function OrderDetailPage() {
               <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
                 <div className="flex items-center gap-3 p-6 border-b border-slate-200 bg-gradient-to-r from-orange-50 to-transparent">
                   <div className="p-2 bg-orange-100 rounded-lg">
-                    <User className="w-5 h-5 text-orange-600" />
+                    <Users className="w-5 h-5 text-orange-600" />
                   </div>
-                  <h2 className="text-lg font-semibold text-slate-900">Members</h2>
+                  <h2 className="text-lg font-semibold text-slate-900">Business Owners / Members</h2>
                 </div>
                 <div className="p-6 space-y-4">
                   {company.members.map((member: any, index: number) => (
@@ -469,12 +595,18 @@ export default function OrderDetailPage() {
                       key={index}
                       className="flex items-start justify-between p-4 bg-slate-50 rounded-lg border border-slate-200 hover:border-slate-300 transition-colors"
                     >
-                      <div>
-                        <p className="font-semibold text-slate-900">{member.name}</p>
+                      <div className="flex-1">
+                        <p className="font-semibold text-slate-900">{member.name || "Member"}</p>
                         {member.address && (
                           <p className="text-sm text-slate-600 mt-1">
                             {member.address}, {member.city}, {member.state} {member.zip}
                           </p>
+                        )}
+                        {member.needsItin && (
+                          <Badge className="mt-2 bg-blue-50 text-blue-700 border-blue-200 border" variant="outline">
+                            <FileBarChart className="w-3 h-3 mr-1" />
+                            ITIN Required
+                          </Badge>
                         )}
                       </div>
                       <Badge
@@ -492,6 +624,91 @@ export default function OrderDetailPage() {
                 </div>
               </div>
             )}
+
+            {/* Add-ons Card */}
+            {addons && addons.length > 0 && (
+              <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+                <div className="flex items-center gap-3 p-6 border-b border-slate-200 bg-gradient-to-r from-pink-50 to-transparent">
+                  <div className="p-2 bg-pink-100 rounded-lg">
+                    <Plus className="w-5 h-5 text-pink-600" />
+                  </div>
+                  <h2 className="text-lg font-semibold text-slate-900">Purchased Add-ons</h2>
+                </div>
+                <div className="p-6 space-y-2">
+                  {addons.map((addon: any, index: number) => (
+                    <div
+                      key={index}
+                      className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200"
+                    >
+                      <span className="text-sm font-medium text-slate-700">
+                        {typeof addon === "string" ? addon : addon.name || addon.serviceId || "Add-on"}
+                      </span>
+                      <Badge variant="secondary">{addon.price ? `$${addon.price}` : "Included"}</Badge>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Admin Notes Card */}
+            <div className="bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden">
+              <div className="flex items-center gap-3 p-6 border-b border-slate-200 bg-gradient-to-r from-teal-50 to-transparent">
+                <div className="p-2 bg-teal-100 rounded-lg">
+                  <FileText className="w-5 h-5 text-teal-600" />
+                </div>
+                <h2 className="text-lg font-semibold text-slate-900">Admin Notes</h2>
+              </div>
+              <div className="p-6">
+                {editingNotes ? (
+                  <div className="space-y-3">
+                    <Textarea
+                      value={orderNotes}
+                      onChange={(e) => setOrderNotes(e.target.value)}
+                      placeholder="Add internal notes about this order..."
+                      rows={4}
+                      className="resize-none"
+                    />
+                    <div className="flex gap-2 justify-end">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setEditingNotes(false)
+                          setOrderNotes(order?.notes || "")
+                        }}
+                      >
+                        Cancel
+                      </Button>
+                      <Button size="sm" onClick={handleNotesUpdate} disabled={notesUpdating}>
+                        {notesUpdating ? (
+                          <>
+                            <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                            Saving...
+                          </>
+                        ) : (
+                          "Save Notes"
+                        )}
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    {orderNotes ? (
+                      <div className="space-y-3">
+                        <p className="text-sm text-slate-700 whitespace-pre-wrap">{orderNotes}</p>
+                        <Button variant="outline" size="sm" onClick={() => setEditingNotes(true)}>
+                          Edit Notes
+                        </Button>
+                      </div>
+                    ) : (
+                      <Button variant="outline" size="sm" onClick={() => setEditingNotes(true)}>
+                        Add Notes
+                      </Button>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
 
           {/* Sidebar */}
