@@ -8,6 +8,7 @@ import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 
 const SELECTED_COMPANY_KEY = "selectedCompanyId"
+const COMPANIES_LOADED_KEY = "companiesLoaded"
 
 const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing", "/services"]
 
@@ -21,11 +22,17 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   })
   const [companies, setCompanies] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [companiesLoaded, setCompaniesLoaded] = useState(false)
 
   const isPublicPage = PUBLIC_PAGES.includes(pathname)
 
   useEffect(() => {
     if (isPublicPage) {
+      setLoading(false)
+      return
+    }
+
+    if (companiesLoaded) {
       setLoading(false)
       return
     }
@@ -50,6 +57,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         })
 
         setCompanies(userCompanies)
+        setCompaniesLoaded(true)
 
         const storedCompanyId = localStorage.getItem(SELECTED_COMPANY_KEY)
         if (storedCompanyId) {
@@ -77,7 +85,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     }
 
     loadCompanies()
-  }, [pathname, isPublicPage, selectedCompanyId])
+  }, [isPublicPage, companiesLoaded, selectedCompanyId])
 
   const handleSetSelectedCompanyId = useCallback((id: string | null) => {
     setSelectedCompanyId(id)

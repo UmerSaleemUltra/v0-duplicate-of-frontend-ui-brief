@@ -165,6 +165,7 @@ export default function CompanyPage() {
             serviceStatus: selectedComp.serviceStatus || "pending",
             mailingAddress: selectedComp.mailingAddress,
             mailingAddressStatus: selectedComp.mailingAddressStatus || "pending",
+            taxFilingDate: selectedComp.taxFilingDate, // Added taxFilingDate
           })
         } else {
           setError("Company not found")
@@ -574,9 +575,15 @@ export default function CompanyPage() {
               <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {new Date(
-                    new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                  ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+                  {companyData.taxFilingDate
+                    ? new Date(companyData.taxFilingDate).toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : new Date(
+                        new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                      ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
                 </span>
               </div>
 
@@ -644,9 +651,15 @@ export default function CompanyPage() {
             <div className="flex flex-col py-2 gap-2">
               <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
               <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                {new Date(
-                  new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+                {companyData.taxFilingDate
+                  ? new Date(companyData.taxFilingDate).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : new Date(
+                      new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                    ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
               </span>
             </div>
 
