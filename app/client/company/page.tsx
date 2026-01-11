@@ -413,7 +413,11 @@ export default function CompanyPage() {
               <div className="min-w-0 flex-1">
                 <div className="text-xs sm:text-sm text-slate-600 mb-1">EIN Number</div>
                 <div className="font-medium text-slate-900 text-sm sm:text-base">
-                  {companyData.ein || "Not Assigned"}
+                  {companyData.ein && companyData.ein !== "Not yet" ? (
+                    companyData.ein
+                  ) : (
+                    <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet</Badge>
+                  )}
                 </div>
               </div>
             </div>
@@ -566,12 +570,12 @@ export default function CompanyPage() {
               <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {companyData.registeredAgent?.address ? (
+                  {companyData.registeredAgent.address ? (
                     <>
                       {companyData.registeredAgent.address}
-                      {companyData.registeredAgent?.city && `, ${companyData.registeredAgent.city}`}
-                      {companyData.registeredAgent?.state && `, ${companyData.registeredAgent.state}`}
-                      {companyData.registeredAgent?.zip && ` ${companyData.registeredAgent.zip}`}
+                      {companyData.registeredAgent.city && `, ${companyData.registeredAgent.city}`}
+                      {companyData.registeredAgent.state && `, ${companyData.registeredAgent.state}`}
+                      {companyData.registeredAgent.zip && ` ${companyData.registeredAgent.zip}`}
                     </>
                   ) : (
                     "Not Yet"
@@ -615,145 +619,151 @@ export default function CompanyPage() {
         )}
 
         {/* Tax & Compliance */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Tax & Compliance</h2>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-            {/* Tax Classification */}
-            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
-                <div className="font-medium text-slate-900 text-sm sm:text-base">
-                  {companyData.taxClassification && companyData.taxClassification !== "Not Yet" ? (
-                    companyData.taxClassification
-                  ) : (
-                    <span className="text-slate-500">Not Yet</span>
-                  )}
+        {(companyData.taxClassification !== "Not Yet" ||
+          companyData.annualReportFilingDate ||
+          companyData.irsReturnFilingDate) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <h2 className="text-base sm:text-lg font-semibold mb-4">Tax & Compliance</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {/* Tax Classification */}
+              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
+                  <div className="font-medium text-slate-900 text-sm sm:text-base">
+                    {companyData.taxClassification && companyData.taxClassification !== "Not Yet" ? (
+                      companyData.taxClassification
+                    ) : (
+                      <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet</Badge>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Annual Report Filing Date */}
-            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs sm:text-sm text-slate-600 mb-1">Annual Report Filing Date</div>
-                <div className="font-medium text-slate-900 text-sm sm:text-base">
-                  {companyData.annualReportFilingDate ? (
-                    new Date(companyData.annualReportFilingDate).toLocaleDateString("en-US", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })
-                  ) : (
-                    <span className="text-slate-500">Not Yet</span>
-                  )}
+              {/* Annual Report Filing Date */}
+              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs sm:text-sm text-slate-600 mb-1">Annual Report Filing Date</div>
+                  <div className="font-medium text-slate-900 text-sm sm:text-base">
+                    {companyData.annualReportFilingDate ? (
+                      new Date(companyData.annualReportFilingDate).toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    ) : (
+                      <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet</Badge>
+                    )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* IRS Tax Return Filing Date */}
-            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs sm:text-sm text-slate-600 mb-1">IRS Tax Return Filing Date</div>
-                <div className="font-medium text-slate-900 text-sm sm:text-base">
-                  {companyData.irsReturnFilingDate ? (
-                    new Date(companyData.irsReturnFilingDate).toLocaleDateString("en-US", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })
-                  ) : (
-                    <span className="text-slate-500">Not Yet</span>
-                  )}
+              {/* IRS Tax Return Filing Date */}
+              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs sm:text-sm text-slate-600 mb-1">IRS Tax Return Filing Date</div>
+                  <div className="font-medium text-slate-900 text-sm sm:text-base">
+                    {companyData.irsReturnFilingDate ? (
+                      new Date(companyData.irsReturnFilingDate).toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    ) : (
+                      <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet</Badge>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Business Mailing Address */}
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Business Mailing Address</h2>
-          <div className="space-y-4">
-            <div className="flex flex-col py-2 gap-2">
-              <span className="text-slate-600 text-sm sm:text-base text-left">Company Name</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                {companyData.businessName}
-              </span>
-            </div>
+        {hasMailingAddress && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <h2 className="text-base sm:text-lg font-semibold mb-4">Business Mailing Address</h2>
+            <div className="space-y-4">
+              <div className="flex flex-col py-2 gap-2">
+                <span className="text-slate-600 text-sm sm:text-base text-left">Company Name</span>
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                  {companyData.businessName}
+                </span>
+              </div>
 
-            <div className="flex flex-col py-2 gap-2">
-              <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                {companyData.mailingAddress?.street ? (
-                  <>
-                    {companyData.mailingAddress.street}
-                    {companyData.mailingAddress?.city && `, ${companyData.mailingAddress.city}`}
-                    {companyData.mailingAddress?.state && `, ${companyData.mailingAddress.state}`}
-                    {companyData.mailingAddress?.zip && ` ${companyData.mailingAddress.zip}`}
-                  </>
-                ) : companyData.mailingAddress?.address ? (
-                  <>
-                    {companyData.mailingAddress.address}
-                    {companyData.mailingAddress?.city && `, ${companyData.mailingAddress.city}`}
-                    {companyData.mailingAddress?.state && `, ${companyData.mailingAddress.state}`}
-                    {companyData.mailingAddress?.zip && ` ${companyData.mailingAddress.zip}`}
-                  </>
-                ) : companyData.businessAddress?.address ? (
-                  <>
-                    {companyData.businessAddress.address}
-                    {companyData.businessAddress?.city && `, ${companyData.businessAddress.city}`}
-                    {companyData.businessAddress?.state && `, ${companyData.businessAddress.state}`}
-                    {companyData.businessAddress?.zip && ` ${companyData.businessAddress.zip}`}
-                  </>
-                ) : (
-                  "Not Yet"
-                )}
-              </span>
-            </div>
+              <div className="flex flex-col py-2 gap-2">
+                <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                  {companyData.mailingAddress?.street ? (
+                    <>
+                      {companyData.mailingAddress.street}
+                      {companyData.mailingAddress?.city && `, ${companyData.mailingAddress.city}`}
+                      {companyData.mailingAddress?.state && `, ${companyData.mailingAddress.state}`}
+                      {companyData.mailingAddress?.zip && ` ${companyData.mailingAddress.zip}`}
+                    </>
+                  ) : companyData.mailingAddress?.address ? (
+                    <>
+                      {companyData.mailingAddress.address}
+                      {companyData.mailingAddress?.city && `, ${companyData.mailingAddress.city}`}
+                      {companyData.mailingAddress?.state && `, ${companyData.mailingAddress.state}`}
+                      {companyData.mailingAddress?.zip && ` ${companyData.mailingAddress.zip}`}
+                    </>
+                  ) : companyData.businessAddress?.address ? (
+                    <>
+                      {companyData.businessAddress.address}
+                      {companyData.businessAddress?.city && `, ${companyData.businessAddress.city}`}
+                      {companyData.businessAddress?.state && `, ${companyData.businessAddress.state}`}
+                      {companyData.businessAddress?.zip && ` ${companyData.businessAddress.zip}`}
+                    </>
+                  ) : (
+                    <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet</Badge>
+                  )}
+                </span>
+              </div>
 
-            <div className="flex flex-col py-2 gap-2">
-              <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                {companyData.taxFilingDate
-                  ? new Date(companyData.taxFilingDate).toLocaleDateString("en-US", {
-                      day: "numeric",
-                      month: "long",
-                      year: "numeric",
-                    })
-                  : new Date(
-                      new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                    ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-              </span>
-            </div>
+              <div className="flex flex-col py-2 gap-2">
+                <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                  {companyData.taxFilingDate
+                    ? new Date(companyData.taxFilingDate).toLocaleDateString("en-US", {
+                        day: "numeric",
+                        month: "long",
+                        year: "numeric",
+                      })
+                    : new Date(
+                        new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
+                      ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
+                </span>
+              </div>
 
-            <div className="flex flex-col py-2 gap-2">
-              <span className="text-slate-600 text-sm sm:text-base text-left">Status</span>
-              <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                <Badge
-                  className={
-                    companyData.mailingAddressStatus === "active" || companyData.businessAddressStatus === "active"
-                      ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
-                      : companyData.mailingAddressStatus === "inactive" ||
-                          companyData.businessAddressStatus === "inactive"
-                        ? "bg-red-50 text-red-700 border-red-200 capitalize"
-                        : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
-                  }
-                >
-                  {companyData.mailingAddressStatus || companyData.businessAddressStatus || "Pending"}
-                </Badge>
-              </span>
+              <div className="flex flex-col py-2 gap-2">
+                <span className="text-slate-600 text-sm sm:text-base text-left">Status</span>
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                  <Badge
+                    className={
+                      companyData.mailingAddressStatus === "active" || companyData.businessAddressStatus === "active"
+                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
+                        : companyData.mailingAddressStatus === "inactive" ||
+                            companyData.businessAddressStatus === "inactive"
+                          ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                          : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                    }
+                  >
+                    {companyData.mailingAddressStatus || companyData.businessAddressStatus || "Pending"}
+                  </Badge>
+                </span>
+              </div>
             </div>
           </div>
-        </div>
+        )}
 
         {/* Purchased Add-ons */}
         {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
