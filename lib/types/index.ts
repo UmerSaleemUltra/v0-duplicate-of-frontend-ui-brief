@@ -125,6 +125,7 @@ export interface Company {
     isResponsiblePerson: boolean // (F)
     needsItin?: boolean // (F)
     passportKey?: string
+    ssn?: string // (M) - Admin assigns SSN for ITIN purposes
   }>
 
   // Addons - fetched (F)
