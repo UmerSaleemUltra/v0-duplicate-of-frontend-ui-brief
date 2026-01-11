@@ -16,36 +16,44 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { ArrowLeft, CheckCircle2, Clock, Loader2, Trash2 } from "lucide-react"
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Clock,
+  Loader2,
+  Trash2,
+  FileText,
+  User,
+  MapPin,
+  DollarSign,
+  AlertCircle,
+} from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
-import { StatusUpdateModal } from "@/components/status-update-modal"
-
-const getDisplayValue = (value: any, defaultValue = "Not Yet"): string => {
-  if (value === null || value === undefined || value === "") return defaultValue
-  if (typeof value === "string" && value.trim() === "") return defaultValue
-
-  const placeholderPatterns = [/^Provide a brief overview/i, /minimum \d+ characters/i, /^[a-z]{1,5}$/i]
-
-  if (typeof value === "string") {
-    for (const pattern of placeholderPatterns) {
-      if (pattern.test(value.trim())) return defaultValue
-    }
-    return value.trim()
-  }
-  return String(value)
-}
 
 const getStatusColor = (status: string) => {
   const statusMap: Record<string, string> = {
-    active: "bg-green-100 text-green-800",
-    pending: "bg-yellow-100 text-yellow-800",
-    inactive: "bg-gray-100 text-gray-800",
-    completed: "bg-blue-100 text-blue-800",
-    processing: "bg-blue-50 text-blue-700",
-    cancelled: "bg-red-50 text-red-700",
+    active: "bg-green-100 text-green-800 border-green-300",
+    pending: "bg-yellow-100 text-yellow-800 border-yellow-300",
+    inactive: "bg-gray-100 text-gray-800 border-gray-300",
+    completed: "bg-blue-100 text-blue-800 border-blue-300",
+    processing: "bg-blue-50 text-blue-700 border-blue-300",
+    cancelled: "bg-red-50 text-red-700 border-red-300",
   }
   return statusMap[status?.toLowerCase()] || "bg-gray-100 text-gray-800"
+}
+
+const getStatusIcon = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "completed":
+    case "active":
+      return <CheckCircle2 className="w-4 h-4" />
+    case "pending":
+    case "processing":
+      return <Clock className="w-4 h-4" />
+    default:
+      return <AlertCircle className="w-4 h-4" />
+  }
 }
 
 export default function OrderDetailPage() {
@@ -60,25 +68,10 @@ export default function OrderDetailPage() {
   const [user, setUser] = useState<any>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-
-  const [companyStatusDialogOpen, setCompanyStatusDialogOpen] = useState(false)
-  const [registeredAgentStatusDialogOpen, setRegisteredAgentStatusDialogOpen] = useState(false)
-  const [businessAddressStatusDialogOpen, setBusinessAddressStatusDialogOpen] = useState(false)
-  const [serviceStatusDialogOpen, setServiceStatusDialogOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [newStatus, setNewStatus] = useState("")
-
-  const [customerForm, setCustomerForm] = useState({ name: "", email: "", phone: "" })
-  const [companyForm, setCompanyForm] = useState({
-    name: "",
-    state: "",
-    businessCategory: "",
-    businessWebsite: "",
-    businessDescription: "",
-  })
 
   const [milestones, setMilestones] = useState({
     orderProcessed: false,
@@ -122,7 +115,7 @@ export default function OrderDetailPage() {
       setOrder(orderData)
       setCompany(orderData.company)
       setUser(orderData.user)
-      setNewStatus(orderData.status || "")
+      setNewStatus(orderData.status || "pending")
 
       if (orderData.company?.milestones) {
         setMilestones({
@@ -134,20 +127,6 @@ export default function OrderDetailPage() {
           boiReportFiled: Boolean(orderData.company.milestones.boiReportFiled),
         })
       }
-
-      setCustomerForm({
-        name: orderData.user?.name || orderData.company?.members?.[0]?.name || "",
-        email: orderData.user?.email || "",
-        phone: orderData.user?.phone || "",
-      })
-
-      setCompanyForm({
-        name: getDisplayValue(orderData.company?.name, ""),
-        state: getDisplayValue(orderData.company?.state, ""),
-        businessCategory: getDisplayValue(orderData.company?.businessCategory, ""),
-        businessWebsite: getDisplayValue(orderData.company?.businessWebsite, ""),
-        businessDescription: getDisplayValue(orderData.company?.businessDescription, ""),
-      })
 
       setError(null)
     } catch (err) {
@@ -168,7 +147,7 @@ export default function OrderDetailPage() {
   }, [loadOrderData])
 
   const handleStatusUpdate = async () => {
-    if (!order || !newStatus || !company) return
+    if (!order || !newStatus) return
 
     setStatusUpdating(true)
     try {
@@ -184,9 +163,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          status: newStatus,
-        }),
+        body: JSON.stringify({ status: newStatus }),
       })
 
       if (!response.ok) {
@@ -197,13 +174,13 @@ export default function OrderDetailPage() {
       setOrder(result.data)
 
       toast({
-        title: "Status Updated",
-        description: `Order status changed to ${newStatus}`,
+        title: "Success",
+        description: `Order status updated to ${newStatus}`,
       })
     } catch (error) {
       toast({
-        title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update order status",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to update status",
         variant: "destructive",
       })
     } finally {
@@ -232,26 +209,22 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          milestones: updatedMilestones,
-        }),
+        body: JSON.stringify({ milestones: updatedMilestones }),
       })
 
       if (!response.ok) {
         throw new Error("Failed to update milestone")
       }
 
-      const result = await response.json()
-      setCompany(result.data)
       setMilestones(updatedMilestones)
 
       toast({
-        title: "Milestone Updated",
-        description: `${milestone} has been ${updatedMilestones[milestone] ? "completed" : "uncompleted"}`,
+        title: "Success",
+        description: `Milestone ${updatedMilestones[milestone] ? "completed" : "uncompleted"}`,
       })
     } catch (error) {
       toast({
-        title: "Update Failed",
+        title: "Error",
         description: error instanceof Error ? error.message : "Failed to update milestone",
         variant: "destructive",
       })
@@ -271,9 +244,7 @@ export default function OrderDetailPage() {
 
       const response = await fetch(`/api/orders/${order._id || order.id}`, {
         method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       })
 
       if (!response.ok) {
@@ -281,14 +252,14 @@ export default function OrderDetailPage() {
       }
 
       toast({
-        title: "Order Deleted",
-        description: "Order has been successfully deleted",
+        title: "Success",
+        description: "Order deleted successfully",
       })
 
       router.push("/admin/orders")
     } catch (error) {
       toast({
-        title: "Delete Failed",
+        title: "Error",
         description: error instanceof Error ? error.message : "Failed to delete order",
         variant: "destructive",
       })
@@ -309,13 +280,13 @@ export default function OrderDetailPage() {
   if (error || !order || !company) {
     return (
       <div className="container mx-auto py-8">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => router.back()}>
+        <div className="flex items-center gap-4 mb-4">
+          <Button variant="ghost" size="sm" onClick={() => router.back()}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-2xl font-bold">Order Not Found</h1>
         </div>
-        <p className="text-red-600 mt-4">{error || "Unable to load order details"}</p>
+        <p className="text-red-600">{error || "Unable to load order details"}</p>
       </div>
     )
   }
@@ -324,69 +295,206 @@ export default function OrderDetailPage() {
   const totalMilestones = Object.keys(milestones).length
   const completionPercentage = Math.round((completedMilestones / totalMilestones) * 100)
 
+  const mainOrder = order.orders?.[0] || order
+  const paymentInfo = mainOrder.paymentInfo || {}
+
   return (
-    <div className="container mx-auto py-6 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => router.back()}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Order Details</h1>
-            <p className="text-gray-600">Order ID: {order._id || order.id}</p>
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 to-slate-800">
+      <div className="container mx-auto py-8 px-4">
+        {/* Header */}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="sm" onClick={() => router.back()} className="text-gray-400 hover:text-white">
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold text-white">Order Details</h1>
+              <p className="text-gray-400 text-sm mt-1">ID: {order._id || order.id}</p>
+            </div>
           </div>
-        </div>
-        <div className="flex gap-2">
-          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)}>
-            <Trash2 className="w-4 h-4 mr-2" />
+          <Button variant="destructive" onClick={() => setDeleteDialogOpen(true)} className="gap-2">
+            <Trash2 className="w-4 h-4" />
             Delete Order
           </Button>
         </div>
-      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Main Content */}
-        <div className="lg:col-span-2 space-y-6">
-          {/* Customer Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Customer Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Customer Name</Label>
-                  <p className="text-lg font-semibold">{customerForm.name || "N/A"}</p>
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Content - Left Side */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Customer Info Card */}
+            <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5 text-primary" />
+                    Customer Information
+                  </CardTitle>
                 </div>
-                <div>
-                  <Label>Email Address</Label>
-                  <p className="text-lg font-semibold">{customerForm.email || "N/A"}</p>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Name</Label>
+                    <p className="text-lg font-semibold mt-2">{user?.name || company?.members?.[0]?.name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Email</Label>
+                    <p className="text-lg font-semibold mt-2">{user?.email || "N/A"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Phone</Label>
+                    <p className="text-lg font-semibold mt-2">{user?.phone || paymentInfo?.whatsappPhone || "N/A"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Status</Label>
+                    <div className="mt-2">
+                      <Badge className={`${getStatusColor(user?.status || "active")} border`}>
+                        {getStatusIcon(user?.status || "active")}
+                        <span className="ml-2">{user?.status || "Active"}</span>
+                      </Badge>
+                    </div>
+                  </div>
                 </div>
-                <div>
-                  <Label>Phone Number</Label>
-                  <p className="text-lg font-semibold">{customerForm.phone || "N/A"}</p>
-                </div>
-                <div>
-                  <Label>Account Status</Label>
-                  <Badge className={getStatusColor(user?.status || "active")}>{user?.status || "Active"}</Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Order Status */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Order Status</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label>Current Status</Label>
-                <div className="flex items-center gap-4 mt-2">
-                  <Badge className={getStatusColor(newStatus)}>{newStatus || "Pending"}</Badge>
+            {/* Company Information Card */}
+            <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <FileText className="w-5 h-5 text-primary" />
+                  Company Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Company Name</Label>
+                    <p className="text-lg font-semibold mt-2">{company?.name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Type</Label>
+                    <p className="text-lg font-semibold mt-2">{company?.type || "N/A"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">State</Label>
+                    <p className="text-lg font-semibold mt-2">{company?.state || "N/A"}</p>
+                  </div>
+                  <div>
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Package</Label>
+                    <p className="text-lg font-semibold mt-2 capitalize">{company?.packageType || "N/A"}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Business Category</Label>
+                    <p className="text-lg font-semibold mt-2">{company?.businessCategory || "N/A"}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Website</Label>
+                    <a
+                      href={company?.businessWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-primary hover:underline font-semibold mt-2 block"
+                    >
+                      {company?.businessWebsite || "N/A"}
+                    </a>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Business Address Card */}
+            {company?.address && (
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <MapPin className="w-5 h-5 text-primary" />
+                    Business Address
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <p className="font-semibold">{company.address.street || "Not Yet"}</p>
+                    <p className="text-gray-600">
+                      {company.address.city && company.address.state
+                        ? `${company.address.city}, ${company.address.state} ${company.address.zip}`
+                        : "Not Yet"}
+                    </p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Business Owners Card */}
+            {company?.members && company.members.length > 0 && (
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2">
+                    <User className="w-5 h-5 text-primary" />
+                    Business Owners / Members
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    {company.members.map((member: any, index: number) => (
+                      <div key={index} className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                        <div className="flex justify-between items-start mb-3">
+                          <div>
+                            <p className="font-semibold text-lg">{member.name}</p>
+                            <p className="text-sm text-gray-600">
+                              {member.address && (
+                                <>
+                                  {member.address}, {member.city}, {member.state} {member.zip}
+                                </>
+                              )}
+                            </p>
+                          </div>
+                          <Badge variant="outline" className="ml-2">
+                            {member.isResponsiblePerson ? "Responsible Person" : "Member"}
+                          </Badge>
+                        </div>
+                        {member.passportKey && (
+                          <a
+                            href={member.passportKey}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-primary hover:underline text-sm flex items-center gap-2"
+                          >
+                            <FileText className="w-4 h-4" />
+                            View Passport Document
+                          </a>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+
+          {/* Sidebar - Right Side */}
+          <div className="space-y-6">
+            {/* Order Status Card */}
+            <Card className="border-0 shadow-lg bg-white/95 backdrop-blur sticky top-4">
+              <CardHeader>
+                <CardTitle>Order Status</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div>
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide">Current Status</Label>
+                  <div className="mt-2 flex items-center gap-2">
+                    <Badge className={`${getStatusColor(newStatus)} border`}>
+                      {getStatusIcon(newStatus)}
+                      <span className="ml-2 capitalize">{newStatus}</span>
+                    </Badge>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide">Change Status</Label>
                   <Select value={newStatus} onValueChange={setNewStatus}>
-                    <SelectTrigger className="w-48">
+                    <SelectTrigger className="w-full">
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -396,340 +504,144 @@ export default function OrderDetailPage() {
                       <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
-                  <Button onClick={handleStatusUpdate} disabled={statusUpdating || newStatus === order.status}>
-                    {statusUpdating ? <Loader2 className="w-4 h-4 animate-spin" /> : "Update"}
-                  </Button>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
 
-          {/* Formation Progress */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Formation Progress</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="font-semibold">
-                    {completedMilestones} of {totalMilestones} milestones completed ({completionPercentage}%)
-                  </span>
-                </div>
+                <Button
+                  onClick={handleStatusUpdate}
+                  disabled={statusUpdating || newStatus === order.status}
+                  className="w-full"
+                >
+                  {statusUpdating ? (
+                    <>
+                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Status"
+                  )}
+                </Button>
+              </CardContent>
+            </Card>
+
+            {/* Milestones Card */}
+            <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
+              <CardHeader>
+                <CardTitle>Progress Milestones</CardTitle>
+                <p className="text-sm text-gray-600 mt-2">
+                  {completedMilestones} of {totalMilestones} ({completionPercentage}%)
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-3">
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div
-                    className="bg-green-600 h-2 rounded-full transition-all"
+                    className="bg-primary h-2 rounded-full transition-all"
                     style={{ width: `${completionPercentage}%` }}
                   />
                 </div>
-              </div>
 
-              <div className="space-y-3 mt-4">
-                {Object.entries(milestones).map(([key, completed]) => (
-                  <div key={key} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center gap-3">
-                      {completed ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <Clock className="w-5 h-5 text-amber-600" />
-                      )}
-                      <span className="font-medium capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</span>
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
+                <div className="space-y-2">
+                  {Object.entries(milestones).map(([key, value]) => (
+                    <button
+                      key={key}
                       onClick={() => handleMilestoneToggle(key as keyof typeof milestones)}
+                      className={`w-full p-3 rounded-lg text-left font-medium transition-all flex items-center justify-between ${
+                        value
+                          ? "bg-green-100 text-green-800 border border-green-300"
+                          : "bg-gray-100 text-gray-700 border border-gray-300 hover:bg-gray-200"
+                      }`}
                     >
-                      {completed ? "Unmark" : "Mark Complete"}
-                    </Button>
-                  </div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Company Information */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Company Information</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-3 gap-4">
-                <div>
-                  <Label>Company Name</Label>
-                  <p>{companyForm.name || "Not Yet"}</p>
-                </div>
-                <div>
-                  <Label>State of Formation</Label>
-                  <p>{companyForm.state || "Not Yet"}</p>
-                </div>
-                <div>
-                  <Label>Entity Type</Label>
-                  <p>{company?.entityType || "Not Yet"}</p>
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label>Business Category</Label>
-                  <p>{companyForm.businessCategory || "Not Yet"}</p>
-                </div>
-                <div>
-                  <Label>Business Website</Label>
-                  <p>
-                    {companyForm.businessWebsite ? (
-                      <a
-                        href={companyForm.businessWebsite}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-600"
-                      >
-                        {companyForm.businessWebsite}
-                      </a>
-                    ) : (
-                      "Not Yet"
-                    )}
-                  </p>
-                </div>
-              </div>
-              <div>
-                <Label>Business Description</Label>
-                <p className="text-sm mt-2">{companyForm.businessDescription || "Not Yet"}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Business Owners / Members */}
-          {company?.members && company.members.length > 0 && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Business Owners / Members</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {company.members.map((member: any, index: number) => (
-                    <div key={index} className="p-3 border rounded-lg">
-                      <p className="font-semibold">{member.name || `Member ${index + 1}`}</p>
-                      <p className="text-sm text-gray-600">
-                        {member.address && `${member.address}, ${member.city}, ${member.state} ${member.zip}`}
-                      </p>
-                      {member.passportKey && <p className="text-sm text-blue-600 cursor-pointer">📄 View Document</p>}
-                    </div>
+                      <span className="capitalize">{key.replace(/([A-Z])/g, " $1").trim()}</span>
+                      {value && <CheckCircle2 className="w-4 h-4" />}
+                    </button>
                   ))}
                 </div>
               </CardContent>
             </Card>
-          )}
 
-          {/* Business Mailing Address */}
-          {company?.mailingAddress && (
-            <Card>
+            {/* Payment Information Card */}
+            <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
               <CardHeader>
-                <CardTitle>Business Mailing Address</CardTitle>
+                <CardTitle className="flex items-center gap-2">
+                  <DollarSign className="w-5 h-5 text-primary" />
+                  Payment Details
+                </CardTitle>
               </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  <p>{company.mailingAddress.street || "Not Yet"}</p>
-                  <p>
-                    {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
-                  </p>
-                  {company.mailingAddress.expiryDate && (
-                    <p className="text-sm text-gray-600">
-                      Expires: {new Date(company.mailingAddress.expiryDate).toLocaleDateString()}
-                    </p>
-                  )}
-                  <Badge className={getStatusColor(company.mailingAddress.status || "pending")}>
-                    {company.mailingAddress.status || "Pending"}
+              <CardContent className="space-y-3">
+                <div>
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide">Payment Method</Label>
+                  <p className="text-lg font-semibold mt-1 capitalize">{paymentInfo?.method || "N/A"}</p>
+                </div>
+
+                <div>
+                  <Label className="text-xs text-gray-500 uppercase tracking-wide">Status</Label>
+                  <Badge className={`${getStatusColor(paymentInfo?.status || "pending")} border mt-2`}>
+                    {getStatusIcon(paymentInfo?.status || "pending")}
+                    <span className="ml-2 capitalize">{paymentInfo?.status || "Pending"}</span>
                   </Badge>
                 </div>
+
+                {paymentInfo?.transactionId && (
+                  <div>
+                    <Label className="text-xs text-gray-500 uppercase tracking-wide">Transaction ID</Label>
+                    <p className="text-sm font-mono mt-1 break-all bg-gray-50 p-2 rounded">
+                      {paymentInfo.transactionId}
+                    </p>
+                  </div>
+                )}
+
+                {paymentInfo?.receiptUrl && (
+                  <a
+                    href={paymentInfo.receiptUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-primary hover:underline text-sm flex items-center gap-2 mt-3"
+                  >
+                    <FileText className="w-4 h-4" />
+                    Download Receipt
+                  </a>
+                )}
               </CardContent>
             </Card>
-          )}
 
-          {/* Registered Agent */}
-          {company?.registeredAgent && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Registered Agent</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2">
-                <p>
-                  <strong>Name:</strong> {company.registeredAgent.name || "Not Yet"}
-                </p>
-                <p>
-                  <strong>Company:</strong> {company.registeredAgent.company || "Not Yet"}
-                </p>
-                <p>
-                  <strong>Address:</strong> {company.registeredAgent.address || "Not Yet"}
-                </p>
-                <p>
-                  {company.registeredAgent.city}, {company.registeredAgent.state} {company.registeredAgent.zip}
-                </p>
-                <Badge className={getStatusColor(company.registeredAgent.status || "pending")}>
-                  {company.registeredAgent.status || "Pending"}
-                </Badge>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Order & Pricing Details */}
-          {order && (
-            <Card>
-              <CardHeader>
-                <CardTitle>Order & Pricing Details</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Order Date</Label>
-                    <p>{order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}</p>
+            {/* Pricing Card */}
+            {mainOrder?.pricing && (
+              <Card className="border-0 shadow-lg bg-white/95 backdrop-blur">
+                <CardHeader>
+                  <CardTitle>Order Pricing</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Package Price</span>
+                    <span className="font-semibold">${mainOrder.pricing.packagePrice?.toFixed(2) || "0.00"}</span>
                   </div>
-                  <div>
-                    <Label>Order ID</Label>
-                    <p className="font-mono text-sm">{order._id || order.id}</p>
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">State Filing Fee</span>
+                    <span className="font-semibold">${mainOrder.pricing.stateFilingFee?.toFixed(2) || "0.00"}</span>
                   </div>
-                  {order.transactionId && (
-                    <div>
-                      <Label>Transaction ID</Label>
-                      <p className="font-mono text-sm">{order.transactionId}</p>
+                  {mainOrder.pricing.addonsTotal > 0 && (
+                    <div className="flex justify-between">
+                      <span className="text-gray-600">Add-ons</span>
+                      <span className="font-semibold">${mainOrder.pricing.addonsTotal?.toFixed(2) || "0.00"}</span>
                     </div>
                   )}
-                  {order.receiptNumber && (
-                    <div>
-                      <Label>Receipt Number</Label>
-                      <p className="font-mono text-sm">{order.receiptNumber}</p>
-                    </div>
-                  )}
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label>Package Price</Label>
-                    <p>${order.packagePrice || "0.00"}</p>
+                  <div className="border-t pt-3 flex justify-between text-lg font-bold">
+                    <span>Total</span>
+                    <span className="text-primary">${mainOrder.pricing.total?.toFixed(2) || "0.00"}</span>
                   </div>
-                  <div>
-                    <Label>Filing Fee</Label>
-                    <p>${order.filingFee || "0.00"}</p>
-                  </div>
-                  {order.addOns && order.addOns.length > 0 ? (
-                    <div>
-                      <Label>Add-ons</Label>
-                      <div className="space-y-1">
-                        {order.addOns.map((addon: any, idx: number) => (
-                          <p key={idx} className="text-sm">
-                            ${addon.price || "0.00"} - {addon.name || "Add-on"}
-                          </p>
-                        ))}
-                      </div>
-                    </div>
-                  ) : (
-                    <div>
-                      <Label>Add-ons</Label>
-                      <p className="text-sm text-gray-600">No add-ons</p>
-                    </div>
-                  )}
-                  <div>
-                    <Label>Add-ons Total</Label>
-                    <p>${order.addonsTotal || "0.00"}</p>
-                  </div>
-                </div>
-                <div className="border-t pt-4">
-                  <div className="flex justify-between items-center">
-                    <span className="font-bold text-lg">Total Amount</span>
-                    <span className="font-bold text-lg text-green-600">${order.totalAmount || "0.00"}</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
-                  <div>
-                    <Label>Payment Method</Label>
-                    <p className="capitalize">{order.paymentMethod || "N/A"}</p>
-                  </div>
-                  <div>
-                    <Label>Payment Status</Label>
-                    <Badge className={getStatusColor(order.paymentStatus || "pending")}>
-                      {order.paymentStatus || "Pending"}
-                    </Badge>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Sidebar - Status Management */}
-        <div className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Status Management</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {/* Company Status */}
-              <div className="space-y-2">
-                <Label className="font-semibold">Company Status</Label>
-                <Badge className={getStatusColor(company?.status || "pending")}>{company?.status || "Pending"}</Badge>
-                <Button
-                  variant="outline"
-                  className="w-full mt-2 bg-transparent"
-                  onClick={() => setCompanyStatusDialogOpen(true)}
-                >
-                  Update
-                </Button>
-              </div>
-
-              {/* Registered Agent Status */}
-              <div className="space-y-2 border-t pt-4">
-                <Label className="font-semibold">Registered Agent Status</Label>
-                <Badge className={getStatusColor(company?.registeredAgent?.status || "pending")}>
-                  {company?.registeredAgent?.status || "Pending"}
-                </Badge>
-                <Button
-                  variant="outline"
-                  className="w-full mt-2 bg-transparent"
-                  onClick={() => setRegisteredAgentStatusDialogOpen(true)}
-                >
-                  Update
-                </Button>
-              </div>
-
-              {/* Business Address Status */}
-              <div className="space-y-2 border-t pt-4">
-                <Label className="font-semibold">Business Address Status</Label>
-                <Badge className={getStatusColor(company?.mailingAddress?.status || "pending")}>
-                  {company?.mailingAddress?.status || "Pending"}
-                </Badge>
-                <Button
-                  variant="outline"
-                  className="w-full mt-2 bg-transparent"
-                  onClick={() => setBusinessAddressStatusDialogOpen(true)}
-                >
-                  Update
-                </Button>
-              </div>
-
-              {/* Service Status */}
-              <div className="space-y-2 border-t pt-4">
-                <Label className="font-semibold">Service Status</Label>
-                <Badge className={getStatusColor(company?.serviceStatus || "pending")}>
-                  {company?.serviceStatus || "Pending"}
-                </Badge>
-                <Button
-                  variant="outline"
-                  className="w-full mt-2 bg-transparent"
-                  onClick={() => setServiceStatusDialogOpen(true)}
-                >
-                  Update
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Delete Dialog */}
+      {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Delete Order</DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete this order? This action cannot be undone.
+              This action cannot be undone. Are you sure you want to delete this order?
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
@@ -737,53 +649,18 @@ export default function OrderDetailPage() {
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
-              {deleting ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : "Delete"}
+              {deleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Status Update Modals */}
-      <StatusUpdateModal
-        open={companyStatusDialogOpen}
-        onOpenChange={setCompanyStatusDialogOpen}
-        title="Update Company Status"
-        currentStatus={company?.status}
-        onUpdate={(status) => {
-          handleStatusUpdate()
-          setCompanyStatusDialogOpen(false)
-        }}
-      />
-
-      <StatusUpdateModal
-        open={registeredAgentStatusDialogOpen}
-        onOpenChange={setRegisteredAgentStatusDialogOpen}
-        title="Update Registered Agent Status"
-        currentStatus={company?.registeredAgent?.status}
-        onUpdate={(status) => {
-          setRegisteredAgentStatusDialogOpen(false)
-        }}
-      />
-
-      <StatusUpdateModal
-        open={businessAddressStatusDialogOpen}
-        onOpenChange={setBusinessAddressStatusDialogOpen}
-        title="Update Business Address Status"
-        currentStatus={company?.mailingAddress?.status}
-        onUpdate={(status) => {
-          setBusinessAddressStatusDialogOpen(false)
-        }}
-      />
-
-      <StatusUpdateModal
-        open={serviceStatusDialogOpen}
-        onOpenChange={setServiceStatusDialogOpen}
-        title="Update Service Status"
-        currentStatus={company?.serviceStatus}
-        onUpdate={(status) => {
-          setServiceStatusDialogOpen(false)
-        }}
-      />
     </div>
   )
 }
