@@ -8,19 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import {
-  ArrowLeft,
-  Package,
-  User,
-  Users,
-  Building2,
-  CheckCircle2,
-  Clock,
-  Hash,
-  UserCheck,
-  Loader2,
-  MapPin,
-} from "lucide-react"
+import { ArrowLeft, User, Users, Building2, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 
@@ -67,6 +55,13 @@ const getWeeksSinceOrder = (createdAt: string | undefined): number => {
   return diffWeeks
 }
 
+const safeToFixed = (value: any, decimals = 2): string => {
+  if (value === null || value === undefined || value === "") return "0.00"
+  const num = Number.parseFloat(String(value))
+  if (isNaN(num)) return "0.00"
+  return num.toFixed(decimals)
+}
+
 export default function OrderDetailPage() {
   const router = useRouter()
   const { toast } = useToast()
@@ -85,8 +80,6 @@ export default function OrderDetailPage() {
   const [passportDocuments, setPassportDocuments] = useState<any[]>([])
   const [passportUrls, setPassportUrls] = useState<string[]>([])
   const [user, setUser] = useState<any>(null)
-
-  const [editingSection, setEditingSection] = useState<string | null>(null)
 
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [agentUpdating, setAgentUpdating] = useState(false)
@@ -545,18 +538,15 @@ export default function OrderDetailPage() {
         return
       }
 
-      const updatedOrders = (company.orders || []).map((o: any) =>
-        o.id === order.id ? { ...o, status: newStatus } : o,
-      )
-
-      const response = await fetch(`/api/companies/${company.id}`, {
+      // Update order via direct order API endpoint to avoid company data corruption
+      const response = await fetch(`/api/orders/${order.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          orders: updatedOrders,
+          status: newStatus,
         }),
       })
 
@@ -565,10 +555,7 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
-      setCompany(result.data)
-
-      const updatedOrder = updatedOrders.find((o: any) => o.id === order.id)
-      setOrder(updatedOrder)
+      setOrder(result.data)
 
       toast({
         title: "Status Updated",
@@ -618,36 +605,35 @@ export default function OrderDetailPage() {
           <Button variant="outline" size="icon" onClick={() => router.push("/admin/orders")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold">Order Details</h1>
-            <p className="text-sm text-gray-600 dark:text-gray-400">Order ID: {order.id}</p>
+          <div className="flex-1">
+            <h1 className="text-3xl font-bold text-gray-900">Order Details</h1>
+            <p className="text-gray-600">ID: {order?.id}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Order Information */}
           <div className="lg:col-span-2 space-y-6">
             {/* Customer Information */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center gap-2">
                   <User className="w-5 h-5" />
-                  Customer Information
-                </CardTitle>
+                  <CardTitle>Customer Information</CardTitle>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-gray-600 dark:text-gray-400">Name</Label>
-                    <p className="font-medium">{getDisplayValue(customer?.name)}</p>
+                    <Label className="text-sm text-gray-600">Name</Label>
+                    <p className="text-lg font-medium">{getDisplayValue(customer?.name)}</p>
                   </div>
                   <div>
-                    <Label className="text-gray-600 dark:text-gray-400">Email</Label>
-                    <p className="font-medium">{getDisplayValue(customer?.email)}</p>
+                    <Label className="text-sm text-gray-600">Email</Label>
+                    <p className="text-lg font-medium">{getDisplayValue(customer?.email)}</p>
                   </div>
-                  <div className="col-span-2">
-                    <Label className="text-gray-600 dark:text-gray-400">Phone</Label>
-                    <p className="font-medium">{getDisplayValue(customer?.phone)}</p>
+                  <div>
+                    <Label className="text-sm text-gray-600">Phone</Label>
+                    <p className="text-lg font-medium">{getDisplayValue(customer?.phone)}</p>
                   </div>
                 </div>
               </CardContent>
@@ -655,217 +641,66 @@ export default function OrderDetailPage() {
 
             {/* Company Information */}
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div className="flex items-center gap-2">
                   <Building2 className="w-5 h-5" />
-                  Company Information
-                </CardTitle>
+                  <CardTitle>Company Information</CardTitle>
+                </div>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <Label className="text-gray-600 dark:text-gray-400">Company Name</Label>
-                    <p className="font-medium">{getDisplayValue(company?.name)}</p>
+                    <Label className="text-sm text-gray-600">Company Name</Label>
+                    <p className="text-lg font-medium">{getDisplayValue(company?.name)}</p>
                   </div>
                   <div>
-                    <Label className="text-gray-600 dark:text-gray-400">State</Label>
-                    <p className="font-medium">{getDisplayValue(company?.state)}</p>
+                    <Label className="text-sm text-gray-600">State</Label>
+                    <p className="text-lg font-medium">{getDisplayValue(company?.state)}</p>
                   </div>
-                  <div className="col-span-2">
-                    <Label className="text-gray-600 dark:text-gray-400">Business Category</Label>
-                    <p className="font-medium">{getDisplayValue(company?.businessCategory)}</p>
+                  <div>
+                    <Label className="text-sm text-gray-600">Business Category</Label>
+                    <p className="text-lg font-medium">{getDisplayValue(company?.businessCategory)}</p>
                   </div>
-                  <div className="col-span-2">
-                    <Label className="text-gray-600 dark:text-gray-400">Business Description</Label>
-                    <p className="font-medium text-sm">{getDisplayValue(company?.businessDescription)}</p>
+                  <div>
+                    <Label className="text-sm text-gray-600">Entity Type</Label>
+                    <p className="text-lg font-medium">{getDisplayValue(company?.entityType)}</p>
                   </div>
                 </div>
               </CardContent>
             </Card>
 
-            {/* Business Identifiers */}
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Hash className="w-5 h-5" />
-                  Business Identifiers
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <Label className="text-gray-600 dark:text-gray-400">EIN</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      {hasEIN ? (
-                        <>
-                          <CheckCircle2 className="w-4 h-4 text-green-600" />
-                          <p className="font-medium">{formatEIN(company?.ein, true)}</p>
-                        </>
-                      ) : (
-                        <>
-                          <Clock className="w-4 h-4 text-yellow-600" />
-                          <p className="font-medium">Not Yet</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="text-gray-600 dark:text-gray-400">Business ID</Label>
-                    <div className="flex items-center gap-2 mt-1">
-                      {hasBusinessId ? (
-                        <>
-                          <CheckCircle2 className="w-4 h-4 text-green-600" />
-                          <p className="font-medium">{formatBusinessId(company?.businessId)}</p>
-                        </>
-                      ) : (
-                        <>
-                          <Clock className="w-4 h-4 text-yellow-600" />
-                          <p className="font-medium">Not Yet</p>
-                        </>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Registered Agent */}
-            {hasRegisteredAgent && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <UserCheck className="w-5 h-5" />
-                    Registered Agent
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-gray-600 dark:text-gray-400">Name</Label>
-                      <p className="font-medium">{getDisplayValue(company?.registeredAgent?.name)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-gray-600 dark:text-gray-400">Company</Label>
-                      <p className="font-medium">{getDisplayValue(company?.registeredAgent?.company)}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <Label className="text-gray-600 dark:text-gray-400">Address</Label>
-                      <p className="font-medium">{getDisplayValue(company?.registeredAgent?.address)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-gray-600 dark:text-gray-400">City, State Zip</Label>
-                      <p className="font-medium">
-                        {getDisplayValue(company?.registeredAgent?.city)},{" "}
-                        {getDisplayValue(company?.registeredAgent?.state)}{" "}
-                        {getDisplayValue(company?.registeredAgent?.zip)}
-                      </p>
-                    </div>
-                    <div>
-                      <Label className="text-gray-600 dark:text-gray-400">Phone</Label>
-                      <p className="font-medium">{getDisplayValue(company?.registeredAgent?.phone)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Mailing Address */}
-            {hasMailingAddress && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <MapPin className="w-5 h-5" />
-                    Mailing Address
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                      <Label className="text-gray-600 dark:text-gray-400">Street</Label>
-                      <p className="font-medium">{getDisplayValue(company?.mailingAddress?.street)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-gray-600 dark:text-gray-400">City</Label>
-                      <p className="font-medium">{getDisplayValue(company?.mailingAddress?.city)}</p>
-                    </div>
-                    <div>
-                      <Label className="text-gray-600 dark:text-gray-400">State</Label>
-                      <p className="font-medium">{getDisplayValue(company?.mailingAddress?.state)}</p>
-                    </div>
-                    <div className="col-span-2">
-                      <Label className="text-gray-600 dark:text-gray-400">ZIP</Label>
-                      <p className="font-medium">{getDisplayValue(company?.mailingAddress?.zip)}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Business Owners/Members */}
+            {/* Business Owners / Members */}
             {company?.members && company.members.length > 0 && (
               <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div className="flex items-center gap-2">
                     <Users className="w-5 h-5" />
-                    Business Owners / Members
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {company.members.map((member: any, index: number) => (
-                      <div key={index} className="p-4 bg-gray-50 dark:bg-gray-800 rounded-lg border">
-                        <div className="flex items-center justify-between mb-2">
-                          <p className="font-medium">{getDisplayValue(member.name)}</p>
-                          {member.isResponsiblePerson && (
-                            <Badge className="bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-100">
-                              <UserCheck className="w-3 h-3 mr-1" />
-                              Responsible
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div>
-                            <Label className="text-gray-600 dark:text-gray-400">Address</Label>
-                            <p className="font-medium">{getDisplayValue(member.address)}</p>
-                          </div>
-                          <div>
-                            <Label className="text-gray-600 dark:text-gray-400">City, State</Label>
-                            <p className="font-medium">
-                              {getDisplayValue(member.city)}, {getDisplayValue(member.state)}
-                            </p>
-                          </div>
-                          <div className="col-span-2">
-                            <Label className="text-gray-600 dark:text-gray-400">ZIP</Label>
-                            <p className="font-medium">{getDisplayValue(member.zip)}</p>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
+                    <CardTitle>Business Owners / Members</CardTitle>
                   </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Add-ons */}
-            {addons && addons.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Package className="w-5 h-5" />
-                    Purchased Add-ons
-                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-2">
-                    {addons.map((addon: any, index: number) => (
-                      <div
-                        key={index}
-                        className="flex items-center justify-between p-2 bg-gray-50 dark:bg-gray-800 rounded"
-                      >
-                        <span className="font-medium">
-                          {getAddonName(typeof addon === "string" ? addon : addon.serviceId || addon.id)}
-                        </span>
-                        <Badge variant="secondary">Added</Badge>
+                  <div className="space-y-3">
+                    {company.members.map((member: any, index: number) => (
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex-1">
+                          <div className="flex items-center gap-2">
+                            <p className="font-medium">{getDisplayValue(member.name)}</p>
+                            {member.isResponsiblePerson && (
+                              <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Responsible Person</Badge>
+                            )}
+                          </div>
+                          <div className="text-sm text-gray-600 mt-1">
+                            {member.address && `${member.address}`}
+                            {member.city && `, ${member.city}`}
+                            {member.state && ` ${member.state}`}
+                            {member.zip && `${member.zip}`}
+                          </div>
+                        </div>
+                        {member.needsItin && (
+                          <Badge variant="outline" className="ml-2">
+                            Needs ITIN
+                          </Badge>
+                        )}
                       </div>
                     ))}
                   </div>
@@ -874,7 +709,7 @@ export default function OrderDetailPage() {
             )}
           </div>
 
-          {/* Right Column - Status & Summary */}
+          {/* Sidebar */}
           <div className="space-y-6">
             {/* Order Status */}
             <Card>
@@ -883,38 +718,25 @@ export default function OrderDetailPage() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <Label className="text-gray-600 dark:text-gray-400">Current Status</Label>
-                  <Badge className="mt-2">{order.status}</Badge>
+                  <Label>Current Status</Label>
+                  <Badge className="mt-2">{order?.status || "Pending"}</Badge>
                 </div>
                 <div>
-                  <Label htmlFor="status-select" className="text-gray-600 dark:text-gray-400">
-                    Update Status
-                  </Label>
+                  <Label htmlFor="status-select">Change Status</Label>
                   <Select value={newStatus} onValueChange={setNewStatus}>
                     <SelectTrigger id="status-select" className="mt-2">
-                      <SelectValue placeholder="Select status" />
+                      <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="processing">Processing</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="cancelled">Cancelled</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
-                <Button
-                  onClick={handleStatusUpdate}
-                  disabled={statusUpdating || newStatus === order.status}
-                  className="w-full"
-                >
-                  {statusUpdating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Status"
-                  )}
+                <Button onClick={handleStatusUpdate} disabled={statusUpdating} className="w-full">
+                  {statusUpdating ? <Loader2 className="w-4 h-4 mr-2 animate-spin" /> : null}
+                  Update Status
                 </Button>
               </CardContent>
             </Card>
@@ -926,42 +748,21 @@ export default function OrderDetailPage() {
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Order Date</span>
-                  <span className="font-medium">{new Date(order.createdAt).toLocaleDateString()}</span>
+                  <span className="text-gray-600">Order ID</span>
+                  <span className="font-medium">{order?.id}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Package Price</span>
-                  <span className="font-medium">${(order.amount || 0)?.toFixed(2)}</span>
+                  <span className="text-gray-600">Order Date</span>
+                  <span className="font-medium">{new Date(order?.createdAt).toLocaleDateString()}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Payment Method</span>
-                  <span className="font-medium capitalize">{order.paymentMethod || "N/A"}</span>
+                  <span className="text-gray-600">Package</span>
+                  <span className="font-medium">{getDisplayValue(company?.packageType)}</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600 dark:text-gray-400">Payment Status</span>
-                  <Badge variant={order.paymentStatus === "completed" ? "default" : "secondary"}>
-                    {order.paymentStatus || "Pending"}
-                  </Badge>
+                <div className="border-t pt-3 flex justify-between">
+                  <span className="font-semibold">Total Amount</span>
+                  <span className="font-bold text-lg">${safeToFixed(order?.amount)}</span>
                 </div>
-              </CardContent>
-            </Card>
-
-            {/* Milestones Progress */}
-            <Card>
-              <CardHeader>
-                <CardTitle>Progress</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {Object.entries(milestones).map(([key, value]) => (
-                  <div key={key} className="flex items-center gap-3">
-                    {value ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <Clock className="w-5 h-5 text-gray-400" />
-                    )}
-                    <span className="text-sm">{key.replace(/([A-Z])/g, " $1").trim()}</span>
-                  </div>
-                ))}
               </CardContent>
             </Card>
           </div>
