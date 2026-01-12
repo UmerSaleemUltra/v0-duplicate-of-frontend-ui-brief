@@ -438,6 +438,19 @@ export default function CompanyPage() {
                 </div>
               </div>
             </div>
+
+            {/* Company ITIN */}
+            {hasITIN && (
+              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                  <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs sm:text-sm text-slate-600 mb-1">Company ITIN</div>
+                  <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.itin}</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -610,7 +623,8 @@ export default function CompanyPage() {
                           : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
                     }
                   >
-                    {companyData.registeredAgentStatus || "Pending"}
+                    {(companyData.registeredAgentStatus || "pending").charAt(0).toUpperCase() +
+                      (companyData.registeredAgentStatus || "pending").slice(1)}
                   </Badge>
                 </span>
               </div>
@@ -749,15 +763,15 @@ export default function CompanyPage() {
                 <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   <Badge
                     className={
-                      companyData.mailingAddressStatus === "active" || companyData.businessAddressStatus === "active"
+                      companyData.mailingAddressStatus === "active"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
-                        : companyData.mailingAddressStatus === "inactive" ||
-                            companyData.businessAddressStatus === "inactive"
+                        : companyData.mailingAddressStatus === "inactive"
                           ? "bg-red-50 text-red-700 border-red-200 capitalize"
                           : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
                     }
                   >
-                    {companyData.mailingAddressStatus || companyData.businessAddressStatus || "Pending"}
+                    {(companyData.mailingAddressStatus || "pending").charAt(0).toUpperCase() +
+                      (companyData.mailingAddressStatus || "pending").slice(1)}
                   </Badge>
                 </span>
               </div>
