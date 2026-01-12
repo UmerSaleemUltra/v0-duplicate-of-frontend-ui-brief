@@ -1329,7 +1329,10 @@ export default function OrderDetailPage() {
     setTaxUpdating(true)
     try {
       const token = authService.getToken()
-      if (!token) throw new Error("No authentication token")
+      if (!token) throw new Error("No authentication token found")
+
+      console.log("[v0] Tax update - Token exists:", !!token)
+      console.log("[v0] Tax update - Company ID:", company.id)
 
       const response = await fetch(`/api/companies/${company.id}/manual-data`, {
         method: "PATCH",
@@ -1348,10 +1351,16 @@ export default function OrderDetailPage() {
         }),
       })
 
+      console.log("[v0] Tax update response status:", response.status)
+
       if (!response.ok) {
         const error = await response.json()
+        console.log("[v0] Tax update error response:", error)
         throw new Error(error.error || "Failed to update tax information")
       }
+
+      const result = await response.json()
+      console.log("[v0] Tax update success:", result)
 
       toast({
         title: "Success",
