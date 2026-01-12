@@ -132,6 +132,7 @@ export default function OrderDetailPage() {
   const [registeredAgentStatusDialogOpen, setRegisteredAgentStatusDialogOpen] = useState(false)
   const [businessAddressStatusDialogOpen, setBusinessAddressStatusDialogOpen] = useState(false)
   const [serviceStatusDialogOpen, setServiceStatusDialogOpen] = useState(false)
+  const [statusDialogOpen, setStatusDialogOpen] = useState(false) // Added state for status dialog
 
   // Corrected undeclared variables:
   const [agentStatusModalOpen, setAgentStatusModalOpen] = useState(false)
@@ -578,7 +579,7 @@ export default function OrderDetailPage() {
   // Milestones are now initialized directly in loadOrderData
 
   const handleStatusUpdate = async () => {
-    if (!order || !newStatus || !company) return
+    if (!order || !newStatus) return
 
     setStatusUpdating(true)
     try {
@@ -588,7 +589,7 @@ export default function OrderDetailPage() {
         return
       }
 
-      const response = await fetch(`/api/orders/${order.id}`, {
+      const response = await fetch(`/api/orders/${orderId}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -600,11 +601,17 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        throw new Error("Failed to update order status")
+        const errorData = await response.json().catch(() => ({}))
+        console.log("[v0] API error response:", errorData)
+        throw new Error(errorData.error || "Failed to update order status")
       }
 
       const result = await response.json()
-      setOrder(result.data)
+      console.log("[v0] Status update response:", result)
+
+      await loadOrderData()
+      setNewStatus("")
+      setStatusDialogOpen(false)
 
       toast({
         title: "Status Updated",
@@ -614,7 +621,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Error updating status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update order status. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update order status. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -2358,18 +2365,11 @@ export default function OrderDetailPage() {
                   </Select>
                 </div>
                 <Button
-                  onClick={handleStatusUpdate}
-                  disabled={statusUpdating || !newStatus || newStatus === order.status}
+                  onClick={() => setStatusDialogOpen(true)} // Open dialog instead of direct update
+                  disabled={!newStatus || newStatus === order.status}
                   className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
                 >
-                  {statusUpdating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Status"
-                  )}
+                  Update Status
                 </Button>
               </div>
             </CardContent>
@@ -3754,6 +3754,50 @@ export default function OrderDetailPage() {
         currentStatus={company?.serviceStatus || "pending"}
         onUpdate={handleUpdateServiceStatus}
       />
+
+      {/* Status Update Dialog */}
+      <Dialog open={statusDialogOpen} onOpenChange={setStatusDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Update Order Status</DialogTitle>
+            <DialogDescription>Change the status for order {order.id}.</DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="orderStatusSelect">New Status</Label>
+              <Select value={newStatus} onValueChange={setNewStatus}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select status" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pending">Pending</SelectItem>
+                  <SelectItem value="processing">Processing</SelectItem>
+                  <SelectItem value="completed">Completed</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setStatusDialogOpen(false)} disabled={statusUpdating}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleStatusUpdate}
+              className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+              disabled={statusUpdating || !newStatus || newStatus === order.status}
+            >
+              {statusUpdating ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Updating...
+                </>
+              ) : (
+                "Update Status"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Manual Data Modals */}
       <AdminManualDataModal
