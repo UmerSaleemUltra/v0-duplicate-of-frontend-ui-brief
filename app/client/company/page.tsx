@@ -483,6 +483,49 @@ export default function CompanyPage() {
           </div>
         </div>
 
+        {/* Tax Information */}
+        {(companyData.taxClassification || companyData.annualReportFilingDate || companyData.irsReturnFilingDate) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <h2 className="text-base sm:text-lg font-semibold mb-4">Tax Information</h2>
+            <div className="space-y-4">
+              {companyData.taxClassification && companyData.taxClassification !== "Not Yet" && (
+                <div className="flex flex-col py-2 gap-2">
+                  <span className="text-slate-600 text-sm sm:text-base text-left">Tax Classification</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                    {companyData.taxClassification}
+                  </span>
+                </div>
+              )}
+
+              {companyData.annualReportFilingDate && (
+                <div className="flex flex-col py-2 gap-2">
+                  <span className="text-slate-600 text-sm sm:text-base text-left">Annual Report Filing Date</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                    {new Date(companyData.annualReportFilingDate).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              )}
+
+              {companyData.irsReturnFilingDate && (
+                <div className="flex flex-col py-2 gap-2">
+                  <span className="text-slate-600 text-sm sm:text-base text-left">IRS Filing Date</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                    {new Date(companyData.irsReturnFilingDate).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Members & Owners */}
         {companyData.members && companyData.members.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
