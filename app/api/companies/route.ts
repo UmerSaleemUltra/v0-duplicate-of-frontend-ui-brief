@@ -89,42 +89,49 @@ export async function GET(req: NextRequest) {
 
     const result = {
       success: true,
-      data: companies.map((company) => ({
-        id: company._id.toString(),
-        userId: company.userId,
-        name: company.name,
-        type: company.type,
-        state: company.state,
-        status: company.status,
-        companyStatus: company.companyStatus || "pending",
-        registeredAgentStatus: company.registeredAgentStatus || "pending",
-        businessAddressStatus: company.businessAddressStatus || "pending",
-        serviceStatus: company.serviceStatus || "pending",
-        ein: company.ein,
-        itin: company.itin,
-        businessId: company.businessId,
-        formationDate: company.formationDate,
-        purchasedAddons: company.purchasedAddons || [],
-        transactionReference: company.transactionReference || null,
-        orders: company.orders || [], // Include orders array
-        revenue: company.revenue || 0, // Include revenue
-        lastOrderDate: company.lastOrderDate || null, // Include last order date
-        milestones: company.milestones || {}, // Include milestones
-        customMilestones: company.customMilestones || [], // Include custom milestones
-        registeredAgent: company.registeredAgent || null,
-        mailingAddress: company.mailingAddress || null,
-        address: company.address || {},
-        members: company.members || [],
-        businessCategory: company.businessCategory || "",
-        businessDescription: company.businessDescription || "",
-        businessWebsite: company.businessWebsite || "",
-        packageType: company.packageType || "basic",
-        taxClassification: company.taxClassification || "Not Yet",
-        annualReportFilingDate: company.annualReportFilingDate || null,
-        irsFilingDate: company.irsFilingDate || null,
-        createdAt: company.createdAt,
-        updatedAt: company.updatedAt,
-      })),
+      data: companies.map((company) => {
+        console.log(`[v0] Tax fields for company ${company._id}:`, {
+          taxClassification: company.taxClassification,
+          annualReportFilingDate: company.annualReportFilingDate,
+          irsFilingDate: company.irsFilingDate,
+        })
+        return {
+          id: company._id.toString(),
+          userId: company.userId,
+          name: company.name,
+          type: company.type,
+          state: company.state,
+          status: company.status,
+          companyStatus: company.companyStatus || "pending",
+          registeredAgentStatus: company.registeredAgentStatus || "pending",
+          businessAddressStatus: company.businessAddressStatus || "pending",
+          serviceStatus: company.serviceStatus || "pending",
+          ein: company.ein,
+          itin: company.itin,
+          businessId: company.businessId,
+          formationDate: company.formationDate,
+          purchasedAddons: company.purchasedAddons || [],
+          transactionReference: company.transactionReference || null,
+          orders: company.orders || [], // Include orders array
+          revenue: company.revenue || 0, // Include revenue
+          lastOrderDate: company.lastOrderDate || null, // Include last order date
+          milestones: company.milestones || {}, // Include milestones
+          customMilestones: company.customMilestones || [], // Include custom milestones
+          registeredAgent: company.registeredAgent || null,
+          mailingAddress: company.mailingAddress || null,
+          address: company.address || {},
+          members: company.members || [],
+          businessCategory: company.businessCategory || "",
+          businessDescription: company.businessDescription || "",
+          businessWebsite: company.businessWebsite || "",
+          packageType: company.packageType || "basic",
+          taxClassification: company.taxClassification || "Not Yet",
+          annualReportFilingDate: company.annualReportFilingDate || null,
+          irsFilingDate: company.irsFilingDate || null,
+          createdAt: company.createdAt,
+          updatedAt: company.updatedAt,
+        }
+      }),
     }
 
     return addSecurityHeaders(NextResponse.json(result))
