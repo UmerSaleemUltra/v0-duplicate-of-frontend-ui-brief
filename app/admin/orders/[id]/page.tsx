@@ -10,6 +10,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import {
   Dialog,
@@ -32,13 +33,10 @@ import {
   UserCheck,
   Home,
   FileCheck,
-  HashIcon,
   FileBarChart,
   Loader2,
-  MapPin,
   Trash2,
-  Receipt,
-  Calendar,
+  Plus,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -67,7 +65,7 @@ const formatEIN = (ein: string | undefined, includeHyphen = false): string => {
   if (!ein || ein === "N/A") return "N/A"
   const cleaned = ein.replace(/[^0-9]/g, "")
   if (cleaned.length === 9) {
-    return includeHyphen ? `${cleaned.substring(0, 2)}-${cleaned.substring(2, 7)}` : cleaned
+    return includeHyphen ? `${cleaned.substring(0, 2)}-${cleaned.substring(2, 9)}` : cleaned
   }
   return ein
 }
@@ -589,7 +587,7 @@ export default function OrderDetailPage() {
   }, [orderId, isAuthenticated, authLoading, loadOrderData, router])
 
   const handleStatusUpdate = async () => {
-    if (!order || !newStatus || !company) return
+    if (!order || !newStatus) return
 
     setStatusUpdating(true)
     try {
@@ -633,14 +631,7 @@ export default function OrderDetailPage() {
   }
 
   const handleAssignRegisteredAgent = async () => {
-    if (!company || !agentForm.name.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter registered agent name",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!company || !agentForm) return
 
     setAgentUpdating(true)
     try {
@@ -658,10 +649,7 @@ export default function OrderDetailPage() {
         },
         body: JSON.stringify({
           registeredAgent: agentForm,
-          milestones: {
-            ...milestones,
-            registeredAgentAssigned: true,
-          },
+          registeredAgentStatus: "assigned",
         }),
       })
 
@@ -671,12 +659,11 @@ export default function OrderDetailPage() {
 
       const result = await response.json()
       setCompany(result.data)
-      setMilestones({ ...milestones, registeredAgentAssigned: true })
       setRegisteredAgentDialogOpen(false)
 
       toast({
         title: "Registered Agent Assigned",
-        description: "Successfully assigned registered agent",
+        description: `Registered agent for ${company.name} has been assigned successfully.`,
       })
     } catch (error) {
       toast({
@@ -689,72 +676,13 @@ export default function OrderDetailPage() {
     }
   }
 
-  const handleAssignMailingAddress = async () => {
-    if (!company || !mailingAddress.street || !mailingAddress.city || !mailingAddress.state || !mailingAddress.zip) {
-      toast({
-        title: "Missing Information",
-        description: "Please fill in all address fields",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setAddressUpdating(true)
-    try {
-      const token = authService.getToken()
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      const response = await fetch(`/api/companies/${company.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          mailingAddress,
-          milestones: {
-            ...milestones,
-            mailingAddressIssued: true,
-          },
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to assign mailing address")
-      }
-
-      const result = await response.json()
-      setCompany(result.data)
-      setMilestones({ ...milestones, mailingAddressIssued: true })
-      setMailingAddressDialogOpen(false)
-
-      toast({
-        title: "Mailing Address Assigned",
-        description: "Successfully assigned business mailing address",
-      })
-    } catch (error) {
-      toast({
-        title: "Assignment Failed",
-        description: "Failed to assign mailing address. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setAddressUpdating(false)
-    }
+  const handleCloseEinDialog = () => {
+    setEinDialogOpen(false)
+    setEinValue("")
   }
 
   const handleAssignEIN = async () => {
-    if (!company || !einValue.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter EIN",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!company || !einValue) return
 
     setEinUpdating(true)
     try {
@@ -772,10 +700,7 @@ export default function OrderDetailPage() {
         },
         body: JSON.stringify({
           ein: einValue,
-          milestones: {
-            ...milestones,
-            einProcessed: true,
-          },
+          einProcessed: true,
         }),
       })
 
@@ -785,13 +710,11 @@ export default function OrderDetailPage() {
 
       const result = await response.json()
       setCompany(result.data)
-      setMilestones({ ...milestones, einProcessed: true })
       setEinDialogOpen(false)
-      setEinValue("")
 
       toast({
         title: "EIN Assigned",
-        description: "Successfully assigned EIN",
+        description: `EIN for ${company.name} has been assigned successfully.`,
       })
     } catch (error) {
       toast({
@@ -804,15 +727,13 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleCloseItinDialog = () => {
+    setItinDialogOpen(false)
+    setItinValue("")
+  }
+
   const handleAssignITIN = async () => {
-    if (!company || !itinValue.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter ITIN",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!company || !itinValue) return
 
     setItinUpdating(true)
     try {
@@ -840,11 +761,10 @@ export default function OrderDetailPage() {
       const result = await response.json()
       setCompany(result.data)
       setItinDialogOpen(false)
-      setItinValue("")
 
       toast({
         title: "ITIN Assigned",
-        description: "Successfully assigned ITIN",
+        description: `ITIN for ${company.name} has been assigned successfully.`,
       })
     } catch (error) {
       toast({
@@ -857,15 +777,13 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleCloseBusinessIdDialog = () => {
+    setBusinessIdDialogOpen(false)
+    setBusinessIdValue("")
+  }
+
   const handleAssignBusinessId = async () => {
-    if (!company || !businessIdValue.trim()) {
-      toast({
-        title: "Missing Information",
-        description: "Please enter Business ID",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!company || !businessIdValue) return
 
     setBusinessIdUpdating(true)
     try {
@@ -883,6 +801,7 @@ export default function OrderDetailPage() {
         },
         body: JSON.stringify({
           businessId: businessIdValue,
+          formationCompleted: true,
         }),
       })
 
@@ -893,11 +812,10 @@ export default function OrderDetailPage() {
       const result = await response.json()
       setCompany(result.data)
       setBusinessIdDialogOpen(false)
-      setBusinessIdValue("")
 
       toast({
         title: "Business ID Assigned",
-        description: "Successfully assigned Business ID",
+        description: `Business ID for ${company.name} has been assigned successfully.`,
       })
     } catch (error) {
       toast({
@@ -910,94 +828,74 @@ export default function OrderDetailPage() {
     }
   }
 
-  const handleDeleteOrder = async () => {
-    if (!order) return
-
-    setDeleting(true)
-    try {
-      const token = authService.getToken()
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      const response = await fetch(`/api/orders/${order.id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to delete order")
-      }
-
-      toast({
-        title: "Order Deleted",
-        description: "Order has been successfully deleted",
-      })
-
-      router.push("/admin/orders")
-    } catch (error) {
-      toast({
-        title: "Delete Failed",
-        description: "Failed to delete order. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setDeleting(false)
-      setDeleteDialogOpen(false)
-    }
-  }
-
-  const handleCloseEinDialog = () => {
-    setEinDialogOpen(false)
-    setEinValue("")
-  }
-
-  const handleCloseItinDialog = () => {
-    setItinDialogOpen(false)
-    setItinValue("")
-  }
-
-  const handleCloseBusinessIdDialog = () => {
-    setBusinessIdDialogOpen(false)
-    setBusinessIdValue("")
-  }
-
   const handleCloseMailingAddressDialog = () => {
     setMailingAddressDialogOpen(false)
+    setMailingAddress({ street: "", city: "", state: "", zip: "" })
   }
 
-  const handleUpdateCompanyStatus = async (newStatus: string) => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found",
-        variant: "destructive",
-      })
-      return
-    }
+  const handleAssignMailingAddress = async () => {
+    if (!company || !mailingAddress) return
 
+    setAddressUpdating(true)
     try {
-      setStatusUpdating(true)
       const token = authService.getToken()
-
       if (!token) {
         router.push("/login")
         return
       }
 
-      const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          statusType: "companyStatus",
-          statusValue: newStatus,
+          mailingAddress,
+          mailingAddressIssued: true,
         }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to assign mailing address")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setMailingAddressDialogOpen(false)
+
+      toast({
+        title: "Mailing Address Assigned",
+        description: `Mailing address for ${company.name} has been assigned successfully.`,
+      })
+    } catch (error) {
+      toast({
+        title: "Assignment Failed",
+        description: "Failed to assign mailing address. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setAddressUpdating(false)
+    }
+  }
+
+  const handleUpdateCompanyStatus = async (newStatus: string) => {
+    if (!company) return
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ companyStatus: newStatus }),
       })
 
       if (!response.ok) {
@@ -1005,57 +903,39 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
-
       setCompany(result.data)
       setCompanyStatusDialogOpen(false)
 
       toast({
-        title: "Status Updated",
-        description: "Company status has been updated successfully",
+        title: "Company Status Updated",
+        description: `Company status for ${company.name} updated to ${newStatus}.`,
       })
-
-      await loadOrderData()
     } catch (error) {
-      console.error("Error updating company status:", error)
       toast({
         title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update company status",
+        description: "Failed to update company status. Please try again.",
         variant: "destructive",
       })
-    } finally {
-      setStatusUpdating(false)
     }
   }
 
   const handleUpdateRegisteredAgentStatus = async (newStatus: string) => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!company) return
 
     try {
-      setAgentUpdating(true)
       const token = authService.getToken()
-
       if (!token) {
         router.push("/login")
         return
       }
 
-      const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          statusType: "registeredAgentStatus",
-          statusValue: newStatus,
-        }),
+        body: JSON.stringify({ registeredAgentStatus: newStatus }),
       })
 
       if (!response.ok) {
@@ -1067,52 +947,35 @@ export default function OrderDetailPage() {
       setRegisteredAgentStatusDialogOpen(false)
 
       toast({
-        title: "Status Updated",
-        description: "Registered agent status has been updated successfully",
+        title: "Registered Agent Status Updated",
+        description: `Registered agent status for ${company.name} updated to ${newStatus}.`,
       })
-
-      await loadOrderData()
     } catch (error) {
-      console.error("Error updating registered agent status:", error)
       toast({
         title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update registered agent status",
+        description: "Failed to update registered agent status. Please try again.",
         variant: "destructive",
       })
-    } finally {
-      setAgentUpdating(false)
     }
   }
 
   const handleUpdateBusinessAddressStatus = async (newStatus: string) => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!company) return
 
     try {
-      setAddressUpdating(true)
       const token = authService.getToken()
-
       if (!token) {
         router.push("/login")
         return
       }
 
-      const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          statusType: "businessAddressStatus",
-          statusValue: newStatus,
-        }),
+        body: JSON.stringify({ businessAddressStatus: newStatus }),
       })
 
       if (!response.ok) {
@@ -1124,51 +987,35 @@ export default function OrderDetailPage() {
       setBusinessAddressStatusDialogOpen(false)
 
       toast({
-        title: "Status Updated",
-        description: "Business address status has been updated successfully",
+        title: "Business Address Status Updated",
+        description: `Business address status for ${company.name} updated to ${newStatus}.`,
       })
-
-      await loadOrderData()
     } catch (error) {
-      console.error("Error updating business address status:", error)
       toast({
         title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update business address status",
+        description: "Failed to update business address status. Please try again.",
         variant: "destructive",
       })
-    } finally {
-      setAddressUpdating(false)
     }
   }
 
   const handleUpdateServiceStatus = async (newStatus: string) => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!company) return
 
     try {
       const token = authService.getToken()
-
       if (!token) {
         router.push("/login")
         return
       }
 
-      const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
-          statusType: "serviceStatus",
-          statusValue: newStatus,
-        }),
+        body: JSON.stringify({ serviceStatus: newStatus }),
       })
 
       if (!response.ok) {
@@ -1180,735 +1027,695 @@ export default function OrderDetailPage() {
       setServiceStatusDialogOpen(false)
 
       toast({
-        title: "Status Updated",
-        description: "Service status has been updated successfully",
+        title: "Service Status Updated",
+        description: `Service status for ${company.name} updated to ${newStatus}.`,
       })
-
-      await loadOrderData()
     } catch (error) {
-      console.error("Error updating service status:", error)
       toast({
         title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update service status",
+        description: "Failed to update service status. Please try again.",
         variant: "destructive",
       })
     }
   }
 
-  if (authLoading || loading) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="w-8 h-8 animate-spin" />
+        <Loader2 className="w-8 h-8 animate-spin text-slate-600" />
       </div>
     )
   }
 
-  if (error) {
+  if (error || !order || !company) {
     return (
-      <div className="space-y-4">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => router.push("/admin/orders")} className="h-10 w-10 p-0">
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Error</h1>
-            <p className="text-slate-600 mt-1">{error}</p>
-          </div>
-        </div>
+      <div className="p-8 text-center">
+        <AlertCircle className="w-12 h-12 text-red-600 mx-auto mb-4" />
+        <h1 className="text-2xl font-bold text-slate-900 mb-2">Order Not Found</h1>
+        <p className="text-slate-600 mb-6">{error || "Could not load order details"}</p>
+        <Button onClick={() => router.push("/admin/orders")} className="bg-slate-900 hover:bg-slate-800">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Orders
+        </Button>
       </div>
     )
-  }
-
-  if (!order || !company) {
-    return null
   }
 
   return (
-    <div className="space-y-4">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push("/admin/orders")}
-            className="h-10 w-10 p-0 bg-transparent"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-semibold text-slate-900">Order Details</h1>
-            <p className="text-slate-600 mt-1">Order ID: {order.id}</p>
+      <div className="bg-white border-b border-slate-200 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-4 py-6 sm:px-6 lg:px-8">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => router.push("/admin/orders")}
+                className="text-slate-600 hover:text-slate-900"
+              >
+                <ArrowLeft className="w-4 h-4 mr-2" />
+                Back
+              </Button>
+              <div>
+                <h1 className="text-3xl font-bold text-slate-900">Order Details</h1>
+                <p className="text-slate-600 mt-1">Order ID: {order.id}</p>
+              </div>
+            </div>
+            <Badge className={`${getStatusColor(order.status)} text-sm py-2 px-3`}>
+              {getStatusIcon(order.status)}
+              <span className="ml-2">{order.status}</span>
+            </Badge>
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Main Content - Left Column */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Customer Information Card */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <User className="w-5 h-5" />
-                Customer Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Customer Name</p>
-                  <p className="text-sm font-medium text-slate-900">{customer?.name || "N/A"}</p>
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Left Column - Main Content */}
+          <div className="lg:col-span-2 space-y-6">
+            {/* Customer Information */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-blue-50 to-blue-100 border-b">
+                <CardTitle className="flex items-center gap-2 text-blue-900">
+                  <User className="w-5 h-5" />
+                  Customer Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">Name</Label>
+                    <p className="text-slate-900 font-semibold mt-1">{getDisplayValue(customer?.name)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">Email</Label>
+                    <p className="text-slate-900 font-semibold mt-1">{getDisplayValue(customer?.email)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">Phone</Label>
+                    <p className="text-slate-900 font-semibold mt-1">{getDisplayValue(customer?.phone)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">Order Date</Label>
+                    <p className="text-slate-900 font-semibold mt-1">
+                      {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
+                    </p>
+                  </div>
                 </div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Email Address</p>
-                  <p className="text-sm font-medium text-slate-900">{customer?.email || "N/A"}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Phone Number</p>
-                  <p className="text-sm font-medium text-slate-900">{customer?.phone || "N/A"}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Account Status</p>
-                  <Badge variant={user?.accountStatus === "active" ? "default" : "secondary"}>
-                    {user?.accountStatus || "Incomplete"}
-                  </Badge>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Order Status */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Order Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Current Status</Label>
-                <div className="mt-2">
-                  <Badge className={`${getStatusColor(order.status)} px-3 py-1 text-sm flex items-center gap-2 w-fit`}>
-                    {getStatusIcon(order.status)}
-                    <span className="capitalize">{order.status}</span>
-                  </Badge>
+            {/* Company Information */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-purple-50 to-purple-100 border-b">
+                <CardTitle className="flex items-center gap-2 text-purple-900">
+                  <Building2 className="w-5 h-5" />
+                  Company Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">Company Name</Label>
+                    <p className="text-slate-900 font-semibold mt-1">{getDisplayValue(company?.name)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">State of Formation</Label>
+                    <p className="text-slate-900 font-semibold mt-1">{getDisplayValue(company?.state)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">Business Category</Label>
+                    <p className="text-slate-900 font-semibold mt-1">{getDisplayValue(company?.businessCategory)}</p>
+                  </div>
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">Package Type</Label>
+                    <p className="text-slate-900 font-semibold mt-1">
+                      {getDisplayValue(order.packageType || "Standard")}
+                    </p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-slate-600 text-sm font-medium">Business Website</Label>
+                    <p className="text-slate-900 font-semibold mt-1">{getDisplayValue(company?.businessWebsite)}</p>
+                  </div>
+                  <div className="col-span-2">
+                    <Label className="text-slate-600 text-sm font-medium">Business Description</Label>
+                    <p className="text-slate-900 font-semibold mt-1 line-clamp-2">
+                      {getDisplayValue(company?.businessDescription)}
+                    </p>
+                  </div>
                 </div>
-              </div>
+              </CardContent>
+            </Card>
 
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Select value={newStatus} onValueChange={setNewStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="processing">Processing</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
+            {/* Business Identifiers */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-emerald-50 to-emerald-100 border-b">
+                <CardTitle className="flex items-center gap-2 text-emerald-900">
+                  <Hash className="w-5 h-5" />
+                  Business Identifiers
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="grid grid-cols-2 gap-6">
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">EIN Number</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-slate-900 font-semibold">
+                        {hasEIN ? formatEIN(company?.ein, true) : <Badge variant="outline">Not Yet</Badge>}
+                      </p>
+                      {!hasEIN && (
+                        <Button
+                          size="sm"
+                          onClick={() => setEinDialogOpen(true)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Assign EIN
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-slate-600 text-sm font-medium">Business ID</Label>
+                    <div className="flex items-center gap-2 mt-1">
+                      <p className="text-slate-900 font-semibold">
+                        {hasBusinessId ? (
+                          formatBusinessId(company?.businessId)
+                        ) : (
+                          <Badge variant="outline">Not Yet</Badge>
+                        )}
+                      </p>
+                      {!hasBusinessId && (
+                        <Button
+                          size="sm"
+                          onClick={() => setBusinessIdDialogOpen(true)}
+                          className="bg-red-600 hover:bg-red-700"
+                        >
+                          Assign Business ID
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 </div>
-                <Button
-                  onClick={handleStatusUpdate}
-                  disabled={statusUpdating || !newStatus || newStatus === order.status}
-                  className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                >
-                  {statusUpdating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Status"
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
-          {/* Formation Progress */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <FileCheck className="w-5 h-5" />
-                Formation Progress
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed (
-                {completionPercentage}%)
-                {company?.customMilestones && company.customMilestones.length > 0 && (
-                  <span className="text-slate-500">
-                    {" "}
-                    • {completedMilestonesWithCustom} of {totalMilestonesWithCustom} total
-                  </span>
+            {/* Registered Agent */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-orange-50 to-orange-100 border-b">
+                <CardTitle className="flex items-center gap-2 text-orange-900">
+                  <UserCheck className="w-5 h-5" />
+                  Registered Agent
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {!hasRegisteredAgent ? (
+                  <Button onClick={() => setRegisteredAgentDialogOpen(true)} className="bg-red-600 hover:bg-red-700">
+                    Assign Registered Agent
+                  </Button>
+                ) : (
+                  <div className="grid grid-cols-2 gap-6">
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">Name</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.registeredAgent?.name}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">Company</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.registeredAgent?.company}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">Address</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.registeredAgent?.address}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">City</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.registeredAgent?.city}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">State</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.registeredAgent?.state}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">Zip Code</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.registeredAgent?.zip}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">Phone</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.registeredAgent?.phone}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">Email</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.registeredAgent?.email}</p>
+                    </div>
+                  </div>
                 )}
-              </p>
-            </CardHeader>
-            <CardContent>
-              {/* Progress Bar */}
-              <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-6">
-                <div
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full transition-all duration-700"
-                  style={{ width: `${completionPercentage}%` }}
-                />
-              </div>
+              </CardContent>
+            </Card>
 
-              {/* Milestone List */}
-              <div className="space-y-2">
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.orderProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Package className={`w-5 h-5 ${milestones.orderProcessed ? "text-green-600" : "text-slate-400"}`} />
-                    <span
-                      className={`text-sm font-medium ${milestones.orderProcessed ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Order Successfully Processed
-                    </span>
-                  </div>
-                  {milestones.orderProcessed ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.registeredAgentAssigned ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <UserCheck
-                      className={`w-5 h-5 ${milestones.registeredAgentAssigned ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.registeredAgentAssigned ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Registered Agent Assigned
-                    </span>
-                  </div>
-                  {milestones.registeredAgentAssigned ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.mailingAddressIssued ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Home
-                      className={`w-5 h-5 ${milestones.mailingAddressIssued ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.mailingAddressIssued ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Business Mailing Address Issued
-                    </span>
-                  </div>
-                  {milestones.mailingAddressIssued ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.formationCompleted ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <FileCheck
-                      className={`w-5 h-5 ${milestones.formationCompleted ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.formationCompleted ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Company Formation Completed
-                    </span>
-                  </div>
-                  {milestones.formationCompleted ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.einProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <HashIcon className={`w-5 h-5 ${milestones.einProcessed ? "text-green-600" : "text-slate-400"}`} />
-                    <span
-                      className={`text-sm font-medium ${milestones.einProcessed ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      EIN Successfully Processed
-                    </span>
-                  </div>
-                  {milestones.einProcessed ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.boiReportFiled ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <FileBarChart
-                      className={`w-5 h-5 ${milestones.boiReportFiled ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.boiReportFiled ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      BOI Report Filed
-                    </span>
-                  </div>
-                  {milestones.boiReportFiled ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-
-                {company?.customMilestones && company.customMilestones.length > 0 && (
-                  <>
-                    <div className="pt-3 border-t border-slate-200">
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
-                        Custom Milestones
+            {/* Mailing Address */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-pink-50 to-pink-100 border-b">
+                <CardTitle className="flex items-center gap-2 text-pink-900">
+                  <Home className="w-5 h-5" />
+                  Mailing Address
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                {!hasMailingAddress ? (
+                  <Button onClick={() => setMailingAddressDialogOpen(true)} className="bg-red-600 hover:bg-red-700">
+                    Assign Mailing Address
+                  </Button>
+                ) : (
+                  <div className="grid grid-cols-2 gap-6">
+                    <div className="col-span-2">
+                      <Label className="text-slate-600 text-sm font-medium">Street Address</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.mailingAddress?.street}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">City</Label>
+                      <p className="text-slate-900 font-semibold mt-1">{company.mailingAddress?.city}</p>
+                    </div>
+                    <div>
+                      <Label className="text-slate-600 text-sm font-medium">State, Zip</Label>
+                      <p className="text-slate-900 font-semibold mt-1">
+                        {company.mailingAddress?.state} {company.mailingAddress?.zip}
                       </p>
                     </div>
-                    {company.customMilestones.map((milestone: any) => (
-                      <div
-                        key={milestone.id}
-                        className={`flex items-center justify-between p-3 rounded-lg ${milestone.completed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileCheck
-                            className={`w-5 h-5 ${milestone.completed ? "text-green-600" : "text-slate-400"}`}
-                          />
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Business Owners / Members */}
+            {company?.members && company.members.length > 0 && (
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="bg-gradient-to-r from-indigo-50 to-indigo-100 border-b">
+                  <CardTitle className="flex items-center gap-2 text-indigo-900">
+                    <Users className="w-5 h-5" />
+                    Business Owners / Members
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-4">
+                    {company.members.map((member: any, index: number) => (
+                      <div key={index} className="p-4 bg-slate-50 rounded-lg border border-slate-200">
+                        <div className="flex items-start justify-between mb-3">
                           <div>
-                            <span
-                              className={`text-sm font-medium ${milestone.completed ? "text-slate-900" : "text-slate-600"}`}
-                            >
-                              {milestone.title}
-                            </span>
-                            {milestone.description && (
-                              <p className="text-xs text-slate-500 mt-0.5">{milestone.description}</p>
-                            )}
+                            <p className="font-semibold text-slate-900">{member.name}</p>
+                            <p className="text-sm text-slate-600">{member.address}</p>
                           </div>
+                          {member.isResponsiblePerson && (
+                            <Badge className="bg-blue-100 text-blue-800 hover:bg-blue-100">Responsible Person</Badge>
+                          )}
                         </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleCustomMilestoneToggle(milestone.id)}
-                            className="h-8 w-8 p-0"
-                          >
+                        <div className="grid grid-cols-2 gap-3 text-sm">
+                          {member.city && (
+                            <div>
+                              <span className="text-slate-600">City:</span>
+                              <p className="font-medium text-slate-900">{member.city}</p>
+                            </div>
+                          )}
+                          {member.state && (
+                            <div>
+                              <span className="text-slate-600">State:</span>
+                              <p className="font-medium text-slate-900">{member.state}</p>
+                            </div>
+                          )}
+                          {member.zip && (
+                            <div>
+                              <span className="text-slate-600">Zip:</span>
+                              <p className="font-medium text-slate-900">{member.zip}</p>
+                            </div>
+                          )}
+                          {member.ssn && (
+                            <div>
+                              <span className="text-slate-600">SSN:</span>
+                              <p className="font-medium text-slate-900">{member.ssn}</p>
+                            </div>
+                          )}
+                          {member.needsItin && (
+                            <div className="col-span-2">
+                              <Badge variant={member.needsItin ? "default" : "outline"}>
+                                {member.needsItin ? "ITIN Required" : "No ITIN Required"}
+                              </Badge>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Purchased Add-ons */}
+            {addons.length > 0 && (
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="bg-gradient-to-r from-amber-50 to-amber-100 border-b">
+                  <CardTitle className="flex items-center gap-2 text-amber-900">
+                    <Package className="w-5 h-5" />
+                    Purchased Add-ons
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    {addons.map((addon: any, index: number) => {
+                      const addonName = getAddonName(typeof addon === "object" ? addon.serviceId : addon)
+                      const addonPrice = typeof addon === "object" ? addon.price : 0
+                      return (
+                        <div
+                          key={index}
+                          className="flex items-center justify-between p-3 bg-slate-50 rounded border border-slate-200"
+                        >
+                          <span className="font-medium text-slate-900">{addonName}</span>
+                          {addonPrice > 0 && <span className="text-slate-600">${safeToFixed(addonPrice)}</span>}
+                        </div>
+                      )
+                    })}
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Milestone Progress */}
+            <Card className="border-0 shadow-sm">
+              <CardHeader className="bg-gradient-to-r from-green-50 to-green-100 border-b">
+                <CardTitle className="flex items-center gap-2 text-green-900">
+                  <FileCheck className="w-5 h-5" />
+                  Formation Progress
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-6">
+                <div className="mb-6">
+                  <div className="flex items-center justify-between mb-2">
+                    <span className="text-sm font-medium text-slate-900">
+                      {completedMilestonesWithCustom} of {totalMilestonesWithCustom} milestones
+                    </span>
+                    <span className="text-sm font-bold text-green-600">{completionPercentage}%</span>
+                  </div>
+                  <div className="w-full bg-slate-200 rounded-full h-3">
+                    <div
+                      className="bg-gradient-to-r from-green-500 to-emerald-600 h-3 rounded-full transition-all duration-300"
+                      style={{ width: `${completionPercentage}%` }}
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-3">
+                  {Object.entries(milestones).map(([key, completed]) => {
+                    const labels: { [key: string]: string } = {
+                      orderProcessed: "Order Successfully Processed",
+                      registeredAgentAssigned: "Registered Agent Assigned",
+                      mailingAddressIssued: "Business Mailing Address Issued",
+                      formationCompleted: "Company Formation Completed",
+                      einProcessed: "EIN Successfully Processed",
+                      boiReportFiled: "BOI Report Filed",
+                    }
+                    return (
+                      <div key={key} className="flex items-center gap-3 p-2 rounded hover:bg-slate-50">
+                        {completed ? (
+                          <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
+                        ) : (
+                          <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0" />
+                        )}
+                        <span className={`text-sm ${completed ? "text-slate-900 font-medium" : "text-slate-600"}`}>
+                          {labels[key]}
+                        </span>
+                      </div>
+                    )
+                  })}
+                </div>
+
+                {/* Custom Milestones */}
+                {company?.customMilestones && company.customMilestones.length > 0 && (
+                  <div className="mt-6 pt-6 border-t">
+                    <h4 className="font-semibold text-slate-900 mb-3">Custom Milestones</h4>
+                    <div className="space-y-3">
+                      {company.customMilestones.map((milestone: any) => (
+                        <div key={milestone.id} className="flex items-center justify-between p-3 bg-slate-50 rounded">
+                          <div className="flex items-center gap-3 flex-1">
                             {milestone.completed ? (
-                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                              <CheckCircle2 className="w-5 h-5 text-green-600 flex-shrink-0" />
                             ) : (
-                              <Clock className="w-5 h-5 text-slate-400" />
+                              <Clock className="w-5 h-5 text-yellow-600 flex-shrink-0" />
                             )}
-                          </Button>
+                            <div>
+                              <p
+                                className={`text-sm font-medium ${milestone.completed ? "text-slate-900" : "text-slate-600"}`}
+                              >
+                                {milestone.title}
+                              </p>
+                              {milestone.description && (
+                                <p className="text-xs text-slate-500 mt-1">{milestone.description}</p>
+                              )}
+                            </div>
+                          </div>
                           <Button
                             variant="ghost"
                             size="sm"
                             onClick={() => handleDeleteCustomMilestone(milestone.id)}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                            className="text-red-600 hover:text-red-700"
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
-                      </div>
-                    ))}
-                  </>
+                      ))}
+                    </div>
+                  </div>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          </div>
 
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                Company Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-6">
-                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Company Name</p>
-                    <p className="text-sm font-medium text-slate-900">{company.name}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">State of Formation</p>
-                    <p className="text-sm font-medium text-slate-900">{company.state}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Entity Type</p>
-                    <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Business Category</p>
-                    <p className="text-sm font-medium text-slate-900">{company.businessCategory || "Not provided"}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Package Type</p>
-                    <Badge variant="outline" className="text-xs capitalize">
-                      {company.packageType || "Starter"}
+          {/* Right Column - Sidebar */}
+          <div className="lg:col-span-1">
+            <div className="space-y-6 sticky top-24">
+              {/* Order Status */}
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="bg-gradient-to-r from-slate-100 to-slate-50 border-b">
+                  <CardTitle className="text-slate-900">Order Status</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <div className="mb-4">
+                    <Badge className={`${getStatusColor(order.status)} w-full justify-center py-2 text-sm`}>
+                      {getStatusIcon(order.status)}
+                      <span className="ml-2">{order.status}</span>
                     </Badge>
                   </div>
-                  {company.businessWebsite && (
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Business Website</p>
-                      <a
-                        href={
-                          company.businessWebsite.startsWith("http")
-                            ? company.businessWebsite
-                            : `https://${company.businessWebsite}`
-                        }
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm font-medium text-blue-600 hover:underline"
-                      >
-                        {company.businessWebsite}
-                      </a>
-                    </div>
-                  )}
-                </div>
-
-                {company.businessDescription && (
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-2">Business Description</p>
-                    <p className="text-sm text-slate-900 leading-relaxed">{company.businessDescription}</p>
-                  </div>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          {company?.members && company.members.length > 0 && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Business Owners / Members
-                </CardTitle>
-                <p className="text-sm text-slate-600 mt-1">
-                  {company.members.length} member{company.members.length !== 1 ? "s" : ""} registered
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {company.members.map((member: any, index: number) => (
-                    <div
-                      key={member.id || index}
-                      className={`p-4 rounded-lg border border-slate-200 ${member.responsiblePerson ? "bg-blue-50 border-blue-300" : "bg-slate-50"}`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-slate-900">{member.name || "N/A"}</h3>
-                            {member.responsiblePerson && (
-                              <Badge variant="secondary" className="mt-1 text-xs bg-blue-200 text-blue-800">
-                                Responsible Person
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          Member {index + 1}
-                        </Badge>
-                      </div>
-
-                      <div className="grid sm:grid-cols-2 gap-3 mt-3">
-                        {member.ssn && (
-                          <div>
-                            <p className="text-xs text-slate-600">SSN/ITIN</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {member.ssn.length > 4 ? `***-**-${member.ssn.slice(-4)}` : "Provided"}
-                            </p>
-                          </div>
-                        )}
-                        {member.address && (
-                          <div className="sm:col-span-2">
-                            <p className="text-xs text-slate-600">Address</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {member.address}
-                              {member.city && `, ${member.city}`}
-                              {member.state && `, ${member.state}`}
-                              {member.zip && ` ${member.zip}`}
-                              {member.country && `, ${member.country}`}
-                            </p>
-                          </div>
-                        )}
-                        {member.itinAdded && (
-                          <div className="sm:col-span-2">
-                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800">
-                              ITIN Application Requested
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Receipt className="w-5 h-5" />
-                Order & Pricing Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Package Price</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      ${safeToFixed(order?.pricing?.packagePrice || order?.packagePrice || 0)}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">State Filing Fee</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      ${safeToFixed(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0)}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      ${safeToFixed(order?.pricing?.addonsTotal || order?.addonsTotal || 0)}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-slate-200">
-                    <p className="text-xs text-white mb-1">Total Amount</p>
-                    <p className="text-2xl font-bold text-white">
-                      ${safeToFixed(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0)}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-xs text-slate-600 mb-1">Payment Method</p>
-                      <p className="text-sm font-medium text-slate-900 capitalize">
-                        {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-600 mb-1">Payment Status</p>
-                      <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"}>
-                        {order?.paymentInfo?.status || "Pending"}
-                      </Badge>
-                    </div>
-                    {order?.paymentInfo?.transactionReference && (
-                      <div className="sm:col-span-2">
-                        <p className="text-xs text-slate-600 mb-1">Transaction Reference</p>
-                        <p className="text-sm font-medium text-slate-900 font-mono">
-                          {order.paymentInfo.transactionReference}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-slate-600" />
-                    <div>
-                      <p className="text-xs text-slate-600">Order Date</p>
-                      <p className="text-sm font-medium text-slate-900">
-                        {order?.createdAt
-                          ? new Date(order.createdAt).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })
-                          : "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Sidebar - Right Column */}
-        <div className="lg:col-span-1 space-y-4">
-          {/* Business Identifiers Card */}
-          <Card className="bg-white border-slate-200 shadow-sm sticky top-4">
-            <CardHeader>
-              <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                <Hash className="w-5 h-5" />
-                Business Identifiers
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-medium text-slate-600">EIN</p>
-                  <Button variant="ghost" size="sm" onClick={() => setEinDialogOpen(true)} className="h-7 px-2 text-xs">
-                    {hasEIN ? "Update" : "Assign"}
-                  </Button>
-                </div>
-                {hasEIN ? (
-                  <p className="text-sm font-bold text-slate-900">{formatEIN(company.ein, true)}</p>
-                ) : (
-                  <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 text-xs">
-                    Not Yet
-                  </Badge>
-                )}
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center justify-between mb-2">
-                  <p className="text-xs font-medium text-slate-600">Business ID</p>
+                  <Select value={newStatus} onValueChange={setNewStatus}>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder="Change status..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Pending">Pending</SelectItem>
+                      <SelectItem value="Processing">Processing</SelectItem>
+                      <SelectItem value="Completed">Completed</SelectItem>
+                      <SelectItem value="Cancelled">Cancelled</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setBusinessIdDialogOpen(true)}
-                    className="h-7 px-2 text-xs"
+                    onClick={handleStatusUpdate}
+                    disabled={statusUpdating || newStatus === order.status}
+                    className="w-full mt-4 bg-blue-600 hover:bg-blue-700"
                   >
-                    {hasBusinessId ? "Update" : "Assign"}
+                    {statusUpdating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Updating...
+                      </>
+                    ) : (
+                      "Update Status"
+                    )}
                   </Button>
-                </div>
-                {hasBusinessId ? (
-                  <p className="text-sm font-bold text-slate-900">{formatBusinessId(company.businessId)}</p>
-                ) : (
-                  <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 text-xs">
-                    Not Yet
-                  </Badge>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+                </CardContent>
+              </Card>
 
-          {/* Registered Agent Card */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                  <UserCheck className="w-5 h-5" />
-                  Registered Agent
-                </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setRegisteredAgentDialogOpen(true)}
-                  className="h-7 px-2 text-xs"
-                >
-                  {hasRegisteredAgent ? "Update" : "Assign"}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {hasRegisteredAgent ? (
-                <div className="space-y-2 text-sm">
-                  <div>
-                    <p className="text-xs text-slate-600">Name</p>
-                    <p className="font-medium text-slate-900">{company.registeredAgent.name}</p>
+              {/* Order Summary */}
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="bg-gradient-to-r from-slate-100 to-slate-50 border-b">
+                  <CardTitle className="text-slate-900">Order Summary</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Package Price</span>
+                    <span className="font-semibold text-slate-900">${safeToFixed(order.packagePrice)}</span>
                   </div>
-                  {company.registeredAgent.company && (
-                    <div>
-                      <p className="text-xs text-slate-600">Company</p>
-                      <p className="font-medium text-slate-900">{company.registeredAgent.company}</p>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Filing Fee</span>
+                    <span className="font-semibold text-slate-900">${safeToFixed(order.filingFee)}</span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-slate-600">Add-ons Total</span>
+                    <span className="font-semibold text-slate-900">
+                      $
+                      {safeToFixed(
+                        addons.reduce((sum: number, addon: any) => {
+                          return sum + (typeof addon === "object" && addon.price ? addon.price : 0)
+                        }, 0),
+                      )}
+                    </span>
+                  </div>
+                  <div className="border-t pt-3 flex items-center justify-between">
+                    <span className="text-slate-900 font-semibold">Total Amount</span>
+                    <span className="text-lg font-bold text-green-600">
+                      $
+                      {safeToFixed(
+                        (Number.parseFloat(String(order.packagePrice)) || 0) +
+                          (Number.parseFloat(String(order.filingFee)) || 0) +
+                          addons.reduce((sum: number, addon: any) => {
+                            return sum + (typeof addon === "object" && addon.price ? addon.price : 0)
+                          }, 0),
+                      )}
+                    </span>
+                  </div>
+                  <div className="mt-4 pt-4 border-t space-y-1">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600">Payment Status</span>
+                      <Badge variant="outline">{order.paymentStatus || "Pending"}</Badge>
                     </div>
-                  )}
-                  {company.registeredAgent.email && (
-                    <div>
-                      <p className="text-xs text-slate-600">Email</p>
-                      <p className="font-medium text-slate-900">{company.registeredAgent.email}</p>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-slate-600">Payment Method</span>
+                      <span className="font-medium text-slate-900">{order.paymentMethod || "N/A"}</span>
                     </div>
-                  )}
-                </div>
-              ) : (
-                <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 text-xs">
-                  Not Yet Assigned
-                </Badge>
-              )}
-            </CardContent>
-          </Card>
+                  </div>
+                </CardContent>
+              </Card>
 
-          {/* Mailing Address Card */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Mailing Address
-                </CardTitle>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setMailingAddressDialogOpen(true)}
-                  className="h-7 px-2 text-xs"
-                >
-                  {hasMailingAddress ? "Update" : "Assign"}
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {hasMailingAddress ? (
-                <div className="text-sm space-y-1">
-                  <p className="font-medium text-slate-900">{company.mailingAddress.street}</p>
-                  <p className="text-slate-600">
-                    {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
-                  </p>
-                </div>
-              ) : (
-                <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 text-xs">
-                  Not Yet Assigned
-                </Badge>
-              )}
-            </CardContent>
-          </Card>
+              {/* Quick Actions */}
+              <Card className="border-0 shadow-sm">
+                <CardHeader className="bg-gradient-to-r from-slate-100 to-slate-50 border-b">
+                  <CardTitle className="text-slate-900">Quick Actions</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6 space-y-2">
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-slate-700 hover:text-slate-900 bg-transparent"
+                    onClick={() => setMilestonesDialogOpen(true)}
+                  >
+                    <FileCheck className="w-4 h-4 mr-2" />
+                    Edit Milestones
+                  </Button>
+                  <Button
+                    variant="outline"
+                    className="w-full justify-start text-slate-700 hover:text-slate-900 bg-transparent"
+                    onClick={() => setCustomMilestoneDialogOpen(true)}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Add Custom Milestone
+                  </Button>
+                </CardContent>
+              </Card>
 
-          {/* Add-ons Card */}
-          {addons.length > 0 && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                  <Package className="w-5 h-5" />
-                  Purchased Add-ons
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-2">
-                  {addons.map((addon: any, index: number) => (
-                    <div key={index} className="p-2 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs font-medium text-slate-600">{getAddonName(addon.id || addon)}</p>
-                      {addon.price && <p className="text-sm font-bold text-slate-900">${safeToFixed(addon.price)}</p>}
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Delete Order Card */}
-          <Card className="bg-white border-red-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-base font-semibold text-red-900">Danger Zone</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <Button variant="destructive" className="w-full" onClick={() => setDeleteDialogOpen(true)}>
-                <Trash2 className="w-4 h-4 mr-2" />
-                Delete Order
-              </Button>
-            </CardContent>
-          </Card>
+              {/* Danger Zone */}
+              <Card className="border-0 shadow-sm border-red-200">
+                <CardHeader className="bg-gradient-to-r from-red-50 to-red-100 border-b border-red-200">
+                  <CardTitle className="text-red-900">Danger Zone</CardTitle>
+                </CardHeader>
+                <CardContent className="pt-6">
+                  <Button variant="destructive" className="w-full" onClick={() => setDeleteDialogOpen(true)}>
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete Order
+                  </Button>
+                </CardContent>
+              </Card>
+            </div>
+          </div>
         </div>
       </div>
 
       {/* Dialogs */}
+      <Dialog open={customMilestoneDialogOpen} onOpenChange={setCustomMilestoneDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Custom Milestone</DialogTitle>
+            <DialogDescription>Create a new custom milestone to track additional progress</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="milestone-title">Title</Label>
+              <Input
+                id="milestone-title"
+                value={newMilestoneTitle}
+                onChange={(e) => setNewMilestoneTitle(e.target.value)}
+                placeholder="Enter milestone title"
+              />
+            </div>
+            <div>
+              <Label htmlFor="milestone-description">Description (Optional)</Label>
+              <Textarea
+                id="milestone-description"
+                value={newMilestoneDescription}
+                onChange={(e) => setNewMilestoneDescription(e.target.value)}
+                placeholder="Enter milestone description"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCustomMilestoneDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleAddCustomMilestone} disabled={!newMilestoneTitle}>
+              Add Milestone
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle className="text-red-600">Delete Order</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this order? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={async () => {
+                setDeleting(true)
+                try {
+                  const token = authService.getToken()
+                  if (!token) {
+                    router.push("/login")
+                    return
+                  }
+                  const response = await fetch(`/api/orders/${order.id}`, {
+                    method: "DELETE",
+                    headers: { Authorization: `Bearer ${token}` },
+                  })
+                  if (!response.ok) throw new Error("Failed to delete order")
+                  router.push("/admin/orders")
+                  toast({ title: "Order Deleted", description: "The order has been successfully deleted." })
+                } catch (error) {
+                  toast({
+                    title: "Delete Failed",
+                    description: "Failed to delete the order. Please try again.",
+                    variant: "destructive",
+                  })
+                } finally {
+                  setDeleting(false)
+                }
+              }}
+              disabled={deleting}
+            >
+              {deleting ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={registeredAgentDialogOpen} onOpenChange={setRegisteredAgentDialogOpen}>
         <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
@@ -2261,25 +2068,6 @@ export default function OrderDetailPage() {
               className="bg-[#dc2626] hover:bg-[#b91c1c]"
             >
               {addressUpdating ? "Assigning..." : "Assign Mailing Address"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this order? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
-              {deleting ? "Deleting..." : "Delete Order"}
             </Button>
           </DialogFooter>
         </DialogContent>
