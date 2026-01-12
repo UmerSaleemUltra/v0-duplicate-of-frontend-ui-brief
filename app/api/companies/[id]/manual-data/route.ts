@@ -12,16 +12,20 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
+    console.log("[v0] Manual-data API - Token received, length:", token.length)
+
     const decoded = await verifyToken(token)
     console.log("[v0] Manual-data API - Token exists:", !!token)
     console.log("[v0] Manual-data API - Decoded:", decoded)
     console.log("[v0] Manual-data API - Has admin role:", decoded?.role === "admin")
 
     if (!decoded) {
-      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
+      console.error("[v0] Token verification failed - decoded is null")
+      return NextResponse.json({ error: "Invalid or expired token. Please log in again." }, { status: 401 })
     }
 
     if (decoded.role !== "admin") {
+      console.error(`[v0] User role check failed - role: ${decoded.role}`)
       return NextResponse.json(
         { error: `Admin access required. Current role: ${decoded.role || "unknown"}` },
         { status: 403 },
@@ -42,13 +46,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     if (dataType === "tax") {
       updateFields = {
-        formationDate: data.formationDate,
-        ein: data.ein,
-        businessId: data.businessId,
-        taxClassification: data.taxClassification,
-        annualReportFilingDate: data.annualReportFilingDate,
-        irsFilingDate: data.irsFilingDate,
-        itin: data.itin,
+        ...(data.formationDate && { formationDate: data.formationDate }),
+        ...(data.ein && { ein: data.ein }),
+        ...(data.businessId && { businessId: data.businessId }),
+        ...(data.taxClassification && { taxClassification: data.taxClassification }),
+        ...(data.annualReportFilingDate && { annualReportFilingDate: data.annualReportFilingDate }),
+        ...(data.irsFilingDate && { irsFilingDate: data.irsFilingDate }),
+        ...(data.itin && { itin: data.itin }),
       }
     } else if (dataType === "registered-agent") {
       updateFields = {
