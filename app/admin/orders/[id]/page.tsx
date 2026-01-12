@@ -1,4 +1,6 @@
 "use client"
+import { StatusUpdateModal } from "@/components/status-update-modal"
+import { AdminManualDataModal } from "@/components/admin-manual-data-modal"
 
 import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
@@ -26,7 +28,6 @@ import {
   CheckCircle2,
   Clock,
   AlertCircle,
-  Download,
   Hash,
   UserCheck,
   Home,
@@ -36,7 +37,6 @@ import {
   Loader2,
   MapPin,
   Trash2,
-  Settings,
   Receipt,
   Calendar,
 } from "lucide-react"
@@ -67,7 +67,7 @@ const formatEIN = (ein: string | undefined, includeHyphen = false): string => {
   if (!ein || ein === "N/A") return "N/A"
   const cleaned = ein.replace(/[^0-9]/g, "")
   if (cleaned.length === 9) {
-    return includeHyphen ? `${cleaned.substring(0, 2)}-${cleaned.substring(2, 9)}` : cleaned
+    return includeHyphen ? `${cleaned.substring(0, 2)}-${cleaned.substring(2, 7)}` : cleaned
   }
   return ein
 }
@@ -93,6 +93,36 @@ const safeToFixed = (value: any, decimals = 2): string => {
   return num.toFixed(decimals)
 }
 
+const getStatusColor = (status: string): string => {
+  switch (status?.toLowerCase()) {
+    case "pending":
+      return "bg-yellow-100 text-yellow-800"
+    case "processing":
+      return "bg-blue-100 text-blue-800"
+    case "completed":
+      return "bg-green-100 text-green-800"
+    case "cancelled":
+      return "bg-red-100 text-red-800"
+    default:
+      return "bg-slate-100 text-slate-800"
+  }
+}
+
+const getStatusIcon = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "pending":
+      return <Clock className="w-4 h-4" />
+    case "processing":
+      return <Loader2 className="w-4 h-4 animate-spin" />
+    case "completed":
+      return <CheckCircle2 className="w-4 h-4" />
+    case "cancelled":
+      return <AlertCircle className="w-4 h-4" />
+    default:
+      return <Package className="w-4 h-4" />
+  }
+}
+
 export default function OrderDetailPage() {
   const router = useRouter()
   const { toast } = useToast()
@@ -111,6 +141,8 @@ export default function OrderDetailPage() {
   const [passportDocuments, setPassportDocuments] = useState<any[]>([])
   const [passportUrls, setPassportUrls] = useState<string[]>([])
   const [user, setUser] = useState<any>(null)
+
+  const [editingSection, setEditingSection] = useState<string | null>(null)
 
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [agentUpdating, setAgentUpdating] = useState(false)
@@ -188,7 +220,6 @@ export default function OrderDetailPage() {
     email: "",
     phone: "",
   })
-
   const [companyForm, setCompanyForm] = useState({
     name: "",
     state: "",
@@ -232,6 +263,14 @@ export default function OrderDetailPage() {
 
     return addonId
   }
+
+  const completedDefaultMilestones = Object.values(milestones).filter(Boolean).length
+  const totalDefaultMilestones = Object.keys(milestones).length
+  const completedMilestonesWithCustom =
+    completedDefaultMilestones + ((company?.customMilestones || []).filter((m: any) => m.completed).length || 0)
+  const totalMilestonesWithCustom = totalDefaultMilestones + ((company?.customMilestones || []).length || 0)
+  const completionPercentage =
+    totalMilestonesWithCustom > 0 ? Math.round((completedMilestonesWithCustom / totalMilestonesWithCustom) * 100) : 0
 
   const handleAddCustomMilestone = async () => {
     if (!newMilestoneTitle || !company) {
@@ -402,56 +441,6 @@ export default function OrderDetailPage() {
     }
   }
 
-  const handleMilestoneToggle = async (milestoneKey: string) => {
-    if (!company) return
-
-    setMilestoneUpdating(true)
-    try {
-      const token = authService.getToken()
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      const updatedMilestones = {
-        ...milestones,
-        [milestoneKey]: !milestones[milestoneKey as keyof typeof milestones],
-      }
-
-      const response = await fetch(`/api/companies/${company.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          milestones: updatedMilestones,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update milestone")
-      }
-
-      const result = await response.json()
-      setCompany(result.data)
-      setMilestones(updatedMilestones)
-
-      toast({
-        title: "Milestone Updated",
-        description: `Milestone updated successfully`,
-      })
-    } catch (error) {
-      toast({
-        title: "Update Failed",
-        description: "Failed to update milestone. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setMilestoneUpdating(false)
-    }
-  }
-
   const loadOrderData = useCallback(async () => {
     if (!orderId) {
       setError("Invalid order ID")
@@ -579,7 +568,7 @@ export default function OrderDetailPage() {
       setNewStatus(orderData.status || "")
       setError(null)
     } catch (error) {
-      console.error("[v0] Error loading order:", error)
+      console.error("Error loading order:", error)
       setError(error instanceof Error ? error.message : "Failed to load order")
       toast({
         title: "Error",
@@ -664,21 +653,11 @@ export default function OrderDetailPage() {
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          registeredAgent: {
-            name: agentForm.name.trim(),
-            company: agentForm.company.trim(),
-            address: agentForm.address.trim(),
-            city: agentForm.city.trim(),
-            state: agentForm.state.trim(),
-            zip: agentForm.zip.trim(),
-            phone: agentForm.phone.trim(),
-            email: agentForm.email.trim(),
-            servicePeriod: agentForm.servicePeriod,
-          },
+          registeredAgent: agentForm,
           milestones: {
             ...milestones,
             registeredAgentAssigned: true,
@@ -687,26 +666,22 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to assign registered agent")
+        throw new Error("Failed to assign registered agent")
       }
 
       const result = await response.json()
-      const updatedCompany = result.data || result.company
-
-      setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, registeredAgentAssigned: true })
+      setCompany(result.data)
+      setMilestones({ ...milestones, registeredAgentAssigned: true })
       setRegisteredAgentDialogOpen(false)
 
       toast({
         title: "Registered Agent Assigned",
-        description: "Registered agent has been successfully assigned to the company",
+        description: "Successfully assigned registered agent",
       })
     } catch (error) {
-      console.error("[v0] Error assigning registered agent:", error)
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to assign registered agent. Please try again.",
+        title: "Assignment Failed",
+        description: "Failed to assign registered agent. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -715,16 +690,10 @@ export default function OrderDetailPage() {
   }
 
   const handleAssignMailingAddress = async () => {
-    if (
-      !company ||
-      !mailingAddress.street.trim() ||
-      !mailingAddress.city.trim() ||
-      !mailingAddress.state.trim() ||
-      !mailingAddress.zip.trim()
-    ) {
+    if (!company || !mailingAddress.street || !mailingAddress.city || !mailingAddress.state || !mailingAddress.zip) {
       toast({
         title: "Missing Information",
-        description: "Please fill in all mailing address fields",
+        description: "Please fill in all address fields",
         variant: "destructive",
       })
       return
@@ -741,16 +710,11 @@ export default function OrderDetailPage() {
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mailingAddress: {
-            street: mailingAddress.street.trim(),
-            city: mailingAddress.city.trim(),
-            state: mailingAddress.state.trim(),
-            zip: mailingAddress.zip.trim(),
-          },
+          mailingAddress,
           milestones: {
             ...milestones,
             mailingAddressIssued: true,
@@ -759,26 +723,22 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.message || "Failed to assign mailing address")
+        throw new Error("Failed to assign mailing address")
       }
 
       const result = await response.json()
-      const updatedCompany = result.data || result.company
-
-      setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, mailingAddressIssued: true })
+      setCompany(result.data)
+      setMilestones({ ...milestones, mailingAddressIssued: true })
       setMailingAddressDialogOpen(false)
 
       toast({
         title: "Mailing Address Assigned",
-        description: "Mailing address has been successfully assigned to the company",
+        description: "Successfully assigned business mailing address",
       })
     } catch (error) {
-      console.error("[v0] Error assigning mailing address:", error)
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to assign mailing address. Please try again.",
+        title: "Assignment Failed",
+        description: "Failed to assign mailing address. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -790,7 +750,7 @@ export default function OrderDetailPage() {
     if (!company || !einValue.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please enter a valid EIN",
+        description: "Please enter EIN",
         variant: "destructive",
       })
       return
@@ -807,11 +767,11 @@ export default function OrderDetailPage() {
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          ein: einValue.trim(),
+          ein: einValue,
           milestones: {
             ...milestones,
             einProcessed: true,
@@ -819,24 +779,23 @@ export default function OrderDetailPage() {
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to assign EIN")
+      if (!response.ok) {
+        throw new Error("Failed to assign EIN")
+      }
 
       const result = await response.json()
-      const updatedCompany = result.data || result.company
-
-      setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, einProcessed: true })
+      setCompany(result.data)
+      setMilestones({ ...milestones, einProcessed: true })
       setEinDialogOpen(false)
       setEinValue("")
 
       toast({
         title: "EIN Assigned",
-        description: "EIN has been successfully assigned to the company",
+        description: "Successfully assigned EIN",
       })
     } catch (error) {
-      console.error("[v0] Error assigning EIN:", error)
       toast({
-        title: "Error",
+        title: "Assignment Failed",
         description: "Failed to assign EIN. Please try again.",
         variant: "destructive",
       })
@@ -849,7 +808,7 @@ export default function OrderDetailPage() {
     if (!company || !itinValue.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please enter a valid ITIN",
+        description: "Please enter ITIN",
         variant: "destructive",
       })
       return
@@ -866,31 +825,30 @@ export default function OrderDetailPage() {
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          itin: itinValue.trim(),
+          itin: itinValue,
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to assign ITIN")
+      if (!response.ok) {
+        throw new Error("Failed to assign ITIN")
+      }
 
       const result = await response.json()
-      const updatedCompany = result.data || result.company
-
-      setCompany(updatedCompany)
+      setCompany(result.data)
       setItinDialogOpen(false)
       setItinValue("")
 
       toast({
         title: "ITIN Assigned",
-        description: "ITIN has been successfully assigned to the company",
+        description: "Successfully assigned ITIN",
       })
     } catch (error) {
-      console.error("[v0] Error assigning ITIN:", error)
       toast({
-        title: "Error",
+        title: "Assignment Failed",
         description: "Failed to assign ITIN. Please try again.",
         variant: "destructive",
       })
@@ -903,7 +861,7 @@ export default function OrderDetailPage() {
     if (!company || !businessIdValue.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please enter a valid Business ID",
+        description: "Please enter Business ID",
         variant: "destructive",
       })
       return
@@ -920,36 +878,30 @@ export default function OrderDetailPage() {
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          businessId: businessIdValue.trim(),
-          milestones: {
-            ...milestones,
-            formationCompleted: true,
-          },
+          businessId: businessIdValue,
         }),
       })
 
-      if (!response.ok) throw new Error("Failed to assign Business ID")
+      if (!response.ok) {
+        throw new Error("Failed to assign Business ID")
+      }
 
       const result = await response.json()
-      const updatedCompany = result.data || result.company
-
-      setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, formationCompleted: true })
+      setCompany(result.data)
       setBusinessIdDialogOpen(false)
       setBusinessIdValue("")
 
       toast({
         title: "Business ID Assigned",
-        description: "Business ID has been successfully assigned to the company",
+        description: "Successfully assigned Business ID",
       })
     } catch (error) {
-      console.error("[v0] Error assigning Business ID:", error)
       toast({
-        title: "Error",
+        title: "Assignment Failed",
         description: "Failed to assign Business ID. Please try again.",
         variant: "destructive",
       })
@@ -959,21 +911,17 @@ export default function OrderDetailPage() {
   }
 
   const handleDeleteOrder = async () => {
-    if (!order?.id || !company?.id) {
-      toast({
-        title: "Error",
-        description: "Cannot delete order - missing order or company ID",
-        variant: "destructive",
-      })
-      return
-    }
+    if (!order) return
 
     setDeleting(true)
     try {
-      const token = localStorage.getItem("token")
-      if (!token) throw new Error("No authentication token")
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
 
-      const response = await fetch(`/api/companies/${company.id}/orders/${order.id}`, {
+      const response = await fetch(`/api/orders/${order.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -981,23 +929,19 @@ export default function OrderDetailPage() {
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || "Failed to delete order")
+        throw new Error("Failed to delete order")
       }
 
-      const result = await response.json()
-
       toast({
-        title: "Success",
-        description: result.companyDeleted ? "Order and company deleted successfully" : "Order deleted successfully",
+        title: "Order Deleted",
+        description: "Order has been successfully deleted",
       })
 
       router.push("/admin/orders")
     } catch (error) {
-      console.error("[v0] Error deleting order:", error)
       toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete order",
+        title: "Delete Failed",
+        description: "Failed to delete order. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -1006,95 +950,281 @@ export default function OrderDetailPage() {
     }
   }
 
-  const generateInvoice = () => {
-    if (!order) return
-    const invoiceContent = `Invoice #${order.id}\nTotal: $${safeToFixed(order?.pricing?.total || 0)}`
-    const blob = new Blob([invoiceContent], { type: "text/plain" })
-    const url = window.URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `invoice-${order.id}.txt`
-    a.click()
+  const handleCloseEinDialog = () => {
+    setEinDialogOpen(false)
+    setEinValue("")
   }
 
-  if (authLoading || loading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-16 h-16 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading...</p>
-        </div>
-      </div>
-    )
+  const handleCloseItinDialog = () => {
+    setItinDialogOpen(false)
+    setItinValue("")
   }
 
-  if (error || !order || !company) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <AlertCircle className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-          <h2 className="text-xl font-semibold text-slate-900 mb-2">{error || "Order Not Found"}</h2>
-          <p className="text-slate-600 mb-4">The order you're looking for doesn't exist.</p>
-          <Button onClick={() => router.push("/admin/orders")} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]">
-            <ArrowLeft className="w-4 h-4 mr-2" />
-            Back to Orders
-          </Button>
-        </div>
-      </div>
-    )
+  const handleCloseBusinessIdDialog = () => {
+    setBusinessIdDialogOpen(false)
+    setBusinessIdValue("")
   }
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "completed":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200"
-      case "processing":
-        return "bg-blue-50 text-blue-700 border-blue-200"
-      case "pending":
-        return "bg-amber-50 text-amber-700 border-amber-200"
-      default:
-        return "bg-slate-50 text-slate-700 border-slate-200"
-    }
+  const handleCloseMailingAddressDialog = () => {
+    setMailingAddressDialogOpen(false)
   }
 
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "completed":
-        return <CheckCircle2 className="w-4 h-4" />
-      case "processing":
-        return <Clock className="w-4 h-4" />
-      case "pending":
-        return <AlertCircle className="w-4 h-4" />
-      default:
-        return null
-    }
-  }
-
-  const completedDefaultMilestones = Object.values(milestones).filter(Boolean).length
-  const totalDefaultMilestones = Object.keys(milestones).length
-  const completionPercentage =
-    totalDefaultMilestones > 0 ? Math.round((completedDefaultMilestones / totalDefaultMilestones) * 100) : 0
-
-  const totalMilestonesWithCustom = totalDefaultMilestones + (company?.customMilestones?.length || 0)
-  const completedMilestonesWithCustom =
-    completedDefaultMilestones + (company?.customMilestones?.filter((m: any) => m.completed).length || 0)
-
-  const handleViewCompanyDetails = () => {
-    if (!company || !company.id) {
+  const handleUpdateCompanyStatus = async (newStatus: string) => {
+    if (!company?.id) {
       toast({
         title: "Error",
-        description: "Company information is not available for this order.",
+        description: "Company ID not found",
         variant: "destructive",
       })
       return
     }
 
-    setSelectedCompany(company)
-    setCompanyModalOpen(true)
+    try {
+      setStatusUpdating(true)
+      const token = authService.getToken()
+
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statusType: "companyStatus",
+          statusValue: newStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update company status")
+      }
+
+      const result = await response.json()
+
+      setCompany(result.data)
+      setCompanyStatusDialogOpen(false)
+
+      toast({
+        title: "Status Updated",
+        description: "Company status has been updated successfully",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("Error updating company status:", error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update company status",
+        variant: "destructive",
+      })
+    } finally {
+      setStatusUpdating(false)
+    }
+  }
+
+  const handleUpdateRegisteredAgentStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setAgentUpdating(true)
+      const token = authService.getToken()
+
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statusType: "registeredAgentStatus",
+          statusValue: newStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update registered agent status")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setRegisteredAgentStatusDialogOpen(false)
+
+      toast({
+        title: "Status Updated",
+        description: "Registered agent status has been updated successfully",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("Error updating registered agent status:", error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update registered agent status",
+        variant: "destructive",
+      })
+    } finally {
+      setAgentUpdating(false)
+    }
+  }
+
+  const handleUpdateBusinessAddressStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      setAddressUpdating(true)
+      const token = authService.getToken()
+
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statusType: "businessAddressStatus",
+          statusValue: newStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update business address status")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setBusinessAddressStatusDialogOpen(false)
+
+      toast({
+        title: "Status Updated",
+        description: "Business address status has been updated successfully",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("Error updating business address status:", error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update business address status",
+        variant: "destructive",
+      })
+    } finally {
+      setAddressUpdating(false)
+    }
+  }
+
+  const handleUpdateServiceStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const token = authService.getToken()
+
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}/status`, {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          statusType: "serviceStatus",
+          statusValue: newStatus,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update service status")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+      setServiceStatusDialogOpen(false)
+
+      toast({
+        title: "Status Updated",
+        description: "Service status has been updated successfully",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("Error updating service status:", error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update service status",
+        variant: "destructive",
+      })
+    }
+  }
+
+  if (authLoading || loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <Loader2 className="w-8 h-8 animate-spin" />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="space-y-4">
+        <div className="flex items-center gap-4">
+          <Button variant="outline" onClick={() => router.push("/admin/orders")} className="h-10 w-10 p-0">
+            <ArrowLeft className="w-4 h-4" />
+          </Button>
+          <div>
+            <h1 className="text-2xl font-semibold text-slate-900">Error</h1>
+            <p className="text-slate-600 mt-1">{error}</p>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  if (!order || !company) {
+    return null
   }
 
   return (
-    <div className="space-y-4 p-4">
+    <div className="space-y-4">
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
@@ -1207,9 +1337,16 @@ export default function OrderDetailPage() {
               <p className="text-sm text-slate-600 mt-1">
                 {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed (
                 {completionPercentage}%)
+                {company?.customMilestones && company.customMilestones.length > 0 && (
+                  <span className="text-slate-500">
+                    {" "}
+                    • {completedMilestonesWithCustom} of {totalMilestonesWithCustom} total
+                  </span>
+                )}
               </p>
             </CardHeader>
             <CardContent>
+              {/* Progress Bar */}
               <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-6">
                 <div
                   className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full transition-all duration-700"
@@ -1217,6 +1354,7 @@ export default function OrderDetailPage() {
                 />
               </div>
 
+              {/* Milestone List */}
               <div className="space-y-2">
                 <div
                   className={`flex items-center justify-between p-3 rounded-lg ${milestones.orderProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
@@ -1235,7 +1373,6 @@ export default function OrderDetailPage() {
                     <Clock className="w-5 h-5 text-slate-400" />
                   )}
                 </div>
-
                 <div
                   className={`flex items-center justify-between p-3 rounded-lg ${milestones.registeredAgentAssigned ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
@@ -1255,7 +1392,6 @@ export default function OrderDetailPage() {
                     <Clock className="w-5 h-5 text-slate-400" />
                   )}
                 </div>
-
                 <div
                   className={`flex items-center justify-between p-3 rounded-lg ${milestones.mailingAddressIssued ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
@@ -1275,7 +1411,6 @@ export default function OrderDetailPage() {
                     <Clock className="w-5 h-5 text-slate-400" />
                   )}
                 </div>
-
                 <div
                   className={`flex items-center justify-between p-3 rounded-lg ${milestones.formationCompleted ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
@@ -1295,7 +1430,6 @@ export default function OrderDetailPage() {
                     <Clock className="w-5 h-5 text-slate-400" />
                   )}
                 </div>
-
                 <div
                   className={`flex items-center justify-between p-3 rounded-lg ${milestones.einProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
@@ -1313,7 +1447,6 @@ export default function OrderDetailPage() {
                     <Clock className="w-5 h-5 text-slate-400" />
                   )}
                 </div>
-
                 <div
                   className={`flex items-center justify-between p-3 rounded-lg ${milestones.boiReportFiled ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
@@ -1333,11 +1466,64 @@ export default function OrderDetailPage() {
                     <Clock className="w-5 h-5 text-slate-400" />
                   )}
                 </div>
+
+                {company?.customMilestones && company.customMilestones.length > 0 && (
+                  <>
+                    <div className="pt-3 border-t border-slate-200">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
+                        Custom Milestones
+                      </p>
+                    </div>
+                    {company.customMilestones.map((milestone: any) => (
+                      <div
+                        key={milestone.id}
+                        className={`flex items-center justify-between p-3 rounded-lg ${milestone.completed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <FileCheck
+                            className={`w-5 h-5 ${milestone.completed ? "text-green-600" : "text-slate-400"}`}
+                          />
+                          <div>
+                            <span
+                              className={`text-sm font-medium ${milestone.completed ? "text-slate-900" : "text-slate-600"}`}
+                            >
+                              {milestone.title}
+                            </span>
+                            {milestone.description && (
+                              <p className="text-xs text-slate-500 mt-0.5">{milestone.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCustomMilestoneToggle(milestone.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {milestone.completed ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <Clock className="w-5 h-5 text-slate-400" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteCustomMilestone(milestone.id)}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Company Information */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -1346,36 +1532,59 @@ export default function OrderDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid sm:grid-cols-2 gap-3">
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Company Name</p>
-                  <p className="text-sm font-medium text-slate-900">{company?.name || "N/A"}</p>
+              <div className="space-y-6">
+                <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Company Name</p>
+                    <p className="text-sm font-medium text-slate-900">{company.name}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">State of Formation</p>
+                    <p className="text-sm font-medium text-slate-900">{company.state}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Entity Type</p>
+                    <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Business Category</p>
+                    <p className="text-sm font-medium text-slate-900">{company.businessCategory || "Not provided"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Package Type</p>
+                    <Badge variant="outline" className="text-xs capitalize">
+                      {company.packageType || "Starter"}
+                    </Badge>
+                  </div>
+                  {company.businessWebsite && (
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Business Website</p>
+                      <a
+                        href={
+                          company.businessWebsite.startsWith("http")
+                            ? company.businessWebsite
+                            : `https://${company.businessWebsite}`
+                        }
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-blue-600 hover:underline"
+                      >
+                        {company.businessWebsite}
+                      </a>
+                    </div>
+                  )}
                 </div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">State of Formation</p>
-                  <p className="text-sm font-medium text-slate-900">{company?.state || "N/A"}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Entity Type</p>
-                  <p className="text-sm font-medium text-slate-900">{company?.entityType || "N/A"}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Business Category</p>
-                  <p className="text-sm font-medium text-slate-900">{company?.businessCategory || "N/A"}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">EIN</p>
-                  <p className="text-sm font-medium text-slate-900">{formatEIN(company?.ein, true)}</p>
-                </div>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Business ID</p>
-                  <p className="text-sm font-medium text-slate-900">{formatBusinessId(company?.businessId)}</p>
-                </div>
+
+                {company.businessDescription && (
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-2">Business Description</p>
+                    <p className="text-sm text-slate-900 leading-relaxed">{company.businessDescription}</p>
+                  </div>
+                )}
               </div>
             </CardContent>
           </Card>
 
-          {/* Business Owners / Members */}
           {company?.members && company.members.length > 0 && (
             <Card className="bg-white border-slate-200 shadow-sm">
               <CardHeader>
@@ -1383,24 +1592,64 @@ export default function OrderDetailPage() {
                   <Users className="w-5 h-5" />
                   Business Owners / Members
                 </CardTitle>
+                <p className="text-sm text-slate-600 mt-1">
+                  {company.members.length} member{company.members.length !== 1 ? "s" : ""} registered
+                </p>
               </CardHeader>
               <CardContent>
-                <div className="space-y-3">
-                  {company.members.map((member: any, idx: number) => (
-                    <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-slate-900">{member.name || `Member ${idx + 1}`}</p>
-                          <p className="text-xs text-slate-600 mt-1">
-                            {member.address && `${member.address}, ${member.city}, ${member.state} ${member.zip}`}
-                          </p>
-                          {member.needsItin && (
-                            <Badge variant="secondary" className="mt-2 bg-blue-100 text-blue-700">
-                              ITIN Required
-                            </Badge>
-                          )}
+                <div className="space-y-4">
+                  {company.members.map((member: any, index: number) => (
+                    <div
+                      key={member.id || index}
+                      className={`p-4 rounded-lg border border-slate-200 ${member.responsiblePerson ? "bg-blue-50 border-blue-300" : "bg-slate-50"}`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-slate-900">{member.name || "N/A"}</h3>
+                            {member.responsiblePerson && (
+                              <Badge variant="secondary" className="mt-1 text-xs bg-blue-200 text-blue-800">
+                                Responsible Person
+                              </Badge>
+                            )}
+                          </div>
                         </div>
-                        {member.isResponsiblePerson && <Badge className="bg-blue-600 text-white">Responsible</Badge>}
+                        <Badge variant="outline" className="text-xs">
+                          Member {index + 1}
+                        </Badge>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-3 mt-3">
+                        {member.ssn && (
+                          <div>
+                            <p className="text-xs text-slate-600">SSN/ITIN</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {member.ssn.length > 4 ? `***-**-${member.ssn.slice(-4)}` : "Provided"}
+                            </p>
+                          </div>
+                        )}
+                        {member.address && (
+                          <div className="sm:col-span-2">
+                            <p className="text-xs text-slate-600">Address</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {member.address}
+                              {member.city && `, ${member.city}`}
+                              {member.state && `, ${member.state}`}
+                              {member.zip && ` ${member.zip}`}
+                              {member.country && `, ${member.country}`}
+                            </p>
+                          </div>
+                        )}
+                        {member.itinAdded && (
+                          <div className="sm:col-span-2">
+                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800">
+                              ITIN Application Requested
+                            </Badge>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -1408,151 +1657,252 @@ export default function OrderDetailPage() {
               </CardContent>
             </Card>
           )}
-        </div>
 
-        {/* Right Sidebar */}
-        <div className="space-y-4">
-          {/* Admin Actions Card */}
-          <Card className="shadow-sm border-slate-200">
-            <CardHeader className="bg-slate-50/50 border-b">
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Admin Actions
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setRegisteredAgentDialogOpen(true)}
-                  disabled={agentUpdating || !company}
-                >
-                  <UserCheck className="w-4 h-4 mr-2" />
-                  <span className="font-medium">Assign Registered Agent</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMailingAddressDialogOpen(true)}
-                  disabled={addressUpdating || !company}
-                >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  <span className="font-medium">Assign Mailing Address</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setEinDialogOpen(true)}
-                  disabled={einUpdating || !company}
-                >
-                  <Hash className="w-4 h-4 mr-2" />
-                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setBusinessIdDialogOpen(true)}
-                  disabled={businessIdUpdating || !company}
-                >
-                  <Hash className="w-4 h-4 mr-2" />
-                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={generateInvoice}
-                >
-                  <Download className="w-4 h-4 mr-2" />
-                  <span className="font-medium">Download Invoice</span>
-                </Button>
-
-                <Button
-                  variant="destructive"
-                  className="w-full justify-start h-11 hover:bg-red-600"
-                  onClick={() => setDeleteDialogOpen(true)}
-                  disabled={deleting}
-                >
-                  {deleting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Order
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Order Summary */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
                 <Receipt className="w-5 h-5" />
-                Order Summary
+                Order & Pricing Details
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <p className="text-xs text-slate-600 mb-1">Package Price</p>
-                <p className="text-lg font-bold text-slate-900">${safeToFixed(order?.pricing?.packagePrice || 0)}</p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <p className="text-xs text-slate-600 mb-1">Add-ons</p>
-                <p className="text-lg font-bold text-slate-900">${safeToFixed(order?.pricing?.addons || 0)}</p>
-              </div>
-
-              <div className="p-3 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-slate-200">
-                <p className="text-xs text-white mb-1">Total Amount</p>
-                <p className="text-2xl font-bold text-white">
-                  ${safeToFixed(order?.pricing?.total || order?.amount || 0)}
-                </p>
-              </div>
-
-              <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <p className="text-xs text-slate-600 mb-1">Payment Method</p>
-                    <p className="text-sm font-medium text-slate-900 capitalize">
-                      {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
+            <CardContent>
+              <div className="space-y-4">
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Package Price</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${safeToFixed(order?.pricing?.packagePrice || order?.packagePrice || 0)}
                     </p>
                   </div>
-                  <div>
-                    <p className="text-xs text-slate-600 mb-1">Payment Status</p>
-                    <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"}>
-                      {order?.paymentInfo?.status || "Pending"}
-                    </Badge>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">State Filing Fee</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${safeToFixed(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0)}
+                    </p>
                   </div>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-slate-600" />
-                  <div>
-                    <p className="text-xs text-slate-600">Order Date</p>
-                    <p className="text-sm font-medium text-slate-900">
-                      {order?.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "N/A"}
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${safeToFixed(order?.pricing?.addonsTotal || order?.addonsTotal || 0)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-slate-200">
+                    <p className="text-xs text-white mb-1">Total Amount</p>
+                    <p className="text-2xl font-bold text-white">
+                      ${safeToFixed(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0)}
                     </p>
                   </div>
                 </div>
+
+                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-slate-600 mb-1">Payment Method</p>
+                      <p className="text-sm font-medium text-slate-900 capitalize">
+                        {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 mb-1">Payment Status</p>
+                      <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"}>
+                        {order?.paymentInfo?.status || "Pending"}
+                      </Badge>
+                    </div>
+                    {order?.paymentInfo?.transactionReference && (
+                      <div className="sm:col-span-2">
+                        <p className="text-xs text-slate-600 mb-1">Transaction Reference</p>
+                        <p className="text-sm font-medium text-slate-900 font-mono">
+                          {order.paymentInfo.transactionReference}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-600" />
+                    <div>
+                      <p className="text-xs text-slate-600">Order Date</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {order?.createdAt
+                          ? new Date(order.createdAt).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
               </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Sidebar - Right Column */}
+        <div className="lg:col-span-1 space-y-4">
+          {/* Business Identifiers Card */}
+          <Card className="bg-white border-slate-200 shadow-sm sticky top-4">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                <Hash className="w-5 h-5" />
+                Business Identifiers
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-slate-600">EIN</p>
+                  <Button variant="ghost" size="sm" onClick={() => setEinDialogOpen(true)} className="h-7 px-2 text-xs">
+                    {hasEIN ? "Update" : "Assign"}
+                  </Button>
+                </div>
+                {hasEIN ? (
+                  <p className="text-sm font-bold text-slate-900">{formatEIN(company.ein, true)}</p>
+                ) : (
+                  <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 text-xs">
+                    Not Yet
+                  </Badge>
+                )}
+              </div>
+
+              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-medium text-slate-600">Business ID</p>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setBusinessIdDialogOpen(true)}
+                    className="h-7 px-2 text-xs"
+                  >
+                    {hasBusinessId ? "Update" : "Assign"}
+                  </Button>
+                </div>
+                {hasBusinessId ? (
+                  <p className="text-sm font-bold text-slate-900">{formatBusinessId(company.businessId)}</p>
+                ) : (
+                  <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 text-xs">
+                    Not Yet
+                  </Badge>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Registered Agent Card */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                  <UserCheck className="w-5 h-5" />
+                  Registered Agent
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setRegisteredAgentDialogOpen(true)}
+                  className="h-7 px-2 text-xs"
+                >
+                  {hasRegisteredAgent ? "Update" : "Assign"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {hasRegisteredAgent ? (
+                <div className="space-y-2 text-sm">
+                  <div>
+                    <p className="text-xs text-slate-600">Name</p>
+                    <p className="font-medium text-slate-900">{company.registeredAgent.name}</p>
+                  </div>
+                  {company.registeredAgent.company && (
+                    <div>
+                      <p className="text-xs text-slate-600">Company</p>
+                      <p className="font-medium text-slate-900">{company.registeredAgent.company}</p>
+                    </div>
+                  )}
+                  {company.registeredAgent.email && (
+                    <div>
+                      <p className="text-xs text-slate-600">Email</p>
+                      <p className="font-medium text-slate-900">{company.registeredAgent.email}</p>
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 text-xs">
+                  Not Yet Assigned
+                </Badge>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Mailing Address Card */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Mailing Address
+                </CardTitle>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setMailingAddressDialogOpen(true)}
+                  className="h-7 px-2 text-xs"
+                >
+                  {hasMailingAddress ? "Update" : "Assign"}
+                </Button>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {hasMailingAddress ? (
+                <div className="text-sm space-y-1">
+                  <p className="font-medium text-slate-900">{company.mailingAddress.street}</p>
+                  <p className="text-slate-600">
+                    {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
+                  </p>
+                </div>
+              ) : (
+                <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 text-xs">
+                  Not Yet Assigned
+                </Badge>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Add-ons Card */}
+          {addons.length > 0 && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
+                  <Package className="w-5 h-5" />
+                  Purchased Add-ons
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-2">
+                  {addons.map((addon: any, index: number) => (
+                    <div key={index} className="p-2 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs font-medium text-slate-600">{getAddonName(addon.id || addon)}</p>
+                      {addon.price && <p className="text-sm font-bold text-slate-900">${safeToFixed(addon.price)}</p>}
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Delete Order Card */}
+          <Card className="bg-white border-red-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-base font-semibold text-red-900">Danger Zone</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Button variant="destructive" className="w-full" onClick={() => setDeleteDialogOpen(true)}>
+                <Trash2 className="w-4 h-4 mr-2" />
+                Delete Order
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -1560,230 +1910,448 @@ export default function OrderDetailPage() {
 
       {/* Dialogs */}
       <Dialog open={registeredAgentDialogOpen} onOpenChange={setRegisteredAgentDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="sm:max-w-[600px]">
           <DialogHeader>
-            <DialogTitle>Assign Registered Agent</DialogTitle>
-            <DialogDescription>Add registered agent information for the company</DialogDescription>
+            <DialogTitle className="flex items-center gap-2">
+              <UserCheck className="w-5 h-5 text-[#dc2626]" />
+              Assign Registered Agent
+            </DialogTitle>
+            <DialogDescription>
+              Assign a registered agent to {company?.name}. This will be displayed on company documents.
+            </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label>Agent Name</Label>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="agentName">Name *</Label>
               <Input
+                id="agentName"
                 value={agentForm.name}
                 onChange={(e) => setAgentForm({ ...agentForm, name: e.target.value })}
-                placeholder="Full name"
+                placeholder="John Doe"
+                disabled={agentUpdating}
               />
             </div>
-            <div>
-              <Label>Company</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="agentCompany">Company Name</Label>
               <Input
+                id="agentCompany"
                 value={agentForm.company}
                 onChange={(e) => setAgentForm({ ...agentForm, company: e.target.value })}
-                placeholder="Company name"
+                placeholder="Registered Agent Inc."
+                disabled={agentUpdating}
               />
             </div>
-            <div>
-              <Label>Address</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="agentAddress">Street Address *</Label>
               <Input
+                id="agentAddress"
                 value={agentForm.address}
                 onChange={(e) => setAgentForm({ ...agentForm, address: e.target.value })}
-                placeholder="Street address"
+                placeholder="123 Main Street"
+                disabled={agentUpdating}
               />
             </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label>City</Label>
+            <div className="grid grid-cols-3 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="agentCity">City *</Label>
                 <Input
+                  id="agentCity"
                   value={agentForm.city}
                   onChange={(e) => setAgentForm({ ...agentForm, city: e.target.value })}
-                  placeholder="City"
+                  placeholder="New York"
+                  disabled={agentUpdating}
                 />
               </div>
-              <div>
-                <Label>State</Label>
+              <div className="grid gap-2">
+                <Label htmlFor="agentState">State *</Label>
                 <Input
+                  id="agentState"
                   value={agentForm.state}
                   onChange={(e) => setAgentForm({ ...agentForm, state: e.target.value })}
-                  placeholder="State"
+                  placeholder="NY"
                   maxLength={2}
+                  disabled={agentUpdating}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="agentZip">ZIP *</Label>
+                <Input
+                  id="agentZip"
+                  value={agentForm.zip}
+                  onChange={(e) => setAgentForm({ ...agentForm, zip: e.target.value })}
+                  placeholder="10001"
+                  maxLength={10}
+                  disabled={agentUpdating}
                 />
               </div>
             </div>
-            <div>
-              <Label>ZIP</Label>
+            <div className="grid gap-2">
+              <Label htmlFor="agentEmail">Email</Label>
               <Input
-                value={agentForm.zip}
-                onChange={(e) => setAgentForm({ ...agentForm, zip: e.target.value })}
-                placeholder="ZIP code"
-              />
-            </div>
-            <div>
-              <Label>Phone</Label>
-              <Input
-                value={agentForm.phone}
-                onChange={(e) => setAgentForm({ ...agentForm, phone: e.target.value })}
-                placeholder="Phone number"
-              />
-            </div>
-            <div>
-              <Label>Email</Label>
-              <Input
+                id="agentEmail"
                 type="email"
                 value={agentForm.email}
                 onChange={(e) => setAgentForm({ ...agentForm, email: e.target.value })}
-                placeholder="Email"
+                placeholder="agent@example.com"
+                disabled={agentUpdating}
               />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="agentPhone">Phone</Label>
+              <Input
+                id="agentPhone"
+                value={agentForm.phone}
+                onChange={(e) => setAgentForm({ ...agentForm, phone: e.target.value })}
+                placeholder="(555) 123-4567"
+                disabled={agentUpdating}
+              />
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="servicePeriod">Service Period</Label>
+              <Select
+                value={agentForm.servicePeriod}
+                onValueChange={(value) => setAgentForm({ ...agentForm, servicePeriod: value })}
+              >
+                <SelectTrigger id="servicePeriod">
+                  <SelectValue placeholder="Select period" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1 Year">1 Year</SelectItem>
+                  <SelectItem value="2 Years">2 Years</SelectItem>
+                  <SelectItem value="3 Years">3 Years</SelectItem>
+                  <SelectItem value="Perpetual">Perpetual</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setRegisteredAgentDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setRegisteredAgentDialogOpen(false)} disabled={agentUpdating}>
               Cancel
             </Button>
             <Button
               onClick={handleAssignRegisteredAgent}
               disabled={agentUpdating}
-              className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+              className="bg-[#dc2626] hover:bg-[#b91c1c]"
             >
-              {agentUpdating ? "Assigning..." : "Assign Agent"}
+              {agentUpdating ? "Assigning..." : "Assign Registered Agent"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
-      <Dialog open={mailingAddressDialogOpen} onOpenChange={setMailingAddressDialogOpen}>
+      <Dialog open={einDialogOpen} onOpenChange={handleCloseEinDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Assign Mailing Address</DialogTitle>
-            <DialogDescription>Add mailing address for the company</DialogDescription>
+            <DialogTitle className="text-xl font-semibold">Assign EIN</DialogTitle>
+            <DialogDescription>Enter the EIN (Employer Identification Number) for this company.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div>
-              <Label>Street Address</Label>
+            <div className="space-y-2">
+              <Label htmlFor="einInput">EIN Number *</Label>
               <Input
+                id="einInput"
+                placeholder="XX-XXXXXXX"
+                value={einValue}
+                onChange={(e) => setEinValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <p className="text-xs text-slate-500">Format: XX-XXXXXXX (9 digits with hyphen)</p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> The EIN will be entered as provided. Standard format is XX-XXXXXXX.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setEinDialogOpen(false)} disabled={einUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignEIN}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!einValue.trim() || einUpdating}
+              >
+                {einUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <Hash className="w-4 h-4 mr-2" />
+                    Assign EIN
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={itinDialogOpen} onOpenChange={handleCloseItinDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign ITIN</DialogTitle>
+            <DialogDescription>
+              Enter the ITIN (Individual Taxpayer Identification Number) for this company.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="itinInput">ITIN Number *</Label>
+              <Input
+                id="itinInput"
+                placeholder="9XX-XX-XXXX"
+                value={itinValue}
+                onChange={(e) => setItinValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <p className="text-xs text-slate-500">
+                Format: 9XX-XX-XXXX (starts with 9, followed by two digits from 50-65, 70-88, 90-92, 94-99)
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> The ITIN will be entered as provided.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setItinDialogOpen(false)} disabled={itinUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignITIN}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!itinValue.trim() || itinUpdating}
+              >
+                {itinUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <FileBarChart className="w-4 h-4 mr-2" />
+                    Assign ITIN
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={businessIdDialogOpen} onOpenChange={handleCloseBusinessIdDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign Business ID</DialogTitle>
+            <DialogDescription>
+              Assign a Business ID (State Filing Number) for {company?.name}. This identifier is issued by the state
+              after formation is complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="businessIdInput">Business ID / State Filing Number *</Label>
+              <Input
+                id="businessIdInput"
+                placeholder="L21000123456"
+                value={businessIdValue}
+                onChange={(e) => setBusinessIdValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <p className="text-xs text-slate-500">
+                Enter the business ID or filing number issued by the state (format varies by state)
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> This is the official state-issued identifier for the business entity, different
+                from the EIN.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setBusinessIdDialogOpen(false)} disabled={businessIdUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignBusinessId}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!businessIdValue.trim() || businessIdUpdating}
+              >
+                {businessIdUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <Building2 className="w-4 h-4 mr-2" />
+                    Assign Business ID
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={mailingAddressDialogOpen} onOpenChange={handleCloseMailingAddressDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Home className="w-5 h-5 text-[#dc2626]" />
+              Assign Mailing Address
+            </DialogTitle>
+            <DialogDescription>
+              Assign a mailing address to {company?.name}. This will be displayed on the user dashboard and company
+              page.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="street">Street Address *</Label>
+              <Input
+                id="street"
                 value={mailingAddress.street}
                 onChange={(e) => setMailingAddress({ ...mailingAddress, street: e.target.value })}
-                placeholder="Street address"
+                placeholder="123 Main Street"
+                disabled={addressUpdating}
               />
             </div>
-            <div>
-              <Label>City</Label>
-              <Input
-                value={mailingAddress.city}
-                onChange={(e) => setMailingAddress({ ...mailingAddress, city: e.target.value })}
-                placeholder="City"
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <Label>State</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="city">City *</Label>
                 <Input
+                  id="city"
+                  value={mailingAddress.city}
+                  onChange={(e) => setMailingAddress({ ...mailingAddress, city: e.target.value })}
+                  placeholder="New York"
+                  disabled={addressUpdating}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="state">State *</Label>
+                <Input
+                  id="state"
                   value={mailingAddress.state}
                   onChange={(e) => setMailingAddress({ ...mailingAddress, state: e.target.value })}
-                  placeholder="State"
+                  placeholder="NY"
                   maxLength={2}
+                  disabled={addressUpdating}
                 />
               </div>
-              <div>
-                <Label>ZIP</Label>
-                <Input
-                  value={mailingAddress.zip}
-                  onChange={(e) => setMailingAddress({ ...mailingAddress, zip: e.target.value })}
-                  placeholder="ZIP code"
-                />
-              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="zip">ZIP Code *</Label>
+              <Input
+                id="zip"
+                value={mailingAddress.zip}
+                onChange={(e) => setMailingAddress({ ...mailingAddress, zip: e.target.value })}
+                placeholder="10001"
+                maxLength={10}
+                disabled={addressUpdating}
+              />
             </div>
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setMailingAddressDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setMailingAddressDialogOpen(false)} disabled={addressUpdating}>
               Cancel
             </Button>
             <Button
               onClick={handleAssignMailingAddress}
               disabled={addressUpdating}
-              className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+              className="bg-[#dc2626] hover:bg-[#b91c1c]"
             >
-              {addressUpdating ? "Assigning..." : "Assign Address"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={einDialogOpen} onOpenChange={setEinDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Assign EIN</DialogTitle>
-            <DialogDescription>Enter the EIN for the company</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label>EIN</Label>
-              <Input value={einValue} onChange={(e) => setEinValue(e.target.value)} placeholder="XX-XXXXXXX" />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setEinDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAssignEIN}
-              disabled={einUpdating}
-              className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-            >
-              {einUpdating ? "Assigning..." : "Assign EIN"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={businessIdDialogOpen} onOpenChange={setBusinessIdDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Assign Business ID</DialogTitle>
-            <DialogDescription>Enter the Business ID for the company</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div>
-              <Label>Business ID</Label>
-              <Input
-                value={businessIdValue}
-                onChange={(e) => setBusinessIdValue(e.target.value)}
-                placeholder="Enter Business ID"
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBusinessIdDialogOpen(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAssignBusinessId}
-              disabled={businessIdUpdating}
-              className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-            >
-              {businessIdUpdating ? "Assigning..." : "Assign ID"}
+              {addressUpdating ? "Assigning..." : "Assign Mailing Address"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent>
           <DialogHeader>
-            <DialogTitle className="text-red-600">Delete Order</DialogTitle>
+            <DialogTitle>Confirm Deletion</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete this order? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
-              {deleting ? "Deleting..." : "Delete"}
+              {deleting ? "Deleting..." : "Delete Order"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <StatusUpdateModal
+        open={companyStatusDialogOpen}
+        onOpenChange={setCompanyStatusDialogOpen}
+        title="Update Company Status"
+        description="Change the overall operational status of this company"
+        currentStatus={company?.companyStatus || "pending"}
+        onUpdate={handleUpdateCompanyStatus}
+      />
+
+      <StatusUpdateModal
+        open={registeredAgentStatusDialogOpen}
+        onOpenChange={setRegisteredAgentStatusDialogOpen}
+        title="Update Registered Agent Status"
+        description="Change the status of the registered agent assignment"
+        currentStatus={company?.registeredAgentStatus || "pending"}
+        onUpdate={handleUpdateRegisteredAgentStatus}
+      />
+
+      <StatusUpdateModal
+        open={businessAddressStatusDialogOpen}
+        onOpenChange={setBusinessAddressStatusDialogOpen}
+        title="Update Business Address Status"
+        description="Change the status of the business mailing address"
+        currentStatus={company?.businessAddressStatus || "pending"}
+        onUpdate={handleUpdateBusinessAddressStatus}
+      />
+
+      <StatusUpdateModal
+        open={serviceStatusDialogOpen}
+        onOpenChange={setServiceStatusDialogOpen}
+        title="Update Service Status"
+        description="Change the overall service delivery status"
+        currentStatus={company?.serviceStatus || "pending"}
+        onUpdate={handleUpdateServiceStatus}
+      />
+
+      <AdminManualDataModal
+        open={taxModalOpen}
+        onOpenChange={setTaxModalOpen}
+        companyId={company?._id}
+        dataType="tax"
+        currentData={{
+          formationDate: company?.formationDate,
+          ein: company?.ein,
+          businessId: company?.businessId,
+          taxClassification: company?.taxClassification,
+          annualReportFilingDate: company?.annualReportFilingDate,
+          irsFilingDate: company?.irsFilingDate,
+        }}
+        onUpdate={loadOrderData}
+      />
+      <AdminManualDataModal
+        open={agentModalOpen}
+        onOpenChange={setAgentModalOpen}
+        companyId={company?._id}
+        dataType="registered-agent"
+        currentData={company?.registeredAgent}
+        onUpdate={loadOrderData}
+      />
+      <AdminManualDataModal
+        open={addressModalOpen}
+        onOpenChange={setAddressModalOpen}
+        companyId={company?._id}
+        dataType="business-address"
+        currentData={company?.businessAddress}
+        onUpdate={loadOrderData}
+      />
     </div>
   )
 }
