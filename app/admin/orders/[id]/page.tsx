@@ -184,8 +184,9 @@ export default function OrderDetailPage() {
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<any>(null)
 
-  const [editingCustomer, setEditingCustomer] = useState(false)
-  const [editingCompany, setEditingCompany] = useState(false)
+  // const [editingCustomer, setEditingCustomer] = useState(false)
+  // const [editingCompany, setEditingCompany] = useState(false)
+
   const [customerForm, setCustomerForm] = useState({
     name: "",
     email: "",
@@ -1737,6 +1738,12 @@ export default function OrderDetailPage() {
     }
   }
 
+  const safeToFixed = (value: any, decimals = 2): string => {
+    if (value === null || value === undefined) return "0.00"
+    const num = Number.parseFloat(String(value))
+    return isNaN(num) ? "0.00" : num.toFixed(decimals)
+  }
+
   const generateInvoice = () => {
     if (!order) return
 
@@ -1829,19 +1836,19 @@ export default function OrderDetailPage() {
     <div class="info-grid">
       <div class="info-item">
         <div class="info-label">Base Price</div>
-        <div class="info-value">$${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}</div>
+        <div class="info-value">$${safeToFixed(order?.pricing?.packagePrice || order?.packagePrice || 0)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">Add-ons</div>
-        <div class="info-value">$${(order?.pricing?.addonsTotal || (order?.selectedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) || 0).toFixed(2)}</div>
+        <div class="info-value">$${safeToFixed(order?.pricing?.addonsTotal || (order?.selectedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) || 0)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">State Fee</div>
-        <div class="info-value">$${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}</div>
+        <div class="info-value">$${safeToFixed(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0)}</div>
       </div>
       <div class="info-item" style="background: #880000; color: white;">
         <div class="info-label" style="color: #fff;">Total Amount</div>
-        <div class="info-value" style="color: #fff; font-size: 20px; font-weight: bold;">$${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}</div>
+        <div class="info-value" style="color: #fff; font-size: 20px; font-weight: bold;">$${safeToFixed(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0)}</div>
       </div>
     </div>
   </div>
@@ -1860,7 +1867,7 @@ export default function OrderDetailPage() {
           return `
         <li style="padding: 10px; background: #f5f5f5; margin-bottom: 10px; border-radius: 5px;">
           <strong>${addonName}</strong>
-          ${addonPrice ? ` - $${addonPrice.toFixed(2)}` : ""}
+          ${addonPrice ? ` - $${safeToFixed(addonPrice)}` : ""}
         </li>
       `
         })
@@ -1895,109 +1902,109 @@ export default function OrderDetailPage() {
     })
   }
 
-  const handleSaveCustomer = async () => {
-    if (!customer?.id) {
-      toast({
-        title: "Error",
-        description: "Customer ID not found. Cannot save changes.",
-        variant: "destructive",
-      })
-      return
-    }
-    try {
-      const token = authService.getToken()
-      if (!token) {
-        router.push("/login")
-        return
-      }
+  // const handleSaveCustomer = async () => {
+  //   if (!customer?.id) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Customer ID not found. Cannot save changes.",
+  //       variant: "destructive",
+  //     })
+  //     return
+  //   }
+  //   try {
+  //     const token = authService.getToken()
+  //     if (!token) {
+  //       router.push("/login")
+  //       return
+  //     }
 
-      const response = await fetch(`/api/users/${customer.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: customerForm.name,
-          email: customerForm.email,
-          phone: customerForm.phone,
-        }),
-      })
+  //     const response = await fetch(`/api/users/${customer.id}`, {
+  //       method: "PUT",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         name: customerForm.name,
+  //         email: customerForm.email,
+  //         phone: customerForm.phone,
+  //       }),
+  //     })
 
-      if (!response.ok) {
-        throw new Error("Failed to update customer information")
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Failed to update customer information")
+  //     }
 
-      const result = await response.json()
-      setCustomer(result.data) // Update customer state with the latest data
-      setEditingCustomer(false) // Exit editing mode
+  //     const result = await response.json()
+  //     setCustomer(result.data) // Update customer state with the latest data
+  //     setEditingCustomer(false) // Exit editing mode
 
-      toast({
-        title: "Customer Updated",
-        description: "Customer information has been successfully updated.",
-      })
-    } catch (error) {
-      console.error("[v0] Error saving customer info:", error)
-      toast({
-        title: "Update Failed",
-        description: "Failed to update customer information. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
+  //     toast({
+  //       title: "Customer Updated",
+  //       description: "Customer information has been successfully updated.",
+  //     })
+  //   } catch (error) {
+  //     console.error("[v0] Error saving customer info:", error)
+  //     toast({
+  //       title: "Update Failed",
+  //       description: "Failed to update customer information. Please try again.",
+  //       variant: "destructive",
+  //     })
+  //   }
+  // }
 
-  const handleSaveCompany = async () => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found. Cannot save changes.",
-        variant: "destructive",
-      })
-      return
-    }
-    try {
-      const token = authService.getToken()
-      if (!token) {
-        router.push("/login")
-        return
-      }
+  // const handleSaveCompany = async () => {
+  //   if (!company?.id) {
+  //     toast({
+  //       title: "Error",
+  //       description: "Company ID not found. Cannot save changes.",
+  //       variant: "destructive",
+  //     })
+  //     return
+  //   }
+  //   try {
+  //     const token = authService.getToken()
+  //     if (!token) {
+  //       router.push("/login")
+  //       return
+  //     }
 
-      const response = await fetch(`/api/companies/${company.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          name: companyForm.name,
-          state: companyForm.state,
-          businessCategory: companyForm.businessCategory,
-          businessWebsite: companyForm.businessWebsite,
-          businessDescription: companyForm.businessDescription,
-        }),
-      })
+  //     const response = await fetch(`/api/companies/${company.id}`, {
+  //       method: "PUT",
+  //       headers: {
+  //         Authorization: `Bearer ${token}`,
+  //         "Content-Type": "application/json",
+  //       },
+  //       body: JSON.stringify({
+  //         name: companyForm.name,
+  //         state: companyForm.state,
+  //         businessCategory: companyForm.businessCategory,
+  //         businessWebsite: companyForm.businessWebsite,
+  //         businessDescription: companyForm.businessDescription,
+  //       }),
+  //     })
 
-      if (!response.ok) {
-        throw new Error("Failed to update company information")
-      }
+  //     if (!response.ok) {
+  //       throw new Error("Failed to update company information")
+  //     }
 
-      const result = await response.json()
-      setCompany(result.data) // Update company state with the latest data
-      setEditingCompany(false) // Exit editing mode
+  //     const result = await response.json()
+  //     setCompany(result.data) // Update company state with the latest data
+  //     setEditingCompany(false) // Exit editing mode
 
-      toast({
-        title: "Company Updated",
-        description: "Company information has been successfully updated.",
-      })
-    } catch (error) {
-      console.error("[v0] Error saving company info:", error)
-      toast({
-        title: "Update Failed",
-        description: "Failed to update company information. Please try again.",
-        variant: "destructive",
-      })
-    }
-  }
+  //     toast({
+  //       title: "Company Updated",
+  //       description: "Company information has been successfully updated.",
+  //     })
+  //   } catch (error) {
+  //     console.error("[v0] Error saving company info:", error)
+  //     toast({
+  //       title: "Update Failed",
+  //       description: "Failed to update company information. Please try again.",
+  //       variant: "destructive",
+  //     })
+  //   }
+  // }
 
   const handleUpdateCompanyStatus = async (newStatus: string) => {
     if (!company?.id) {
@@ -2332,53 +2339,53 @@ export default function OrderDetailPage() {
             Company Information
           </CardTitle>
           {/* Replaced editing section */}
-          <Button variant="ghost" onClick={() => setEditingCompany(!editingCompany)}>
+          {/* <Button variant="ghost" onClick={() => setEditingCompany(!editingCompany)}>
             {editingCompany ? "Cancel" : "Edit"}
-          </Button>
+          </Button> */}
         </CardHeader>
         <CardContent>
-          {!editingCompany && (
-            <div className="space-y-3">
-              <div>
-                <Label className="text-xs font-medium text-slate-500">Company Name</Label>
-                <p className="text-sm font-medium text-slate-900">{company?.name || "N/A"}</p>
-              </div>
-              <div>
-                <Label className="text-xs font-medium text-slate-500">Entity Type</Label>
-                <p className="text-sm text-slate-600">{company?.type || "N/A"}</p>
-              </div>
-              <div>
-                <Label className="text-xs font-medium text-slate-500">State</Label>
-                <p className="text-sm text-slate-600">{company?.state || "N/A"}</p>
-              </div>
-              <div>
-                <Label className="text-xs font-medium text-slate-500">Business Category</Label>
-                <p className="text-sm text-slate-600">{company?.businessCategory || "N/A"}</p>
-              </div>
-              <div>
-                <Label className="text-xs font-medium text-slate-500">Business Website</Label>
-                <p className="text-sm text-slate-600">
-                  {company?.businessWebsite ? (
-                    <a
-                      href={company.businessWebsite}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 hover:underline"
-                    >
-                      {getDisplayValue(company.businessWebsite)}
-                    </a>
-                  ) : (
-                    getDisplayValue(company?.businessWebsite)
-                  )}
-                </p>
-              </div>
-              <div>
-                <Label className="text-xs font-medium text-slate-500">Business Description</Label>
-                <p className="text-sm text-slate-600">{getDisplayValue(company?.businessDescription) || "N/A"}</p>
-              </div>
+          {/* {!editingCompany && ( */}
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs font-medium text-slate-500">Company Name</Label>
+              <p className="text-sm font-medium text-slate-900">{company?.name || "N/A"}</p>
             </div>
-          )}
-          {editingCompany && (
+            <div>
+              <Label className="text-xs font-medium text-slate-500">Entity Type</Label>
+              <p className="text-sm text-slate-600">{company?.type || "N/A"}</p>
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-500">State</Label>
+              <p className="text-sm text-slate-600">{company?.state || "N/A"}</p>
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-500">Business Category</Label>
+              <p className="text-sm text-slate-600">{company?.businessCategory || "N/A"}</p>
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-500">Business Website</Label>
+              <p className="text-sm text-slate-600">
+                {company?.businessWebsite ? (
+                  <a
+                    href={company.businessWebsite}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-500 hover:underline"
+                  >
+                    {getDisplayValue(company.businessWebsite)}
+                  </a>
+                ) : (
+                  getDisplayValue(company?.businessWebsite)
+                )}
+              </p>
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-500">Business Description</Label>
+              <p className="text-sm text-slate-600">{getDisplayValue(company?.businessDescription) || "N/A"}</p>
+            </div>
+          </div>
+          {/* )} */}
+          {/* {editingCompany && (
             <form
               onSubmit={(e) => {
                 e.preventDefault()
@@ -2432,7 +2439,7 @@ export default function OrderDetailPage() {
                 <Button type="submit">Save Company Info</Button>
               </div>
             </form>
-          )}
+          )} */}
         </CardContent>
       </Card>
 
@@ -2449,6 +2456,7 @@ export default function OrderDetailPage() {
             </p>
           </CardHeader>
           <CardContent className="space-y-3">
+            {/* Add responsible person indicator and adjust styling </CHANGE> */}
             {company.members.map((member: any, index: number) => (
               <div
                 key={index}
@@ -2609,7 +2617,7 @@ export default function OrderDetailPage() {
                     {getAddonName(typeof addon === "object" ? addon.serviceId : addon)}
                   </span>
                   {typeof addon === "object" && addon.price && (
-                    <span className="text-gray-700">${addon.price.toFixed(2)}</span>
+                    <span className="text-gray-700">${safeToFixed(addon.price)}</span>
                   )}
                 </li>
               ))}
