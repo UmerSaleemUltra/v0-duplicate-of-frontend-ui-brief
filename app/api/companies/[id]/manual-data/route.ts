@@ -3,9 +3,9 @@ import { connectDB } from "@/lib/db"
 import { ObjectId } from "mongodb"
 import { verifyToken } from "@/lib/auth"
 
-export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params
+    const { id } = params
 
     const token = req.headers.get("Authorization")?.replace("Bearer ", "")
     if (!token) {
@@ -37,6 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         taxClassification: data.taxClassification,
         annualReportFilingDate: data.annualReportFilingDate,
         irsFilingDate: data.irsFilingDate,
+        itin: data.itin,
       }
     } else if (dataType === "registered-agent") {
       updateFields = {
