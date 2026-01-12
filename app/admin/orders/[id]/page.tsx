@@ -146,6 +146,14 @@ export default function OrderDetailPage() {
   const [uploadDocDialogOpen, setUploadDocDialogOpen] = useState(false)
   const [milestonesDialogOpen, setMilestonesDialogOpen] = useState(false)
   const [customMilestoneDialogOpen, setCustomMilestoneDialogOpen] = useState(false)
+  const [taxInfoDialogOpen, setTaxInfoDialogOpen] = useState(false)
+  const [taxData, setTaxData] = useState({
+    taxClassification: "",
+    annualReportFilingDate: "",
+    irsFilingDate: "",
+    itin: "",
+  })
+  const [taxUpdating, setTaxUpdating] = useState(false)
   // Removed duplicate addMilestoneDialogOpen state
 
   const [taxModalOpen, setTaxModalOpen] = useState(false)
@@ -566,6 +574,9 @@ export default function OrderDetailPage() {
       setLoading(false)
     }
   }, [orderId, router, toast])
+
+  // Alias for loadOrderData to use in handleSaveTaxInfo
+  const fetchOrderData = loadOrderData
 
   useEffect(() => {
     if (isAuthenticated && orderId) {
@@ -1257,15 +1268,15 @@ export default function OrderDetailPage() {
       })
 
       if (result.companyDeleted) {
-        router.push("/admin/orders")
+        router.push("/admin/customers")
       } else {
         router.push("/admin/orders")
       }
-    } catch (error) {
-      console.error("[v0] Error deleting order:", error)
+    } catch (err: any) {
+      console.error("[v0] Delete error:", err)
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete order",
+        description: err.message || "Failed to delete order",
         variant: "destructive",
       })
     } finally {
@@ -1305,11 +1316,74 @@ export default function OrderDetailPage() {
     setNewMilestoneDescription("")
   }
 
-  const handleCompanyStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
-    if (!company) return
+  const handleSaveTaxInfo = async () => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setTaxUpdating(true)
+    try {
+      const token = localStorage.getItem("token")
+      if (!token) throw new Error("No authentication token")
+
+      const response = await fetch(`/api/companies/${company.id}/manual-data`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          taxClassification: taxData.taxClassification || undefined,
+          annualReportFilingDate: taxData.annualReportFilingDate || undefined,
+          irsFilingDate: taxData.irsFilingDate || undefined,
+          ...(taxData.itin && { itin: taxData.itin }),
+        }),
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to update tax information")
+      }
+
+      toast({
+        title: "Success",
+        description: "Tax information updated successfully",
+      })
+
+      setTaxInfoDialogOpen(false)
+      // Reload order data
+      fetchOrderData()
+    } catch (err: any) {
+      console.error("[v0] Tax update error:", err)
+      toast({
+        title: "Error",
+        description: err.message || "Failed to update tax information",
+        variant: "destructive",
+      })
+    } finally {
+      setTaxUpdating(false)
+    }
+  }
+
+  const handleUpdateCompanyStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
+      setStatusUpdating(true)
       const token = authService.getToken()
+
       if (!token) {
         router.push("/login")
         return
@@ -1332,28 +1406,42 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
+
       setCompany(result.data)
       setCompanyStatusDialogOpen(false)
 
       toast({
         title: "Status Updated",
-        description: `Company status updated to ${newStatus}`,
+        description: "Company status has been updated successfully",
       })
+
+      await loadOrderData()
     } catch (error) {
-      console.log("[v0] Error updating company status:", error)
+      console.error("[v0] Error updating company status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update company status",
+        description: error instanceof Error ? error.message : "Failed to update company status",
         variant: "destructive",
       })
+    } finally {
+      setStatusUpdating(false)
     }
   }
 
-  const handleRegisteredAgentStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
-    if (!company) return
+  const handleUpdateRegisteredAgentStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
+      setAgentUpdating(true)
       const token = authService.getToken()
+
       if (!token) {
         router.push("/login")
         return
@@ -1381,23 +1469,36 @@ export default function OrderDetailPage() {
 
       toast({
         title: "Status Updated",
-        description: `Registered agent status updated to ${newStatus}`,
+        description: "Registered agent status has been updated successfully",
       })
+
+      await loadOrderData()
     } catch (error) {
-      console.log("[v0] Error updating registered agent status:", error)
+      console.error("[v0] Error updating registered agent status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update registered agent status",
+        description: error instanceof Error ? error.message : "Failed to update registered agent status",
         variant: "destructive",
       })
+    } finally {
+      setAgentUpdating(false)
     }
   }
 
-  const handleBusinessAddressStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
-    if (!company) return
+  const handleUpdateBusinessAddressStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
+      setAddressUpdating(true)
       const token = authService.getToken()
+
       if (!token) {
         router.push("/login")
         return
@@ -1425,23 +1526,35 @@ export default function OrderDetailPage() {
 
       toast({
         title: "Status Updated",
-        description: `Business address status updated to ${newStatus}`,
+        description: "Business address status has been updated successfully",
       })
+
+      await loadOrderData()
     } catch (error) {
-      console.log("[v0] Error updating business address status:", error)
+      console.error("[v0] Error updating business address status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update business address status",
+        description: error instanceof Error ? error.message : "Failed to update business address status",
         variant: "destructive",
       })
+    } finally {
+      setAddressUpdating(false)
     }
   }
 
-  const handleServiceStatusUpdate = async (newStatus: "pending" | "active" | "inactive") => {
-    if (!company) return
+  const handleUpdateServiceStatus = async (newStatus: string) => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found",
+        variant: "destructive",
+      })
+      return
+    }
 
     try {
       const token = authService.getToken()
+
       if (!token) {
         router.push("/login")
         return
@@ -1469,13 +1582,15 @@ export default function OrderDetailPage() {
 
       toast({
         title: "Status Updated",
-        description: `Service status updated to ${newStatus}`,
+        description: "Service status has been updated successfully",
       })
+
+      await loadOrderData()
     } catch (error) {
-      console.log("[v0] Error updating service status:", error)
+      console.error("[v0] Error updating service status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update service status",
+        description: error instanceof Error ? error.message : "Failed to update service status",
         variant: "destructive",
       })
     }
@@ -1997,231 +2112,10 @@ export default function OrderDetailPage() {
     }
   }
 
-  const handleUpdateCompanyStatus = async (newStatus: string) => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      setStatusUpdating(true)
-      const token = authService.getToken()
-
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          statusType: "companyStatus",
-          statusValue: newStatus,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update company status")
-      }
-
-      const result = await response.json()
-
-      setCompany(result.data)
-      setCompanyStatusDialogOpen(false)
-
-      toast({
-        title: "Status Updated",
-        description: "Company status has been updated successfully",
-      })
-
-      await loadOrderData()
-    } catch (error) {
-      console.error("[v0] Error updating company status:", error)
-      toast({
-        title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update company status",
-        variant: "destructive",
-      })
-    } finally {
-      setStatusUpdating(false)
-    }
-  }
-
-  const handleUpdateRegisteredAgentStatus = async (newStatus: string) => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      setAgentUpdating(true)
-      const token = authService.getToken()
-
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          statusType: "registeredAgentStatus",
-          statusValue: newStatus,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update registered agent status")
-      }
-
-      const result = await response.json()
-      setCompany(result.data)
-      setRegisteredAgentStatusDialogOpen(false)
-
-      toast({
-        title: "Status Updated",
-        description: "Registered agent status has been updated successfully",
-      })
-
-      await loadOrderData()
-    } catch (error) {
-      console.error("[v0] Error updating registered agent status:", error)
-      toast({
-        title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update registered agent status",
-        variant: "destructive",
-      })
-    } finally {
-      setAgentUpdating(false)
-    }
-  }
-
-  const handleUpdateBusinessAddressStatus = async (newStatus: string) => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      setAddressUpdating(true)
-      const token = authService.getToken()
-
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          statusType: "businessAddressStatus",
-          statusValue: newStatus,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update business address status")
-      }
-
-      const result = await response.json()
-      setCompany(result.data)
-      setBusinessAddressStatusDialogOpen(false)
-
-      toast({
-        title: "Status Updated",
-        description: "Business address status has been updated successfully",
-      })
-
-      await loadOrderData()
-    } catch (error) {
-      console.error("[v0] Error updating business address status:", error)
-      toast({
-        title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update business address status",
-        variant: "destructive",
-      })
-    } finally {
-      setAddressUpdating(false)
-    }
-  }
-
-  const handleUpdateServiceStatus = async (newStatus: string) => {
-    if (!company?.id) {
-      toast({
-        title: "Error",
-        description: "Company ID not found",
-        variant: "destructive",
-      })
-      return
-    }
-
-    try {
-      const token = authService.getToken()
-
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      const response = await fetch(`/api/companies/${company.id}/status`, {
-        method: "PATCH",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          statusType: "serviceStatus",
-          statusValue: newStatus,
-        }),
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to update service status")
-      }
-
-      const result = await response.json()
-      setCompany(result.data)
-      setServiceStatusDialogOpen(false)
-
-      toast({
-        title: "Status Updated",
-        description: "Service status has been updated successfully",
-      })
-
-      await loadOrderData()
-    } catch (error) {
-      console.error("[v0] Error updating service status:", error)
-      toast({
-        title: "Update Failed",
-        description: error instanceof Error ? error.message : "Failed to update service status",
-        variant: "destructive",
-      })
-    }
-  }
+  // Removed duplicate handleUpdateCompanyStatus
+  // Removed duplicate handleUpdateRegisteredAgentStatus
+  // Removed duplicate handleUpdateBusinessAddressStatus
+  // Removed duplicate handleUpdateServiceStatus
 
   return (
     <div className="space-y-4">
@@ -2972,6 +2866,24 @@ export default function OrderDetailPage() {
                 >
                   <Hash className="w-4 h-4" />
                   <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => {
+                    setTaxData({
+                      taxClassification: company?.taxClassification || "",
+                      annualReportFilingDate: company?.annualReportFilingDate || "",
+                      irsFilingDate: company?.irsFilingDate || "",
+                      itin: company?.itin || "",
+                    })
+                    setTaxInfoDialogOpen(true)
+                  }}
+                  disabled={taxUpdating || !company}
+                >
+                  <FileBarChart className="w-4 h-4" />
+                  <span className="font-medium">Tax Information</span>
                 </Button>
 
                 <Button
@@ -3796,6 +3708,73 @@ export default function OrderDetailPage() {
         currentData={company?.businessAddress}
         onUpdate={loadOrderData}
       />
+
+      <Dialog open={taxInfoDialogOpen} onOpenChange={setTaxInfoDialogOpen}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Tax Information</DialogTitle>
+            <DialogDescription>Manage tax classification and filing dates</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="taxClassification">Tax Classification</Label>
+              <Input
+                id="taxClassification"
+                placeholder="e.g., S-Corporation, Partnership"
+                value={taxData.taxClassification}
+                onChange={(e) => setTaxData({ ...taxData, taxClassification: e.target.value })}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="annualReportFilingDate">Annual Report Filing Date</Label>
+              <Input
+                id="annualReportFilingDate"
+                type="date"
+                value={taxData.annualReportFilingDate}
+                onChange={(e) => setTaxData({ ...taxData, annualReportFilingDate: e.target.value })}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="irsFilingDate">IRS Filing Date</Label>
+              <Input
+                id="irsFilingDate"
+                type="date"
+                value={taxData.irsFilingDate}
+                onChange={(e) => setTaxData({ ...taxData, irsFilingDate: e.target.value })}
+                className="mt-1"
+              />
+            </div>
+            <div>
+              <Label htmlFor="itin">ITIN (Optional)</Label>
+              <Input
+                id="itin"
+                placeholder="Individual Taxpayer Identification Number"
+                value={taxData.itin}
+                onChange={(e) => setTaxData({ ...taxData, itin: e.target.value })}
+                className="mt-1"
+              />
+              <p className="text-xs text-slate-500 mt-1">Leave empty if not applicable</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setTaxInfoDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveTaxInfo} disabled={taxUpdating}>
+              {taxUpdating ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
