@@ -507,19 +507,20 @@ export default function CompanyPage() {
         {hasTaxInfo && (
           <div className="rounded-lg border border-gray-200 p-6">
             <h2 className="text-base sm:text-lg font-semibold mb-4">Tax Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               {companyData?.taxClassification &&
                 companyData.taxClassification.toString().trim() !== "" &&
                 companyData.taxClassification !== "Not Yet" && (
-                  <div>
-                    <p className="text-sm text-gray-600 mb-1">Tax Classification</p>
-                    <p className="text-sm font-medium">{companyData.taxClassification}</p>
+                  <div className="flex flex-col">
+                    <p className="text-xs sm:text-sm text-slate-600 mb-2 font-medium">Tax Classification</p>
+                    <p className="text-sm sm:text-base font-semibold text-slate-900">{companyData.taxClassification}</p>
                   </div>
                 )}
+
               {companyData?.annualReportFilingDate && companyData.annualReportFilingDate.toString().trim() !== "" && (
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Annual Report Filing Date</p>
-                  <p className="text-sm font-medium">
+                <div className="flex flex-col">
+                  <p className="text-xs sm:text-sm text-slate-600 mb-2 font-medium">Annual Report Filing Date</p>
+                  <p className="text-sm sm:text-base font-semibold text-slate-900">
                     {new Date(companyData.annualReportFilingDate).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -528,10 +529,11 @@ export default function CompanyPage() {
                   </p>
                 </div>
               )}
+
               {companyData?.irsReturnFilingDate && companyData.irsReturnFilingDate.toString().trim() !== "" && (
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">IRS Return Filing Date</p>
-                  <p className="text-sm font-medium">
+                <div className="flex flex-col">
+                  <p className="text-xs sm:text-sm text-slate-600 mb-2 font-medium">IRS Filing Date</p>
+                  <p className="text-sm sm:text-base font-semibold text-slate-900">
                     {new Date(companyData.irsReturnFilingDate).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
