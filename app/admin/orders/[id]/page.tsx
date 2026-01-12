@@ -2,7 +2,6 @@
 
 import { Switch } from "@/components/ui/switch"
 import { StatusUpdateModal } from "@/components/status-update-modal"
-import { AdminManualDataModal } from "@/components/admin-manual-data-modal"
 
 import type React from "react"
 
@@ -37,17 +36,14 @@ import {
   Download,
   Hash,
   UserCheck,
-  Home,
   FileCheck,
   HashIcon,
   FileBarChart,
   Loader2,
   MapPin,
   Trash2,
-  Settings,
   Plus,
   Receipt,
-  Calendar,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -133,7 +129,6 @@ export default function OrderDetailPage() {
   const [businessAddressStatusDialogOpen, setBusinessAddressStatusDialogOpen] = useState(false)
   const [serviceStatusDialogOpen, setServiceStatusDialogOpen] = useState(false)
 
-  // Corrected undeclared variables:
   const [agentStatusModalOpen, setAgentStatusModalOpen] = useState(false)
   const [addressStatusModalOpen, setAddressStatusModalOpen] = useState(false)
   const [serviceStatusModalOpen, setServiceStatusModalOpen] = useState(false)
@@ -146,7 +141,6 @@ export default function OrderDetailPage() {
   const [uploadDocDialogOpen, setUploadDocDialogOpen] = useState(false)
   const [milestonesDialogOpen, setMilestonesDialogOpen] = useState(false)
   const [customMilestoneDialogOpen, setCustomMilestoneDialogOpen] = useState(false)
-  // Removed duplicate addMilestoneDialogOpen state
 
   const [taxModalOpen, setTaxModalOpen] = useState(false)
   const [agentModalOpen, setAgentModalOpen] = useState(false)
@@ -574,8 +568,6 @@ export default function OrderDetailPage() {
       router.push("/login")
     }
   }, [orderId, isAuthenticated, authLoading, loadOrderData, router])
-
-  // Milestones are now initialized directly in loadOrderData
 
   const handleStatusUpdate = async () => {
     if (!order || !newStatus || !company) return
@@ -1560,10 +1552,27 @@ export default function OrderDetailPage() {
   }
 
   // Milestone progress calculation
-  const completedDefaultMilestones = Object.values(milestones).filter(Boolean).length
-  const totalDefaultMilestones = Object.keys(milestones).length
-  const completionPercentage =
-    totalDefaultMilestones > 0 ? Math.round((completedDefaultMilestones / totalDefaultMilestones) * 100) : 0
+  // const completedDefaultMilestones = Object.values(milestones).filter(Boolean).length;
+  // const totalDefaultMilestones = Object.keys(milestones).length;
+  // const completionPercentage =
+  //   totalDefaultMilestones > 0 ? Math.round((completedDefaultMilestones / totalDefaultMilestones) * 100) : 0;
+
+  // const totalMilestonesWithCustom = totalDefaultMilestones + (company?.customMilestones?.length || 0);
+  // const completedMilestonesWithCustom =
+  //   completedDefaultMilestones + (company?.customMilestones?.filter((m: any) => m.completed).length || 0);
+
+  // Milestone progress calculation
+  let completedDefaultMilestones = 0
+  let totalDefaultMilestones = 0
+  let completionPercentage = 0
+
+  // Calculate only if milestones object is not empty
+  if (milestones && Object.keys(milestones).length > 0) {
+    completedDefaultMilestones = Object.values(milestones).filter(Boolean).length
+    totalDefaultMilestones = Object.keys(milestones).length
+    completionPercentage =
+      totalDefaultMilestones > 0 ? Math.round((completedDefaultMilestones / totalDefaultMilestones) * 100) : 0
+  }
 
   const totalMilestonesWithCustom = totalDefaultMilestones + (company?.customMilestones?.length || 0)
   const completedMilestonesWithCustom =
@@ -2215,1477 +2224,1038 @@ export default function OrderDetailPage() {
       })
     }
   }
-
   return (
-    <div className="space-y-4">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push("/admin/orders")}
-            className="h-10 w-10 p-0 bg-transparent"
-          >
-            <ArrowLeft className="w-4 h-4" />
+    <div className="container mx-auto px-4 py-8">
+      <div className="flex items-center justify-between mb-6">
+        <Button variant="outline" onClick={() => router.back()} className="flex items-center">
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back
+        </Button>
+        <h1 className="text-2xl font-bold">Order Details</h1>
+        <div className="flex items-center space-x-4">
+          <Button onClick={generateInvoice} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+            <Download className="w-4 h-4 mr-2" />
+            Invoice
           </Button>
-          <div>
-            <h1 className="text-3xl font-semibold text-slate-900">Order Details</h1>
-            <p className="text-slate-600 mt-1">Order ID: {order.id}</p>
-          </div>
+          <Button onClick={() => setDeleteDialogOpen(true)} variant="destructive" className="flex items-center">
+            <Trash2 className="w-4 h-4 mr-2" />
+            Delete Order
+          </Button>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4">
-        {/* Main Content - Left Column */}
-        <div className="lg:col-span-2 space-y-4">
-          {/* Customer Information Card */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <User className="w-5 h-5" />
-                  Customer Information
-                </CardTitle>
-                {!editingCustomer && (
-                  <Button variant="ghost" size="sm" onClick={() => setEditingCustomer(true)} className="h-8 text-xs">
-                    <Settings className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                )}
+      {/* Order Summary */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center justify-between">
+            <div className="flex items-center">
+              <Package className="w-5 h-5 mr-3 text-muted-foreground" />
+              <span>Order #{order.id}</span>
+            </div>
+            <Badge className={getStatusColor(order.status)}>
+              {getStatusIcon(order.status)}
+              {order.status.charAt(0).toUpperCase() + order.status.slice(1)}
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div>
+              <Label className="text-sm text-gray-600">Customer</Label>
+              <p className="text-base font-medium">{getDisplayValue(customer?.name)}</p>
+              <p className="text-sm text-gray-500">{getDisplayValue(customer?.email, "N/A")}</p>
+              <p className="text-sm text-gray-500">{getDisplayValue(customer?.phone, "N/A")}</p>
+            </div>
+            <div>
+              <Label className="text-sm text-gray-600">Company</Label>
+              <p className="text-base font-medium cursor-pointer" onClick={handleViewCompanyDetails}>
+                {getDisplayValue(company?.name)}
+              </p>
+              <p className="text-sm text-gray-500">{getDisplayValue(company?.state)}</p>
+            </div>
+            <div>
+              <Label className="text-sm text-gray-600">Order Date</Label>
+              <p className="text-base font-medium">{new Date(order.createdAt).toLocaleDateString()}</p>
+            </div>
+            <div>
+              <Label className="text-sm text-gray-600">Payment Status</Label>
+              <p
+                className={`text-base font-medium capitalize ${order?.paymentInfo?.status === "paid" ? "text-green-600" : "text-yellow-700"}`}
+              >
+                {order?.paymentInfo?.status || "Pending"}
+              </p>
+            </div>
+            <div>
+              <Label className="text-sm text-gray-600">Amount</Label>
+              <p className="text-base font-medium">${order?.amount.toFixed(2) || "N/A"}</p>
+            </div>
+            <div>
+              <Label className="text-sm text-gray-600">Weeks Since Order</Label>
+              <p className="text-base font-medium">
+                {weeksSinceOrder} weeks {isOverdue && <span className="text-red-500">(Overdue)</span>}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Status Update Section */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle>Update Order Status</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="flex items-center space-x-4">
+            <Select value={newStatus} onValueChange={setNewStatus}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue placeholder="Select new status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="pending">Pending</SelectItem>
+                <SelectItem value="processing">Processing</SelectItem>
+                <SelectItem value="completed">Completed</SelectItem>
+                <SelectItem value="cancelled">Cancelled</SelectItem>
+              </SelectContent>
+            </Select>
+            <Button onClick={handleStatusUpdate} disabled={!newStatus || statusUpdating}>
+              {statusUpdating ? "Updating..." : "Update Status"}
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Company Information Section */}
+      <Card className="mb-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center">
+            <Building2 className="w-5 h-5 mr-3 text-muted-foreground" />
+            Company Information
+          </CardTitle>
+          {/* Replaced editing section */}
+          <Button variant="ghost" onClick={() => setEditingCompany(!editingCompany)}>
+            {editingCompany ? "Cancel" : "Edit"}
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {!editingCompany && (
+            <div className="space-y-3">
+              <div>
+                <Label className="text-xs font-medium text-slate-500">Company Name</Label>
+                <p className="text-sm font-medium text-slate-900">{company?.name || "N/A"}</p>
               </div>
-            </CardHeader>
-            <CardContent>
-              {editingCustomer ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label>Customer Name</Label>
-                    <Input
-                      value={customerForm.name}
-                      onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                      placeholder="Enter customer name"
-                    />
-                  </div>
-                  <div>
-                    <Label>Email Address</Label>
-                    <Input
-                      type="email"
-                      value={customerForm.email}
-                      onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
-                      placeholder="Enter email"
-                    />
-                  </div>
-                  <div>
-                    <Label>Phone Number</Label>
-                    <Input
-                      value={customerForm.phone}
-                      onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleSaveCustomer} size="sm">
-                      Save Changes
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditingCustomer(false)
-                        setCustomerForm({
-                          name: customer?.name || "",
-                          email: customer?.email || "",
-                          phone: customer?.phone || "",
-                        })
-                      }}
+              <div>
+                <Label className="text-xs font-medium text-slate-500">Entity Type</Label>
+                <p className="text-sm text-slate-600">{company?.type || "N/A"}</p>
+              </div>
+              <div>
+                <Label className="text-xs font-medium text-slate-500">State</Label>
+                <p className="text-sm text-slate-600">{company?.state || "N/A"}</p>
+              </div>
+              <div>
+                <Label className="text-xs font-medium text-slate-500">Business Category</Label>
+                <p className="text-sm text-slate-600">{company?.businessCategory || "N/A"}</p>
+              </div>
+              <div>
+                <Label className="text-xs font-medium text-slate-500">Business Website</Label>
+                <p className="text-sm text-slate-600">
+                  {company?.businessWebsite ? (
+                    <a
+                      href={company.businessWebsite}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
                     >
-                      Cancel
-                    </Button>
-                  </div>
+                      {getDisplayValue(company.businessWebsite)}
+                    </a>
+                  ) : (
+                    getDisplayValue(company?.businessWebsite)
+                  )}
+                </p>
+              </div>
+              <div>
+                <Label className="text-xs font-medium text-slate-500">Business Description</Label>
+                <p className="text-sm text-slate-600">{getDisplayValue(company?.businessDescription) || "N/A"}</p>
+              </div>
+            </div>
+          )}
+          {editingCompany && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                handleSaveCompany()
+              }}
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <Label htmlFor="companyName">Company Name</Label>
+                  <Input
+                    id="companyName"
+                    defaultValue={companyForm.name}
+                    onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
+                  />
                 </div>
-              ) : (
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Customer Name</p>
-                    <p className="text-sm font-medium text-slate-900">{customer?.name || "N/A"}</p>
+                <div>
+                  <Label htmlFor="companyState">State</Label>
+                  <Input
+                    id="companyState"
+                    defaultValue={companyForm.state}
+                    onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="businessCategory">Business Category</Label>
+                  <Input
+                    id="businessCategory"
+                    defaultValue={companyForm.businessCategory}
+                    onChange={(e) => setCompanyForm({ ...companyForm, businessCategory: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <Label htmlFor="businessWebsite">Business Website</Label>
+                  <Input
+                    id="businessWebsite"
+                    defaultValue={companyForm.businessWebsite}
+                    onChange={(e) => setCompanyForm({ ...companyForm, businessWebsite: e.target.value })}
+                  />
+                </div>
+                <div className="col-span-full">
+                  <Label htmlFor="businessDescription">Business Description</Label>
+                  <Textarea
+                    id="businessDescription"
+                    defaultValue={companyForm.businessDescription}
+                    onChange={(e) => setCompanyForm({ ...companyForm, businessDescription: e.target.value })}
+                    rows={4}
+                  />
+                </div>
+              </div>
+              <div className="flex justify-end mt-6">
+                <Button type="submit">Save Company Info</Button>
+              </div>
+            </form>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Business Owners / Members Section */}
+      {company?.members && company.members.length > 0 && (
+        <Card className="border-slate-200 mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Users className="w-5 h-5 text-slate-600" />
+              Business Owners / Members
+            </CardTitle>
+            <p className="text-xs text-slate-500 mt-1">
+              {company.members.length} member{company.members.length !== 1 ? "s" : ""} registered
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {company.members.map((member: any, index: number) => (
+              <div
+                key={index}
+                className={`p-4 rounded-lg border ${
+                  member.responsiblePerson ? "bg-blue-50 border-blue-300 shadow-sm" : "bg-slate-50 border-slate-200"
+                }`}
+              >
+                <div className="flex items-start justify-between">
+                  <div className="flex-1">
+                    <p className="font-medium text-slate-900">{member.name || "N/A"}</p>
+                    <div className="mt-2 space-y-1">
+                      {member.address && <p className="text-xs text-slate-600">{member.address}</p>}
+                      {member.city && (
+                        <p className="text-xs text-slate-600">
+                          {member.city}, {member.state} {member.zip}
+                        </p>
+                      )}
+                    </div>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Email Address</p>
-                    <p className="text-sm font-medium text-slate-900">{customer?.email || "N/A"}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Phone Number</p>
-                    <p className="text-sm font-medium text-slate-900">{customer?.phone || "N/A"}</p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Account Status</p>
-                    <Badge variant={user?.accountStatus === "active" ? "default" : "secondary"}>
-                      {user?.accountStatus || "Incomplete"}
+                  {member.responsiblePerson && (
+                    <Badge className="bg-blue-600 text-white text-xs">Responsible Person</Badge>
+                  )}
+                </div>
+                {member.needsItin && (
+                  <div className="mt-3 pt-3 border-t border-slate-200">
+                    <Badge variant="secondary" className="text-xs">
+                      ITIN Required
                     </Badge>
                   </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Order Status */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Order Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Current Status</Label>
-                <div className="mt-2">
-                  <Badge className={`${getStatusColor(order.status)} px-3 py-1 text-sm flex items-center gap-2 w-fit`}>
-                    {getStatusIcon(order.status)}
-                    <span className="capitalize">{order.status}</span>
-                  </Badge>
-                </div>
+                )}
               </div>
+            ))}
+          </CardContent>
+        </Card>
+      )}
 
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Select value={newStatus} onValueChange={setNewStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="processing">Processing</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
+      {/* Customer Information Section */}
+      <Card className="mb-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center">
+            <User className="w-5 h-5 mr-3 text-muted-foreground" />
+            Customer Information
+          </CardTitle>
+          {/* Removed Edit button and form for customer information section */}
+          <div className="space-y-3">
+            <div>
+              <Label className="text-xs font-medium text-slate-500">Name</Label>
+              <p className="text-sm font-medium text-slate-900">{customer?.name || "N/A"}</p>
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-500">Email</Label>
+              <p className="text-sm text-slate-600">{customer?.email || "N/A"}</p>
+            </div>
+            <div>
+              <Label className="text-xs font-medium text-slate-500">Phone</Label>
+              <p className="text-sm text-slate-600">{customer?.phone || "N/A"}</p>
+            </div>
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Milestones Section */}
+      <Card className="mb-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center">
+            <FileCheck className="w-5 h-5 mr-3 text-muted-foreground" />
+            Formation Milestones
+          </CardTitle>
+          <Button variant="outline" onClick={() => setMilestonesDialogOpen(true)}>
+            View All
+          </Button>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            {Object.entries(milestones)
+              .filter(([key]) => key !== "customMilestones") // Filter out customMilestones if it exists here
+              .map(([key, value]) => (
+                <div key={key} className="flex items-center space-x-2">
+                  <Switch
+                    id={key}
+                    checked={Boolean(value)}
+                    onCheckedChange={() => handleMilestoneToggle(key as keyof typeof milestones)}
+                  />
+                  <Label htmlFor={key} className="capitalize">
+                    {key.replace(/([A-Z])/g, " $1").trim()}
+                  </Label>
                 </div>
-                <Button
-                  onClick={handleStatusUpdate}
-                  disabled={statusUpdating || !newStatus || newStatus === order.status}
-                  className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                >
-                  {statusUpdating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Status"
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+              ))}
+          </div>
+          <div className="mt-4 pt-4 border-t">
+            <Label className="text-sm text-gray-600">Custom Milestones</Label>
+            {company?.customMilestones && company.customMilestones.length > 0 ? (
+              <ul className="mt-2 space-y-2">
+                {company.customMilestones.map((milestone: any) => (
+                  <li key={milestone.id} className="flex items-center justify-between p-2 border rounded">
+                    <div>
+                      <span className="font-medium">{milestone.title}</span>
+                      {milestone.description && <p className="text-xs text-gray-500">{milestone.description}</p>}
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <Switch
+                        checked={milestone.completed}
+                        onCheckedChange={() => handleCustomMilestoneToggle(milestone.id)}
+                      />
+                      <Button variant="outline" size="sm" onClick={() => handleDeleteCustomMilestone(milestone.id)}>
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="text-sm text-gray-500 mt-2">No custom milestones added yet.</p>
+            )}
+            <Button
+              variant="outline"
+              className="mt-4 bg-transparent"
+              onClick={() => setCustomMilestoneDialogOpen(true)}
+            >
+              <Plus className="w-4 h-4 mr-2" /> Add Custom Milestone
+            </Button>
+          </div>
 
-          {/* Formation Progress */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <FileCheck className="w-5 h-5" />
-                Formation Progress
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed (
-                {completionPercentage}%)
-                {company?.customMilestones && company.customMilestones.length > 0 && (
-                  <span className="text-slate-500">
-                    {" "}
-                    • {completedMilestonesWithCustom} of {totalMilestonesWithCustom} total
+          {/* Progress Bar */}
+          <div className="mt-6">
+            <div className="flex justify-between mb-2">
+              <Label>Overall Progress</Label>
+              <span className="text-sm font-medium">
+                {Math.round((completedMilestonesWithCustom / totalMilestonesWithCustom) * 100) || 0}%
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+              <div
+                className="bg-blue-600 h-2.5 rounded-full"
+                style={{
+                  width: `${Math.round((completedMilestonesWithCustom / totalMilestonesWithCustom) * 100) || 0}%`,
+                }}
+              ></div>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Addons Section */}
+      <Card className="mb-6">
+        <CardHeader>
+          <CardTitle className="flex items-center">
+            <Receipt className="w-5 h-5 mr-3 text-muted-foreground" />
+            Purchased Add-ons
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {addons.length > 0 ? (
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {addons.map((addon: any, index: number) => (
+                <li key={index} className="flex items-center justify-between p-3 border rounded">
+                  <span className="font-medium">
+                    {getAddonName(typeof addon === "object" ? addon.serviceId : addon)}
                   </span>
-                )}
-              </p>
-            </CardHeader>
-            <CardContent>
-              {/* Progress Bar */}
-              <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-6">
-                <div
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full transition-all duration-700"
-                  style={{ width: `${completionPercentage}%` }}
-                />
-              </div>
-
-              {/* Milestone List */}
-              <div className="space-y-2">
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.orderProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Package className={`w-5 h-5 ${milestones.orderProcessed ? "text-green-600" : "text-slate-400"}`} />
-                    <span
-                      className={`text-sm font-medium ${milestones.orderProcessed ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Order Successfully Processed
-                    </span>
-                  </div>
-                  {milestones.orderProcessed ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
+                  {typeof addon === "object" && addon.price && (
+                    <span className="text-gray-700">${addon.price.toFixed(2)}</span>
                   )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.registeredAgentAssigned ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <UserCheck
-                      className={`w-5 h-5 ${milestones.registeredAgentAssigned ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.registeredAgentAssigned ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Registered Agent Assigned
-                    </span>
-                  </div>
-                  {milestones.registeredAgentAssigned ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.mailingAddressIssued ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Home
-                      className={`w-5 h-5 ${milestones.mailingAddressIssued ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.mailingAddressIssued ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Business Mailing Address Issued
-                    </span>
-                  </div>
-                  {milestones.mailingAddressIssued ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.formationCompleted ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <FileCheck
-                      className={`w-5 h-5 ${milestones.formationCompleted ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.formationCompleted ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Company Formation Completed
-                    </span>
-                  </div>
-                  {milestones.formationCompleted ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.einProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <HashIcon className={`w-5 h-5 ${milestones.einProcessed ? "text-green-600" : "text-slate-400"}`} />
-                    <span
-                      className={`text-sm font-medium ${milestones.einProcessed ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      EIN Successfully Processed
-                    </span>
-                  </div>
-                  {milestones.einProcessed ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.boiReportFiled ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <FileBarChart
-                      className={`w-5 h-5 ${milestones.boiReportFiled ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.boiReportFiled ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      BOI Report Filed
-                    </span>
-                  </div>
-                  {milestones.boiReportFiled ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-
-                {company?.customMilestones && company.customMilestones.length > 0 && (
-                  <>
-                    <div className="pt-3 border-t border-slate-200">
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
-                        Custom Milestones
-                      </p>
-                    </div>
-                    {company.customMilestones.map((milestone) => (
-                      <div
-                        key={milestone.id}
-                        className={`flex items-center justify-between p-3 rounded-lg ${milestone.completed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileCheck
-                            className={`w-5 h-5 ${milestone.completed ? "text-green-600" : "text-slate-400"}`}
-                          />
-                          <div>
-                            <span
-                              className={`text-sm font-medium ${milestone.completed ? "text-slate-900" : "text-slate-600"}`}
-                            >
-                              {milestone.title}
-                            </span>
-                            {milestone.description && (
-                              <p className="text-xs text-slate-500 mt-0.5">{milestone.description}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleCustomMilestoneToggle(milestone.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            {milestone.completed ? (
-                              <CheckCircle2 className="w-5 h-5 text-green-600" />
-                            ) : (
-                              <Clock className="w-5 h-5 text-slate-400" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteCustomMilestone(milestone.id)}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
-
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Building2 className="w-5 h-5" />
-                  Company Information
-                </CardTitle>
-                {!editingCompany && (
-                  <Button variant="ghost" size="sm" onClick={() => setEditingCompany(true)} className="h-8 text-xs">
-                    <Settings className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {editingCompany ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label>Company Name</Label>
-                    <Input
-                      value={companyForm.name}
-                      onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
-                      placeholder="Enter company name"
-                    />
-                  </div>
-                  <div>
-                    <Label>State</Label>
-                    <Input
-                      value={companyForm.state}
-                      onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })}
-                      placeholder="Enter state"
-                    />
-                  </div>
-                  <div>
-                    <Label>Business Category</Label>
-                    <Input
-                      value={companyForm.businessCategory}
-                      onChange={(e) => setCompanyForm({ ...companyForm, businessCategory: e.target.value })}
-                      placeholder="Enter business category"
-                    />
-                  </div>
-                  <div>
-                    <Label>Business Website</Label>
-                    <Input
-                      value={companyForm.businessWebsite}
-                      onChange={(e) => setCompanyForm({ ...companyForm, businessWebsite: e.target.value })}
-                      placeholder="Enter website URL"
-                    />
-                  </div>
-                  <div>
-                    <Label>Business Description</Label>
-                    <Textarea
-                      value={companyForm.businessDescription}
-                      onChange={(e) => setCompanyForm({ ...companyForm, businessDescription: e.target.value })}
-                      placeholder="Enter business description"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleSaveCompany} size="sm">
-                      Save Changes
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditingCompany(false)
-                        setCompanyForm({
-                          name: company?.name || "",
-                          state: company?.state || "",
-                          businessCategory: company?.businessCategory || "",
-                          businessWebsite: company?.businessWebsite || "",
-                          businessDescription: company?.businessDescription || "",
-                        })
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Basic Information Grid */}
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Company Name</p>
-                      <p className="text-sm font-medium text-slate-900">{company.name}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">State of Formation</p>
-                      <p className="text-sm font-medium text-slate-900">{company.state}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Entity Type</p>
-                      <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Business Category</p>
-                      <p className="text-sm font-medium text-slate-900">{company.businessCategory || "Not provided"}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Package Type</p>
-                      <Badge variant="outline" className="text-xs capitalize">
-                        {company.packageType || "Starter"}
-                      </Badge>
-                    </div>
-                    {company.businessWebsite && (
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 mb-1">Business Website</p>
-                        <a
-                          href={
-                            company.businessWebsite.startsWith("http")
-                              ? company.businessWebsite
-                              : `https://${company.businessWebsite}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium text-blue-600 hover:underline"
-                        >
-                          {company.businessWebsite}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Business Description */}
-                  {company.businessDescription && (
-                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-2">Business Description</p>
-                      <p className="text-sm text-slate-900 leading-relaxed">{company.businessDescription}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {company?.members && company.members.length > 0 && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Business Owners / Members
-                </CardTitle>
-                <p className="text-sm text-slate-600 mt-1">
-                  {company.members.length} member{company.members.length !== 1 ? "s" : ""} registered
-                </p>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {company.members.map((member: any, index: number) => (
-                    <div
-                      key={member.id || index}
-                      className={`p-4 rounded-lg border border-slate-200 ${member.responsiblePerson ? "bg-blue-50 border-blue-300" : "bg-slate-50"}`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-slate-900">{member.name || "N/A"}</h3>
-                            {member.responsiblePerson && (
-                              <Badge variant="secondary" className="mt-1 text-xs">
-                                Responsible Person
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          Member {index + 1}
-                        </Badge>
-                      </div>
-
-                      <div className="grid sm:grid-cols-2 gap-3 mt-3">
-                        {member.email && (
-                          <div>
-                            <p className="text-xs text-slate-600">Email</p>
-                            <p className="text-sm font-medium text-slate-900">{member.email}</p>
-                          </div>
-                        )}
-                        {member.phone && (
-                          <div>
-                            <p className="text-xs text-slate-600">Phone</p>
-                            <p className="text-sm font-medium text-slate-900">{member.phone}</p>
-                          </div>
-                        )}
-                        {member.address && (
-                          <div className="sm:col-span-2">
-                            <p className="text-xs text-slate-600">Address</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {member.address}
-                              {member.city && `, ${member.city}`}
-                              {member.state && `, ${member.state}`}
-                              {member.zip && ` ${member.zip}`}
-                              {member.country && `, ${member.country}`}
-                            </p>
-                          </div>
-                        )}
-                        {member.ssn && (
-                          <div>
-                            <p className="text-xs text-slate-600">SSN/ITIN</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {member.ssn.length > 4 ? `***-**-${member.ssn.slice(-4)}` : "Provided"}
-                            </p>
-                          </div>
-                        )}
-                        {member.passportUrl && (
-                          <div>
-                            <p className="text-xs text-slate-600">Passport Document</p>
-                            <a
-                              href={member.passportUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
-                            >
-                              <FileText className="w-4 h-4" />
-                              View Document
-                            </a>
-                          </div>
-                        )}
-                        {member.itinAdded && (
-                          <div className="sm:col-span-2">
-                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800">
-                              ITIN Application Requested
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No add-ons purchased for this order.</p>
           )}
+        </CardContent>
+      </Card>
 
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Receipt className="w-5 h-5" />
-                Order & Pricing Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Pricing Breakdown */}
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Package Price</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      ${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}
-                    </p>
+      {/* Documents Section */}
+      <Card className="mb-6">
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="flex items-center">
+            <FileText className="w-5 h-5 mr-3 text-muted-foreground" />
+            Documents
+          </CardTitle>
+          <Button variant="outline" onClick={() => setUploadDocDialogOpen(true)}>
+            <Plus className="w-4 h-4 mr-2" /> Upload Document
+          </Button>
+        </CardHeader>
+        <CardContent>
+          {passportDocuments.length > 0 ? (
+            <ul className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {passportDocuments.map((doc: any) => (
+                <li key={doc.id} className="flex items-center justify-between p-3 border rounded">
+                  <div className="flex items-center">
+                    <FileText className="w-4 h-4 mr-2 text-muted-foreground" />
+                    <a
+                      href={doc.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 hover:underline"
+                    >
+                      {doc.name}
+                    </a>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">State Filing Fee</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      ${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="p-3 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-slate-200">
-                    <p className="text-xs text-white mb-1">Total Amount</p>
-                    <p className="text-2xl font-bold text-white">
-                      ${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
+                  <p className="text-xs text-gray-500">{new Date(doc.createdAt).toLocaleDateString()}</p>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-500">No documents uploaded yet.</p>
+          )}
+        </CardContent>
+      </Card>
 
-                {/* Payment Information */}
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-xs text-slate-600 mb-1">Payment Method</p>
-                      <p className="text-sm font-medium text-slate-900 capitalize">
-                        {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-600 mb-1">Payment Status</p>
-                      <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"}>
-                        {order?.paymentInfo?.status || "Pending"}
-                      </Badge>
-                    </div>
-                    {order?.paymentInfo?.transactionReference && (
-                      <div className="sm:col-span-2">
-                        <p className="text-xs text-slate-600 mb-1">Transaction Reference</p>
-                        <p className="text-sm font-medium text-slate-900 font-mono">
-                          {order.paymentInfo.transactionReference}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
+      {/* Registered Agent & Addresses Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Registered Agent */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center">
+              <UserCheck className="w-5 h-5 mr-3 text-muted-foreground" />
+              Registered Agent
+            </CardTitle>
+            {company?.registeredAgent?.name ? (
+              <Button variant="ghost" onClick={() => setRegisteredAgentDialogOpen(true)}>
+                Edit
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => setRegisteredAgentDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" /> Assign Agent
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {company?.registeredAgent?.name ? (
+              <>
+                <p className="text-base font-medium">{getDisplayValue(company.registeredAgent.name)}</p>
+                <p className="text-sm text-gray-500">{getDisplayValue(company.registeredAgent.company)}</p>
+                <p className="text-sm text-gray-500">{getDisplayValue(company.registeredAgent.address)}</p>
+                <p className="text-sm text-gray-500">
+                  {getDisplayValue(company.registeredAgent.city)}, {getDisplayValue(company.registeredAgent.state)}{" "}
+                  {getDisplayValue(company.registeredAgent.zip)}
+                </p>
+                <p className="text-sm text-gray-500">Phone: {getDisplayValue(company.registeredAgent.phone)}</p>
+                <p className="text-sm text-gray-500">Email: {getDisplayValue(company.registeredAgent.email)}</p>
+                <p className="text-sm text-gray-500">
+                  Service Period: {getDisplayValue(company.registeredAgent.servicePeriod)}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">No registered agent assigned yet.</p>
+            )}
+          </CardContent>
+        </Card>
 
-                {/* Order Date */}
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-slate-600" />
-                    <div>
-                      <p className="text-xs text-slate-600">Order Date</p>
-                      <p className="text-sm font-medium text-slate-900">
-                        {order?.createdAt
-                          ? new Date(order.createdAt).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })
-                          : "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-
-        {/* Right Sidebar */}
-        <div className="space-y-4">
-          {/* Admin Actions Card */}
-          <Card className="shadow-sm border-slate-200">
-            <CardHeader className="bg-slate-50/50 border-b">
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Admin Actions
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <Button
-                  onClick={() => setCustomMilestoneDialogOpen(true)}
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Milestone
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setRegisteredAgentDialogOpen(true)}
-                  disabled={agentUpdating || !company}
-                >
-                  <UserCheck className="w-4 h-4" />
-                  <span className="font-medium">Assign Registered Agent</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMailingAddressDialogOpen(true)}
-                  disabled={addressUpdating || !company}
-                >
-                  <MapPin className="w-4 h-4" />
-                  <span className="font-medium">Assign Mailing Address</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setEinDialogOpen(true)}
-                  disabled={einUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setItinDialogOpen(true)}
-                  disabled={itinUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setBusinessIdDialogOpen(true)}
-                  disabled={businessIdUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMilestonesDialogOpen(true)}
-                  disabled={milestoneUpdating}
-                >
-                  <FileCheck className="w-4 h-4" />
-                  <span className="font-medium">Manage Milestones</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => {
-                    generateInvoice()
-                  }}
-                  disabled={deleting}
-                >
-                  <Download className="w-4 h-4" />
-                  <span className="font-medium">Download Invoice</span>
-                </Button>
-
-                <Button
-                  variant="destructive"
-                  className="w-full justify-start h-11 hover:bg-red-600"
-                  onClick={() => {
-                    console.log("[v0] Delete button clicked")
-                    setDeleteDialogOpen(true)
-                  }}
-                  disabled={deleting}
-                >
-                  {deleting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4" />
-                      Delete Order
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Status Management */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Status Management
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                Manage company, registered agent, business address, and service statuses
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Company Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Company Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Overall company operational status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.companyStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.companyStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.companyStatus || "pending"}
-                  </Badge>
-                  <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)} className="h-8">
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Registered Agent Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Registered Agent Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Agent assignment and service status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.registeredAgentStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.registeredAgentStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.registeredAgentStatus || "pending"}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setRegisteredAgentStatusDialogOpen(true)}
-                    className="h-8"
-                  >
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Business Address Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Business Address Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Mailing address setup status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.businessAddressStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.businessAddressStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.businessAddressStatus || "pending"}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setBusinessAddressStatusDialogOpen(true)}
-                    className="h-8"
-                  >
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Service Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Service Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Overall service delivery status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.serviceStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.serviceStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.serviceStatus || "pending"}
-                  </Badge>
-                  <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
-                    Update
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Removed duplicate Status Management section */}
-        </div>
+        {/* Mailing Address */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center">
+              <MapPin className="w-5 h-5 mr-3 text-muted-foreground" />
+              Mailing Address
+            </CardTitle>
+            {hasMailingAddress ? (
+              <Button variant="ghost" onClick={() => setMailingAddressDialogOpen(true)}>
+                Edit
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => setMailingAddressDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" /> Assign Address
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            {hasMailingAddress ? (
+              <>
+                <p className="text-base font-medium">{getDisplayValue(company.mailingAddress.street)}</p>
+                <p className="text-sm text-gray-500">
+                  {getDisplayValue(company.mailingAddress.city)}, {getDisplayValue(company.mailingAddress.state)}{" "}
+                  {getDisplayValue(company.mailingAddress.zip)}
+                </p>
+              </>
+            ) : (
+              <p className="text-sm text-gray-500">No mailing address assigned yet.</p>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Manage Milestones Dialog */}
-      <Dialog open={milestonesDialogOpen} onOpenChange={setMilestonesDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Manage Formation Milestones</DialogTitle>
-            <DialogDescription>
-              Toggle milestones to update the formation progress for {company?.name}
-              <br />
-              <span className="text-sm text-slate-600 mt-2 block">
-                Core Progress: {completedDefaultMilestones}/{totalDefaultMilestones} ({completionPercentage}%)
-                {company?.customMilestones && company.customMilestones.length > 0 && (
-                  <span className="text-slate-500">
-                    {" "}
-                    • Total with Custom: {completedMilestonesWithCustom}/{totalMilestonesWithCustom}
-                  </span>
-                )}
-              </span>
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Package className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">Order Successfully Processed</p>
-                    <p className="text-xs text-slate-500">Articles of Organization uploaded</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={milestones.orderProcessed}
-                  onCheckedChange={() => handleMilestoneToggle("orderProcessed")}
-                  disabled={milestoneUpdating}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <UserCheck className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">Registered Agent Assigned</p>
-                    <p className="text-xs text-slate-500">
-                      {company?.registeredAgent?.servicePeriod || "1 Year"} service period
-                    </p>
-                  </div>
-                </div>
-                <Switch
-                  checked={milestones.registeredAgentAssigned}
-                  onCheckedChange={() => handleMilestoneToggle("registeredAgentAssigned")}
-                  disabled={milestoneUpdating}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Home className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">Business Mailing Address Issued</p>
-                    <p className="text-xs text-slate-500">Address confirmation received</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={milestones.mailingAddressIssued}
-                  onCheckedChange={() => handleMilestoneToggle("mailingAddressIssued")}
-                  disabled={milestoneUpdating}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <FileCheck className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">Company Formation Completed</p>
-                    <p className="text-xs text-slate-500">Formation certificate issued</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={milestones.formationCompleted}
-                  onCheckedChange={() => handleMilestoneToggle("formationCompleted")}
-                  disabled={milestoneUpdating}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <HashIcon className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">EIN Successfully Processed</p>
-                    <p className="text-xs text-slate-500">EIN letter uploaded</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={milestones.einProcessed}
-                  onCheckedChange={() => handleMilestoneToggle("einProcessed")}
-                  disabled={milestoneUpdating}
-                />
-              </div>
-
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <FileBarChart className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">BOI Report Filed</p>
-                    <p className="text-xs text-slate-500">Beneficial ownership report submitted</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={milestones.boiReportFiled}
-                  onCheckedChange={() => handleMilestoneToggle("boiReportFiled")}
-                  disabled={milestoneUpdating}
-                />
-              </div>
-
-              {company?.customMilestones && company.customMilestones.length > 0 && (
-                <>
-                  <div className="pt-4 border-t border-slate-200">
-                    <p className="text-sm font-semibold text-slate-900 mb-1">Custom Milestones</p>
-                    <p className="text-xs text-slate-500 mb-3">
-                      Custom milestones are tracked separately and don't affect the core progress percentage
-                    </p>
-                  </div>
-                  {company.customMilestones.map((customMilestone: any) => (
-                    <div
-                      key={customMilestone.id}
-                      className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
-                    >
-                      <div className="flex items-center gap-3 flex-1 min-w-0">
-                        <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
-                          {customMilestone.description && (
-                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{customMilestone.description}</p>
-                          )}
-                        </div>
-                      </div>
-                      <Switch
-                        checked={customMilestone.completed}
-                        onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
-                        disabled={milestoneUpdating}
-                      />
-                    </div>
-                  ))}
-                </>
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setMilestonesDialogOpen(false)} className="h-10">
-                Close
+      {/* Tax IDs Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* EIN */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center">
+              <HashIcon className="w-5 h-5 mr-3 text-muted-foreground" />
+              EIN (Employer Identification Number)
+            </CardTitle>
+            {hasEIN ? (
+              <Button variant="ghost" onClick={handleRemoveEIN}>
+                Remove
               </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      {/* Custom Milestone Dialog */}
-      <Dialog open={customMilestoneDialogOpen} onOpenChange={handleCloseCustomMilestoneDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Add Custom Milestone</DialogTitle>
-            <DialogDescription>
-              Create a custom milestone for {company?.name} that will appear in their progress tracker
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="customMilestoneTitle">Milestone Title *</Label>
-              <Input
-                id="customMilestoneTitle"
-                placeholder="e.g., Business License Approved"
-                value={newMilestoneTitle}
-                onChange={(e) => setNewMilestoneTitle(e.target.value)}
-                className="h-10"
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="customMilestoneDescription">Description (Optional)</Label>
-              <Textarea
-                id="customMilestoneDescription"
-                placeholder="Add any notes about this milestone..."
-                value={newMilestoneDescription}
-                onChange={(e) => setNewMilestoneDescription(e.target.value)}
-                className="min-h-[80px]"
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setCustomMilestoneDialogOpen(false)} className="h-10">
-                Cancel
+            ) : (
+              <Button variant="outline" onClick={() => setEinDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" /> Assign EIN
               </Button>
-              <Button
-                onClick={handleAddCustomMilestone}
-                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                disabled={!newMilestoneTitle.trim() || milestoneUpdating}
-              >
-                {milestoneUpdating ? "Adding..." : "Add Milestone"}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
+            )}
+          </CardHeader>
+          <CardContent>
+            <p className="text-base font-medium">{formatEIN(company?.ein, true)}</p>
+          </CardContent>
+        </Card>
 
+        {/* ITIN */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center">
+              <Hash className="w-5 h-5 mr-3 text-muted-foreground" />
+              ITIN (Individual Taxpayer Identification Number)
+            </CardTitle>
+            {company?.itin ? (
+              <Button variant="ghost" onClick={handleRemoveITIN}>
+                Remove
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => setItinDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" /> Assign ITIN
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            <p className="text-base font-medium">{getDisplayValue(company?.itin)}</p>
+          </CardContent>
+        </Card>
+
+        {/* Business ID */}
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle className="flex items-center">
+              <FileBarChart className="w-5 h-5 mr-3 text-muted-foreground" />
+              Business ID / Registration Number
+            </CardTitle>
+            {hasBusinessId ? (
+              <Button variant="ghost" onClick={handleRemoveBusinessId}>
+                Remove
+              </Button>
+            ) : (
+              <Button variant="outline" onClick={() => setBusinessIdDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" /> Assign Business ID
+              </Button>
+            )}
+          </CardHeader>
+          <CardContent>
+            <p className="text-base font-medium uppercase">{formatBusinessId(company?.businessId)}</p>
+          </CardContent>
+        </Card>
+      </div>
+
+      {/* Dialogs for Updates */}
+      <StatusUpdateModal
+        isOpen={companyStatusDialogOpen}
+        onClose={() => setCompanyStatusDialogOpen(false)}
+        onUpdate={(status) => handleCompanyStatusUpdate(status as any)}
+        title="Update Company Status"
+      />
+      <StatusUpdateModal
+        isOpen={registeredAgentStatusDialogOpen}
+        onClose={() => setRegisteredAgentStatusDialogOpen(false)}
+        onUpdate={(status) => handleRegisteredAgentStatusUpdate(status as any)}
+        title="Update Registered Agent Status"
+      />
+      <StatusUpdateModal
+        isOpen={businessAddressStatusDialogOpen}
+        onClose={() => setBusinessAddressStatusDialogOpen(false)}
+        onUpdate={(status) => handleBusinessAddressStatusUpdate(status as any)}
+        title="Update Business Address Status"
+      />
+      <StatusUpdateModal
+        isOpen={serviceStatusDialogOpen}
+        onClose={() => setServiceStatusDialogOpen(false)}
+        onUpdate={(status) => handleServiceStatusUpdate(status as any)}
+        title="Update Service Status"
+      />
+
+      {/* Assign Registered Agent Modal */}
       <Dialog open={registeredAgentDialogOpen} onOpenChange={handleCloseRegisteredAgentDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Assign Registered Agent</DialogTitle>
-            <DialogDescription>
-              Assign a registered agent for {company?.name}. This will update the company records and mark the milestone
-              as complete.
-            </DialogDescription>
+            <DialogTitle>Assign Registered Agent</DialogTitle>
+            <DialogDescription>Enter the details for the registered agent.</DialogDescription>
           </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="agentName">Agent Name *</Label>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleAssignRegisteredAgent()
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="agentName" className="text-right">
+                  Name
+                </Label>
                 <Input
                   id="agentName"
-                  placeholder="John Doe"
                   value={agentForm.name}
                   onChange={(e) => setAgentForm({ ...agentForm, name: e.target.value })}
-                  className="h-10"
+                  className="col-span-3"
+                  required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="agentCompany">Company Name</Label>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="agentCompany" className="text-right">
+                  Company
+                </Label>
                 <Input
                   id="agentCompany"
-                  placeholder="Agent Services LLC"
                   value={agentForm.company}
                   onChange={(e) => setAgentForm({ ...agentForm, company: e.target.value })}
-                  className="h-10"
+                  className="col-span-3"
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="agentAddress">Street Address *</Label>
-              <Input
-                id="agentAddress"
-                placeholder="123 Main Street"
-                value={agentForm.address}
-                onChange={(e) => setAgentForm({ ...agentForm, address: e.target.value })}
-                className="h-10"
-              />
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="agentCity">City</Label>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="agentAddress" className="text-right">
+                  Address
+                </Label>
+                <Input
+                  id="agentAddress"
+                  value={agentForm.address}
+                  onChange={(e) => setAgentForm({ ...agentForm, address: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="agentCity" className="text-right">
+                  City
+                </Label>
                 <Input
                   id="agentCity"
-                  placeholder="Miami"
                   value={agentForm.city}
                   onChange={(e) => setAgentForm({ ...agentForm, city: e.target.value })}
-                  className="h-10"
+                  className="col-span-3"
+                  required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="agentState">State</Label>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="agentState" className="text-right">
+                  State
+                </Label>
                 <Input
                   id="agentState"
-                  placeholder="FL"
                   value={agentForm.state}
                   onChange={(e) => setAgentForm({ ...agentForm, state: e.target.value })}
-                  className="h-10"
+                  className="col-span-3"
+                  required
                 />
               </div>
-              <div className="space-y-2">
-                <Label htmlFor="agentZip">ZIP Code</Label>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="agentZip" className="text-right">
+                  Zip
+                </Label>
                 <Input
                   id="agentZip"
-                  placeholder="33101"
                   value={agentForm.zip}
                   onChange={(e) => setAgentForm({ ...agentForm, zip: e.target.value })}
-                  className="h-10"
+                  className="col-span-3"
+                  required
                 />
               </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="servicePeriod">Service Period</Label>
-              <Select
-                value={agentForm.servicePeriod}
-                onValueChange={(value) => setAgentForm({ ...agentForm, servicePeriod: value })}
-              >
-                <SelectTrigger className="h-10">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="1 Year">1 Year</SelectItem>
-                  <SelectItem value="2 Years">2 Years</SelectItem>
-                  <SelectItem value="3 Years">3 Years</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setRegisteredAgentDialogOpen(false)} disabled={agentUpdating}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAssignRegisteredAgent}
-                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                disabled={agentUpdating}
-              >
-                {agentUpdating ? (
-                  "Assigning..."
-                ) : (
-                  <>
-                    <UserCheck className="w-4 h-4 mr-2" />
-                    Assign Agent
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={einDialogOpen} onOpenChange={handleCloseEinDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Assign EIN</DialogTitle>
-            <DialogDescription>
-              Assign a Employer Identification Number (EIN) for {company?.name}. This will update the company records
-              and mark the EIN milestone as complete.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="einInput">EIN (Employer Identification Number) *</Label>
-              <Input
-                id="einInput"
-                placeholder="12-3456789"
-                value={einValue}
-                onChange={(e) => setEinValue(e.target.value)}
-                className="h-10 font-mono"
-                maxLength={10}
-              />
-              <p className="text-xs text-slate-500">Format: XX-XXXXXXX (9 digits with hyphen)</p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> The EIN will be formatted automatically and the "EIN Successfully Processed"
-                milestone will be marked as complete.
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setEinDialogOpen(false)} disabled={einUpdating}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAssignEIN}
-                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                disabled={!einValue.trim() || einUpdating}
-              >
-                {einUpdating ? (
-                  "Assigning..."
-                ) : (
-                  <>
-                    <Hash className="w-4 h-4 mr-2" />
-                    Assign EIN
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={itinDialogOpen} onOpenChange={handleCloseItinDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Assign ITIN</DialogTitle>
-            <DialogDescription>
-              Enter the ITIN (Individual Taxpayer Identification Number) for this company.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="itinInput">ITIN Number *</Label>
-              <Input
-                id="itinInput"
-                placeholder="9XX-XX-XXXX"
-                value={itinValue}
-                onChange={(e) => setItinValue(e.target.value)}
-                className="h-10 font-mono"
-              />
-              <p className="text-xs text-slate-500">
-                Format: 9XX-XX-XXXX (starts with 9, followed by two digits from 50-65, 70-88, 90-92, 94-99)
-              </p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> The ITIN will be entered as provided.
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setItinDialogOpen(false)} disabled={itinUpdating}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAssignITIN}
-                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                disabled={!itinValue.trim() || itinUpdating}
-              >
-                {itinUpdating ? (
-                  "Assigning..."
-                ) : (
-                  <>
-                    <FileBarChart className="w-4 h-4 mr-2" />
-                    Assign ITIN
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={businessIdDialogOpen} onOpenChange={handleCloseBusinessIdDialog}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Assign Business ID</DialogTitle>
-            <DialogDescription>
-              Assign a Business ID (State Filing Number) for {company?.name}. This identifier is issued by the state
-              after formation is complete.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="businessIdInput">Business ID / State Filing Number *</Label>
-              <Input
-                id="businessIdInput"
-                placeholder="L21000123456"
-                value={businessIdValue}
-                onChange={(e) => setBusinessIdValue(e.target.value)}
-                className="h-10 font-mono"
-              />
-              <p className="text-xs text-slate-500">
-                Enter the business ID or filing number issued by the state (format varies by state)
-              </p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> This is the official state-issued identifier for the business entity, different
-                from the EIN.
-              </p>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setBusinessIdDialogOpen(false)} disabled={businessIdUpdating}>
-                Cancel
-              </Button>
-              <Button
-                onClick={handleAssignBusinessId}
-                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                disabled={!businessIdValue.trim() || businessIdUpdating}
-              >
-                {businessIdUpdating ? (
-                  "Assigning..."
-                ) : (
-                  <>
-                    <Building2 className="w-4 h-4 mr-2" />
-                    Assign Business ID
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={mailingAddressDialogOpen} onOpenChange={handleCloseMailingAddressDialog}>
-        <DialogContent className="sm:max-w-[600px]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Home className="w-5 h-5 text-[#dc2626]" />
-              Assign Mailing Address
-            </DialogTitle>
-            <DialogDescription>
-              Assign a mailing address to {company?.name}. This will be displayed on the user dashboard and company
-              page.
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid gap-2">
-              <Label htmlFor="street">Street Address *</Label>
-              <Input
-                id="street"
-                value={mailingAddress.street}
-                onChange={(e) => setMailingAddress({ ...mailingAddress, street: e.target.value })}
-                placeholder="123 Main Street"
-                disabled={addressUpdating}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="grid gap-2">
-                <Label htmlFor="city">City *</Label>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="agentPhone" className="text-right">
+                  Phone
+                </Label>
                 <Input
-                  id="city"
+                  id="agentPhone"
+                  value={agentForm.phone}
+                  onChange={(e) => setAgentForm({ ...agentForm, phone: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="agentEmail" className="text-right">
+                  Email
+                </Label>
+                <Input
+                  id="agentEmail"
+                  type="email"
+                  value={agentForm.email}
+                  onChange={(e) => setAgentForm({ ...agentForm, email: e.target.value })}
+                  className="col-span-3"
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="agentServicePeriod" className="text-right">
+                  Service Period
+                </Label>
+                <Select
+                  onValueChange={(value) => setAgentForm({ ...agentForm, servicePeriod: value })}
+                  defaultValue={agentForm.servicePeriod}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select service period" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1 Year">1 Year</SelectItem>
+                    <SelectItem value="2 Years">2 Years</SelectItem>
+                    <SelectItem value="3 Years">3 Years</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={agentUpdating}>
+                {agentUpdating ? "Assigning..." : "Assign Agent"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Mailing Address Modal */}
+      <Dialog open={mailingAddressDialogOpen} onOpenChange={handleCloseMailingAddressDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Assign Mailing Address</DialogTitle>
+            <DialogDescription>Enter the company's mailing address.</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleAssignMailingAddress()
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="mailingStreet" className="text-right">
+                  Street
+                </Label>
+                <Input
+                  id="mailingStreet"
+                  value={mailingAddress.street}
+                  onChange={(e) => setMailingAddress({ ...mailingAddress, street: e.target.value })}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="mailingCity" className="text-right">
+                  City
+                </Label>
+                <Input
+                  id="mailingCity"
                   value={mailingAddress.city}
                   onChange={(e) => setMailingAddress({ ...mailingAddress, city: e.target.value })}
-                  placeholder="New York"
-                  disabled={addressUpdating}
+                  className="col-span-3"
+                  required
                 />
               </div>
-              <div className="grid gap-2">
-                <Label htmlFor="state">State *</Label>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="mailingState" className="text-right">
+                  State
+                </Label>
                 <Input
-                  id="state"
+                  id="mailingState"
                   value={mailingAddress.state}
                   onChange={(e) => setMailingAddress({ ...mailingAddress, state: e.target.value })}
-                  placeholder="NY"
-                  maxLength={2}
-                  disabled={addressUpdating}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="mailingZip" className="text-right">
+                  Zip
+                </Label>
+                <Input
+                  id="mailingZip"
+                  value={mailingAddress.zip}
+                  onChange={(e) => setMailingAddress({ ...mailingAddress, zip: e.target.value })}
+                  className="col-span-3"
+                  required
                 />
               </div>
             </div>
-            <div className="grid gap-2">
-              <Label htmlFor="zip">ZIP Code *</Label>
-              <Input
-                id="zip"
-                value={mailingAddress.zip}
-                onChange={(e) => setMailingAddress({ ...mailingAddress, zip: e.target.value })}
-                placeholder="10001"
-                maxLength={10}
-                disabled={addressUpdating}
-              />
+            <DialogFooter>
+              <Button type="submit" disabled={addressUpdating}>
+                {addressUpdating ? "Assigning..." : "Assign Address"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign EIN Modal */}
+      <Dialog open={einDialogOpen} onOpenChange={handleCloseEinDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Assign EIN</DialogTitle>
+            <DialogDescription>Enter the EIN for the company.</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleAssignEIN()
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="einValue" className="text-right">
+                  EIN
+                </Label>
+                <Input
+                  id="einValue"
+                  value={einValue}
+                  onChange={(e) => setEinValue(e.target.value)}
+                  className="col-span-3"
+                  placeholder="XX-XXXXXXX"
+                  required
+                />
+              </div>
             </div>
+            <DialogFooter>
+              <Button type="submit" disabled={einUpdating}>
+                {einUpdating ? "Assigning..." : "Assign EIN"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign ITIN Modal */}
+      <Dialog open={itinDialogOpen} onOpenChange={handleCloseItinDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Assign ITIN</DialogTitle>
+            <DialogDescription>Enter the ITIN for the company or contact person.</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleAssignITIN()
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="itinValue" className="text-right">
+                  ITIN
+                </Label>
+                <Input
+                  id="itinValue"
+                  value={itinValue}
+                  onChange={(e) => setItinValue(e.target.value)}
+                  className="col-span-3"
+                  placeholder="XXX-XX-XXXX"
+                  required
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={itinUpdating}>
+                {itinUpdating ? "Assigning..." : "Assign ITIN"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Assign Business ID Modal */}
+      <Dialog open={businessIdDialogOpen} onOpenChange={handleCloseBusinessIdDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Assign Business ID</DialogTitle>
+            <DialogDescription>Enter the Business ID or Registration Number.</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleAssignBusinessId()
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="businessIdValue" className="text-right">
+                  Business ID
+                </Label>
+                <Input
+                  id="businessIdValue"
+                  value={businessIdValue}
+                  onChange={(e) => setBusinessIdValue(e.target.value)}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={businessIdUpdating}>
+                {businessIdUpdating ? "Assigning..." : "Assign Business ID"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Upload Document Modal */}
+      <Dialog open={uploadDocDialogOpen} onOpenChange={(open) => setUploadDocDialogOpen(open)}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Upload Document</DialogTitle>
+            <DialogDescription>Upload a file related to this order.</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleDocumentUpload(e as any)
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="documentFile" className="text-right">
+                  File
+                </Label>
+                <Input id="documentFile" type="file" className="col-span-3" required />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="documentType" className="text-right">
+                  Type
+                </Label>
+                <Select onValueChange={setUploadDocType} defaultValue={uploadDocType}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Select document type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="general">General</SelectItem>
+                    <SelectItem value="passport">Passport</SelectItem>
+                    <SelectItem value="id">ID Document</SelectItem>
+                    <SelectItem value="formation_docs">Formation Documents</SelectItem>
+                    <SelectItem value="tax_forms">Tax Forms</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit" disabled={docUploading}>
+                {docUploading ? "Uploading..." : "Upload"}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Milestone Modal */}
+      <Dialog open={customMilestoneDialogOpen} onOpenChange={handleCloseCustomMilestoneDialog}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Add Custom Milestone</DialogTitle>
+            <DialogDescription>Enter details for a new milestone.</DialogDescription>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault()
+              handleAddCustomMilestone()
+            }}
+          >
+            <div className="grid grid-cols-1 gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="milestoneTitle" className="text-right">
+                  Title
+                </Label>
+                <Input
+                  id="milestoneTitle"
+                  value={newMilestoneTitle}
+                  onChange={(e) => setNewMilestoneTitle(e.target.value)}
+                  className="col-span-3"
+                  required
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="milestoneDescription" className="text-right">
+                  Description
+                </Label>
+                <Textarea
+                  id="milestoneDescription"
+                  value={newMilestoneDescription}
+                  onChange={(e) => setNewMilestoneDescription(e.target.value)}
+                  className="col-span-3"
+                  rows={3}
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button type="submit">Add Milestone</Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* Milestones Dialog (for viewing all) */}
+      <Dialog open={milestonesDialogOpen} onOpenChange={(open) => setMilestonesDialogOpen(open)}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle>All Formation Milestones</DialogTitle>
+            <DialogDescription>Track the progress of the company formation.</DialogDescription>
+          </DialogHeader>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 py-4">
+            {Object.entries(milestones).map(([key, value]) => (
+              <div key={key} className="flex items-center space-x-2">
+                <Switch id={key} checked={Boolean(value)} disabled />
+                <Label htmlFor={key} className="capitalize">
+                  {key.replace(/([A-Z])/g, " $1").trim()}
+                </Label>
+              </div>
+            ))}
           </div>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setMailingAddressDialogOpen(false)} disabled={addressUpdating}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleAssignMailingAddress}
-              disabled={addressUpdating}
-              className="bg-[#dc2626] hover:bg-[#b91c1c]"
-            >
-              {addressUpdating ? "Assigning..." : "Assign Mailing Address"}
-            </Button>
+            <Button onClick={() => setMilestonesDialogOpen(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -3693,24 +3263,21 @@ export default function OrderDetailPage() {
       {/* Company Details Modal */}
       <CompanyDetailsModal
         company={selectedCompany}
-        orderId={order?.id || ""}
-        isOpen={companyModalOpen && !!selectedCompany}
+        isOpen={companyModalOpen}
         onClose={() => setCompanyModalOpen(false)}
-        passportDocuments={passportDocuments}
-        orderDate={order?.createdAt}
       />
 
-      {/* Delete Confirmation Dialog */}
+      {/* Delete Order Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-[425px]">
           <DialogHeader>
-            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogTitle>Delete Order</DialogTitle>
             <DialogDescription>
               Are you sure you want to delete this order? This action cannot be undone.
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
               Cancel
             </Button>
             <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
@@ -3719,76 +3286,6 @@ export default function OrderDetailPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-
-      {/* Add status update modals */}
-      <StatusUpdateModal
-        open={companyStatusDialogOpen}
-        onOpenChange={setCompanyStatusDialogOpen}
-        title="Update Company Status"
-        description="Change the overall operational status of this company"
-        currentStatus={company?.companyStatus || "pending"}
-        onUpdate={handleUpdateCompanyStatus}
-      />
-
-      <StatusUpdateModal
-        open={registeredAgentStatusDialogOpen}
-        onOpenChange={setRegisteredAgentStatusDialogOpen}
-        title="Update Registered Agent Status"
-        description="Change the status of the registered agent assignment"
-        currentStatus={company?.registeredAgentStatus || "pending"}
-        onUpdate={handleUpdateRegisteredAgentStatus}
-      />
-
-      <StatusUpdateModal
-        open={businessAddressStatusDialogOpen}
-        onOpenChange={setBusinessAddressStatusDialogOpen}
-        title="Update Business Address Status"
-        description="Change the status of the business mailing address"
-        currentStatus={company?.businessAddressStatus || "pending"}
-        onUpdate={handleUpdateBusinessAddressStatus}
-      />
-
-      <StatusUpdateModal
-        open={serviceStatusDialogOpen}
-        onOpenChange={setServiceStatusDialogOpen}
-        title="Update Service Status"
-        description="Change the overall service delivery status"
-        currentStatus={company?.serviceStatus || "pending"}
-        onUpdate={handleUpdateServiceStatus}
-      />
-
-      {/* Manual Data Modals */}
-      <AdminManualDataModal
-        open={taxModalOpen}
-        onOpenChange={setTaxModalOpen}
-        companyId={company?._id}
-        dataType="tax"
-        currentData={{
-          formationDate: company?.formationDate,
-          ein: company?.ein,
-          businessId: company?.businessId,
-          taxClassification: company?.taxClassification,
-          annualReportFilingDate: company?.annualReportFilingDate,
-          irsFilingDate: company?.irsFilingDate,
-        }}
-        onUpdate={loadOrderData}
-      />
-      <AdminManualDataModal
-        open={agentModalOpen}
-        onOpenChange={setAgentModalOpen}
-        companyId={company?._id}
-        dataType="registered-agent"
-        currentData={company?.registeredAgent}
-        onUpdate={loadOrderData}
-      />
-      <AdminManualDataModal
-        open={addressModalOpen}
-        onOpenChange={setAddressModalOpen}
-        companyId={company?._id}
-        dataType="business-address"
-        currentData={company?.businessAddress}
-        onUpdate={loadOrderData}
-      />
     </div>
   )
 }
