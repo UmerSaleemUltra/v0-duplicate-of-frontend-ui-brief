@@ -421,6 +421,19 @@ export default function CompanyPage() {
                 </div>
               </div>
             </div>
+
+            {/* EIN (Employer Identification Number) */}
+            {hasEIN && (
+              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                  <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xs sm:text-sm text-slate-600 mb-1">EIN (Employer Identification Number)</div>
+                  <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.ein}</div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
 
@@ -603,38 +616,34 @@ export default function CompanyPage() {
         )}
 
         {/* Tax Information */}
-        {hasITIN && (
+        {companyData.taxClassification && companyData.taxClassification !== "Not Yet" && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
             <h2 className="text-base sm:text-lg font-semibold mb-4">Tax Information</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-2 gap-4 sm:gap-6">
-              {/* Company ITIN */}
-              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm text-slate-600 mb-1">
-                    ITIN (Individual Taxpayer Identification Number)
-                  </div>
-                  <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.itin}</div>
-                </div>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.taxClassification}</div>
+              </div>
+            </div>
+          </div>
+        )}
 
-              {/* Tax Classification */}
-              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
-                  <div className="font-medium text-slate-900 text-sm sm:text-base">
-                    {companyData.taxClassification && companyData.taxClassification !== "Not Yet" ? (
-                      companyData.taxClassification
-                    ) : (
-                      <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet</Badge>
-                    )}
-                  </div>
-                </div>
+        {/* ITIN (Individual Taxpayer Identification Number) */}
+        {hasITIN && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <h2 className="text-base sm:text-lg font-semibold mb-4">
+              ITIN (Individual Taxpayer Identification Number)
+            </h2>
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">ITIN Number</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.itin}</div>
               </div>
             </div>
           </div>
