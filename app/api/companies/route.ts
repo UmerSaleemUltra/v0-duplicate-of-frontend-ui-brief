@@ -64,6 +64,9 @@ export async function GET(req: NextRequest) {
         businessDescription: 1,
         businessWebsite: 1,
         packageType: 1,
+        taxClassification: 1,
+        annualReportFilingDate: 1,
+        irsFilingDate: 1,
         createdAt: 1,
         updatedAt: 1,
       })
@@ -116,6 +119,9 @@ export async function GET(req: NextRequest) {
         businessDescription: company.businessDescription || "",
         businessWebsite: company.businessWebsite || "",
         packageType: company.packageType || "basic",
+        taxClassification: company.taxClassification || "Not Yet",
+        annualReportFilingDate: company.annualReportFilingDate || null,
+        irsFilingDate: company.irsFilingDate || null,
         createdAt: company.createdAt,
         updatedAt: company.updatedAt,
       })),
@@ -186,6 +192,9 @@ export async function POST(req: NextRequest) {
       registeredAgentStatus,
       businessAddressStatus,
       serviceStatus,
+      taxClassification,
+      annualReportFilingDate,
+      irsFilingDate,
     } = body
 
     if (!name || !type || !state) {
@@ -281,6 +290,10 @@ export async function POST(req: NextRequest) {
       lastOrderDate: initialOrders.length > 0 ? new Date().toISOString() : null,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
+      // added tax fields to new company object
+      taxClassification: taxClassification || "Not Yet",
+      annualReportFilingDate: annualReportFilingDate || null,
+      irsFilingDate: irsFilingDate || null,
     }
 
     const result = await db.collection("companies").insertOne(newCompany)
