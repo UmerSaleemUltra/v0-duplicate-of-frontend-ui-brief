@@ -2294,7 +2294,7 @@ export default function OrderDetailPage() {
             </div>
             <div>
               <Label className="text-sm text-gray-600">Amount</Label>
-              <p className="text-base font-medium">${order?.amount.toFixed(2) || "N/A"}</p>
+              <p className="text-base font-medium">${safeToFixed(order?.amount, 2)}</p>
             </div>
             <div>
               <Label className="text-sm text-gray-600">Weeks Since Order</Label>
