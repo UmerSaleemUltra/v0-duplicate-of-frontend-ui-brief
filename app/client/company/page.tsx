@@ -208,13 +208,21 @@ export default function CompanyPage() {
 
   useEffect(() => {
     if (companyData) {
-      setHasTaxInfo(
+      console.log("[v0] Tax data state:", {
+        taxClassification: companyData?.taxClassification,
+        annualReportFilingDate: companyData?.annualReportFilingDate,
+        irsFilingDate: companyData?.irsFilingDate,
+      })
+
+      const hasTax =
         (companyData?.taxClassification &&
-          companyData.taxClassification.toString().trim() !== "" &&
-          companyData.taxClassification !== "Not Yet") ||
-          (companyData?.annualReportFilingDate && companyData.annualReportFilingDate.toString().trim() !== "") ||
-          (companyData?.irsFilingDate && companyData.irsFilingDate.toString().trim() !== ""),
-      )
+          companyData.taxClassification !== "Not Yet" &&
+          companyData.taxClassification.toString().trim() !== "") ||
+        (companyData?.annualReportFilingDate && companyData.annualReportFilingDate.toString().trim() !== "") ||
+        (companyData?.irsFilingDate && companyData.irsFilingDate.toString().trim() !== "")
+
+      console.log("[v0] hasTaxInfo result:", hasTax)
+      setHasTaxInfo(hasTax)
     }
   }, [companyData])
 
