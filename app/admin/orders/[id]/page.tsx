@@ -159,8 +159,6 @@ export default function OrderDetailPage() {
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<any>(null)
 
-  // const [editingCustomer, setEditingCustomer] = useState(false)
-  // const [editingCompany, setEditingCompany] = useState(false)
   const [customerForm, setCustomerForm] = useState({
     name: "",
     email: "",
