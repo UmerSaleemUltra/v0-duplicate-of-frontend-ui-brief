@@ -423,14 +423,31 @@ export default function CompanyPage() {
             </div>
 
             {/* EIN (Employer Identification Number) */}
-            {hasEIN && (
+            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xs sm:text-sm text-slate-600 mb-1">EIN</div>
+                <div className="font-medium text-slate-900 text-sm sm:text-base">
+                  {companyData.ein && companyData.ein !== "Not yet" && companyData.ein !== "Not Yet" ? (
+                    companyData.ein
+                  ) : (
+                    <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet</Badge>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Tax Classification */}
+            {companyData.taxClassification && companyData.taxClassification !== "Not Yet" && (
               <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
                 <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                  <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm text-slate-600 mb-1">EIN (Employer Identification Number)</div>
-                  <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.ein}</div>
+                  <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
+                  <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.taxClassification}</div>
                 </div>
               </div>
             )}
