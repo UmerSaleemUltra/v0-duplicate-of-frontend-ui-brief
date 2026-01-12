@@ -1,5 +1,11 @@
 "use client"
 
+import { Switch } from "@/components/ui/switch"
+import { StatusUpdateModal } from "@/components/status-update-modal"
+import { AdminManualDataModal } from "@/components/admin-manual-data-modal"
+
+import type React from "react"
+
 import { useEffect, useState, useCallback } from "react"
 import { useParams, useRouter } from "next/navigation"
 import { authService } from "@/lib/auth"
@@ -7,25 +13,45 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Label } from "@/components/ui/label"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
 import {
   ArrowLeft,
   Package,
   User,
   Users,
   Building2,
+  FileText,
   CheckCircle2,
   Clock,
   AlertCircle,
+  Download,
   Hash,
   UserCheck,
+  Home,
   FileCheck,
+  HashIcon,
+  FileBarChart,
   Loader2,
   MapPin,
+  Trash2,
+  Settings,
+  Plus,
   Receipt,
+  Calendar,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
+import { CompanyDetailsModal } from "@/components/modals/company-details-modal"
 
 const getDisplayValue = (value: any, defaultValue = "N/A"): string => {
   if (value === null || value === undefined || value === "") return defaultValue
@@ -85,23 +111,19 @@ export default function OrderDetailPage() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [addons, setAddons] = useState<any[]>([])
-  // Removed passportDocuments, passportUrls, user state as they are not used in the provided updates.
-  // const [passportDocuments, setPassportDocuments] = useState<any[]>([])
-  // const [passportUrls, setPassportUrls] = useState<string[]>([])
+  const [passportDocuments, setPassportDocuments] = useState<any[]>([])
+  const [passportUrls, setPassportUrls] = useState<string[]>([])
   const [user, setUser] = useState<any>(null)
 
-  // Removed editingSection state as it's not used in the provided updates.
-  // const [editingSection, setEditingSection] = useState<string | null>(null)
+  const [editingSection, setEditingSection] = useState<string | null>(null)
 
   const [statusUpdating, setStatusUpdating] = useState(false)
   const [agentUpdating, setAgentUpdating] = useState(false)
   const [addressUpdating, setAddressUpdating] = useState(false)
   const [einUpdating, setEinUpdating] = useState(false)
-  // Removed itinUpdating state as it's not used in the provided updates.
-  // const [itinUpdating, setItinUpdating] = useState(false)
+  const [itinUpdating, setItinUpdating] = useState(false)
   const [businessIdUpdating, setBusinessIdUpdating] = useState(false)
-  // Removed docUploading state as it's not used in the provided updates.
-  // const [docUploading, setDocUploading] = useState(false)
+  const [docUploading, setDocUploading] = useState(false)
   const [milestoneUpdating, setMilestoneUpdating] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
@@ -112,36 +134,30 @@ export default function OrderDetailPage() {
   const [serviceStatusDialogOpen, setServiceStatusDialogOpen] = useState(false)
 
   // Corrected undeclared variables:
-  // Removed agentStatusModalOpen, addressStatusModalOpen, serviceStatusModalOpen as they seem to be duplicates or unused.
-  // const [agentStatusModalOpen, setAgentStatusModalOpen] = useState(false)
-  // const [addressStatusModalOpen, setAddressStatusModalOpen] = useState(false)
-  // const [serviceStatusModalOpen, setServiceStatusModalOpen] = useState(false)
+  const [agentStatusModalOpen, setAgentStatusModalOpen] = useState(false)
+  const [addressStatusModalOpen, setAddressStatusModalOpen] = useState(false)
+  const [serviceStatusModalOpen, setServiceStatusModalOpen] = useState(false)
 
   const [registeredAgentDialogOpen, setRegisteredAgentDialogOpen] = useState(false)
   const [mailingAddressDialogOpen, setMailingAddressDialogOpen] = useState(false)
   const [einDialogOpen, setEinDialogOpen] = useState(false)
-  // Removed itinDialogOpen state as it's not used in the provided updates.
-  // const [itinDialogOpen, setItinDialogOpen] = useState(false)
+  const [itinDialogOpen, setItinDialogOpen] = useState(false)
   const [businessIdDialogOpen, setBusinessIdDialogOpen] = useState(false)
-  // Removed uploadDocDialogOpen state as it's not used in the provided updates.
-  // const [uploadDocDialogOpen, setUploadDocDialogOpen] = useState(false)
+  const [uploadDocDialogOpen, setUploadDocDialogOpen] = useState(false)
   const [milestonesDialogOpen, setMilestonesDialogOpen] = useState(false)
   const [customMilestoneDialogOpen, setCustomMilestoneDialogOpen] = useState(false)
   // Removed duplicate addMilestoneDialogOpen state
 
-  // Removed taxModalOpen, agentModalOpen, addressModalOpen as they seem to be duplicates or unused.
-  // const [taxModalOpen, setTaxModalOpen] = useState(false)
-  // const [agentModalOpen, setAgentModalOpen] = useState(false)
-  // const [addressModalOpen, setAddressModalOpen] = useState(false)
+  const [taxModalOpen, setTaxModalOpen] = useState(false)
+  const [agentModalOpen, setAgentModalOpen] = useState(false)
+  const [addressModalOpen, setAddressModalOpen] = useState(false)
 
   const [einValue, setEinValue] = useState("")
-  // Removed itinValue state as it's not used in the provided updates.
-  // const [itinValue, setItinValue] = useState("")
+  const [itinValue, setItinValue] = useState("")
   const [businessIdValue, setBusinessIdValue] = useState("")
   const [newMilestoneTitle, setNewMilestoneTitle] = useState("")
   const [newMilestoneDescription, setNewMilestoneDescription] = useState("")
-  // Removed uploadDocType state as it's not used in the provided updates.
-  // const [uploadDocType, setUploadDocType] = useState("general")
+  const [uploadDocType, setUploadDocType] = useState("general")
 
   const [mailingAddress, setMailingAddress] = useState({
     street: "",
@@ -174,22 +190,20 @@ export default function OrderDetailPage() {
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompany, setSelectedCompany] = useState<any>(null)
 
-  // Removed editingCustomer and editingCompany states as they are not used in the provided updates.
-  // const [editingCustomer, setEditingCustomer] = useState(false)
-  // const [editingCompany, setEditingCompany] = useState(false)
-  // Removed customerForm and companyForm states as they are not used in the provided updates.
-  // const [customerForm, setCustomerForm] = useState({
-  //   name: "",
-  //   email: "",
-  //   phone: "",
-  // })
-  // const [companyForm, setCompanyForm] = useState({
-  //   name: "",
-  //   state: "",
-  //   businessCategory: "",
-  //   businessWebsite: "",
-  //   businessDescription: "",
-  // })
+  const [editingCustomer, setEditingCustomer] = useState(false)
+  const [editingCompany, setEditingCompany] = useState(false)
+  const [customerForm, setCustomerForm] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  })
+  const [companyForm, setCompanyForm] = useState({
+    name: "",
+    state: "",
+    businessCategory: "",
+    businessWebsite: "",
+    businessDescription: "",
+  })
 
   const hasEIN =
     company?.ein &&
@@ -281,7 +295,7 @@ export default function OrderDetailPage() {
         description: `Successfully added "${newMilestone.title}"`,
       })
     } catch (error) {
-      console.log("[v0] Error adding custom milestone:", error)
+      console.error("Error adding custom milestone:", error)
       toast({
         title: "Add Failed",
         description: "Failed to add custom milestone. Please try again.",
@@ -341,7 +355,7 @@ export default function OrderDetailPage() {
         description: `${milestone?.title} has been ${milestone?.completed ? "completed" : "uncompleted"}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating custom milestone:", error)
+      console.error("Error updating custom milestone:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update custom milestone. Please try again.",
@@ -397,7 +411,7 @@ export default function OrderDetailPage() {
         description: "Custom milestone has been removed successfully",
       })
     } catch (error) {
-      console.log("[v0] Error deleting custom milestone:", error)
+      console.error("Error deleting custom milestone:", error)
       toast({
         title: "Delete Failed",
         description: "Failed to delete custom milestone. Please try again.",
@@ -457,23 +471,21 @@ export default function OrderDetailPage() {
         },
       )
       setUser(orderData.user)
-      // Removed passportDocuments and passportUrls as they are not used in the provided updates.
-      // setPassportDocuments(orderData.passportDocuments || [])
+      setPassportDocuments(orderData.passportDocuments || [])
 
-      // Removed customerForm and companyForm initialization as they are not used in the provided updates.
-      // setCustomerForm({
-      //   name: orderData.user?.name || orderData.company?.members?.[0]?.name || "",
-      //   email: orderData.user?.email || orderData.company?.members?.[0]?.email || "",
-      //   phone: orderData.user?.phone || orderData.company?.members?.[0]?.phone || "",
-      // })
+      setCustomerForm({
+        name: orderData.user?.name || orderData.company?.members?.[0]?.name || "",
+        email: orderData.user?.email || orderData.company?.members?.[0]?.email || "",
+        phone: orderData.user?.phone || orderData.company?.members?.[0]?.phone || "",
+      })
 
-      // setCompanyForm({
-      //   name: orderData.company?.name || "",
-      //   state: orderData.company?.state || "",
-      //   businessCategory: orderData.company?.businessCategory || "",
-      //   businessWebsite: orderData.company?.businessWebsite || "",
-      //   businessDescription: orderData.company?.businessDescription || "",
-      // })
+      setCompanyForm({
+        name: orderData.company?.name || "",
+        state: orderData.company?.state || "",
+        businessCategory: orderData.company?.businessCategory || "",
+        businessWebsite: orderData.company?.businessWebsite || "",
+        businessDescription: orderData.company?.businessDescription || "",
+      })
 
       if (orderData.company?.milestones) {
         console.log("[v0] Initializing milestones from company data:", orderData.company.milestones)
@@ -576,7 +588,7 @@ export default function OrderDetailPage() {
         return
       }
 
-      // Update ONLY the status field in the API, not the entire order
+      // Update the order status directly
       const response = await fetch(`/api/orders/${order.id}`, {
         method: "PUT",
         headers: {
@@ -593,7 +605,8 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
-      setOrder(result.data)
+      setOrder(result.data) // Update local order state
+      setCompany(result.data.company) // Update company state if it's part of the response
 
       toast({
         title: "Status Updated",
@@ -602,8 +615,8 @@ export default function OrderDetailPage() {
     } catch (error) {
       console.error("[v0] Error updating status:", error)
       toast({
-        title: "Error",
-        description: "Failed to update order status",
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update order status",
         variant: "destructive",
       })
     } finally {
@@ -693,8 +706,102 @@ export default function OrderDetailPage() {
     }
   }
 
-  // Removed handleDocumentUpload as it's not used in the provided updates.
-  // const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => { ... }
+  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file || !company) return
+
+    setDocUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("type", uploadDocType)
+      formData.append("companyId", company.id)
+      formData.append("userId", customer?.id || "")
+      formData.append("orderId", order?.id || "")
+
+      const response = await fetch("/api/documents", {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to upload document")
+      }
+
+      toast({
+        title: "Document Uploaded",
+        description: `${file.name} has been uploaded successfully`,
+      })
+
+      setUploadDocDialogOpen(false)
+
+      await loadOrderData()
+
+      const titleLower = file.name.toLowerCase()
+      const updatedMilestones = { ...milestones }
+
+      if (titleLower.includes("articles") || titleLower.includes("organization")) {
+        updatedMilestones.orderProcessed = true
+      }
+      if (titleLower.includes("registered agent") || titleLower.includes("agent appointed")) {
+        updatedMilestones.registeredAgentAssigned = true
+      }
+      if (titleLower.includes("address") || titleLower.includes("mailing")) {
+        updatedMilestones.mailingAddressIssued = true
+      }
+      if (titleLower.includes("formation") || titleLower.includes("certificate")) {
+        updatedMilestones.formationCompleted = true
+      }
+      if (titleLower.includes("ein") || titleLower.includes("tax id")) {
+        updatedMilestones.einProcessed = true
+      }
+      if (titleLower.includes("boi") || titleLower.includes("beneficial ownership")) {
+        updatedMilestones.boiReportFiled = true
+      }
+
+      const milestonesChanged = Object.keys(updatedMilestones).some(
+        (key) =>
+          updatedMilestones[key as keyof typeof updatedMilestones] !== milestones[key as keyof typeof milestones],
+      )
+
+      if (milestonesChanged) {
+        const milestoneUpdateResponse = await fetch(`/api/companies/${company.id}`, {
+          method: "PUT",
+          headers: {
+            Authorization: `Bearer ${authService.getToken()}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ milestones: updatedMilestones }),
+        })
+
+        if (milestoneUpdateResponse.ok) {
+          const milestoneResult = await milestoneUpdateResponse.json()
+          setMilestones(updatedMilestones)
+          setCompany(milestoneResult.data)
+
+          toast({
+            title: "Milestones Auto-Updated",
+            description: "Formation progress updated based on document type",
+          })
+        }
+      }
+    } catch (error) {
+      console.error("[v0] Error uploading document:", error)
+      toast({
+        title: "Upload Failed",
+        description: error instanceof Error ? error.message : "Failed to upload document. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setDocUploading(false)
+      const fileInput = document.getElementById("documentFile") as HTMLInputElement | null
+      if (fileInput) fileInput.value = ""
+    }
+  }
 
   const handleAssignRegisteredAgent = async () => {
     if (!company) {
@@ -941,8 +1048,59 @@ export default function OrderDetailPage() {
     }
   }
 
-  // Removed handleAssignITIN as it's not used in the provided updates.
-  // const handleAssignITIN = async () => { ... }
+  const handleAssignITIN = async () => {
+    if (!company || !itinValue.trim()) {
+      toast({
+        title: "Missing Information",
+        description: "Please enter a valid ITIN",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setItinUpdating(true)
+    try {
+      console.log("[v0] Assigning ITIN:", itinValue)
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          itin: itinValue.trim(),
+          // ITIN assignment doesn't directly correspond to a core milestone,
+          // but could be tied to a custom one if needed.
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to assign ITIN")
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] ITIN assigned successfully")
+
+      setCompany(updatedCompany)
+      setItinDialogOpen(false)
+      setItinValue("")
+
+      toast({
+        title: "ITIN Assigned",
+        description: "ITIN has been successfully assigned to the company",
+      })
+    } catch (error) {
+      console.error("[v0] Error assigning ITIN:", error)
+      toast({
+        title: "Error",
+        description: "Failed to assign ITIN. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setItinUpdating(false)
+    }
+  }
 
   const handleAssignBusinessId = async () => {
     if (!company || !businessIdValue.trim()) {
@@ -1001,8 +1159,50 @@ export default function OrderDetailPage() {
     }
   }
 
-  // Removed handleCompanyInfoUpdate as it's not used in the provided updates.
-  // const handleCompanyInfoUpdate = async (field: string) => { ... }
+  const handleCompanyInfoUpdate = async (field: string) => {
+    if (!company) return
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const input = document.getElementById(field) as HTMLInputElement | HTMLTextAreaElement
+      if (!input) return
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          [field]: input.value,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update company info")
+      }
+
+      const result = await response.json()
+      setCompany(result.data)
+
+      toast({
+        title: "Company Updated",
+        description: `${field} has been updated`,
+      })
+    } catch (error) {
+      console.error("[v0] Error updating company info:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update company info. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
 
   const handleDeleteOrder = async () => {
     console.log("[v0] Delete order initiated", { orderId: order?.id, companyId: company?.id })
@@ -1082,8 +1282,10 @@ export default function OrderDetailPage() {
     setEinValue("")
   }
 
-  // Removed handleCloseItinDialog as it's not used in the provided updates.
-  // const handleCloseItinDialog = () => { ... }
+  const handleCloseItinDialog = () => {
+    setItinDialogOpen(false)
+    setItinValue("")
+  }
 
   const handleCloseBusinessIdDialog = () => {
     setBusinessIdDialogOpen(false)
@@ -1131,7 +1333,7 @@ export default function OrderDetailPage() {
         description: `Company status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating company status:", error)
+      console.error("[v0] Error updating company status:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update company status",
@@ -1175,7 +1377,7 @@ export default function OrderDetailPage() {
         description: `Registered agent status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating registered agent status:", error)
+      console.error("[v0] Error updating registered agent status:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update registered agent status",
@@ -1219,7 +1421,7 @@ export default function OrderDetailPage() {
         description: `Business address status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating business address status:", error)
+      console.error("[v0] Error updating business address status:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update business address status",
@@ -1263,7 +1465,7 @@ export default function OrderDetailPage() {
         description: `Service status updated to ${newStatus}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating service status:", error)
+      console.error("[v0] Error updating service status:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update service status",
@@ -1428,6 +1630,51 @@ export default function OrderDetailPage() {
       })
     } finally {
       setEinUpdating(false)
+    }
+  }
+
+  const handleRemoveITIN = async () => {
+    if (!company) return
+
+    setItinUpdating(true)
+    try {
+      console.log("[v0] Removing ITIN")
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${authService.getToken()}`,
+        },
+        body: JSON.stringify({
+          itin: null,
+        }),
+      })
+
+      if (!response.ok) throw new Error("Failed to remove ITIN")
+
+      const result = await response.json()
+      const updatedCompany = result.data || result.company
+
+      console.log("[v0] ITIN removed successfully")
+
+      setCompany(updatedCompany)
+
+      toast({
+        title: "ITIN Removed",
+        description: "ITIN has been successfully removed from the company",
+      })
+
+      await loadOrderData()
+    } catch (error) {
+      console.error("[v0] Error removing ITIN:", error)
+      toast({
+        title: "Error",
+        description: "Failed to remove ITIN. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setItinUpdating(false)
     }
   }
 
@@ -1639,9 +1886,109 @@ export default function OrderDetailPage() {
     })
   }
 
-  // Removed handleSaveCustomer and handleSaveCompany as they are not used in the provided updates.
-  // const handleSaveCustomer = async () => { ... }
-  // const handleSaveCompany = async () => { ... }
+  const handleSaveCustomer = async () => {
+    if (!customer?.id) {
+      toast({
+        title: "Error",
+        description: "Customer ID not found. Cannot save changes.",
+        variant: "destructive",
+      })
+      return
+    }
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/users/${customer.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: customerForm.name,
+          email: customerForm.email,
+          phone: customerForm.phone,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update customer information")
+      }
+
+      const result = await response.json()
+      setCustomer(result.data) // Update customer state with the latest data
+      setEditingCustomer(false) // Exit editing mode
+
+      toast({
+        title: "Customer Updated",
+        description: "Customer information has been successfully updated.",
+      })
+    } catch (error) {
+      console.error("[v0] Error saving customer info:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update customer information. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleSaveCompany = async () => {
+    if (!company?.id) {
+      toast({
+        title: "Error",
+        description: "Company ID not found. Cannot save changes.",
+        variant: "destructive",
+      })
+      return
+    }
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: companyForm.name,
+          state: companyForm.state,
+          businessCategory: companyForm.businessCategory,
+          businessWebsite: companyForm.businessWebsite,
+          businessDescription: companyForm.businessDescription,
+        }),
+      })
+
+      if (!response.ok) {
+        throw new Error("Failed to update company information")
+      }
+
+      const result = await response.json()
+      setCompany(result.data) // Update company state with the latest data
+      setEditingCompany(false) // Exit editing mode
+
+      toast({
+        title: "Company Updated",
+        description: "Company information has been successfully updated.",
+      })
+    } catch (error) {
+      console.error("[v0] Error saving company info:", error)
+      toast({
+        title: "Update Failed",
+        description: "Failed to update company information. Please try again.",
+        variant: "destructive",
+      })
+    }
+  }
 
   const handleUpdateCompanyStatus = async (newStatus: string) => {
     if (!company?.id) {
@@ -1870,351 +2217,1578 @@ export default function OrderDetailPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="ghost" size="icon" onClick={() => router.back()}>
-            <ArrowLeft className="h-4 w-4" />
+    <div className="space-y-4">
+      {/* Header */}
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Button
+            variant="outline"
+            onClick={() => router.push("/admin/orders")}
+            className="h-10 w-10 p-0 bg-transparent"
+          >
+            <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-bold">Order Details</h1>
-            <p className="text-gray-600">Order ID: {order.id}</p>
+            <h1 className="text-3xl font-semibold text-slate-900">Order Details</h1>
+            <p className="text-slate-600 mt-1">Order ID: {order.id}</p>
           </div>
         </div>
+      </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Customer Information */}
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <User className="h-5 w-5 text-blue-600" />
-                  <CardTitle>Customer Information</CardTitle>
+      <div className="grid lg:grid-cols-3 gap-4">
+        {/* Main Content - Left Column */}
+        <div className="lg:col-span-2 space-y-4">
+          {/* Customer Information Card */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Customer Information
+                </CardTitle>
+                {!editingCustomer && (
+                  <Button variant="ghost" size="sm" onClick={() => setEditingCustomer(true)} className="h-8 text-xs">
+                    <Settings className="w-4 h-4 mr-1" />
+                    Edit
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {editingCustomer ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Customer Name</Label>
+                    <Input
+                      value={customerForm.name}
+                      onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
+                      placeholder="Enter customer name"
+                    />
+                  </div>
+                  <div>
+                    <Label>Email Address</Label>
+                    <Input
+                      type="email"
+                      value={customerForm.email}
+                      onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
+                      placeholder="Enter email"
+                    />
+                  </div>
+                  <div>
+                    <Label>Phone Number</Label>
+                    <Input
+                      value={customerForm.phone}
+                      onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
+                      placeholder="Enter phone number"
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleSaveCustomer} size="sm">
+                      Save Changes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingCustomer(false)
+                        setCustomerForm({
+                          name: customer?.name || "",
+                          email: customer?.email || "",
+                          phone: customer?.phone || "",
+                        })
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
                 </div>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm text-gray-600">Name</Label>
-                  <p className="font-semibold">{getDisplayValue(customer?.name)}</p>
+              ) : (
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Customer Name</p>
+                    <p className="text-sm font-medium text-slate-900">{customer?.name || "N/A"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Email Address</p>
+                    <p className="text-sm font-medium text-slate-900">{customer?.email || "N/A"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Phone Number</p>
+                    <p className="text-sm font-medium text-slate-900">{customer?.phone || "N/A"}</p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Account Status</p>
+                    <Badge variant={user?.accountStatus === "active" ? "default" : "secondary"}>
+                      {user?.accountStatus || "Incomplete"}
+                    </Badge>
+                  </div>
                 </div>
-                <div>
-                  <Label className="text-sm text-gray-600">Email</Label>
-                  <p className="font-semibold">{getDisplayValue(customer?.email)}</p>
-                </div>
-                <div>
-                  <Label className="text-sm text-gray-600">Phone</Label>
-                  <p className="font-semibold">{getDisplayValue(customer?.phone)}</p>
-                </div>
-                <div>
-                  <Label className="text-sm text-gray-600">Account Status</Label>
-                  <Badge variant="outline" className="mt-1">
-                    {getDisplayValue(customer?.accountStatus, "Active")}
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Order Status */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                Order Status
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium text-slate-700">Current Status</Label>
+                <div className="mt-2">
+                  <Badge className={`${getStatusColor(order.status)} px-3 py-1 text-sm flex items-center gap-2 w-fit`}>
+                    {getStatusIcon(order.status)}
+                    <span className="capitalize">{order.status}</span>
                   </Badge>
                 </div>
-              </CardContent>
-            </Card>
+              </div>
 
-            {/* Company Information */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Building2 className="h-5 w-5 text-purple-600" />
-                  <CardTitle>Company Information</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-sm text-gray-600">Company Name</Label>
-                  <p className="font-semibold">{getDisplayValue(company?.name)}</p>
-                </div>
-                <div>
-                  <Label className="text-sm text-gray-600">State</Label>
-                  <p className="font-semibold">{getDisplayValue(company?.state)}</p>
-                </div>
-                <div className="col-span-2">
-                  <Label className="text-sm text-gray-600">Business Category</Label>
-                  <p className="font-semibold">{getDisplayValue(company?.businessCategory)}</p>
-                </div>
-                <div className="col-span-2">
-                  <Label className="text-sm text-gray-600">Business Website</Label>
-                  <p className="font-semibold">{getDisplayValue(company?.businessWebsite)}</p>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Business Identifiers */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Hash className="h-5 w-5 text-green-600" />
-                  <CardTitle>Business Identifiers</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm text-gray-600">EIN Number</Label>
-                    <p className="font-semibold mt-1">{hasEIN ? formatEIN(company?.ein, true) : "Not Yet"}</p>
-                  </div>
-                  <Button size="sm" variant="outline" onClick={() => setEinDialogOpen(true)}>
-                    {hasEIN ? "Update" : "Assign"}
-                  </Button>
-                </div>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <Label className="text-sm text-gray-600">Business ID</Label>
-                    <p className="font-semibold mt-1">
-                      {hasBusinessId ? formatBusinessId(company?.businessId) : "Not Yet"}
-                    </p>
-                  </div>
-                  <Button size="sm" variant="outline" onClick={() => setBusinessIdDialogOpen(true)}>
-                    {hasBusinessId ? "Update" : "Assign"}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Registered Agent */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <UserCheck className="h-5 w-5 text-orange-600" />
-                  <CardTitle>Registered Agent</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {hasRegisteredAgent ? (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <Label className="text-sm text-gray-600">Name</Label>
-                      <p className="font-semibold">{company?.registeredAgent?.name}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">Address</Label>
-                      <p className="font-semibold">{company?.registeredAgent?.address}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">City</Label>
-                      <p className="font-semibold">{company?.registeredAgent?.city}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">State</Label>
-                      <p className="font-semibold">{company?.registeredAgent?.state}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-600">Not Assigned</p>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-4 bg-transparent"
-                  onClick={() => setRegisteredAgentDialogOpen(true)}
-                >
-                  {hasRegisteredAgent ? "Update" : "Assign"} Registered Agent
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Mailing Address */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <MapPin className="h-5 w-5 text-red-600" />
-                  <CardTitle>Mailing Address</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {hasMailingAddress ? (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="col-span-2">
-                      <Label className="text-sm text-gray-600">Street</Label>
-                      <p className="font-semibold">{company?.mailingAddress?.street}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">City</Label>
-                      <p className="font-semibold">{company?.mailingAddress?.city}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">State</Label>
-                      <p className="font-semibold">{company?.mailingAddress?.state}</p>
-                    </div>
-                    <div>
-                      <Label className="text-sm text-gray-600">ZIP</Label>
-                      <p className="font-semibold">{company?.mailingAddress?.zip}</p>
-                    </div>
-                  </div>
-                ) : (
-                  <p className="text-gray-600">Not Assigned</p>
-                )}
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="mt-4 bg-transparent"
-                  onClick={() => setMailingAddressDialogOpen(true)}
-                >
-                  {hasMailingAddress ? "Update" : "Assign"} Mailing Address
-                </Button>
-              </CardContent>
-            </Card>
-
-            {/* Business Owners/Members */}
-            {company?.members && company.members.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Users className="h-5 w-5 text-indigo-600" />
-                    <CardTitle>Business Owners</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-4">
-                    {company.members.map((member: any, idx: number) => (
-                      <div key={idx} className="border rounded-lg p-4">
-                        <div className="flex items-start justify-between">
-                          <div>
-                            <p className="font-semibold text-lg">
-                              {getDisplayValue(member.name || member.address, "Member")}
-                            </p>
-                            {member.address && <p className="text-sm text-gray-600 mt-1">{member.address}</p>}
-                          </div>
-                          {member.isResponsiblePerson && (
-                            <Badge className="bg-blue-100 text-blue-800">Responsible</Badge>
-                          )}
-                        </div>
-                        {member.needsItin && (
-                          <Badge variant="outline" className="mt-3">
-                            ITIN Required
-                          </Badge>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Purchased Add-ons */}
-            {addons.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <div className="flex items-center gap-2">
-                    <Package className="h-5 w-5 text-cyan-600" />
-                    <CardTitle>Purchased Add-ons</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    {addons.map((addon: any, idx: number) => (
-                      <div key={idx} className="flex items-center gap-2 p-2 bg-slate-50 rounded">
-                        <CheckCircle2 className="h-4 w-4 text-green-600" />
-                        <span>{getAddonName(typeof addon === "string" ? addon : addon.id)}</span>
-                      </div>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-          </div>
-
-          {/* Sidebar */}
-          <div className="lg:col-span-1 space-y-6">
-            {/* Order Status */}
-            <Card className="sticky top-4">
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Clock className="h-5 w-5 text-blue-600" />
-                  <CardTitle>Order Status</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div>
-                  <Label className="text-sm text-gray-600">Current Status</Label>
-                  <Badge className="mt-2 text-base py-1">{order.status || "Pending"}</Badge>
-                </div>
-                <div>
-                  <Label htmlFor="status-select" className="text-sm text-gray-600">
-                    Change Status
-                  </Label>
+              <div className="flex gap-2">
+                <div className="flex-1">
                   <Select value={newStatus} onValueChange={setNewStatus}>
-                    <SelectTrigger id="status-select" className="mt-2">
-                      <SelectValue />
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select status" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="pending">Pending</SelectItem>
                       <SelectItem value="processing">Processing</SelectItem>
                       <SelectItem value="completed">Completed</SelectItem>
-                      <SelectItem value="on-hold">On Hold</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
                 <Button
                   onClick={handleStatusUpdate}
-                  disabled={statusUpdating || newStatus === order.status}
-                  className="w-full"
+                  disabled={statusUpdating || !newStatus || newStatus === order.status}
+                  className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
                 >
-                  {statusUpdating ? "Updating..." : "Update Status"}
+                  {statusUpdating ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Updating...
+                    </>
+                  ) : (
+                    "Update Status"
+                  )}
                 </Button>
-              </CardContent>
-            </Card>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Order Summary */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <Receipt className="h-5 w-5 text-green-600" />
-                  <CardTitle>Order Summary</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Order Date</span>
-                  <span className="font-semibold">{new Date(order.createdAt).toLocaleDateString()}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Payment Status</span>
-                  <Badge variant="outline">{order.paymentStatus || "Pending"}</Badge>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Payment Method</span>
-                  <span className="font-semibold">{order.paymentMethod || "N/A"}</span>
-                </div>
-                {isOverdue && (
-                  <div className="flex gap-2 p-2 bg-red-50 rounded text-red-700">
-                    <AlertCircle className="h-4 w-4 flex-shrink-0 mt-0.5" />
-                    <span className="text-xs">Order is overdue ({weeksSinceOrder} weeks)</span>
-                  </div>
+          {/* Formation Progress */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <FileCheck className="w-5 h-5" />
+                Formation Progress
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">
+                {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed (
+                {completionPercentage}%)
+                {company?.customMilestones && company.customMilestones.length > 0 && (
+                  <span className="text-slate-500">
+                    {" "}
+                    • {completedMilestonesWithCustom} of {totalMilestonesWithCustom} total
+                  </span>
                 )}
-              </CardContent>
-            </Card>
+              </p>
+            </CardHeader>
+            <CardContent>
+              {/* Progress Bar */}
+              <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-6">
+                <div
+                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full transition-all duration-700"
+                  style={{ width: `${completionPercentage}%` }}
+                />
+              </div>
 
-            {/* Milestones */}
-            <Card>
-              <CardHeader>
-                <div className="flex items-center gap-2">
-                  <FileCheck className="h-5 w-5 text-purple-600" />
-                  <CardTitle>Progress</CardTitle>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                {Object.entries(milestones).map(([key, completed]) => (
-                  <div key={key} className="flex items-center gap-3">
-                    {completed ? (
-                      <CheckCircle2 className="h-5 w-5 text-green-600" />
-                    ) : (
-                      <Clock className="h-5 w-5 text-gray-400" />
-                    )}
-                    <span className={completed ? "font-semibold" : "text-gray-600"}>
-                      {key.replace(/([A-Z])/g, " $1").trim()}
+              {/* Milestone List */}
+              <div className="space-y-2">
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.orderProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Package className={`w-5 h-5 ${milestones.orderProcessed ? "text-green-600" : "text-slate-400"}`} />
+                    <span
+                      className={`text-sm font-medium ${milestones.orderProcessed ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      Order Successfully Processed
                     </span>
                   </div>
-                ))}
+                  {milestones.orderProcessed ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
+                </div>
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.registeredAgentAssigned ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <UserCheck
+                      className={`w-5 h-5 ${milestones.registeredAgentAssigned ? "text-green-600" : "text-slate-400"}`}
+                    />
+                    <span
+                      className={`text-sm font-medium ${milestones.registeredAgentAssigned ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      Registered Agent Assigned
+                    </span>
+                  </div>
+                  {milestones.registeredAgentAssigned ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
+                </div>
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.mailingAddressIssued ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <Home
+                      className={`w-5 h-5 ${milestones.mailingAddressIssued ? "text-green-600" : "text-slate-400"}`}
+                    />
+                    <span
+                      className={`text-sm font-medium ${milestones.mailingAddressIssued ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      Business Mailing Address Issued
+                    </span>
+                  </div>
+                  {milestones.mailingAddressIssued ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
+                </div>
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.formationCompleted ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <FileCheck
+                      className={`w-5 h-5 ${milestones.formationCompleted ? "text-green-600" : "text-slate-400"}`}
+                    />
+                    <span
+                      className={`text-sm font-medium ${milestones.formationCompleted ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      Company Formation Completed
+                    </span>
+                  </div>
+                  {milestones.formationCompleted ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
+                </div>
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.einProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <HashIcon className={`w-5 h-5 ${milestones.einProcessed ? "text-green-600" : "text-slate-400"}`} />
+                    <span
+                      className={`text-sm font-medium ${milestones.einProcessed ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      EIN Successfully Processed
+                    </span>
+                  </div>
+                  {milestones.einProcessed ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
+                </div>
+                <div
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.boiReportFiled ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                >
+                  <div className="flex items-center gap-3">
+                    <FileBarChart
+                      className={`w-5 h-5 ${milestones.boiReportFiled ? "text-green-600" : "text-slate-400"}`}
+                    />
+                    <span
+                      className={`text-sm font-medium ${milestones.boiReportFiled ? "text-slate-900" : "text-slate-600"}`}
+                    >
+                      BOI Report Filed
+                    </span>
+                  </div>
+                  {milestones.boiReportFiled ? (
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                  ) : (
+                    <Clock className="w-5 h-5 text-slate-400" />
+                  )}
+                </div>
+
+                {company?.customMilestones && company.customMilestones.length > 0 && (
+                  <>
+                    <div className="pt-3 border-t border-slate-200">
+                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
+                        Custom Milestones
+                      </p>
+                    </div>
+                    {company.customMilestones.map((milestone) => (
+                      <div
+                        key={milestone.id}
+                        className={`flex items-center justify-between p-3 rounded-lg ${milestone.completed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <FileCheck
+                            className={`w-5 h-5 ${milestone.completed ? "text-green-600" : "text-slate-400"}`}
+                          />
+                          <div>
+                            <span
+                              className={`text-sm font-medium ${milestone.completed ? "text-slate-900" : "text-slate-600"}`}
+                            >
+                              {milestone.title}
+                            </span>
+                            {milestone.description && (
+                              <p className="text-xs text-slate-500 mt-0.5">{milestone.description}</p>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleCustomMilestoneToggle(milestone.id)}
+                            className="h-8 w-8 p-0"
+                          >
+                            {milestone.completed ? (
+                              <CheckCircle2 className="w-5 h-5 text-green-600" />
+                            ) : (
+                              <Clock className="w-5 h-5 text-slate-400" />
+                            )}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => handleDeleteCustomMilestone(milestone.id)}
+                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Company Information
+                </CardTitle>
+                {!editingCompany && (
+                  <Button variant="ghost" size="sm" onClick={() => setEditingCompany(true)} className="h-8 text-xs">
+                    <Settings className="w-4 h-4 mr-1" />
+                    Edit
+                  </Button>
+                )}
+              </div>
+            </CardHeader>
+            <CardContent>
+              {editingCompany ? (
+                <div className="space-y-4">
+                  <div>
+                    <Label>Company Name</Label>
+                    <Input
+                      value={companyForm.name}
+                      onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
+                      placeholder="Enter company name"
+                    />
+                  </div>
+                  <div>
+                    <Label>State</Label>
+                    <Input
+                      value={companyForm.state}
+                      onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })}
+                      placeholder="Enter state"
+                    />
+                  </div>
+                  <div>
+                    <Label>Business Category</Label>
+                    <Input
+                      value={companyForm.businessCategory}
+                      onChange={(e) => setCompanyForm({ ...companyForm, businessCategory: e.target.value })}
+                      placeholder="Enter business category"
+                    />
+                  </div>
+                  <div>
+                    <Label>Business Website</Label>
+                    <Input
+                      value={companyForm.businessWebsite}
+                      onChange={(e) => setCompanyForm({ ...companyForm, businessWebsite: e.target.value })}
+                      placeholder="Enter website URL"
+                    />
+                  </div>
+                  <div>
+                    <Label>Business Description</Label>
+                    <Textarea
+                      value={companyForm.businessDescription}
+                      onChange={(e) => setCompanyForm({ ...companyForm, businessDescription: e.target.value })}
+                      placeholder="Enter business description"
+                      rows={3}
+                    />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button onClick={handleSaveCompany} size="sm">
+                      Save Changes
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setEditingCompany(false)
+                        setCompanyForm({
+                          name: company?.name || "",
+                          state: company?.state || "",
+                          businessCategory: company?.businessCategory || "",
+                          businessWebsite: company?.businessWebsite || "",
+                          businessDescription: company?.businessDescription || "",
+                        })
+                      }}
+                    >
+                      Cancel
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {/* Basic Information Grid */}
+                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Company Name</p>
+                      <p className="text-sm font-medium text-slate-900">{company.name}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">State of Formation</p>
+                      <p className="text-sm font-medium text-slate-900">{company.state}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Entity Type</p>
+                      <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Business Category</p>
+                      <p className="text-sm font-medium text-slate-900">{company.businessCategory || "Not provided"}</p>
+                    </div>
+                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-1">Package Type</p>
+                      <Badge variant="outline" className="text-xs capitalize">
+                        {company.packageType || "Starter"}
+                      </Badge>
+                    </div>
+                    {company.businessWebsite && (
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 mb-1">Business Website</p>
+                        <a
+                          href={
+                            company.businessWebsite.startsWith("http")
+                              ? company.businessWebsite
+                              : `https://${company.businessWebsite}`
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-blue-600 hover:underline"
+                        >
+                          {company.businessWebsite}
+                        </a>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Business Description */}
+                  {company.businessDescription && (
+                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                      <p className="text-xs text-slate-600 mb-2">Business Description</p>
+                      <p className="text-sm text-slate-900 leading-relaxed">{company.businessDescription}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {company?.members && company.members.length > 0 && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Users className="w-5 h-5" />
+                  Business Owners / Members
+                </CardTitle>
+                <p className="text-sm text-slate-600 mt-1">
+                  {company.members.length} member{company.members.length !== 1 ? "s" : ""} registered
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  {company.members.map((member: any, index: number) => (
+                    <div
+                      key={member.id || index}
+                      className={`p-4 rounded-lg border border-slate-200 ${member.responsiblePerson ? "bg-blue-50 border-blue-300" : "bg-slate-50"}`}
+                    >
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                            <User className="w-5 h-5 text-white" />
+                          </div>
+                          <div>
+                            <h3 className="font-semibold text-slate-900">{member.name || "N/A"}</h3>
+                            {member.responsiblePerson && (
+                              <Badge variant="secondary" className="mt-1 text-xs">
+                                Responsible Person
+                              </Badge>
+                            )}
+                          </div>
+                        </div>
+                        <Badge variant="outline" className="text-xs">
+                          Member {index + 1}
+                        </Badge>
+                      </div>
+
+                      <div className="grid sm:grid-cols-2 gap-3 mt-3">
+                        {member.email && (
+                          <div>
+                            <p className="text-xs text-slate-600">Email</p>
+                            <p className="text-sm font-medium text-slate-900">{member.email}</p>
+                          </div>
+                        )}
+                        {member.phone && (
+                          <div>
+                            <p className="text-xs text-slate-600">Phone</p>
+                            <p className="text-sm font-medium text-slate-900">{member.phone}</p>
+                          </div>
+                        )}
+                        {member.address && (
+                          <div className="sm:col-span-2">
+                            <p className="text-xs text-slate-600">Address</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {member.address}
+                              {member.city && `, ${member.city}`}
+                              {member.state && `, ${member.state}`}
+                              {member.zip && ` ${member.zip}`}
+                              {member.country && `, ${member.country}`}
+                            </p>
+                          </div>
+                        )}
+                        {member.ssn && (
+                          <div>
+                            <p className="text-xs text-slate-600">SSN/ITIN</p>
+                            <p className="text-sm font-medium text-slate-900">
+                              {member.ssn.length > 4 ? `***-**-${member.ssn.slice(-4)}` : "Provided"}
+                            </p>
+                          </div>
+                        )}
+                        {member.passportUrl && (
+                          <div>
+                            <p className="text-xs text-slate-600">Passport Document</p>
+                            <a
+                              href={member.passportUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
+                            >
+                              <FileText className="w-4 h-4" />
+                              View Document
+                            </a>
+                          </div>
+                        )}
+                        {member.itinAdded && (
+                          <div className="sm:col-span-2">
+                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800">
+                              ITIN Application Requested
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </CardContent>
             </Card>
-          </div>
+          )}
+
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Receipt className="w-5 h-5" />
+                Order & Pricing Details
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                {/* Pricing Breakdown */}
+                <div className="grid sm:grid-cols-2 gap-3">
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Package Price</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">State Filing Fee</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
+                    </p>
+                  </div>
+                  <div className="p-3 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-slate-200">
+                    <p className="text-xs text-white mb-1">Total Amount</p>
+                    <p className="text-2xl font-bold text-white">
+                      ${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Payment Information */}
+                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="grid sm:grid-cols-2 gap-3">
+                    <div>
+                      <p className="text-xs text-slate-600 mb-1">Payment Method</p>
+                      <p className="text-sm font-medium text-slate-900 capitalize">
+                        {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 mb-1">Payment Status</p>
+                      <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"}>
+                        {order?.paymentInfo?.status || "Pending"}
+                      </Badge>
+                    </div>
+                    {order?.paymentInfo?.transactionReference && (
+                      <div className="sm:col-span-2">
+                        <p className="text-xs text-slate-600 mb-1">Transaction Reference</p>
+                        <p className="text-sm font-medium text-slate-900 font-mono">
+                          {order.paymentInfo.transactionReference}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Order Date */}
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-4 h-4 text-slate-600" />
+                    <div>
+                      <p className="text-xs text-slate-600">Order Date</p>
+                      <p className="text-sm font-medium text-slate-900">
+                        {order?.createdAt
+                          ? new Date(order.createdAt).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })
+                          : "N/A"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Right Sidebar */}
+        <div className="space-y-4">
+          {/* Admin Actions Card */}
+          <Card className="shadow-sm border-slate-200">
+            <CardHeader className="bg-slate-50/50 border-b">
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Admin Actions
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
+            </CardHeader>
+            <CardContent className="p-6">
+              <div className="space-y-3">
+                <Button
+                  onClick={() => setCustomMilestoneDialogOpen(true)}
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50"
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Milestone
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setRegisteredAgentDialogOpen(true)}
+                  disabled={agentUpdating || !company}
+                >
+                  <UserCheck className="w-4 h-4" />
+                  <span className="font-medium">Assign Registered Agent</span>
+                </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMailingAddressDialogOpen(true)}
+                  disabled={addressUpdating || !company}
+                >
+                  <MapPin className="w-4 h-4" />
+                  <span className="font-medium">Assign Mailing Address</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setEinDialogOpen(true)}
+                  disabled={einUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setItinDialogOpen(true)}
+                  disabled={itinUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setBusinessIdDialogOpen(true)}
+                  disabled={businessIdUpdating || !company}
+                >
+                  <Hash className="w-4 h-4" />
+                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setMilestonesDialogOpen(true)}
+                  disabled={milestoneUpdating}
+                >
+                  <FileCheck className="w-4 h-4" />
+                  <span className="font-medium">Manage Milestones</span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => {
+                    generateInvoice()
+                  }}
+                  disabled={deleting}
+                >
+                  <Download className="w-4 h-4" />
+                  <span className="font-medium">Download Invoice</span>
+                </Button>
+
+                <Button
+                  variant="destructive"
+                  className="w-full justify-start h-11 hover:bg-red-600"
+                  onClick={() => {
+                    console.log("[v0] Delete button clicked")
+                    setDeleteDialogOpen(true)
+                  }}
+                  disabled={deleting}
+                >
+                  {deleting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Deleting...
+                    </>
+                  ) : (
+                    <>
+                      <Trash2 className="w-4 h-4" />
+                      Delete Order
+                    </>
+                  )}
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Status Management */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Settings className="w-5 h-5" />
+                Status Management
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">
+                Manage company, registered agent, business address, and service statuses
+              </p>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              {/* Company Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Company Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Overall company operational status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.companyStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.companyStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.companyStatus || "pending"}
+                  </Badge>
+                  <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)} className="h-8">
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Registered Agent Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Registered Agent Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Agent assignment and service status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.registeredAgentStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.registeredAgentStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.registeredAgentStatus || "pending"}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setRegisteredAgentStatusDialogOpen(true)}
+                    className="h-8"
+                  >
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Business Address Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Business Address Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Mailing address setup status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.businessAddressStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.businessAddressStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.businessAddressStatus || "pending"}
+                  </Badge>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => setBusinessAddressStatusDialogOpen(true)}
+                    className="h-8"
+                  >
+                    Update
+                  </Button>
+                </div>
+              </div>
+
+              {/* Service Status */}
+              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <div>
+                  <p className="text-sm font-medium text-slate-900">Service Status</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Overall service delivery status</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Badge
+                    className={`${
+                      company?.serviceStatus === "active"
+                        ? "bg-green-100 text-green-700"
+                        : company?.serviceStatus === "inactive"
+                          ? "bg-red-100 text-red-700"
+                          : "bg-yellow-100 text-yellow-700"
+                    }`}
+                  >
+                    {company?.serviceStatus || "pending"}
+                  </Badge>
+                  <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
+                    Update
+                  </Button>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Removed duplicate Status Management section */}
         </div>
       </div>
+
+      {/* Manage Milestones Dialog */}
+      <Dialog open={milestonesDialogOpen} onOpenChange={setMilestonesDialogOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Manage Formation Milestones</DialogTitle>
+            <DialogDescription>
+              Toggle milestones to update the formation progress for {company?.name}
+              <br />
+              <span className="text-sm text-slate-600 mt-2 block">
+                Core Progress: {completedDefaultMilestones}/{totalDefaultMilestones} ({completionPercentage}%)
+                {company?.customMilestones && company.customMilestones.length > 0 && (
+                  <span className="text-slate-500">
+                    {" "}
+                    • Total with Custom: {completedMilestonesWithCustom}/{totalMilestonesWithCustom}
+                  </span>
+                )}
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Package className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Order Successfully Processed</p>
+                    <p className="text-xs text-slate-500">Articles of Organization uploaded</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.orderProcessed}
+                  onCheckedChange={() => handleMilestoneToggle("orderProcessed")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <UserCheck className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Registered Agent Assigned</p>
+                    <p className="text-xs text-slate-500">
+                      {company?.registeredAgent?.servicePeriod || "1 Year"} service period
+                    </p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.registeredAgentAssigned}
+                  onCheckedChange={() => handleMilestoneToggle("registeredAgentAssigned")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <Home className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Business Mailing Address Issued</p>
+                    <p className="text-xs text-slate-500">Address confirmation received</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.mailingAddressIssued}
+                  onCheckedChange={() => handleMilestoneToggle("mailingAddressIssued")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <FileCheck className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">Company Formation Completed</p>
+                    <p className="text-xs text-slate-500">Formation certificate issued</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.formationCompleted}
+                  onCheckedChange={() => handleMilestoneToggle("formationCompleted")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <HashIcon className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">EIN Successfully Processed</p>
+                    <p className="text-xs text-slate-500">EIN letter uploaded</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.einProcessed}
+                  onCheckedChange={() => handleMilestoneToggle("einProcessed")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
+                <div className="flex items-center gap-3">
+                  <FileBarChart className="w-5 h-5 text-slate-600" />
+                  <div>
+                    <p className="text-sm font-medium text-slate-900">BOI Report Filed</p>
+                    <p className="text-xs text-slate-500">Beneficial ownership report submitted</p>
+                  </div>
+                </div>
+                <Switch
+                  checked={milestones.boiReportFiled}
+                  onCheckedChange={() => handleMilestoneToggle("boiReportFiled")}
+                  disabled={milestoneUpdating}
+                />
+              </div>
+
+              {company?.customMilestones && company.customMilestones.length > 0 && (
+                <>
+                  <div className="pt-4 border-t border-slate-200">
+                    <p className="text-sm font-semibold text-slate-900 mb-1">Custom Milestones</p>
+                    <p className="text-xs text-slate-500 mb-3">
+                      Custom milestones are tracked separately and don't affect the core progress percentage
+                    </p>
+                  </div>
+                  {company.customMilestones.map((customMilestone: any) => (
+                    <div
+                      key={customMilestone.id}
+                      className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                    >
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
+                          {customMilestone.description && (
+                            <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{customMilestone.description}</p>
+                          )}
+                        </div>
+                      </div>
+                      <Switch
+                        checked={customMilestone.completed}
+                        onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
+                        disabled={milestoneUpdating}
+                      />
+                    </div>
+                  ))}
+                </>
+              )}
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setMilestonesDialogOpen(false)} className="h-10">
+                Close
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Custom Milestone Dialog */}
+      <Dialog open={customMilestoneDialogOpen} onOpenChange={handleCloseCustomMilestoneDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Add Custom Milestone</DialogTitle>
+            <DialogDescription>
+              Create a custom milestone for {company?.name} that will appear in their progress tracker
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="customMilestoneTitle">Milestone Title *</Label>
+              <Input
+                id="customMilestoneTitle"
+                placeholder="e.g., Business License Approved"
+                value={newMilestoneTitle}
+                onChange={(e) => setNewMilestoneTitle(e.target.value)}
+                className="h-10"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="customMilestoneDescription">Description (Optional)</Label>
+              <Textarea
+                id="customMilestoneDescription"
+                placeholder="Add any notes about this milestone..."
+                value={newMilestoneDescription}
+                onChange={(e) => setNewMilestoneDescription(e.target.value)}
+                className="min-h-[80px]"
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setCustomMilestoneDialogOpen(false)} className="h-10">
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAddCustomMilestone}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!newMilestoneTitle.trim() || milestoneUpdating}
+              >
+                {milestoneUpdating ? "Adding..." : "Add Milestone"}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={registeredAgentDialogOpen} onOpenChange={handleCloseRegisteredAgentDialog}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign Registered Agent</DialogTitle>
+            <DialogDescription>
+              Assign a registered agent for {company?.name}. This will update the company records and mark the milestone
+              as complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="grid md:grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agentName">Agent Name *</Label>
+                <Input
+                  id="agentName"
+                  placeholder="John Doe"
+                  value={agentForm.name}
+                  onChange={(e) => setAgentForm({ ...agentForm, name: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentCompany">Company Name</Label>
+                <Input
+                  id="agentCompany"
+                  placeholder="Agent Services LLC"
+                  value={agentForm.company}
+                  onChange={(e) => setAgentForm({ ...agentForm, company: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="agentAddress">Street Address *</Label>
+              <Input
+                id="agentAddress"
+                placeholder="123 Main Street"
+                value={agentForm.address}
+                onChange={(e) => setAgentForm({ ...agentForm, address: e.target.value })}
+                className="h-10"
+              />
+            </div>
+
+            <div className="grid md:grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="agentCity">City</Label>
+                <Input
+                  id="agentCity"
+                  placeholder="Miami"
+                  value={agentForm.city}
+                  onChange={(e) => setAgentForm({ ...agentForm, city: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentState">State</Label>
+                <Input
+                  id="agentState"
+                  placeholder="FL"
+                  value={agentForm.state}
+                  onChange={(e) => setAgentForm({ ...agentForm, state: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="agentZip">ZIP Code</Label>
+                <Input
+                  id="agentZip"
+                  placeholder="33101"
+                  value={agentForm.zip}
+                  onChange={(e) => setAgentForm({ ...agentForm, zip: e.target.value })}
+                  className="h-10"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="servicePeriod">Service Period</Label>
+              <Select
+                value={agentForm.servicePeriod}
+                onValueChange={(value) => setAgentForm({ ...agentForm, servicePeriod: value })}
+              >
+                <SelectTrigger className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="1 Year">1 Year</SelectItem>
+                  <SelectItem value="2 Years">2 Years</SelectItem>
+                  <SelectItem value="3 Years">3 Years</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setRegisteredAgentDialogOpen(false)} disabled={agentUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignRegisteredAgent}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={agentUpdating}
+              >
+                {agentUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <UserCheck className="w-4 h-4 mr-2" />
+                    Assign Agent
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={einDialogOpen} onOpenChange={handleCloseEinDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign EIN</DialogTitle>
+            <DialogDescription>
+              Assign a Employer Identification Number (EIN) for {company?.name}. This will update the company records
+              and mark the EIN milestone as complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="einInput">EIN (Employer Identification Number) *</Label>
+              <Input
+                id="einInput"
+                placeholder="12-3456789"
+                value={einValue}
+                onChange={(e) => setEinValue(e.target.value)}
+                className="h-10 font-mono"
+                maxLength={10}
+              />
+              <p className="text-xs text-slate-500">Format: XX-XXXXXXX (9 digits with hyphen)</p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> The EIN will be formatted automatically and the "EIN Successfully Processed"
+                milestone will be marked as complete.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setEinDialogOpen(false)} disabled={einUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignEIN}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!einValue.trim() || einUpdating}
+              >
+                {einUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <Hash className="w-4 h-4 mr-2" />
+                    Assign EIN
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={itinDialogOpen} onOpenChange={handleCloseItinDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign ITIN</DialogTitle>
+            <DialogDescription>
+              Enter the ITIN (Individual Taxpayer Identification Number) for this company.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="itinInput">ITIN Number *</Label>
+              <Input
+                id="itinInput"
+                placeholder="9XX-XX-XXXX"
+                value={itinValue}
+                onChange={(e) => setItinValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <p className="text-xs text-slate-500">
+                Format: 9XX-XX-XXXX (starts with 9, followed by two digits from 50-65, 70-88, 90-92, 94-99)
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> The ITIN will be entered as provided.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setItinDialogOpen(false)} disabled={itinUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignITIN}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!itinValue.trim() || itinUpdating}
+              >
+                {itinUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <FileBarChart className="w-4 h-4 mr-2" />
+                    Assign ITIN
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={businessIdDialogOpen} onOpenChange={handleCloseBusinessIdDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Assign Business ID</DialogTitle>
+            <DialogDescription>
+              Assign a Business ID (State Filing Number) for {company?.name}. This identifier is issued by the state
+              after formation is complete.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="businessIdInput">Business ID / State Filing Number *</Label>
+              <Input
+                id="businessIdInput"
+                placeholder="L21000123456"
+                value={businessIdValue}
+                onChange={(e) => setBusinessIdValue(e.target.value)}
+                className="h-10 font-mono"
+              />
+              <p className="text-xs text-slate-500">
+                Enter the business ID or filing number issued by the state (format varies by state)
+              </p>
+            </div>
+
+            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+              <p className="text-sm text-blue-800">
+                <strong>Note:</strong> This is the official state-issued identifier for the business entity, different
+                from the EIN.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-4 border-t">
+              <Button variant="outline" onClick={() => setBusinessIdDialogOpen(false)} disabled={businessIdUpdating}>
+                Cancel
+              </Button>
+              <Button
+                onClick={handleAssignBusinessId}
+                className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                disabled={!businessIdValue.trim() || businessIdUpdating}
+              >
+                {businessIdUpdating ? (
+                  "Assigning..."
+                ) : (
+                  <>
+                    <Building2 className="w-4 h-4 mr-2" />
+                    Assign Business ID
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={mailingAddressDialogOpen} onOpenChange={handleCloseMailingAddressDialog}>
+        <DialogContent className="sm:max-w-[600px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Home className="w-5 h-5 text-[#dc2626]" />
+              Assign Mailing Address
+            </DialogTitle>
+            <DialogDescription>
+              Assign a mailing address to {company?.name}. This will be displayed on the user dashboard and company
+              page.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid gap-2">
+              <Label htmlFor="street">Street Address *</Label>
+              <Input
+                id="street"
+                value={mailingAddress.street}
+                onChange={(e) => setMailingAddress({ ...mailingAddress, street: e.target.value })}
+                placeholder="123 Main Street"
+                disabled={addressUpdating}
+              />
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="grid gap-2">
+                <Label htmlFor="city">City *</Label>
+                <Input
+                  id="city"
+                  value={mailingAddress.city}
+                  onChange={(e) => setMailingAddress({ ...mailingAddress, city: e.target.value })}
+                  placeholder="New York"
+                  disabled={addressUpdating}
+                />
+              </div>
+              <div className="grid gap-2">
+                <Label htmlFor="state">State *</Label>
+                <Input
+                  id="state"
+                  value={mailingAddress.state}
+                  onChange={(e) => setMailingAddress({ ...mailingAddress, state: e.target.value })}
+                  placeholder="NY"
+                  maxLength={2}
+                  disabled={addressUpdating}
+                />
+              </div>
+            </div>
+            <div className="grid gap-2">
+              <Label htmlFor="zip">ZIP Code *</Label>
+              <Input
+                id="zip"
+                value={mailingAddress.zip}
+                onChange={(e) => setMailingAddress({ ...mailingAddress, zip: e.target.value })}
+                placeholder="10001"
+                maxLength={10}
+                disabled={addressUpdating}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setMailingAddressDialogOpen(false)} disabled={addressUpdating}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleAssignMailingAddress}
+              disabled={addressUpdating}
+              className="bg-[#dc2626] hover:bg-[#b91c1c]"
+            >
+              {addressUpdating ? "Assigning..." : "Assign Mailing Address"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Company Details Modal */}
+      <CompanyDetailsModal
+        company={selectedCompany}
+        orderId={order?.id || ""}
+        isOpen={companyModalOpen && !!selectedCompany}
+        onClose={() => setCompanyModalOpen(false)}
+        passportDocuments={passportDocuments}
+        orderDate={order?.createdAt}
+      />
+
+      {/* Delete Confirmation Dialog */}
+      <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Confirm Deletion</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to delete this order? This action cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteDialogOpen(false)} disabled={deleting}>
+              Cancel
+            </Button>
+            <Button variant="destructive" onClick={handleDeleteOrder} disabled={deleting}>
+              {deleting ? "Deleting..." : "Delete Order"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add status update modals */}
+      <StatusUpdateModal
+        open={companyStatusDialogOpen}
+        onOpenChange={setCompanyStatusDialogOpen}
+        title="Update Company Status"
+        description="Change the overall operational status of this company"
+        currentStatus={company?.companyStatus || "pending"}
+        onUpdate={handleUpdateCompanyStatus}
+      />
+
+      <StatusUpdateModal
+        open={registeredAgentStatusDialogOpen}
+        onOpenChange={setRegisteredAgentStatusDialogOpen}
+        title="Update Registered Agent Status"
+        description="Change the status of the registered agent assignment"
+        currentStatus={company?.registeredAgentStatus || "pending"}
+        onUpdate={handleUpdateRegisteredAgentStatus}
+      />
+
+      <StatusUpdateModal
+        open={businessAddressStatusDialogOpen}
+        onOpenChange={setBusinessAddressStatusDialogOpen}
+        title="Update Business Address Status"
+        description="Change the status of the business mailing address"
+        currentStatus={company?.businessAddressStatus || "pending"}
+        onUpdate={handleUpdateBusinessAddressStatus}
+      />
+
+      <StatusUpdateModal
+        open={serviceStatusDialogOpen}
+        onOpenChange={setServiceStatusDialogOpen}
+        title="Update Service Status"
+        description="Change the overall service delivery status"
+        currentStatus={company?.serviceStatus || "pending"}
+        onUpdate={handleUpdateServiceStatus}
+      />
+
+      {/* Manual Data Modals */}
+      <AdminManualDataModal
+        open={taxModalOpen}
+        onOpenChange={setTaxModalOpen}
+        companyId={company?._id}
+        dataType="tax"
+        currentData={{
+          formationDate: company?.formationDate,
+          ein: company?.ein,
+          businessId: company?.businessId,
+          taxClassification: company?.taxClassification,
+          annualReportFilingDate: company?.annualReportFilingDate,
+          irsFilingDate: company?.irsFilingDate,
+        }}
+        onUpdate={loadOrderData}
+      />
+      <AdminManualDataModal
+        open={agentModalOpen}
+        onOpenChange={setAgentModalOpen}
+        companyId={company?._id}
+        dataType="registered-agent"
+        currentData={company?.registeredAgent}
+        onUpdate={loadOrderData}
+      />
+      <AdminManualDataModal
+        open={addressModalOpen}
+        onOpenChange={setAddressModalOpen}
+        companyId={company?._id}
+        dataType="business-address"
+        currentData={company?.businessAddress}
+        onUpdate={loadOrderData}
+      />
     </div>
   )
 }
