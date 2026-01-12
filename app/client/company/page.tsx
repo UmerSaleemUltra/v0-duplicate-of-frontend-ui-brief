@@ -36,6 +36,7 @@ export default function CompanyPage() {
   const [mailCount, setMailCount] = useState(0)
   const [documentCount, setDocumentCount] = useState(0)
   const [orderDetails, setOrderDetails] = useState<any>(null)
+  const [hasTaxInfo, setHasTaxInfo] = useState(false)
 
   useEffect(() => {
     const fetchCompanyData = async () => {
@@ -168,7 +169,7 @@ export default function CompanyPage() {
             taxFilingDate: selectedComp.taxFilingDate,
             taxClassification: selectedComp.taxClassification || "Not Yet",
             annualReportFilingDate: selectedComp.annualReportFilingDate,
-            irsReturnFilingDate: selectedComp.irsFilingDate, // API returns as irsFilingDate
+            irsFilingDate: selectedComp.irsFilingDate, // API returns as irsFilingDate
           })
 
           console.log(
@@ -204,6 +205,18 @@ export default function CompanyPage() {
       window.removeEventListener("client-dashboard-refresh", handleRefresh)
     }
   }, [selectedCompanyId])
+
+  useEffect(() => {
+    if (companyData) {
+      setHasTaxInfo(
+        (companyData?.taxClassification &&
+          companyData.taxClassification.toString().trim() !== "" &&
+          companyData.taxClassification !== "Not Yet") ||
+          (companyData?.annualReportFilingDate && companyData.annualReportFilingDate.toString().trim() !== "") ||
+          (companyData?.irsFilingDate && companyData.irsFilingDate.toString().trim() !== ""),
+      )
+    }
+  }, [companyData])
 
   if (authLoading) {
     return (
@@ -309,13 +322,6 @@ export default function CompanyPage() {
     (companyData.mailingAddress.street || companyData.mailingAddress.address).trim() !== "" &&
     (companyData.mailingAddress.street || companyData.mailingAddress.address) !== "Not yet" &&
     (companyData.mailingAddress.street || companyData.mailingAddress.address) !== "Not Yet Assigned"
-
-  const hasTaxInfo =
-    (companyData?.taxClassification &&
-      companyData.taxClassification.toString().trim() !== "" &&
-      companyData.taxClassification !== "Not Yet") ||
-    (companyData?.annualReportFilingDate && companyData.annualReportFilingDate.toString().trim() !== "") ||
-    (companyData?.irsReturnFilingDate && companyData.irsReturnFilingDate.toString().trim() !== "")
 
   return (
     <ClientShell>
@@ -505,41 +511,61 @@ export default function CompanyPage() {
 
         {/* Tax Information */}
         {hasTaxInfo && (
-          <div className="rounded-lg border border-gray-200 p-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
             <h2 className="text-base sm:text-lg font-semibold mb-4">Tax Information</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {/* Tax Classification */}
               {companyData?.taxClassification &&
                 companyData.taxClassification.toString().trim() !== "" &&
                 companyData.taxClassification !== "Not Yet" && (
-                  <div className="flex flex-col">
-                    <p className="text-xs sm:text-sm text-slate-600 mb-2 font-medium">Tax Classification</p>
-                    <p className="text-sm sm:text-base font-semibold text-slate-900">{companyData.taxClassification}</p>
+                  <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                      <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
+                      <p className="text-sm sm:text-base font-semibold text-slate-900">
+                        {companyData.taxClassification}
+                      </p>
+                    </div>
                   </div>
                 )}
 
+              {/* Annual Report Filing Date */}
               {companyData?.annualReportFilingDate && companyData.annualReportFilingDate.toString().trim() !== "" && (
-                <div className="flex flex-col">
-                  <p className="text-xs sm:text-sm text-slate-600 mb-2 font-medium">Annual Report Filing Date</p>
-                  <p className="text-sm sm:text-base font-semibold text-slate-900">
-                    {new Date(companyData.annualReportFilingDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
+                <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs sm:text-sm text-slate-600 mb-1">Annual Report Filing Date</div>
+                    <p className="text-sm sm:text-base font-semibold text-slate-900">
+                      {new Date(companyData.annualReportFilingDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
                 </div>
               )}
 
-              {companyData?.irsReturnFilingDate && companyData.irsReturnFilingDate.toString().trim() !== "" && (
-                <div className="flex flex-col">
-                  <p className="text-xs sm:text-sm text-slate-600 mb-2 font-medium">IRS Filing Date</p>
-                  <p className="text-sm sm:text-base font-semibold text-slate-900">
-                    {new Date(companyData.irsReturnFilingDate).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })}
-                  </p>
+              {/* IRS Filing Date */}
+              {companyData?.irsFilingDate && companyData.irsFilingDate.toString().trim() !== "" && (
+                <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs sm:text-sm text-slate-600 mb-1">IRS Filing Date</div>
+                    <p className="text-sm sm:text-base font-semibold text-slate-900">
+                      {new Date(companyData.irsFilingDate).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })}
+                    </p>
+                  </div>
                 </div>
               )}
             </div>
