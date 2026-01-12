@@ -330,7 +330,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const body = await req.json()
     const { db } = await connectDB()
 
-    // Search for order in both collections
     let order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
     let isEmbeddedOrder = false
     let companyId: ObjectId | string | null = null
@@ -343,17 +342,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         .toArray()
 
       for (const company of companies) {
-        const embeddedOrder = company.orders?.find((o: any) => o._id?.toString() === id || o.id === id)
+        const embeddedOrder = company.orders?.find((o: any) => {
+          const orderId = o._id?.toString() || o.id?.toString() || o.id
+          return orderId === id
+        })
         if (embeddedOrder) {
           order = embeddedOrder
           isEmbeddedOrder = true
           companyId = company._id
+          console.log("[v0] Found embedded order in company:", company._id.toString())
           break
         }
       }
     }
 
     if (!order) {
+      console.log("[v0] Order not found in PUT:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
@@ -391,14 +395,43 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     let result
     if (isEmbeddedOrder && companyId) {
-      // Update embedded order in company
-      result = await db
-        .collection("companies")
-        .findOneAndUpdate(
-          { _id: companyId, "orders._id": new ObjectId(id) },
-          { $set: { "orders.$": { ...order, ...updateData } } },
-          { returnDocument: "after" },
+      const companyIdObj =
+        typeof companyId === "string" && ObjectId.isValid(companyId) ? new ObjectId(companyId) : companyId
+
+      const updatedCompany = await db.collection("companies").findOneAndUpdate(
+        {
+          _id: companyIdObj,
+          "orders._id": new ObjectId(id),
+        },
+        {
+          $set: {
+            "orders.$[elem]": { ...order, ...updateData },
+          },
+        },
+        {
+          arrayFilters: [{ "elem._id": new ObjectId(id) }],
+          returnDocument: "after",
+        },
+      )
+
+      if (!updatedCompany) {
+        console.log("[v0] Update by _id failed, trying by id field")
+        const updatedCompanyByIdField = await db.collection("companies").findOneAndUpdate(
+          { _id: companyIdObj },
+          {
+            $set: {
+              "orders.$[elem]": { ...order, ...updateData },
+            },
+          },
+          {
+            arrayFilters: [{ "elem.id": id }],
+            returnDocument: "after",
+          },
         )
+        result = updatedCompanyByIdField
+      } else {
+        result = updatedCompany
+      }
     } else {
       // Update standalone order
       result = await db
@@ -407,6 +440,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     if (!result) {
+      console.log("[v0] Update operation returned no result")
       return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
     }
 
@@ -423,6 +457,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     console.log("[v0] PUT Error:", error)
     if (error instanceof Error) {
       console.log("[v0] Error details:", error.message)
+      console.log("[v0] Error stack:", error.stack)
     }
     return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
   }
