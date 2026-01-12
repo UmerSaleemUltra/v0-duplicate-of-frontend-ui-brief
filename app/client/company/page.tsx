@@ -301,6 +301,11 @@ export default function CompanyPage() {
     (companyData.mailingAddress.street || companyData.mailingAddress.address) !== "Not yet" &&
     (companyData.mailingAddress.street || companyData.mailingAddress.address) !== "Not Yet Assigned"
 
+  const hasTaxInfo =
+    (companyData?.taxClassification && companyData.taxClassification !== "Not Yet") ||
+    (companyData?.annualReportFilingDate && companyData.annualReportFilingDate.trim() !== "") ||
+    (companyData?.irsReturnFilingDate && companyData.irsReturnFilingDate.trim() !== "")
+
   return (
     <ClientShell>
       <div className="space-y-6 md:space-8">
@@ -438,21 +443,65 @@ export default function CompanyPage() {
                 </div>
               </div>
             </div>
-
-            {/* Tax Classification */}
-            {companyData.taxClassification && companyData.taxClassification !== "Not Yet" && (
-              <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                  <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
-                  <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.taxClassification}</div>
-                </div>
-              </div>
-            )}
           </div>
         </div>
+
+        {hasTaxInfo && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <h2 className="text-base sm:text-lg font-semibold mb-4">Tax Information</h2>
+            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+              {companyData.taxClassification && companyData.taxClassification !== "Not Yet" && (
+                <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                    <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
+                    <div className="font-medium text-slate-900 text-sm sm:text-base">
+                      {companyData.taxClassification}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {companyData.annualReportFilingDate && (
+                <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs sm:text-sm text-slate-600 mb-1">Annual Report Filing Date</div>
+                    <div className="font-medium text-slate-900 text-sm sm:text-base">
+                      {new Date(companyData.annualReportFilingDate).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {companyData.irsReturnFilingDate && (
+                <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
+                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <div className="text-xs sm:text-sm text-slate-600 mb-1">IRS Return Filing Date</div>
+                    <div className="font-medium text-slate-900 text-sm sm:text-base">
+                      {new Date(companyData.irsReturnFilingDate).toLocaleDateString("en-US", {
+                        month: "long",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Additional Services */}
         {companyData.needsResellerCertificate && (
