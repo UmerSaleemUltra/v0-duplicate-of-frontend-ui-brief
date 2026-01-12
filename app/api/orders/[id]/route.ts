@@ -308,7 +308,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params
 
-    validateObjectId(id, "Order ID")
+    try {
+      validateObjectId(id, "Order ID")
+    } catch (validationError) {
+      console.log("[v0] ObjectId validation failed in PUT:", validationError)
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 }))
+    }
 
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
@@ -416,6 +421,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     )
   } catch (error) {
     console.log("[v0] PUT Error:", error)
+    if (error instanceof Error) {
+      console.log("[v0] Error details:", error.message)
+    }
     return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
   }
 }
