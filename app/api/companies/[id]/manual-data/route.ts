@@ -13,8 +13,19 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
     }
 
     const decoded = await verifyToken(token)
-    if (!decoded || decoded.role !== "admin") {
-      return NextResponse.json({ error: "Admin access required" }, { status: 403 })
+    console.log("[v0] Manual-data API - Token exists:", !!token)
+    console.log("[v0] Manual-data API - Decoded:", decoded)
+    console.log("[v0] Manual-data API - Has admin role:", decoded?.role === "admin")
+
+    if (!decoded) {
+      return NextResponse.json({ error: "Invalid or expired token" }, { status: 401 })
+    }
+
+    if (decoded.role !== "admin") {
+      return NextResponse.json(
+        { error: `Admin access required. Current role: ${decoded.role || "unknown"}` },
+        { status: 403 },
+      )
     }
 
     const body = await req.json()
