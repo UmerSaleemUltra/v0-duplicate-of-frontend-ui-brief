@@ -168,7 +168,7 @@ export default function CompanyPage() {
             taxFilingDate: selectedComp.taxFilingDate,
             taxClassification: selectedComp.taxClassification || "Not Yet",
             annualReportFilingDate: selectedComp.annualReportFilingDate,
-            irsReturnFilingDate: selectedComp.irsReturnFilingDate,
+            irsReturnFilingDate: selectedComp.irsFilingDate, // API returns as irsFilingDate
           })
 
           console.log(
@@ -177,7 +177,7 @@ export default function CompanyPage() {
             "Annual Report:",
             selectedComp.annualReportFilingDate,
             "IRS Filing:",
-            selectedComp.irsReturnFilingDate,
+            selectedComp.irsFilingDate,
           )
         } else {
           setError("Company not found")
@@ -311,9 +311,11 @@ export default function CompanyPage() {
     (companyData.mailingAddress.street || companyData.mailingAddress.address) !== "Not Yet Assigned"
 
   const hasTaxInfo =
-    (companyData?.taxClassification && companyData.taxClassification.trim() !== "") ||
-    (companyData?.annualReportFilingDate && companyData.annualReportFilingDate.trim() !== "") ||
-    (companyData?.irsReturnFilingDate && companyData.irsReturnFilingDate.trim() !== "")
+    (companyData?.taxClassification &&
+      companyData.taxClassification.toString().trim() !== "" &&
+      companyData.taxClassification !== "Not Yet") ||
+    (companyData?.annualReportFilingDate && companyData.annualReportFilingDate.toString().trim() !== "") ||
+    (companyData?.irsReturnFilingDate && companyData.irsReturnFilingDate.toString().trim() !== "")
 
   return (
     <ClientShell>
@@ -506,13 +508,15 @@ export default function CompanyPage() {
           <div className="rounded-lg border border-gray-200 p-6">
             <h2 className="text-base sm:text-lg font-semibold mb-4">Tax Information</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              {companyData?.taxClassification && companyData.taxClassification.trim() !== "" && (
-                <div>
-                  <p className="text-sm text-gray-600 mb-1">Tax Classification</p>
-                  <p className="text-sm font-medium">{companyData.taxClassification}</p>
-                </div>
-              )}
-              {companyData?.annualReportFilingDate && companyData.annualReportFilingDate.trim() !== "" && (
+              {companyData?.taxClassification &&
+                companyData.taxClassification.toString().trim() !== "" &&
+                companyData.taxClassification !== "Not Yet" && (
+                  <div>
+                    <p className="text-sm text-gray-600 mb-1">Tax Classification</p>
+                    <p className="text-sm font-medium">{companyData.taxClassification}</p>
+                  </div>
+                )}
+              {companyData?.annualReportFilingDate && companyData.annualReportFilingDate.toString().trim() !== "" && (
                 <div>
                   <p className="text-sm text-gray-600 mb-1">Annual Report Filing Date</p>
                   <p className="text-sm font-medium">
@@ -524,7 +528,7 @@ export default function CompanyPage() {
                   </p>
                 </div>
               )}
-              {companyData?.irsReturnFilingDate && companyData.irsReturnFilingDate.trim() !== "" && (
+              {companyData?.irsReturnFilingDate && companyData.irsReturnFilingDate.toString().trim() !== "" && (
                 <div>
                   <p className="text-sm text-gray-600 mb-1">IRS Return Filing Date</p>
                   <p className="text-sm font-medium">
