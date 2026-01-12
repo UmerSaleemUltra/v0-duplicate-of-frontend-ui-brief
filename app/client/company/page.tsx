@@ -615,40 +615,6 @@ export default function CompanyPage() {
           </div>
         )}
 
-        {/* Tax Information */}
-        {companyData.taxClassification && companyData.taxClassification !== "Not Yet" && (
-          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Tax Information</h2>
-            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
-                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.taxClassification}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {/* ITIN (Individual Taxpayer Identification Number) */}
-        {hasITIN && (
-          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">
-              ITIN (Individual Taxpayer Identification Number)
-            </h2>
-            <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xs sm:text-sm text-slate-600 mb-1">ITIN Number</div>
-                <div className="font-medium text-slate-900 text-sm sm:text-base">{companyData.itin}</div>
-              </div>
-            </div>
-          </div>
-        )}
-
         {/* Business Mailing Address */}
         {hasMailingAddress && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">

@@ -34,6 +34,10 @@ export default function CustomerDetailPage() {
   const [editCompanyState, setEditCompanyState] = useState("")
   const [companyEdits, setCompanyEdits] = useState<{ [key: string]: boolean }>({})
   const [loadingCompany, setLoadingCompany] = useState<string>("")
+  const [taxDetailsModalOpen, setTaxDetailsModalOpen] = useState(false)
+  const [taxClassificationInput, setTaxClassificationInput] = useState("")
+  const [annualReportDateInput, setAnnualReportDateInput] = useState("")
+  const [taxFilingDateInput, setTaxFilingDateInput] = useState("")
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && customerId) {
@@ -203,6 +207,52 @@ export default function CustomerDetailPage() {
       toast({
         title: "Error",
         description: "Failed to update company information",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingCompany("")
+    }
+  }
+
+  const handleSaveTaxDetails = async () => {
+    if (typeof window === "undefined") return
+
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      console.log("[v0] Saving tax details for company:", selectedCompany.id)
+
+      setLoadingCompany(selectedCompany.id)
+
+      const updatedCompany = {
+        ...selectedCompany,
+        taxClassification: taxClassificationInput || selectedCompany.taxClassification,
+        annualReportDate: annualReportDateInput || selectedCompany.annualReportDate,
+        taxFilingDate: taxFilingDateInput || selectedCompany.taxFilingDate,
+        updatedAt: new Date().toISOString(),
+      }
+
+      const response = await ApiClient.companies.update(selectedCompany.id, updatedCompany, token)
+
+      if (response.success) {
+        toast({
+          title: "Success",
+          description: "Tax information updated successfully",
+        })
+        setTaxDetailsModalOpen(false)
+        loadCustomerData()
+      } else {
+        throw new Error(response.error || "Failed to update tax details")
+      }
+    } catch (error: any) {
+      console.error("[v0] Error saving tax details:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update tax information",
         variant: "destructive",
       })
     } finally {
@@ -463,6 +513,19 @@ export default function CustomerDetailPage() {
                     }}
                   >
                     <Pencil className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => {
+                      setSelectedCompany(company)
+                      setTaxClassificationInput(company.taxClassification || "")
+                      setAnnualReportDateInput(company.annualReportDate ? company.annualReportDate.split("T")[0] : "")
+                      setTaxFilingDateInput(company.taxFilingDate ? company.taxFilingDate.split("T")[0] : "")
+                      setTaxDetailsModalOpen(true)
+                    }}
+                  >
+                    <DollarSign className="h-4 w-4" />
                   </Button>
                 </div>
               </div>
@@ -782,6 +845,63 @@ export default function CustomerDetailPage() {
                 Save Changes
               </Button>
             </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={taxDetailsModalOpen} onOpenChange={setTaxDetailsModalOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Edit Tax Details</DialogTitle>
+            <DialogDescription>Update tax information for {selectedCompany?.name}</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="tax-classification">Tax Classification</Label>
+              <input
+                id="tax-classification"
+                type="text"
+                value={taxClassificationInput}
+                onChange={(e) => setTaxClassificationInput(e.target.value)}
+                placeholder="e.g., S-Corporation, Partnership"
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="annual-report-date">Annual Report Date</Label>
+              <input
+                id="annual-report-date"
+                type="date"
+                value={annualReportDateInput}
+                onChange={(e) => setAnnualReportDateInput(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="tax-filing-date">Tax Filing Date</Label>
+              <input
+                id="tax-filing-date"
+                type="date"
+                value={taxFilingDateInput}
+                onChange={(e) => setTaxFilingDateInput(e.target.value)}
+                className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+          </div>
+          <div className="flex gap-2 justify-end">
+            <Button variant="outline" onClick={() => setTaxDetailsModalOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveTaxDetails} disabled={loadingCompany === selectedCompany?.id}>
+              {loadingCompany === selectedCompany?.id ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                "Save Tax Details"
+              )}
+            </Button>
           </div>
         </DialogContent>
       </Dialog>

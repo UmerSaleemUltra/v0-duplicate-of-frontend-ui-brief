@@ -48,6 +48,7 @@ import {
   Plus,
   Receipt,
   Calendar,
+  DollarSign,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -152,6 +153,19 @@ export default function OrderDetailPage() {
   const [taxModalOpen, setTaxModalOpen] = useState(false)
   const [agentModalOpen, setAgentModalOpen] = useState(false)
   const [addressModalOpen, setAddressModalOpen] = useState(false)
+
+  const [showTaxModal, setShowTaxModal] = useState(false)
+  const [taxData, setTaxData] = useState({
+    taxClassification: "",
+    annualReportFilingDate: "",
+    taxFilingDate: "",
+    itin: "",
+  })
+
+  // Add loading state for tax update
+  const [loadingState, setLoadingState] = useState({
+    taxUpdate: false,
+  })
 
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
@@ -393,7 +407,7 @@ export default function OrderDetailPage() {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({
+        body: JSON.JSON.stringify({
           customMilestones: updatedCustomMilestones,
         }),
       })
@@ -486,6 +500,14 @@ export default function OrderDetailPage() {
         businessCategory: orderData.company?.businessCategory || "",
         businessWebsite: orderData.company?.businessWebsite || "",
         businessDescription: orderData.company?.businessDescription || "",
+      })
+
+      // Initialize tax data state
+      setTaxData({
+        taxClassification: orderData.company?.taxClassification || "",
+        annualReportFilingDate: orderData.company?.annualReportFilingDate || "",
+        taxFilingDate: orderData.company?.irsFilingDate || "",
+        itin: orderData.company?.itin || "",
       })
 
       if (orderData.company?.milestones) {
@@ -993,6 +1015,65 @@ export default function OrderDetailPage() {
       })
     } finally {
       setAddressUpdating(false)
+    }
+  }
+
+  const handleSaveTaxInfo = async () => {
+    if (!company || !order) {
+      toast({
+        title: "Error",
+        description: "Company or Order data not available.",
+        variant: "destructive",
+      })
+      return
+    }
+    try {
+      setLoadingState((prev) => ({ ...prev, taxUpdate: true }))
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      const response = await fetch(`/api/companies/${order.company.id}/manual-data`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          dataType: "tax",
+          data: {
+            taxClassification: taxData.taxClassification,
+            annualReportFilingDate: taxData.annualReportFilingDate,
+            irsFilingDate: taxData.taxFilingDate,
+            itin: taxData.itin,
+          },
+        }),
+      })
+
+      if (!response.ok) {
+        const errorData = await response.json()
+        throw new Error(errorData.message || "Failed to update tax information")
+      }
+
+      toast({
+        title: "Success",
+        description: "Tax information updated successfully",
+      })
+
+      setShowTaxModal(false)
+      // Refresh order data
+      await loadOrderData() // Renamed to loadOrderData to match its functionality
+    } catch (error) {
+      console.error("[v0] Error updating tax info:", error)
+      toast({
+        title: "Error",
+        description: "Failed to update tax information",
+        variant: "destructive",
+      })
+    } finally {
+      setLoadingState((prev) => ({ ...prev, taxUpdate: false }))
     }
   }
 
@@ -3811,7 +3892,7 @@ export default function OrderDetailPage() {
           businessId: company?.businessId,
           taxClassification: company?.taxClassification,
           annualReportFilingDate: company?.annualReportFilingDate,
-          irsFilingDate: company?.irsFilingDate,
+          taxFilingDate: company?.irsFilingDate,
         }}
         onUpdate={loadOrderData}
       />
@@ -3831,6 +3912,143 @@ export default function OrderDetailPage() {
         currentData={company?.businessAddress}
         onUpdate={loadOrderData}
       />
+
+      {/* Add Tax Information section with edit button */}
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <h2 className="text-lg font-semibold">Tax Information</h2>
+          <Button variant="outline" size="sm" onClick={() => setShowTaxModal(true)} className="gap-2">
+            <DollarSign className="w-4 h-4" />
+            Edit Tax Info
+          </Button>
+        </div>
+
+        {order?.company?.taxClassification && (
+          <div className="grid grid-cols-2 gap-4">
+            <Card>
+              <CardContent className="pt-6">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold">Tax Classification</Label>
+                  <p className="font-medium">{order.company.taxClassification}</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {order?.company?.annualReportFilingDate && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold">Annual Report Date</Label>
+                    <p className="font-medium">{new Date(order.company.annualReportFilingDate).toLocaleDateString()}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {order?.company?.irsFilingDate && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold">Tax Filing Date</Label>
+                    <p className="font-medium">{new Date(order.company.irsFilingDate).toLocaleDateString()}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {order?.company?.itin && (
+              <Card>
+                <CardContent className="pt-6">
+                  <div className="space-y-2">
+                    <Label className="text-xs font-semibold">ITIN</Label>
+                    <p className="font-medium">{order.company.itin}</p>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        )}
+      </div>
+
+      <Dialog open={showTaxModal} onOpenChange={setShowTaxModal}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Edit Tax Information</DialogTitle>
+            <DialogDescription>Update the company tax details and ITIN</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="taxClassification">Tax Classification</Label>
+              <Input
+                id="taxClassification"
+                value={taxData.taxClassification}
+                onChange={(e) =>
+                  setTaxData((prev) => ({
+                    ...prev,
+                    taxClassification: e.target.value,
+                  }))
+                }
+                placeholder="e.g., S-Corporation, LLC"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="annualReportDate">Annual Report Date</Label>
+              <Input
+                id="annualReportDate"
+                type="date"
+                value={taxData.annualReportFilingDate}
+                onChange={(e) =>
+                  setTaxData((prev) => ({
+                    ...prev,
+                    annualReportFilingDate: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="taxFilingDate">Tax Filing Date</Label>
+              <Input
+                id="taxFilingDate"
+                type="date"
+                value={taxData.taxFilingDate}
+                onChange={(e) =>
+                  setTaxData((prev) => ({
+                    ...prev,
+                    taxFilingDate: e.target.value,
+                  }))
+                }
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="itin">ITIN</Label>
+              <Input
+                id="itin"
+                value={taxData.itin}
+                onChange={(e) =>
+                  setTaxData((prev) => ({
+                    ...prev,
+                    itin: e.target.value,
+                  }))
+                }
+                placeholder="Individual Taxpayer Identification Number"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowTaxModal(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSaveTaxInfo} disabled={loadingState.taxUpdate}>
+              {loadingState.taxUpdate ? "Saving..." : "Save Changes"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
