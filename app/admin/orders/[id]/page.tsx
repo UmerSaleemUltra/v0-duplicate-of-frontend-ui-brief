@@ -1328,20 +1328,23 @@ export default function OrderDetailPage() {
 
     setTaxUpdating(true)
     try {
-      const token = localStorage.getItem("token")
+      const token = authService.getToken()
       if (!token) throw new Error("No authentication token")
 
       const response = await fetch(`/api/companies/${company.id}/manual-data`, {
-        method: "PUT",
+        method: "PATCH",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          taxClassification: taxData.taxClassification || undefined,
-          annualReportFilingDate: taxData.annualReportFilingDate || undefined,
-          irsFilingDate: taxData.irsFilingDate || undefined,
-          ...(taxData.itin && { itin: taxData.itin }),
+          dataType: "tax",
+          data: {
+            taxClassification: taxData.taxClassification || undefined,
+            annualReportFilingDate: taxData.annualReportFilingDate || undefined,
+            irsFilingDate: taxData.irsFilingDate || undefined,
+            ...(taxData.itin && { itin: taxData.itin }),
+          },
         }),
       })
 
@@ -2856,16 +2859,6 @@ export default function OrderDetailPage() {
                 >
                   <Hash className="w-4 h-4" />
                   <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setBusinessIdDialogOpen(true)}
-                  disabled={businessIdUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasBusinessId ? "View/Edit Business ID" : "Assign Business ID"}</span>
                 </Button>
 
                 <Button
