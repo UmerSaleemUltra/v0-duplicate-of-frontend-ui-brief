@@ -1329,38 +1329,33 @@ export default function OrderDetailPage() {
     setTaxUpdating(true)
     try {
       const token = authService.getToken()
-      if (!token) throw new Error("No authentication token found")
+      if (!token) {
+        router.push("/login")
+        return
+      }
 
-      console.log("[v0] Tax update - Token exists:", !!token)
-      console.log("[v0] Tax update - Company ID:", company.id)
-
-      const response = await fetch(`/api/companies/${company.id}/manual-data`, {
-        method: "PATCH",
+      // Use PUT endpoint like other successful functions
+      const response = await fetch(`/api/companies/${company.id}`, {
+        method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          dataType: "tax",
-          data: {
-            taxClassification: taxData.taxClassification || undefined,
-            annualReportFilingDate: taxData.annualReportFilingDate || undefined,
-            irsFilingDate: taxData.irsFilingDate || undefined,
-            ...(taxData.itin && { itin: taxData.itin }),
-          },
+          taxClassification: taxData.taxClassification || undefined,
+          annualReportFilingDate: taxData.annualReportFilingDate || undefined,
+          irsFilingDate: taxData.irsFilingDate || undefined,
+          ...(taxData.itin && { itin: taxData.itin }),
         }),
       })
 
-      console.log("[v0] Tax update response status:", response.status)
-
       if (!response.ok) {
         const error = await response.json()
-        console.log("[v0] Tax update error response:", error)
         throw new Error(error.error || "Failed to update tax information")
       }
 
       const result = await response.json()
-      console.log("[v0] Tax update success:", result)
+      setCompany(result.data) // Update company state with the latest data
 
       toast({
         title: "Success",
@@ -1368,7 +1363,7 @@ export default function OrderDetailPage() {
       })
 
       setTaxInfoDialogOpen(false)
-      // Reload order data
+      // Reload order data to reflect changes, especially for ITIN if updated
       fetchOrderData()
     } catch (err: any) {
       console.error("[v0] Tax update error:", err)
