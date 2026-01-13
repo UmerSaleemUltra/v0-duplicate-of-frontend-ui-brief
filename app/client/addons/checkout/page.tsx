@@ -1,8 +1,9 @@
 "use client"
 
 import type React from "react"
+import dynamic from "next/dynamic"
 
-import { useState, useEffect, Suspense, useCallback, useMemo } from "react"
+import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { ClientShell } from "@/components/client/client-shell"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -18,7 +19,19 @@ import { useToast } from "@/hooks/use-toast"
 import { authService } from "@/lib/auth"
 import { ApiClient } from "@/lib/api-client"
 
-function AddonCheckoutContent() {
+const AddonCheckoutContent = dynamic(() => Promise.resolve(AddonCheckoutContentComponent), {
+  ssr: false,
+  loading: () => (
+    <div className="flex items-center justify-center min-h-[400px]">
+      <div className="text-center">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
+        <p className="text-slate-600">Loading...</p>
+      </div>
+    </div>
+  ),
+})
+
+function AddonCheckoutContentComponent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -680,23 +693,10 @@ function AddonCheckoutContent() {
   )
 }
 
-export const dynamic = "force-dynamic"
-
-export default function AddonCheckoutPage() {
+export default function Page() {
   return (
     <ClientShell>
-      <Suspense
-        fallback={
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-              <p className="text-slate-600">Loading...</p>
-            </div>
-          </div>
-        }
-      >
-        <AddonCheckoutContent />
-      </Suspense>
+      <AddonCheckoutContent />
     </ClientShell>
   )
 }
