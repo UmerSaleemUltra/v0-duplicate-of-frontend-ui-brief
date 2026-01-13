@@ -6,13 +6,7 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  redirects: async () => [
-    {
-      source: "/:path*",
-      destination: "/",
-      permanent: false,
-    },
-  ],
+  // Next.js will automatically handle 404s without needing a redirect rule
 }
 
 export default nextConfig
