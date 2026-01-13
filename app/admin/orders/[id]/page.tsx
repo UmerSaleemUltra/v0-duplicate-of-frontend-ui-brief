@@ -2868,6 +2868,18 @@ export default function OrderDetailPage() {
                 <Button
                   variant="outline"
                   className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
+                  onClick={() => setBusinessIdDialogOpen(true)}
+                  disabled={businessIdUpdating || !company}
+                >
+                  <Building2 className="w-4 h-4" />
+                  <span className="font-medium">
+                    {company?.businessId ? "View/Edit Business ID" : "Assign Business ID"}
+                  </span>
+                </Button>
+
+                <Button
+                  variant="outline"
+                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
                   onClick={() => {
                     setTaxData({
                       taxClassification: company?.taxClassification || "",
