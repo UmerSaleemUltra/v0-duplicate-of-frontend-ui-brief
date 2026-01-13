@@ -356,49 +356,6 @@ export function CompanyModal({
             </CardContent>
           </Card>
 
-          {/* Tax Information Section */}
-          {(company.taxClassification || company.annualReportFilingDate || company.irsFilingDate) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Tax Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  {company.taxClassification && (
-                    <div>
-                      <p className="text-sm text-slate-600">Tax Classification</p>
-                      <p className="font-medium">{company.taxClassification}</p>
-                    </div>
-                  )}
-                  {company.annualReportFilingDate && (
-                    <div>
-                      <p className="text-sm text-slate-600">Annual Report Filing Date</p>
-                      <p className="font-medium">
-                        {new Date(company.annualReportFilingDate).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  )}
-                  {company.irsFilingDate && (
-                    <div>
-                      <p className="text-sm text-slate-600">IRS Filing Date</p>
-                      <p className="font-medium">
-                        {new Date(company.irsFilingDate).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
           {/* Registered Agent */}
           {company.registeredAgent && (
             <Card>

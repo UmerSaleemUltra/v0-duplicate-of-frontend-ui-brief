@@ -6,31 +6,13 @@ import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 import type { Company } from "@/lib/types"
 
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    let { id } = params
+    const { id } = await params
 
-    console.log("[v0] API received raw company ID:", id, "Type:", typeof id, "Length:", id?.length)
-
-    // Handle URL encoded IDs
-    id = decodeURIComponent(id)
-    console.log("[v0] After decoding:", id)
-
-    if (!id || typeof id !== "string" || id.trim() === "") {
-      console.log("[v0] Invalid company ID - empty or not string:", id)
+    if (!id || !ObjectId.isValid(id)) {
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
-
-    const trimmedId = id.trim()
-    console.log("[v0] Trimmed ID:", trimmedId, "Length:", trimmedId.length, "IsValid:", ObjectId.isValid(trimmedId))
-
-    if (!ObjectId.isValid(trimmedId)) {
-      console.log("[v0] ID is not a valid MongoDB ObjectId:", trimmedId)
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
-    }
-
-    const companyId = new ObjectId(trimmedId)
-    console.log("[v0] Successfully converted ID to ObjectId:", companyId.toString())
 
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
@@ -46,7 +28,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     const { db } = await connectDB()
 
-    const company = await db.collection("companies").findOne({ _id: companyId })
+    const company = await db.collection("companies").findOne({ _id: new ObjectId(id) })
 
     if (!company) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
@@ -95,9 +77,6 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
           businessId: company.businessId || null,
           registeredAgent: company.registeredAgent || null,
           mailingAddress: company.mailingAddress || null,
-          taxClassification: company.taxClassification || "Not Yet",
-          annualReportFilingDate: company.annualReportFilingDate || null,
-          irsFilingDate: company.irsFilingDate || null,
           createdAt: company.createdAt,
           updatedAt: company.updatedAt,
         },
@@ -112,25 +91,13 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    let { id } = params
+    const { id } = await params
 
-    // Handle URL encoded IDs
-    id = decodeURIComponent(id)
-
-    if (!id || typeof id !== "string" || id.trim() === "") {
-      console.log("[v0] Invalid company ID format received:", id)
+    if (!id || !ObjectId.isValid(id)) {
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
-
-    const trimmedId = id.trim()
-    if (!ObjectId.isValid(trimmedId)) {
-      console.log("[v0] ID is not a valid ObjectId format:", trimmedId)
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
-    }
-
-    const companyId = new ObjectId(trimmedId)
 
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
@@ -147,7 +114,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const body = await req.json()
     const { db } = await connectDB()
 
-    const company = await db.collection("companies").findOne({ _id: companyId })
+    const company = await db.collection("companies").findOne({ _id: new ObjectId(id) })
 
     if (!company) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
@@ -244,7 +211,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const result = await db
       .collection("companies")
-      .findOneAndUpdate({ _id: companyId }, { $set: updateData }, { returnDocument: "after" })
+      .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
 
     if (!result) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
@@ -273,18 +240,9 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    let { id } = params
-
-    // Handle URL encoded IDs
-    id = decodeURIComponent(id)
-
-    if (!id || typeof id !== "string" || id.trim() === "") {
-      console.log("[v0] Invalid company ID format received:", id)
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
-    }
-
+    const { id } = await params
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
@@ -297,13 +255,8 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
-    const trimmedId = id.trim()
-    if (!ObjectId.isValid(trimmedId)) {
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
-    }
-
     const { db } = await connectDB()
-    const result = await db.collection("companies").deleteOne({ _id: new ObjectId(trimmedId) })
+    const result = await db.collection("companies").deleteOne({ _id: new ObjectId(id) })
 
     if (result.deletedCount === 0) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
