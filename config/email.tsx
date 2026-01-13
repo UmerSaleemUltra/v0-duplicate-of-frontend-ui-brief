@@ -13,11 +13,22 @@ const EMAIL_CONFIG = {
 const SENDER_EMAIL = "us800750@gmail.com"
 const SENDER_NAME = "BuzzFiling LLC Formation"
 
-export const transporter = nodemailer.createTransport(EMAIL_CONFIG)
+const transporter = nodemailer.createTransport(EMAIL_CONFIG)
+
+let isVerified = false
+transporter.verify((error, success) => {
+  if (error) {
+    console.error("[v0] Email transport verification failed:", error)
+  } else {
+    isVerified = true
+    console.log("[v0] Email transport verified successfully")
+  }
+})
 
 export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
   try {
-    await transporter.verify()
+    console.log("[v0] Sending email to:", to)
+    console.log("[v0] Email subject:", subject)
 
     const info = await transporter.sendMail({
       from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
@@ -26,9 +37,11 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
       html,
     })
 
+    console.log("[v0] Email sent successfully. Message ID:", info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error: any) {
-    console.error("Email send error:", error.message)
+    console.error("[v0] Email send error:", error.message)
+    console.error("[v0] Full error:", error)
     return { success: false, error: error.message }
   }
 }

@@ -69,12 +69,20 @@ export async function POST(request: NextRequest) {
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}&userId=${user._id.toString()}`
 
     const resetEmail = emailTemplates.passwordReset(user.name, resetLink)
-    await sendEmail({
+
+    console.log("[v0] Attempting to send password reset email to:", email)
+    const emailResult = await sendEmail({
       to: email,
       subject: resetEmail.subject,
       html: resetEmail.html,
     })
 
+    if (!emailResult.success) {
+      console.error("[v0] Password reset email failed for:", email, "Error:", emailResult.error)
+      return addSecurityHeaders(apiError("Failed to send reset email. Please try again later.", 500))
+    }
+
+    console.log("[v0] Password reset email sent successfully to:", email, "Message ID:", emailResult.messageId)
     return addSecurityHeaders(apiResponse({ message: "If email exists, reset link will be sent" }))
   } catch (error) {
     console.error("Forgot password error:", error)
