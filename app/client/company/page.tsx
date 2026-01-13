@@ -63,13 +63,16 @@ export default function CompanyPage() {
         ])
 
         if (companyResponse.status === "fulfilled") {
-          const selectedComp = companyResponse.value.data || companyResponse.value
+          const selectedComp = companyResponse.value?.data || companyResponse.value
 
-          if (!selectedComp) {
+          if (!selectedComp || !selectedComp.id) {
+            console.log("[v0] Company data is null or missing ID. Response:", companyResponse.value)
             setError("Company not found")
             setLoading(false)
             return
           }
+
+          console.log("[v0] Company loaded successfully:", selectedComp.id, selectedComp.name)
 
           const builtMembers: MemberUI[] = (selectedComp.members ?? []).map((m: any, idx: number) => {
             const firstName = m.firstName || ""
