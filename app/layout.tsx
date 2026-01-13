@@ -316,18 +316,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   name: "Home",
                   item: "https://buzzfiling.com",
                 },
-                {
-                  "@type": "ListItem",
-                  position: 2,
-                  name: "Services",
-                  item: "https://buzzfiling.com/#services",
-                },
-                {
-                  "@type": "ListItem",
-                  position: 3,
-                  name: "Pricing",
-                  item: "https://buzzfiling.com/#pricing",
-                },
+               
               ],
             }),
           }}
