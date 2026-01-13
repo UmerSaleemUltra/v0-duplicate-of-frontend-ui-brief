@@ -12,6 +12,7 @@ import { useSelectedCompany } from "@/lib/company-context"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
+import { AddonsSkeleton } from "@/components/client/addons-skeleton"
 
 export default function ClientAddonsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard()
@@ -121,12 +122,7 @@ export default function ClientAddonsPage() {
   if (authLoading || isLoadingAddons) {
     return (
       <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading addons...</p>
-          </div>
-        </div>
+        <AddonsSkeleton />
       </ClientShell>
     )
   }
