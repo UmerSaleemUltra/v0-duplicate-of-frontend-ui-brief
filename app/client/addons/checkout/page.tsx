@@ -560,147 +560,143 @@ function AddonCheckoutContent() {
 
   if (isLoading) {
     return (
-      <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading addon details...</p>
-          </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading addon details...</p>
         </div>
-      </ClientShell>
+      </div>
     )
   }
 
   if (!addon) {
     return (
-      <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-slate-600">Addon not found</p>
-            <Button onClick={() => router.push("/client/addons")} className="mt-4">
-              Back to Addons
-            </Button>
-          </div>
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-slate-600">Addon not found</p>
+          <Button onClick={() => router.push("/client/addons")} className="mt-4">
+            Back to Addons
+          </Button>
         </div>
-      </ClientShell>
+      </div>
     )
   }
 
   return (
-    <ClientShell>
-      <div className="max-w-4xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Addons
-        </Button>
+    <div className="max-w-4xl mx-auto space-y-6">
+      <Button variant="ghost" onClick={() => router.back()} className="gap-2">
+        <ArrowLeft className="w-4 h-4" />
+        Back to Addons
+      </Button>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Addon Details */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                  <Package className="w-6 h-6 text-white" />
-                </div>
-                <div>
-                  <CardTitle>{addon.name}</CardTitle>
-                  <CardDescription>{addon.category}</CardDescription>
+      <div className="grid md:grid-cols-2 gap-6">
+        {/* Addon Details */}
+        <Card>
+          <CardHeader>
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                <Package className="w-6 h-6 text-white" />
+              </div>
+              <div>
+                <CardTitle>{addon.name}</CardTitle>
+                <CardDescription>{addon.category}</CardDescription>
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-slate-600">{addon.description}</p>
+
+            {addon.features && addon.features.length > 0 && (
+              <div className="space-y-2 pt-4 border-t">
+                <p className="font-medium text-slate-900">What's included:</p>
+                <ul className="space-y-2">
+                  {addon.features.map((feature, index) => (
+                    <li key={index} className="text-sm text-slate-600 flex items-start gap-2">
+                      <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
+                      <span>{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <div className="pt-4 border-t">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-medium text-slate-900">Total</span>
+                <div className="flex items-center gap-1">
+                  <DollarSign className="w-5 h-5 text-slate-500" />
+                  <span className="text-3xl font-bold text-slate-900">{addon.price}</span>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-slate-600">{addon.description}</p>
+            </div>
+          </CardContent>
+        </Card>
 
-              {addon.features && addon.features.length > 0 && (
-                <div className="space-y-2 pt-4 border-t">
-                  <p className="font-medium text-slate-900">What's included:</p>
-                  <ul className="space-y-2">
-                    {addon.features.map((feature, index) => (
-                      <li key={index} className="text-sm text-slate-600 flex items-start gap-2">
-                        <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
-                        <span>{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-medium text-slate-900">Total</span>
-                  <div className="flex items-center gap-1">
-                    <DollarSign className="w-5 h-5 text-slate-500" />
-                    <span className="text-3xl font-bold text-slate-900">{addon.price}</span>
+        {/* Payment Method */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Payment Method</CardTitle>
+            <CardDescription>Choose how you'd like to pay</CardDescription>
+          </CardHeader>
+          <CardContent>
+            {!showPaymentForm && (
+              <div className="space-y-4">
+                <RadioGroup value={paymentMethod || ""} onValueChange={handlePaymentMethodChange}>
+                  <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-slate-200 hover:border-[#ff0d13] transition-colors cursor-pointer">
+                    <RadioGroupItem value="stripe" id="stripe" />
+                    <Label htmlFor="stripe" className="flex items-center gap-3 cursor-pointer flex-1">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+                        <CreditCard className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium">Credit/Debit Card</div>
+                        <div className="text-sm text-slate-600">Pay securely with Stripe</div>
+                      </div>
+                    </Label>
                   </div>
-                </div>
+
+                  <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-slate-200 hover:border-[#ff0d13] transition-colors cursor-pointer">
+                    <RadioGroupItem value="whatsapp" id="whatsapp" />
+                    <Label htmlFor="whatsapp" className="flex items-center gap-3 cursor-pointer flex-1">
+                      <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
+                        <MessageCircle className="w-5 h-5 text-white" />
+                      </div>
+                      <div>
+                        <div className="font-medium">WhatsApp Payment</div>
+                        <div className="text-sm text-slate-600">Pay via WhatsApp transfer</div>
+                      </div>
+                    </Label>
+                  </div>
+                </RadioGroup>
               </div>
-            </CardContent>
-          </Card>
+            )}
 
-          {/* Payment Method */}
-          <Card>
-            <CardHeader>
-              <CardTitle>Payment Method</CardTitle>
-              <CardDescription>Choose how you'd like to pay</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {!showPaymentForm && (
-                <div className="space-y-4">
-                  <RadioGroup value={paymentMethod || ""} onValueChange={handlePaymentMethodChange}>
-                    <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-slate-200 hover:border-[#ff0d13] transition-colors cursor-pointer">
-                      <RadioGroupItem value="stripe" id="stripe" />
-                      <Label htmlFor="stripe" className="flex items-center gap-3 cursor-pointer flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                          <CreditCard className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Credit/Debit Card</div>
-                          <div className="text-sm text-slate-600">Pay securely with Stripe</div>
-                        </div>
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-slate-200 hover:border-[#ff0d13] transition-colors cursor-pointer">
-                      <RadioGroupItem value="whatsapp" id="whatsapp" />
-                      <Label htmlFor="whatsapp" className="flex items-center gap-3 cursor-pointer flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                          <MessageCircle className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium">WhatsApp Payment</div>
-                          <div className="text-sm text-slate-600">Pay via WhatsApp transfer</div>
-                        </div>
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              )}
-
-              {stripePaymentForm}
-              {whatsappPaymentForm}
-            </CardContent>
-          </Card>
-        </div>
+            {stripePaymentForm}
+            {whatsappPaymentForm}
+          </CardContent>
+        </Card>
       </div>
-    </ClientShell>
+    </div>
   )
 }
 
+export const dynamic = "force-dynamic"
+
 export default function AddonCheckoutPage() {
   return (
-    <Suspense
-      fallback={
-        <ClientShell>
+    <ClientShell>
+      <Suspense
+        fallback={
           <div className="flex items-center justify-center min-h-[400px]">
             <div className="text-center">
               <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
               <p className="text-slate-600">Loading...</p>
             </div>
           </div>
-        </ClientShell>
-      }
-    >
-      <AddonCheckoutContent />
-    </Suspense>
+        }
+      >
+        <AddonCheckoutContent />
+      </Suspense>
+    </ClientShell>
   )
 }
