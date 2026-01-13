@@ -599,19 +599,14 @@ export default function OrderDetailPage() {
         return
       }
 
-      // Update the order within the company
-      const updatedOrders = (company.orders || []).map((o: any) =>
-        o.id === order.id ? { ...o, status: newStatus } : o,
-      )
-
-      const response = await fetch(`/api/companies/${company.id}`, {
+      const response = await fetch(`/api/orders/${order.id}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          orders: updatedOrders,
+          status: newStatus,
         }),
       })
 
@@ -620,11 +615,7 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
-      setCompany(result.data)
-
-      // Update local order state
-      const updatedOrder = updatedOrders.find((o: any) => o.id === order.id)
-      setOrder(updatedOrder)
+      setOrder(result.data)
 
       toast({
         title: "Status Updated",
@@ -1334,19 +1325,27 @@ export default function OrderDetailPage() {
         return
       }
 
-      // Use PUT endpoint like other successful functions
+      const taxPayload: any = {}
+      if (taxData.taxClassification?.trim()) {
+        taxPayload.taxClassification = taxData.taxClassification.trim()
+      }
+      if (taxData.annualReportFilingDate?.trim()) {
+        taxPayload.annualReportFilingDate = taxData.annualReportFilingDate.trim()
+      }
+      if (taxData.irsFilingDate?.trim()) {
+        taxPayload.irsFilingDate = taxData.irsFilingDate.trim()
+      }
+      if (taxData.itin?.trim()) {
+        taxPayload.itin = taxData.itin.trim()
+      }
+
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          taxClassification: taxData.taxClassification || undefined,
-          annualReportFilingDate: taxData.annualReportFilingDate || undefined,
-          irsFilingDate: taxData.irsFilingDate || undefined,
-          ...(taxData.itin && { itin: taxData.itin }),
-        }),
+        body: JSON.stringify(taxPayload),
       })
 
       if (!response.ok) {
@@ -2119,6 +2118,7 @@ export default function OrderDetailPage() {
     }
   }
 
+  // Removed duplicate Status Management section
   // Removed duplicate handleUpdateCompanyStatus
   // Removed duplicate handleUpdateRegisteredAgentStatus
   // Removed duplicate handleUpdateBusinessAddressStatus
@@ -3049,8 +3049,6 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
           </Card>
-
-          {/* Removed duplicate Status Management section */}
         </div>
       </div>
 
