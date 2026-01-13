@@ -1,4 +1,6 @@
 "use client"
+export const dynamic = "force-dynamic"
+
 import { Suspense, lazy } from "react"
 import { ClientShell } from "@/components/client/client-shell"
 
