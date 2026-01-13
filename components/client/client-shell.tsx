@@ -52,6 +52,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [showHamburger, setShowHamburger] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isPageReady, setIsPageReady] = useState(false)
+  const [companiesLoading, setCompaniesLoading] = useState(true)
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -96,9 +97,11 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const loadCompanies = async () => {
+      setCompaniesLoading(true)
       const token = authService.getToken()
       if (!token) {
         console.log("[v0] Sidebar: No token found")
+        setCompaniesLoading(false)
         return
       }
 
@@ -136,6 +139,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
         if (!userId) {
           console.error("[v0] Sidebar: CRITICAL - No userId found!")
+          setCompaniesLoading(false)
           return
         }
 
@@ -162,6 +166,8 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error("[v0] Sidebar: Error loading companies:", error)
+      } finally {
+        setCompaniesLoading(false)
       }
     }
 
@@ -326,12 +332,16 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
               </div>
               <div className="flex-1 min-w-0 text-left overflow-hidden">
                 <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-0.5 truncate">Current Company</p>
-                <BusinessNameDisplay
-                  name={selectedCompany?.name || "No company"}
-                  maxLength={18}
-                  className="text-xs sm:text-sm font-semibold text-white truncate"
-                  truncateMode="smart"
-                />
+                {companiesLoading ? (
+                  <div className="h-4 bg-white/20 rounded w-24 animate-pulse" />
+                ) : (
+                  <BusinessNameDisplay
+                    name={selectedCompany?.name || "Select company"}
+                    maxLength={18}
+                    className="text-xs sm:text-sm font-semibold text-white truncate"
+                    truncateMode="smart"
+                  />
+                )}
               </div>
             </div>
             <ChevronDown className="w-4 h-4 text-white/70 group-hover:text-white transition-colors flex-shrink-0 ml-1" />
