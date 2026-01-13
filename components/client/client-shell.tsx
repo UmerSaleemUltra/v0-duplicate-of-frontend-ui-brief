@@ -51,8 +51,8 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [showHamburger, setShowHamburger] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
-  const [isPageReady, setIsPageReady] = useState(false)
-  const [hasNoCompanies, setHasNoCompanies] = useState(false) // Track when user has no companies
+  const [isPageReady, setIsPageReady] = useState(true)
+  const [hasNoCompanies, setHasNoCompanies] = useState(false)
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -152,7 +152,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         })
 
         setAllCompanies(userCompanies)
-        setHasNoCompanies(userCompanies.length === 0) // Update hasNoCompanies state
+        setHasNoCompanies(userCompanies.length === 0)
 
         if (!selectedCompanyId && userCompanies.length > 0) {
           setSelectedCompanyId(userCompanies[0].id)
@@ -211,14 +211,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     window.addEventListener("scroll", handleScroll, { passive: true })
     return () => window.removeEventListener("scroll", handleScroll)
   }, [lastScrollY])
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsPageReady(true)
-    }, 500)
-
-    return () => clearTimeout(timer)
-  }, [])
 
   const handleSelectCompany = async (company: any) => {
     setSelectedCompanyId(company.id)
