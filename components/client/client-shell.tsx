@@ -52,6 +52,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [showHamburger, setShowHamburger] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isPageReady, setIsPageReady] = useState(false)
+  const [hasNoCompanies, setHasNoCompanies] = useState(false) // Track when user has no companies
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -151,6 +152,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         })
 
         setAllCompanies(userCompanies)
+        setHasNoCompanies(userCompanies.length === 0) // Update hasNoCompanies state
 
         if (!selectedCompanyId && userCompanies.length > 0) {
           setSelectedCompanyId(userCompanies[0].id)

@@ -274,18 +274,18 @@ export default function ClientDashboard() {
       .slice(0, 6)
   }, [company, notifications])
 
-  if (isAuthenticating || isLoadingData) {
+  if (!isAuthenticating && hasNoCompanies) {
     return (
       <ClientShell>
-        <DashboardSkeleton />
+        <NoCompanyState />
       </ClientShell>
     )
   }
 
-  if (!isLoadingData && hasNoCompanies) {
+  if (isAuthenticating || isLoadingData) {
     return (
       <ClientShell>
-        <NoCompanyState />
+        <DashboardSkeleton />
       </ClientShell>
     )
   }
