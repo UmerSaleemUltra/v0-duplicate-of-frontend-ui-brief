@@ -2,6 +2,7 @@
 
 import type React from "react"
 import dynamic from "next/dynamic"
+import { Suspense } from "react"
 
 import { useState, useEffect, useCallback, useMemo } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -696,7 +697,9 @@ function AddonCheckoutContentComponent() {
 export default function Page() {
   return (
     <ClientShell>
-      <AddonCheckoutContent />
+      <Suspense fallback={<div>Loading...</div>}>
+        <AddonCheckoutContent />
+      </Suspense>
     </ClientShell>
   )
 }
