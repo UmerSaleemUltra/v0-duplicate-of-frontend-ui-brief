@@ -39,18 +39,17 @@ export default function CompanyPage() {
   const [hasTaxInfo, setHasTaxInfo] = useState(false)
 
   useEffect(() => {
-    const fetchCompanyData = async () => {
-      setLoading(true)
-      console.log("[v0] Fetching company details for:", selectedCompanyId)
-
-      if (!selectedCompanyId) {
-        setError("No company selected")
-        setLoading(false)
-        return
-      }
-
+    const initData = async () => {
       try {
+        setLoading(true)
         setError(null)
+
+        if (!selectedCompanyId || typeof selectedCompanyId !== "string" || selectedCompanyId.trim() === "") {
+          console.log("[v0] Invalid selectedCompanyId:", selectedCompanyId, "Type:", typeof selectedCompanyId)
+          setError("Company ID is missing or invalid. Please select a company from the sidebar.")
+          setLoading(false)
+          return
+        }
 
         const token = authService.getToken()
         if (!token) {
@@ -59,7 +58,14 @@ export default function CompanyPage() {
           return
         }
 
-        console.log("[v0] Sending company ID to API:", selectedCompanyId, "Type:", typeof selectedCompanyId)
+        console.log(
+          "[v0] Sending company ID to API:",
+          selectedCompanyId,
+          "Type:",
+          typeof selectedCompanyId,
+          "Length:",
+          selectedCompanyId.length,
+        )
 
         const [companyResponse, mailResponse, docsResponse, ordersResponse] = await Promise.allSettled([
           ApiClient.companies.getById(selectedCompanyId, token),
@@ -210,11 +216,11 @@ export default function CompanyPage() {
       }
     }
 
-    fetchCompanyData()
+    initData()
 
     const handleRefresh = () => {
       console.log("[v0] Company page refresh triggered")
-      fetchCompanyData()
+      initData()
     }
 
     window.addEventListener("client-dashboard-refresh", handleRefresh)
