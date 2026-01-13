@@ -2,7 +2,7 @@
 
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ClientShell } from "@/components/client/client-shell"
-import { Building2, MapPin, Calendar, Users, DollarSign, AlertCircle, Building, Package } from "lucide-react"
+import { Building2, MapPin, Calendar, Users, DollarSign, AlertCircle, Building, Package, ArrowLeft } from "lucide-react"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { useEffect, useState } from "react"
@@ -43,7 +43,11 @@ export default function CompanyPage() {
       setLoading(true)
       console.log("[v0] Fetching company details for:", selectedCompanyId)
 
-      if (!selectedCompanyId) return
+      if (!selectedCompanyId) {
+        setError("No company selected")
+        setLoading(false)
+        return
+      }
 
       try {
         setError(null)
@@ -55,6 +59,8 @@ export default function CompanyPage() {
           return
         }
 
+        console.log("[v0] Sending company ID to API:", selectedCompanyId, "Type:", typeof selectedCompanyId)
+
         const [companyResponse, mailResponse, docsResponse, ordersResponse] = await Promise.allSettled([
           ApiClient.companies.getById(selectedCompanyId, token),
           ApiClient.mail.getAll(token),
@@ -62,12 +68,21 @@ export default function CompanyPage() {
           ApiClient.orders.getAll(token),
         ])
 
+        if (companyResponse.status === "rejected") {
+          console.log("[v0] Company API call rejected:", companyResponse.reason)
+          setError(`Failed to load company: ${companyResponse.reason?.message || "Unknown error"}`)
+          setLoading(false)
+          return
+        }
+
         if (companyResponse.status === "fulfilled") {
           const selectedComp = companyResponse.value?.data || companyResponse.value
 
+          console.log("[v0] Company response received:", selectedComp)
+
           if (!selectedComp || !selectedComp.id) {
             console.log("[v0] Company data is null or missing ID. Response:", companyResponse.value)
-            setError("Company not found")
+            setError("Company not found or invalid response format")
             setLoading(false)
             return
           }
@@ -235,6 +250,10 @@ export default function CompanyPage() {
     }
   }, [companyData])
 
+  if (!authLoading && !isAuthenticated) {
+    return <div className="w-full h-screen bg-white flex items-center justify-center">Not authenticated</div>
+  }
+
   if (authLoading) {
     return (
       <ClientShell>
@@ -248,8 +267,53 @@ export default function CompanyPage() {
     )
   }
 
-  if (!isAuthenticated) {
-    return null
+  if (error && !loading) {
+    return (
+      <ClientShell>
+        <div className="min-h-screen bg-white flex items-center justify-center p-4">
+          <div className="w-full max-w-md">
+            <div className="bg-white rounded-xl border border-gray-200 p-8 shadow-sm text-center">
+              <div className="flex justify-center mb-6">
+                <div className="w-20 h-20 rounded-full bg-red-50 flex items-center justify-center">
+                  <AlertCircle className="w-10 h-10 text-red-500" />
+                </div>
+              </div>
+
+              <h2 className="text-2xl font-bold text-gray-900 mb-3">Company Not Found</h2>
+
+              <p className="text-gray-600 mb-8">
+                The company you're looking for couldn't be found. It may have been deleted or the ID is incorrect.
+              </p>
+
+              {error && (
+                <div className="mb-6 p-3 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-sm text-red-700 font-medium">{error}</p>
+                </div>
+              )}
+
+              <div className="flex flex-col gap-3">
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="w-full bg-red-700 hover:bg-red-800 text-white"
+                >
+                  Try Again
+                </Button>
+                <Button
+                  onClick={() => window.history.back()}
+                  variant="outline"
+                  className="w-full border-gray-300 text-gray-900 hover:bg-gray-50"
+                >
+                  <ArrowLeft className="w-4 h-4 mr-2" />
+                  Go Back
+                </Button>
+              </div>
+
+              <p className="text-xs text-gray-500 mt-6">If the problem persists, please contact support.</p>
+            </div>
+          </div>
+        </div>
+      </ClientShell>
+    )
   }
 
   if (loading) {
@@ -259,57 +323,6 @@ export default function CompanyPage() {
           <div className="text-center">
             <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
             <p className="text-slate-600">Loading company information...</p>
-          </div>
-        </div>
-      </ClientShell>
-    )
-  }
-
-  if (error) {
-    return (
-      <ClientShell>
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
-          <div className="w-full max-w-md mx-auto px-4">
-            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 sm:p-10 text-center">
-              {/* Icon */}
-              <div className="flex justify-center mb-6">
-                <div className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-200 flex items-center justify-center">
-                  <AlertCircle className="w-8 h-8 text-red-500" />
-                </div>
-              </div>
-
-              {/* Title */}
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
-                {error === "Company not found" ? "Company Not Found" : "Unable to Load"}
-              </h2>
-
-              {/* Description */}
-              <p className="text-slate-600 text-sm sm:text-base mb-6 leading-relaxed">
-                {error === "Company not found"
-                  ? "The company you're looking for couldn't be found. It may have been deleted or the ID is incorrect."
-                  : error}
-              </p>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col gap-3">
-                <Button
-                  onClick={() => window.location.reload()}
-                  className="w-full bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:shadow-lg transition-all duration-200 py-6 text-base font-semibold"
-                >
-                  Try Again
-                </Button>
-                <Button
-                  onClick={() => window.history.back()}
-                  variant="outline"
-                  className="w-full border-slate-300 hover:bg-slate-50 py-6 text-base font-semibold"
-                >
-                  Go Back
-                </Button>
-              </div>
-
-              {/* Help Text */}
-              <p className="text-xs text-slate-500 mt-6">If the problem persists, please contact support.</p>
-            </div>
           </div>
         </div>
       </ClientShell>

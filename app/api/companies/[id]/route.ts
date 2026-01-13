@@ -10,21 +10,25 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   try {
     const { id } = params
 
+    console.log("[v0] API received company ID:", id, "Type:", typeof id, "Length:", id?.length)
+
     if (!id || typeof id !== "string" || id.trim() === "") {
-      console.log("[v0] Invalid company ID format received:", id)
+      console.log("[v0] Invalid company ID - empty or not string:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
 
-    let companyId
+    let companyId: ObjectId
     try {
-      if (ObjectId.isValid(id)) {
-        companyId = new ObjectId(id)
-      } else {
-        console.log("[v0] ID is not a valid ObjectId format:", id)
+      // First check if it's already a valid ObjectId format
+      const trimmedId = id.trim()
+      if (!ObjectId.isValid(trimmedId)) {
+        console.log("[v0] ID is not a valid MongoDB ObjectId:", trimmedId, "Length:", trimmedId.length)
         return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
       }
+      companyId = new ObjectId(trimmedId)
+      console.log("[v0] Successfully converted ID to ObjectId:", companyId.toString())
     } catch (e) {
-      console.log("[v0] ObjectId conversion failed for:", id, e)
+      console.log("[v0] Failed to convert ID to ObjectId:", id, "Error:", e)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
 
