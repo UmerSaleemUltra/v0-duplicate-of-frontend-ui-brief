@@ -268,13 +268,48 @@ export default function CompanyPage() {
   if (error) {
     return (
       <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-600 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]">
-              Retry
-            </Button>
+        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+          <div className="w-full max-w-md mx-auto px-4">
+            <div className="bg-white rounded-2xl shadow-lg border border-slate-200 p-8 sm:p-10 text-center">
+              {/* Icon */}
+              <div className="flex justify-center mb-6">
+                <div className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-200 flex items-center justify-center">
+                  <AlertCircle className="w-8 h-8 text-red-500" />
+                </div>
+              </div>
+
+              {/* Title */}
+              <h2 className="text-xl sm:text-2xl font-bold text-slate-900 mb-2">
+                {error === "Company not found" ? "Company Not Found" : "Unable to Load"}
+              </h2>
+
+              {/* Description */}
+              <p className="text-slate-600 text-sm sm:text-base mb-6 leading-relaxed">
+                {error === "Company not found"
+                  ? "The company you're looking for couldn't be found. It may have been deleted or the ID is incorrect."
+                  : error}
+              </p>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col gap-3">
+                <Button
+                  onClick={() => window.location.reload()}
+                  className="w-full bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:shadow-lg transition-all duration-200 py-6 text-base font-semibold"
+                >
+                  Try Again
+                </Button>
+                <Button
+                  onClick={() => window.history.back()}
+                  variant="outline"
+                  className="w-full border-slate-300 hover:bg-slate-50 py-6 text-base font-semibold"
+                >
+                  Go Back
+                </Button>
+              </div>
+
+              {/* Help Text */}
+              <p className="text-xs text-slate-500 mt-6">If the problem persists, please contact support.</p>
+            </div>
           </div>
         </div>
       </ClientShell>

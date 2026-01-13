@@ -10,16 +10,21 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   try {
     const { id } = params
 
-    if (!id || !ObjectId.isValid(id)) {
+    if (!id || typeof id !== "string" || id.trim() === "") {
       console.log("[v0] Invalid company ID format received:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
 
     let companyId
     try {
-      companyId = new ObjectId(id)
+      if (ObjectId.isValid(id)) {
+        companyId = new ObjectId(id)
+      } else {
+        console.log("[v0] ID is not a valid ObjectId format:", id)
+        return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
+      }
     } catch (e) {
-      console.log("[v0] ObjectId conversion failed for:", id)
+      console.log("[v0] ObjectId conversion failed for:", id, e)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
 
@@ -107,16 +112,21 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   try {
     const { id } = params
 
-    if (!id || !ObjectId.isValid(id)) {
+    if (!id || typeof id !== "string" || id.trim() === "") {
       console.log("[v0] Invalid company ID format received:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
 
     let companyId
     try {
-      companyId = new ObjectId(id)
+      if (ObjectId.isValid(id)) {
+        companyId = new ObjectId(id)
+      } else {
+        console.log("[v0] ID is not a valid ObjectId format:", id)
+        return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
+      }
     } catch (e) {
-      console.log("[v0] ObjectId conversion failed for:", id)
+      console.log("[v0] ObjectId conversion failed for:", id, e)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
 
@@ -265,7 +275,7 @@ export async function DELETE(req: NextRequest, { params }: { params: { id: strin
   try {
     const { id } = params
 
-    if (!id || !ObjectId.isValid(id)) {
+    if (!id || typeof id !== "string" || id.trim() === "") {
       console.log("[v0] Invalid company ID format received:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
