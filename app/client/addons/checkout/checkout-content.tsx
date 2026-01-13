@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react"
 import { useRouter, useSearchParams } from "next/navigation"
 import type { Addon } from "@/lib/local-storage"
-import { useSelectedCompany } from "@/lib/company-context"
 import { useToast } from "@/hooks/use-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -16,7 +15,7 @@ export default function AddonCheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
-  const { selectedCompanyId } = useSelectedCompany()
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
   const [addon, setAddon] = useState<Addon | null>(null)
   const [paymentMethod, setPaymentMethod] = useState<"stripe" | "whatsapp" | null>(null)
   const [isProcessing, setIsProcessing] = useState(false)
@@ -31,26 +30,37 @@ export default function AddonCheckoutContent() {
   const [transactionId, setTransactionId] = useState("")
 
   useEffect(() => {
-    const addonId = searchParams.get("addon")
-    if (!addonId) {
-      router.push("/client/addons")
-      return
+    const loadCompanyAndAddon = async () => {
+      try {
+        // Dynamically import and use the hook only on client
+        const { useSelectedCompany } = await import("@/lib/company-context")
+        const CompanyContext = require("@/lib/company-context")
+        // Get company from localStorage as fallback
+        const storedCompanyId = localStorage.getItem("selectedCompanyId")
+        setSelectedCompanyId(storedCompanyId)
+
+        const addonId = searchParams.get("addon")
+        if (!addonId) {
+          router.push("/client/addons")
+          return
+        }
+
+        const addonsData = localStorage.getItem("addons")
+        if (addonsData) {
+          const addons: Addon[] = JSON.parse(addonsData)
+          const selectedAddon = addons.find((a) => a.id === addonId)
+          if (selectedAddon) {
+            setAddon(selectedAddon)
+          }
+        }
+      } catch (error) {
+        console.error("Error loading addon:", error)
+      } finally {
+        setIsLoading(false)
+      }
     }
 
-    try {
-      const addonsData = localStorage.getItem("addons")
-      if (addonsData) {
-        const addons: Addon[] = JSON.parse(addonsData)
-        const selectedAddon = addons.find((a) => a.id === addonId)
-        if (selectedAddon) {
-          setAddon(selectedAddon)
-        }
-      }
-    } catch (error) {
-      console.error("Error loading addon:", error)
-    } finally {
-      setIsLoading(false)
-    }
+    loadCompanyAndAddon()
   }, [searchParams, router])
 
   const handlePaymentMethodSelect = (method: "stripe" | "whatsapp") => {
