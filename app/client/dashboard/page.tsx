@@ -1,6 +1,7 @@
 "use client"
 
 import { ClientShell } from "@/components/client/client-shell"
+import { DashboardSkeleton } from "@/components/client/dashboard-skeleton"
 import {
   Building2,
   Hash,
@@ -273,28 +274,10 @@ export default function ClientDashboard() {
       .slice(0, 6)
   }, [company, notifications])
 
-  if (isAuthenticating) {
+  if (isAuthenticating || isLoadingData) {
     return (
       <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Verifying authentication...</p>
-          </div>
-        </div>
-      </ClientShell>
-    )
-  }
-
-  if (isLoadingData && !dataLoaded) {
-    return (
-      <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading dashboard...</p>
-          </div>
-        </div>
+        <DashboardSkeleton />
       </ClientShell>
     )
   }
@@ -529,7 +512,7 @@ export default function ClientDashboard() {
                 <p className="text-xs text-slate-500 font-medium">Business Name</p>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <h3 className="text-2xl font-bold text-slate-900 truncate cursor-help hover:opacity-80 transition-opacity">
+                    <h3 className="text-2xl font-bold text-slate-900 truncate hover:opacity-80 transition-opacity">
                       {businessName}
                     </h3>
                   </TooltipTrigger>
@@ -565,7 +548,7 @@ export default function ClientDashboard() {
               <div className="space-y-1">
                 <p className="text-xs text-slate-500 font-medium">EIN</p>
                 <h3
-                  className={`text-2xl font-bold truncate ${ein ? "text-slate-900 cursor-help hover:opacity-80 transition-opacity" : "text-slate-400 opacity-50 blur-[0.5px]"}`}
+                  className={`text-2xl font-bold truncate ${ein ? "text-slate-900 hover:opacity-80 transition-opacity" : "text-slate-400 opacity-50 blur-[0.5px]"}`}
                 >
                   {displayEIN}
                 </h3>

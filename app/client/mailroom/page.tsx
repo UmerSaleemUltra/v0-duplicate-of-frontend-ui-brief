@@ -12,6 +12,7 @@ import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
+import { MailroomSkeleton } from "@/components/client/mailroom-skeleton"
 
 export default function MailroomPage() {
   const { isAuthenticated, isLoading } = useAuthGuard()
@@ -182,12 +183,7 @@ export default function MailroomPage() {
   if (isLoading || loading) {
     return (
       <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading mailroom...</p>
-          </div>
-        </div>
+        <MailroomSkeleton />
       </ClientShell>
     )
   }

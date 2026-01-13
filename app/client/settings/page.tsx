@@ -9,6 +9,7 @@ import { useToast } from "@/hooks/use-toast"
 import { ClientShell } from "@/components/client/client-shell"
 import { authService } from "@/lib/auth"
 import { useAuthGuard } from "@/hooks/use-auth-guard" // Import useAuthGuard hook
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ClientSettingsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard()
@@ -66,10 +67,17 @@ export default function ClientSettingsPage() {
   if (authLoading || isLoadingUser) {
     return (
       <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading settings...</p>
+        <div className="max-w-2xl space-y-6">
+          <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+            <Skeleton className="h-8 w-1/3" />
+            <Skeleton className="h-12 w-full" />
+            <Skeleton className="h-12 w-full" />
+          </div>
+          <div className="bg-white rounded-lg border border-gray-200 p-6 space-y-4">
+            <Skeleton className="h-8 w-1/3" />
+            {[...Array(3)].map((_, i) => (
+              <Skeleton key={i} className="h-12 w-full" />
+            ))}
           </div>
         </div>
       </ClientShell>

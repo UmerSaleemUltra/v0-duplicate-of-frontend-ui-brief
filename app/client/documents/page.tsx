@@ -10,6 +10,7 @@ import { useSelectedCompany } from "@/lib/company-context"
 import { useToast } from "@/hooks/use-toast"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
+import { DocumentsSkeleton } from "@/components/client/documents-skeleton"
 
 export default function DocumentsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard("client")
@@ -189,15 +190,10 @@ export default function DocumentsPage() {
   const completedDocs = documents.filter((d) => d.status === "ready" || !d.status)
   const pendingDocs = documents.filter((d) => d.status === "pending")
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 sm:w-12 sm:h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Verifying authentication...</p>
-          </div>
-        </div>
+        <DocumentsSkeleton />
       </ClientShell>
     )
   }
@@ -247,12 +243,7 @@ export default function DocumentsPage() {
 
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
           <h2 className="text-base sm:text-lg font-semibold mb-4">Your Documents</h2>
-          {loading ? (
-            <div className="text-center py-12">
-              <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-              <p className="text-slate-600 text-sm sm:text-base">Loading documents...</p>
-            </div>
-          ) : documents.length === 0 ? (
+          {documents.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
               <p className="text-slate-600 mb-2 text-sm sm:text-base">No documents yet</p>

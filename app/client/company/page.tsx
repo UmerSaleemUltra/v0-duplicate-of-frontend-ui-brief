@@ -9,6 +9,7 @@ import { useEffect, useState } from "react"
 import { useSelectedCompany } from "@/lib/company-context"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
+import { CompanySkeleton } from "@/components/client/company-skeleton"
 
 type MemberUI = {
   id: string
@@ -220,34 +221,16 @@ export default function CompanyPage() {
     }
   }, [companyData])
 
-  if (authLoading) {
+  if (authLoading || loading) {
     return (
       <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Verifying authentication...</p>
-          </div>
-        </div>
+        <CompanySkeleton />
       </ClientShell>
     )
   }
 
   if (!isAuthenticated) {
     return null
-  }
-
-  if (loading) {
-    return (
-      <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading company information...</p>
-          </div>
-        </div>
-      </ClientShell>
-    )
   }
 
   if (error) {
