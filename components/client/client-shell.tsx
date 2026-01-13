@@ -112,25 +112,21 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
           if (storedUserId) {
             userId = storedUserId
-            console.log("[v0] Sidebar: Retrieved userId from localStorage:", userId)
           } else if (storedUserData) {
             try {
               const userData = JSON.parse(storedUserData)
               userId = userData.id
-              console.log("[v0] Sidebar: Retrieved userId from stored user data:", userId)
             } catch (e) {
               console.error("[v0] Sidebar: Error parsing stored user data:", e)
             }
           }
 
-          // Try to decode token as last resort
           if (!userId && token) {
             try {
               const tokenParts = token.split(".")
               if (tokenParts.length === 3) {
                 const payload = JSON.parse(atob(tokenParts[1]))
                 userId = payload.userId || payload.id
-                console.log("[v0] Sidebar: Retrieved userId from token:", userId)
               }
             } catch (e) {
               console.error("[v0] Sidebar: Error decoding token:", e)
@@ -140,66 +136,28 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
         if (!userId) {
           console.error("[v0] Sidebar: CRITICAL - No userId found!")
-          console.log("[v0] Sidebar: currentUser:", currentUser)
-          console.log("[v0] Sidebar: localStorage user_id:", localStorage.getItem("user_id"))
           return
         }
 
-        console.log("[v0] Sidebar: Loading companies for userId:", userId)
-
-        const cacheBuster = `?t=${Date.now()}`
-        const response = await fetch(`/api/companies${cacheBuster}`, {
+        const response = await fetch(`/api/companies`, {
           headers: {
             Authorization: `Bearer ${token}`,
-            "Cache-Control": "no-cache, no-store, must-revalidate",
-            Pragma: "no-cache",
           },
         }).then((res) => res.json())
 
         const allCompaniesData = response.data || response.companies || []
 
-        console.log("[v0] Sidebar: Total companies fetched:", allCompaniesData.length)
-        console.log(
-          "[v0] Sidebar: All companies details:",
-          allCompaniesData.map((c: any) => ({
-            id: c.id,
-            name: c.name,
-            userId: c.userId,
-            userIdType: typeof c.userId,
-            createdAt: c.createdAt,
-          })),
-        )
-
-        console.log("[v0] Sidebar: Current userId for filtering:", userId, "Type:", typeof userId)
-
         const userCompanies = allCompaniesData.filter((c: any) => {
           const companyUserId = String(c.userId).trim()
           const currentUserId = String(userId).trim()
-          const match = companyUserId === currentUserId
-
-          console.log("[v0] Sidebar: Comparing company:", {
-            companyName: c.name,
-            companyUserId,
-            currentUserId,
-            match,
-          })
-
-          return match
+          return companyUserId === currentUserId
         })
-
-        console.log("[v0] Sidebar: User's companies after filtering:", userCompanies.length)
-        console.log(
-          "[v0] Sidebar: Filtered company names:",
-          userCompanies.map((c: any) => c.name),
-        )
 
         setAllCompanies(userCompanies)
 
         if (!selectedCompanyId && userCompanies.length > 0) {
-          console.log("[v0] Sidebar: Auto-selecting first company:", userCompanies[0].id)
           setSelectedCompanyId(userCompanies[0].id)
         } else if (userCompanies.length === 0) {
-          console.log("[v0] Sidebar: User has no companies")
           setSelectedCompanyId(null)
         }
       } catch (error) {
@@ -210,12 +168,10 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     loadCompanies()
 
     const handleRefresh = () => {
-      console.log("[v0] Sidebar: Refresh event triggered, reloading companies")
       loadCompanies()
     }
 
     window.addEventListener("client-dashboard-refresh", handleRefresh)
-
     return () => {
       window.removeEventListener("client-dashboard-refresh", handleRefresh)
     }
@@ -223,10 +179,8 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const handleFocus = () => {
-      // Auto-refresh when user returns to the tab
       if (document.visibilityState === "visible") {
         console.log("[v0] Tab focused, auto-refreshing data")
-        // Trigger a custom event that child components can listen to
         window.dispatchEvent(new Event("client-dashboard-refresh"))
       }
     }
@@ -246,7 +200,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
           if (currentScrollY < 50) {
             setShowHamburger(true)
           } else {
-            // Hide hamburger when scrolled down past 50px
             setShowHamburger(false)
           }
 
@@ -289,25 +242,21 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
     if (adminToken && adminData) {
       try {
-        // Clear impersonation data
         sessionStorage.removeItem("impersonating_user_id")
         sessionStorage.removeItem("impersonating_user_name")
         sessionStorage.removeItem("impersonating_user_email")
         sessionStorage.removeItem("admin_impersonation_token")
         sessionStorage.removeItem("admin_impersonation_data")
 
-        // Restore admin session
         const admin = JSON.parse(adminData)
 
         authService.setAuth(adminToken, admin)
 
         console.log("[v0] Exited admin impersonation mode, returning to admin dashboard")
 
-        // Redirect to admin dashboard
         window.location.href = "/admin/users"
       } catch (error) {
         console.error("[v0] Error exiting admin mode:", error)
-        // Fall back to regular logout if restoration fails
         authService.logout()
         router.push("/login")
       }
@@ -449,7 +398,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         <Menu className="w-5 h-5" />
       </button>
 
-      {/* Mobile Overlay */}
       {sidebarOpen && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden transition-opacity duration-300"

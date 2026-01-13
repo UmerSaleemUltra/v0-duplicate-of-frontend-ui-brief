@@ -57,8 +57,8 @@ export default function CompanyPage() {
 
         const [companyResponse, mailResponse, docsResponse, ordersResponse] = await Promise.allSettled([
           ApiClient.companies.getById(selectedCompanyId, token),
-          ApiClient.mail.getAll(token),
-          ApiClient.documents.getAll(token),
+          ApiClient.mail.getAll(token, selectedCompanyId),
+          ApiClient.documents.getAll(token, selectedCompanyId),
           ApiClient.orders.getAll(token),
         ])
 
@@ -70,6 +70,12 @@ export default function CompanyPage() {
             setLoading(false)
             return
           }
+
+          const mailCount = mailResponse.status === "fulfilled" ? (mailResponse.value.data || []).length : 0
+          const docCount = docsResponse.status === "fulfilled" ? (docsResponse.value.data || []).length : 0
+
+          setMailCount(mailCount)
+          setDocumentCount(docCount)
 
           const builtMembers: MemberUI[] = (selectedComp.members ?? []).map((m: any, idx: number) => {
             const firstName = m.firstName || ""
@@ -102,24 +108,6 @@ export default function CompanyPage() {
               ownership: `${m.ownershipPercentage || 0}%`,
             }
           })
-
-          if (mailResponse.status === "fulfilled") {
-            const allMail = mailResponse.value.data || mailResponse.value.mail || []
-            const companyMail = allMail.filter((mail: any) => mail.companyId === selectedCompanyId)
-            setMailCount(companyMail.length)
-          } else {
-            console.error("[v0] Mail fetch error:", mailResponse.reason)
-            setMailCount(0)
-          }
-
-          if (docsResponse.status === "fulfilled") {
-            const allDocs = docsResponse.value.data || docsResponse.value.documents || []
-            const companyDocs = allDocs.filter((doc: any) => doc.companyId === selectedCompanyId && !doc.isMailDocument)
-            setDocumentCount(companyDocs.length)
-          } else {
-            console.error("[v0] Documents fetch error:", docsResponse.reason)
-            setDocumentCount(0)
-          }
 
           let orderDate = new Date(selectedComp.createdAt).toLocaleDateString("en-US", {
             month: "long",
