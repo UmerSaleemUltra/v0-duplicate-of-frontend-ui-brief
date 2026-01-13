@@ -52,7 +52,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [showHamburger, setShowHamburger] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isPageReady, setIsPageReady] = useState(false)
-  const [companiesLoading, setCompaniesLoading] = useState(true)
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -74,7 +73,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             .toUpperCase()
             .slice(0, 2) || "U"
         setUserInitials(initials)
-        console.log("[v0] Admin viewing as user:", impersonatingUserName)
       } else {
         const currentUser = authService.getCurrentUser()
 
@@ -97,11 +95,8 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const loadCompanies = async () => {
-      setCompaniesLoading(true)
       const token = authService.getToken()
       if (!token) {
-        console.log("[v0] Sidebar: No token found")
-        setCompaniesLoading(false)
         return
       }
 
@@ -138,8 +133,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         }
 
         if (!userId) {
-          console.error("[v0] Sidebar: CRITICAL - No userId found!")
-          setCompaniesLoading(false)
           return
         }
 
@@ -166,8 +159,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         }
       } catch (error) {
         console.error("[v0] Sidebar: Error loading companies:", error)
-      } finally {
-        setCompaniesLoading(false)
       }
     }
 
@@ -186,7 +177,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleFocus = () => {
       if (document.visibilityState === "visible") {
-        console.log("[v0] Tab focused, auto-refreshing data")
         window.dispatchEvent(new Event("client-dashboard-refresh"))
       }
     }
@@ -229,7 +219,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   }, [])
 
   const handleSelectCompany = async (company: any) => {
-    console.log("[v0] Selecting company:", company.name, company.id)
     setSelectedCompanyId(company.id)
     setCompanyModalOpen(false)
     window.dispatchEvent(new Event("client-dashboard-refresh"))
@@ -257,8 +246,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         const admin = JSON.parse(adminData)
 
         authService.setAuth(adminToken, admin)
-
-        console.log("[v0] Exited admin impersonation mode, returning to admin dashboard")
 
         window.location.href = "/admin/users"
       } catch (error) {
