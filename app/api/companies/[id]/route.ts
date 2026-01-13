@@ -10,7 +10,16 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
   try {
     const { id } = params
 
-    if (!id || !ObjectId.isValid(id)) {
+    if (!id || (id.length !== 24 && !id.match(/^[0-9a-fA-F]{24}$/))) {
+      console.log("[v0] Invalid company ID format received:", id)
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
+    }
+
+    let companyId
+    try {
+      companyId = new ObjectId(id)
+    } catch (e) {
+      console.log("[v0] ObjectId conversion failed for:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
 
@@ -28,7 +37,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 
     const { db } = await connectDB()
 
-    const company = await db.collection("companies").findOne({ _id: new ObjectId(id) })
+    const company = await db.collection("companies").findOne({ _id: companyId })
 
     if (!company) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
@@ -98,7 +107,16 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
   try {
     const { id } = params
 
-    if (!id || !ObjectId.isValid(id)) {
+    if (!id || (id.length !== 24 && !id.match(/^[0-9a-fA-F]{24}$/))) {
+      console.log("[v0] Invalid company ID format received:", id)
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
+    }
+
+    let companyId
+    try {
+      companyId = new ObjectId(id)
+    } catch (e) {
+      console.log("[v0] ObjectId conversion failed for:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
 
@@ -117,7 +135,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
     const body = await req.json()
     const { db } = await connectDB()
 
-    const company = await db.collection("companies").findOne({ _id: new ObjectId(id) })
+    const company = await db.collection("companies").findOne({ _id: companyId })
 
     if (!company) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
@@ -214,7 +232,7 @@ export async function PUT(req: NextRequest, { params }: { params: { id: string }
 
     const result = await db
       .collection("companies")
-      .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
+      .findOneAndUpdate({ _id: companyId }, { $set: updateData }, { returnDocument: "after" })
 
     if (!result) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
