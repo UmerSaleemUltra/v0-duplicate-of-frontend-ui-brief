@@ -209,12 +209,12 @@ export default function AdminAddonsPage() {
     setIsDialogOpen(true)
   }
 
-  const handleAssignAddon = (addon: Addon) => {
+  const handleOpenAssignDialog = (addon: Addon) => {
     setSelectedAddonForAssign(addon)
-    setAssignToAllUsers(false)
     setSelectedUserIds(new Set())
-    loadUsers()
+    setAssignToAllUsers(false)
     setIsAssignDialogOpen(true)
+    loadUsers()
   }
 
   const handleUserToggle = (userId: string) => {
@@ -416,7 +416,7 @@ export default function AdminAddonsPage() {
                     <Edit className="w-3 h-3 mr-1" />
                     Edit
                   </Button>
-                  <Button variant="outline" size="sm" onClick={() => handleAssignAddon(addon)} className="flex-1">
+                  <Button variant="outline" size="sm" onClick={() => handleOpenAssignDialog(addon)} className="flex-1">
                     <Package className="w-3 h-3 mr-1" />
                     Assign
                   </Button>
