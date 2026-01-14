@@ -46,6 +46,11 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
   }
 }
 
+export async function sendAdminEmail({ subject, html }: { subject: string; html: string }) {
+  const adminEmail = "us8637@gmail.com"
+  return sendEmail({ to: adminEmail, subject, html })
+}
+
 export const emailTemplates = {
   welcome: (name: string) => ({
     subject: "Welcome to BuzzFiling — Your U.S. Business Journey Begins Here 🎉",
@@ -863,6 +868,154 @@ export const emailTemplates = {
                   </td>
                 </tr>
                 
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `,
+  }),
+
+  adminNewOrder: (customerName: string, orderId: string, orderAmount: string, orderDate: string) => ({
+    subject: "New Order Received - BuzzFiling Admin Alert",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background-color: #8b0000; padding: 20px 40px; text-align: center; color: #ffffff;">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">New Order Alert</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; font-weight: 600;">Order Details:</p>
+                    <table style="width: 100%; border-collapse: collapse;">
+                      <tr style="background-color: #f8f9fa;">
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #666666; font-weight: 600;">Customer Name:</td>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #333333;">${customerName}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #666666; font-weight: 600;">Order ID:</td>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #333333;">${orderId}</td>
+                      </tr>
+                      <tr style="background-color: #f8f9fa;">
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #666666; font-weight: 600;">Amount:</td>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #333333; font-weight: 600;">$${orderAmount}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #666666; font-weight: 600;">Order Date:</td>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #333333;">${orderDate}</td>
+                      </tr>
+                    </table>
+                    <p style="margin: 30px 0 0 0; font-size: 14px; color: #666666;">
+                      Please log in to the admin dashboard to view the complete order details and take necessary action.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0;">BuzzFiling Admin Notification</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `,
+  }),
+
+  adminDocumentUpload: (customerName: string, documentType: string, uploadDate: string) => ({
+    subject: "Document Uploaded - Admin Review Required",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background-color: #8b0000; padding: 20px 40px; text-align: center; color: #ffffff;">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">Document Upload Notification</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333;">A new document has been uploaded and requires review.</p>
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666;"><strong>Customer:</strong> ${customerName}</p>
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666;"><strong>Document Type:</strong> ${documentType}</p>
+                      <p style="margin: 0; font-size: 14px; color: #666666;"><strong>Upload Date:</strong> ${uploadDate}</p>
+                    </div>
+                    <p style="margin: 20px 0; font-size: 14px; color: #666666;">
+                      Please log in to review and process this document.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0;">BuzzFiling Admin Notification</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+  `,
+  }),
+
+  adminEinApproved: (customerName: string, ein: string, companyName: string) => ({
+    subject: "EIN Approved - Customer Notification Ready",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background-color: #8b0000; padding: 20px 40px; text-align: center; color: #ffffff;">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">EIN Approved</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333;">An EIN has been approved. Customer notification has been sent.</p>
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666;"><strong>Customer:</strong> ${customerName}</p>
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666;"><strong>Company:</strong> ${companyName}</p>
+                      <p style="margin: 0; font-size: 14px; color: #666666;"><strong>EIN:</strong> ${ein}</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0;">BuzzFiling Admin Notification</p>
+                  </td>
+                </tr>
               </table>
             </td>
           </tr>

@@ -140,6 +140,21 @@ export async function POST(req: NextRequest) {
     broadcastUpdate("orders", "created", createdOrder)
 
     try {
+      await db.collection("companies").updateOne(
+        { _id: new ObjectId(companyId) },
+        {
+          $set: {
+            "customMilestones.0.completed": true,
+            "customMilestones.0.completedDate": new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          },
+        },
+      )
+    } catch (milestoneError) {
+      console.log("[v0] Failed to mark first milestone complete (non-critical):", milestoneError)
+    }
+
+    try {
       const user = await db
         .collection("users")
         .findOne({ _id: new ObjectId(decoded.userId) }, { projection: { name: 1, email: 1 } })

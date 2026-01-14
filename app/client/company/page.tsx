@@ -754,8 +754,7 @@ export default function CompanyPage() {
                           : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
                     }
                   >
-                    {(companyData.mailingAddressStatus || "pending").charAt(0).toUpperCase() +
-                      (companyData.mailingAddressStatus || "pending").slice(1)}
+                    {companyData.mailingAddressStatus || "pending"}
                   </Badge>
                 </span>
               </div>
