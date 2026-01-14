@@ -10,6 +10,7 @@ import { useSelectedCompany } from "@/lib/company-context"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { CompanySkeleton } from "@/components/client/company-skeleton"
+import NoCompanyState from "@/components/client/no-company-state"
 
 type MemberUI = {
   id: string
@@ -262,11 +263,7 @@ export default function CompanyPage() {
   if (!companyData) {
     return (
       <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <p className="text-slate-600">No company selected</p>
-          </div>
-        </div>
+        <NoCompanyState />
       </ClientShell>
     )
   }
