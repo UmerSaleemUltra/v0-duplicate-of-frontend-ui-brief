@@ -703,14 +703,13 @@ Notes: ${mail.notes || "None"}
                 <TableHead className="text-slate-900 font-semibold">Subject</TableHead>
                 <TableHead className="text-slate-900 font-semibold">Type</TableHead>
                 <TableHead className="text-slate-900 font-semibold">Date</TableHead>
-                <TableHead className="text-slate-900 font-semibold">Status</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
+                  <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
                     No mail items found
                   </TableCell>
                 </TableRow>
@@ -741,7 +740,6 @@ Notes: ${mail.notes || "None"}
                       <TableCell className="text-slate-600">
                         {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="text-slate-600 text-sm capitalize">{item.status}</TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
