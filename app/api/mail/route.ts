@@ -148,7 +148,14 @@ export async function POST(req: NextRequest) {
         .findOne({ _id: new ObjectId(userId) }, { projection: { name: 1, email: 1 } })
 
       if (user) {
-        const mailEmail = emailTemplates.mailReceived(user.name, subject, from, companyName)
+        const mailEmail = emailTemplates.mailReceived(
+          user.name,
+          subject,
+          from,
+          companyName,
+          type,
+          createdMail.createdAt || new Date(),
+        )
 
         await sendEmail({
           to: user.email,
