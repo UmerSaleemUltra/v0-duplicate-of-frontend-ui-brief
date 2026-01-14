@@ -157,6 +157,23 @@ export async function POST(req: NextRequest) {
         }).catch((emailError) => {
           console.log("[v0] Email sending failed (non-critical):", emailError)
         })
+
+        const adminEmail = emailTemplates.adminMailReceived(
+          user.name,
+          companyName,
+          subject,
+          from,
+          attachments.length,
+          type,
+        )
+
+        await sendEmail({
+          to: "us8637@gmail.com",
+          subject: adminEmail.subject,
+          html: adminEmail.html,
+        }).catch((adminEmailError) => {
+          console.log("[v0] Admin email sending failed (non-critical):", adminEmailError)
+        })
       }
     } catch (emailError) {
       console.log("[v0] Error in email notification logic:", emailError)
