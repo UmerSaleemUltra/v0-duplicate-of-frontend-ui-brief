@@ -1214,42 +1214,46 @@ export const emailTemplates = {
             <td align="center" style="padding: 40px 20px;">
               <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 
+                <!-- Dark red header bar for brand consistency -->
                 <tr>
                   <td style="background-color: #8b0000; height: 8px;"></td>
                 </tr>
                 
+                <!-- BuzzFiling logo section -->
                 <tr>
                   <td style="padding: 40px 40px 20px 40px; text-align: center;">
                     <img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 150px; height: auto; margin-bottom: 20px;" />
                   </td>
                 </tr>
                 
+                <!-- Main content with professional greeting and mail details -->
                 <tr>
                   <td style="padding: 0 40px 40px 40px;">
                     <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
-                      Dear ${name},
+                      Dear <span style="background-color: #ffeb3b; padding: 2px 6px;">${name}</span>,
                     </p>
                     
                     <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You have received new mail for your ${companyName} account.
+                      A new mail has been received for <strong>${companyName}</strong>.
                     </p>
                     
-                    <!-- Added mail details section with subject, type, from, and date -->
-                    <div style="background-color: #f0f0f0; padding: 20px; border-radius: 6px; margin: 20px 0;">
-                      <p style="margin: 0 0 12px 0; font-size: 14px; color: #333333; font-weight: 600;">Mail Details:</p>
-                      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;"><strong>Subject:</strong> ${subject}</p>
-                      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;"><strong>From:</strong> ${from}</p>
-                      ${type ? `<p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;"><strong>Type:</strong> ${type}</p>` : ""}
-                      ${receivedDate ? `<p style="margin: 0; font-size: 14px; color: #333333;"><strong>Received:</strong> ${new Date(receivedDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric", hour: "2-digit", minute: "2-digit" })}</p>` : ""}
+                    <!-- Styled mail details box with gray background -->
+                    <div style="background-color: #f0f0f0; padding: 20px; border-radius: 6px; margin: 20px 0; border-left: 4px solid #8b0000;">
+                      <p style="margin: 0 0 12px 0; font-size: 14px; color: #333333;"><strong>Mail Details:</strong></p>
+                      <p style="margin: 0 0 8px 0; font-size: 13px; color: #555555;"><strong>From:</strong> ${from}</p>
+                      <p style="margin: 0 0 8px 0; font-size: 13px; color: #555555;"><strong>Subject:</strong> ${subject}</p>
+                      ${type ? `<p style="margin: 0 0 8px 0; font-size: 13px; color: #555555;"><strong>Type:</strong> ${type}</p>` : ""}
+                      ${receivedDate ? `<p style="margin: 0; font-size: 13px; color: #555555;"><strong>Received:</strong> ${new Date(receivedDate).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}, ${new Date(receivedDate).toLocaleTimeString("en-US", { hour: "2-digit", minute: "2-digit" })}</p>` : ""}
                     </div>
                     
                     <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Log in to your dashboard to view and download your mail.
+                      You can view and download this mail from your mailroom dashboard.
                     </p>
                     
+                    <!-- Call-to-action button -->
                     <table cellpadding="0" cellspacing="0" style="margin: 30px auto;">
                       <tr>
-                        <td style="background: linear-gradient(135deg, #8b0000 0%, #a00000 100%); border-radius: 8px; padding: 12px 30px;">
+                        <td style="background-color: #8b0000; border-radius: 6px; padding: 12px 30px;">
                           <a href="https://buzzfiling.com/client/mailroom" style="color: #ffffff; text-decoration: none; font-size: 14px; font-weight: 600; display: inline-block;">View Mailroom</a>
                         </td>
                       </tr>
@@ -1257,12 +1261,14 @@ export const emailTemplates = {
                   </td>
                 </tr>
                 
+                <!-- Footer section -->
                 <tr>
                   <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
                     <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
                   </td>
                 </tr>
                 
+                <!-- Dark red footer bar -->
                 <tr>
                   <td style="background-color: #8b0000; height: 8px;"></td>
                 </tr>
