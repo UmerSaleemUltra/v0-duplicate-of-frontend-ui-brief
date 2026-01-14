@@ -754,7 +754,7 @@ export default function CompanyPage() {
                           : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
                     }
                   >
-                    {companyData.mailingAddressStatus || "pending"}
+                    {companyData.mailingAddressStatus ? companyData.mailingAddressStatus.toLowerCase() : "pending"}
                   </Badge>
                 </span>
               </div>
@@ -786,7 +786,11 @@ export default function CompanyPage() {
             <div className="space-y-4">
               <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">ITIN</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">{companyData.itin}</span>
+                {companyData.itin ? (
+                  <span className="font-medium text-slate-900 text-sm sm:text-base text-left">{companyData.itin}</span>
+                ) : (
+                  <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet Assigned</Badge>
+                )}
               </div>
             </div>
           </div>

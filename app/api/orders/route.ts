@@ -151,7 +151,7 @@ export async function POST(req: NextRequest) {
         },
       )
     } catch (milestoneError) {
-      console.log("[v0] Failed to mark first milestone complete (non-critical):", milestoneError)
+      console.log("[v0] Failed to mark first milestone complete:", milestoneError)
     }
 
     try {
