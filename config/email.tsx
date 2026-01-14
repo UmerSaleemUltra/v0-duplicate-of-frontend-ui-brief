@@ -27,8 +27,14 @@ transporter.verify((error, success) => {
 
 export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
   try {
+    if (!to || !subject || !html) {
+      console.error("[v0] Missing required email parameters:", { to: !!to, subject: !!subject, html: !!html })
+      return { success: false, error: "Missing email parameters" }
+    }
+
     console.log("[v0] Sending email to:", to)
     console.log("[v0] Email subject:", subject)
+    console.log("[v0] HTML length:", html.length)
 
     const info = await transporter.sendMail({
       from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
@@ -41,8 +47,8 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
     return { success: true, messageId: info.messageId }
   } catch (error: any) {
     console.error("[v0] Email send error:", error.message)
-    console.log("[v0] Full error:", error)
-    return { success: false, error: error.message }
+    console.error("[v0] Full error:", JSON.stringify(error, null, 2))
+    return { success: false, error: error.message || "Unknown email error" }
   }
 }
 
@@ -1107,8 +1113,390 @@ export const emailTemplates = {
     </html>
     `,
   }),
-  mailUploaded: (name: string, subject: string, from: string, companyName: string) => ({
-    subject: "New Mail Received - BuzzFiling",
+  mailUploaded: (name: string, documentName: string, companyName: string) => ({
+    subject: "New Document Uploaded - BuzzFiling",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                
+                <tr>
+                  <td style="background-color: #8b0000; height: 8px;"></td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 40px 40px 20px 40px; text-align: center;">
+                    <img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 150px; height: auto;" />
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
+                      Dear ${name},
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      A new document has been uploaded for ${companyName}.
+                    </p>
+                    
+                    <div style="background-color: #f0f0f0; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;"><strong>Document:</strong> ${documentName}</p>
+                      <p style="margin: 0; font-size: 14px; color: #333333;"><strong>Uploaded:</strong> ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      You can view and download this document from your dashboard.
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="background-color: #8b0000; height: 8px;"></td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+  milestoneCompleted: (name: string, milestoneName: string, companyName: string) => ({
+    subject: "Milestone Completed - BuzzFiling",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                
+                <tr>
+                  <td style="background-color: #8b0000; height: 8px;"></td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 40px 40px 20px 40px; text-align: center;">
+                    <img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 150px; height: auto; margin-bottom: 20px;" />
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
+                      Dear ${name},
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      Congratulations! You have successfully completed the "${milestoneName}" milestone for your ${companyName}.
+                    </p>
+                    
+                    <div style="background-color: #f0f0f0; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;"><strong>Milestone:</strong> ${milestoneName}</p>
+                      <p style="margin: 0; font-size: 14px; color: #333333;"><strong>Completed:</strong> ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      Keep up the great work! You can view more milestones and track your progress in your dashboard.
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="background-color: #8b0000; height: 8px;"></td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+  orderPlacementConfirmation: (
+    name: string,
+    companyName: string,
+    orderType: string,
+    total: number,
+    orderId: string,
+  ) => ({
+    subject: "Order Confirmation — Your U.S. Business Formation Has Been Initiated 📋",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+                
+                <tr>
+                  <td style="padding: 32px 40px 16px 40px; text-align: center;">
+                    <img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 160px; height: auto;" />
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 32px 40px 32px 40px; text-align: center; background: linear-gradient(135deg, #8b0000 0%, #a00000 100%);">
+                    <div style="width: 60px; height: 60px; background-color: #ffffff; border-radius: 12px; margin: 0 auto; display: inline-flex; align-items: center; justify-content: center;">
+                      <span style="font-size: 32px;">✅</span>
+                    </div>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 40px 40px;">
+                    <h1 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #1a1a1a; line-height: 1.3;">
+                      Order Confirmed, ${name}! 📋
+                    </h1>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #4a4a4a; line-height: 1.6;">
+                      Your order has been successfully placed and we've received your payment. We're now processing your ${orderType} formation.
+                    </p>
+                    
+                    <div style="background-color: #f8f9fa; border-left: 4px solid #8b0000; padding: 24px; border-radius: 8px; margin: 32px 0;">
+                      <h2 style="margin: 0 0 16px 0; font-size: 18px; font-weight: 600; color: #1a1a1a;">
+                        Order Details
+                      </h2>
+                      
+                      <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0;">
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                          <td style="padding: 12px 0; font-size: 14px; color: #6b7280;">Order ID:</td>
+                          <td style="padding: 12px 0; font-size: 14px; font-weight: 600; color: #1a1a1a; text-align: right;">${orderId}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                          <td style="padding: 12px 0; font-size: 14px; color: #6b7280;">Company:</td>
+                          <td style="padding: 12px 0; font-size: 14px; font-weight: 600; color: #1a1a1a; text-align: right;">${companyName}</td>
+                        </tr>
+                        <tr style="border-bottom: 1px solid #e5e7eb;">
+                          <td style="padding: 12px 0; font-size: 14px; color: #6b7280;">Service Type:</td>
+                          <td style="padding: 12px 0; font-size: 14px; font-weight: 600; color: #1a1a1a; text-align: right;">${orderType}</td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 12px 0; font-size: 16px; color: #1a1a1a; font-weight: 700;">Total Amount:</td>
+                          <td style="padding: 12px 0; font-size: 16px; font-weight: 700; color: #8b0000; text-align: right;">$${total.toFixed(2)}</td>
+                        </tr>
+                      </table>
+                    </div>
+                    
+                    <p style="margin: 32px 0 0 0; font-size: 16px; color: #4a4a4a; line-height: 1.6;">
+                      What happens next? We'll begin processing your formation immediately. You'll receive updates in your dashboard and via email as we progress through each milestone.
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px; text-align: center;">
+                    <table cellpadding="0" cellspacing="0" style="margin: 0 auto;">
+                      <tr>
+                        <td style="background: linear-gradient(135deg, #8b0000 0%, #a00000 100%); border-radius: 8px; padding: 16px 32px;">
+                          <a href="${process.env.NEXT_PUBLIC_APP_URL || "https://buzzfiling.com"}/client/dashboard" style="color: #ffffff; text-decoration: none; font-size: 16px; font-weight: 600; display: inline-block;">
+                            View Your Dashboard →
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 32px 40px; text-align: center; background-color: #f8f9fa; border-top: 1px solid #e5e7eb;">
+                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #6b7280;">
+                      Need help? Contact us at <a href="mailto:support@buzzfiling.com" style="color: #8b0000; text-decoration: none; font-weight: 500;">support@buzzfiling.com</a>
+                    </p>
+                    <p style="margin: 0; font-size: 12px; color: #9ca3af;">
+                      All rights reserved © 2026 | <span style="color: #8b0000; font-weight: 600;">BuzzFiling</span>
+                    </p>
+                  </td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+  adminNewOrder: (customerName: string, orderId: string, orderAmount: string, orderDate: string) => ({
+    subject: "New Order Received - BuzzFiling Admin Alert",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background-color: #8b0000; padding: 20px 40px; text-align: center; color: #ffffff;">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">New Order Alert</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; font-weight: 600;">Order Details:</p>
+                    <table style="width: 100%; border-collapse: collapse;">
+                      <tr style="background-color: #f8f9fa;">
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #666666; font-weight: 600;">Customer Name:</td>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #333333;">${customerName}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #666666; font-weight: 600;">Order ID:</td>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #333333;">${orderId}</td>
+                      </tr>
+                      <tr style="background-color: #f8f9fa;">
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #666666; font-weight: 600;">Amount:</td>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #333333; font-weight: 600;">$${orderAmount}</td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #666666; font-weight: 600;">Order Date:</td>
+                        <td style="padding: 12px; border: 1px solid #e0e0e0; color: #333333;">${orderDate}</td>
+                      </tr>
+                    </table>
+                    <p style="margin: 30px 0 0 0; font-size: 14px; color: #666666;">
+                      Please log in to the admin dashboard to view the complete order details and take necessary action.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0;">BuzzFiling Admin Notification</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+  adminDocumentUpload: (customerName: string, documentType: string, uploadDate: string) => ({
+    subject: "Document Uploaded - Admin Review Required",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background-color: #8b0000; padding: 20px 40px; text-align: center; color: #ffffff;">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">Document Upload Notification</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333;">A new document has been uploaded and requires review.</p>
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666;"><strong>Customer:</strong> ${customerName}</p>
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666;"><strong>Document Type:</strong> ${documentType}</p>
+                      <p style="margin: 0; font-size: 14px; color: #666666;"><strong>Upload Date:</strong> ${uploadDate}</p>
+                    </div>
+                    <p style="margin: 20px 0; font-size: 14px; color: #666666;">
+                      Please log in to review and process this document.
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0;">BuzzFiling Admin Notification</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+  adminEinApproved: (customerName: string, ein: string, companyName: string) => ({
+    subject: "EIN Approved - Customer Notification Ready",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                <tr>
+                  <td style="background-color: #8b0000; padding: 20px 40px; text-align: center; color: #ffffff;">
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">EIN Approved</h1>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333;">An EIN has been approved. Customer notification has been sent.</p>
+                    <div style="background-color: #f8f9fa; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666;"><strong>Customer:</strong> ${customerName}</p>
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #666666;"><strong>Company:</strong> ${companyName}</p>
+                      <p style="margin: 0; font-size: 14px; color: #666666;"><strong>EIN:</strong> ${ein}</p>
+                    </div>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0;">BuzzFiling Admin Notification</p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+  einUploaded: (name: string, companyName: string, einNumber: string) => ({
+    subject: "EIN Successfully Uploaded - BuzzFiling",
     html: `
     <!DOCTYPE html>
     <html>
@@ -1122,16 +1510,143 @@ export const emailTemplates = {
             <td align="center" style="padding: 40px 20px;">
               <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"><tr><td style="background-color: #8b0000; height: 8px;"></td></tr><tr><td style="padding: 40px 40px 20px 40px; text-align: center;"><img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 150px; height: auto;" /></td></tr><tr><td style="padding: 0 40px 40px 40px;">
                   <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">Dear ${name},</p>
-                  <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">New mail has been received and processed for <strong>${companyName}</strong>.</p>
+                  <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">Great news! Your EIN has been successfully uploaded for <strong>${companyName}</strong>.</p>
                   <div style="background-color: #f0f0f0; padding: 20px; border-radius: 6px; margin: 20px 0;">
-                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;"><strong>From:</strong> ${from}</p>
-                    <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;"><strong>Subject:</strong> ${subject}</p>
-                    <p style="margin: 0; font-size: 14px; color: #333333;"><strong>Received:</strong> ${new Date().toLocaleString()}</p>
+                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;"><strong>EIN Number:</strong> ${einNumber}</p>
+                    <p style="margin: 0; font-size: 14px; color: #333333;"><strong>Uploaded:</strong> ${new Date().toLocaleString()}</p>
                   </div>
-                  <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">You can view this mail in your mailroom dashboard.</p>
+                  <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">You can view this information in your dashboard anytime.</p>
                 </td></tr>
                 <tr><td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;"><p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p></td></tr>
                 <tr><td style="background-color: #8b0000; height: 8px;"></td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+  itinUploaded: (name: string, companyName: string, itinNumber: string) => ({
+    subject: "ITIN Successfully Uploaded - BuzzFiling",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"><tr><td style="background-color: #8b0000; height: 8px;"></td></tr><tr><td style="padding: 40px 40px 20px 40px; text-align: center;"><img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 150px; height: auto;" /></td></tr><tr><td style="padding: 0 40px 40px 40px;">
+                  <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">Dear ${name},</p>
+                  <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">Your ITIN has been successfully uploaded for <strong>${companyName}</strong>.</p>
+                  <div style="background-color: #f0f0f0; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;"><strong>ITIN Number:</strong> ${itinNumber}</p>
+                    <p style="margin: 0; font-size: 14px; color: #333333;"><strong>Uploaded:</strong> ${new Date().toLocaleString()}</p>
+                  </div>
+                  <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">Your business information is now complete and secure.</p>
+                </td></tr>
+                <tr><td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;"><p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p></td></tr>
+                <tr><td style="background-color: #8b0000; height: 8px;"></td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+  businessIdUploaded: (name: string, companyName: string, businessId: string) => ({
+    subject: "Business ID Successfully Uploaded - BuzzFiling",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);"><tr><td style="background-color: #8b0000; height: 8px;"></td></tr><tr><td style="padding: 40px 40px 20px 40px; text-align: center;"><img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 150px; height: auto;" /></td></tr><tr><td style="padding: 0 40px 40px 40px;">
+                  <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">Dear ${name},</p>
+                  <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">Your Business ID has been successfully uploaded for <strong>${companyName}</strong>.</p>
+                  <div style="background-color: #f0f0f0; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;"><strong>Business ID:</strong> ${businessId}</p>
+                    <p style="margin: 0; font-size: 14px; color: #333333;"><strong>Uploaded:</strong> ${new Date().toLocaleString()}</p>
+                  </div>
+                  <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">Your registration is progressing smoothly. Check your dashboard for updates.</p>
+                </td></tr>
+                <tr><td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;"><p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p></td></tr>
+                <tr><td style="background-color: #8b0000; height: 8px;"></td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+  mailUploaded: (name: string, documentName: string, companyName: string) => ({
+    subject: "New Document Uploaded - BuzzFiling",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+                
+                <tr>
+                  <td style="background-color: #8b0000; height: 8px;"></td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 40px 40px 20px 40px; text-align: center;">
+                    <img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 150px; height: auto;" />
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
+                      Dear ${name},
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      A new document has been uploaded for ${companyName}.
+                    </p>
+                    
+                    <div style="background-color: #f0f0f0; padding: 20px; border-radius: 6px; margin: 20px 0;">
+                      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;"><strong>Document:</strong> ${documentName}</p>
+                      <p style="margin: 0; font-size: 14px; color: #333333;"><strong>Uploaded:</strong> ${new Date().toLocaleString()}</p>
+                    </div>
+                    
+                    <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      You can view and download this document from your dashboard.
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="background-color: #8b0000; height: 8px;"></td>
+                </tr>
+                
               </table>
             </td>
           </tr>

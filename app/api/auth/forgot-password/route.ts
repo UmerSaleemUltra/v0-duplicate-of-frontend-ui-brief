@@ -70,7 +70,13 @@ export async function POST(request: NextRequest) {
 
     const resetEmail = emailTemplates.passwordReset(user.name, resetLink)
 
+    if (!resetEmail || !resetEmail.subject || !resetEmail.html) {
+      console.error("[v0] Password reset email template is invalid:", resetEmail)
+      return addSecurityHeaders(apiError("Email template error", 500))
+    }
+
     console.log("[v0] Attempting to send password reset email to:", email)
+    console.log("[v0] Reset link:", resetLink)
     const emailResult = await sendEmail({
       to: email,
       subject: resetEmail.subject,
