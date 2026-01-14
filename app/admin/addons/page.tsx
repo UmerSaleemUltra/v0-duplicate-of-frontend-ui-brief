@@ -167,16 +167,16 @@ export default function AdminAddonsPage() {
 
       if (response.ok) {
         const data = await response.json()
-        const usersList = data.data?.users || data.users || []
+        const usersList = data.data?.users || data.users || data.data || []
+        console.log("[v0] Users loaded successfully:", usersList.length)
         setUsers(usersList)
+      } else {
+        console.log("[v0] Failed to load users, status:", response.status)
+        setUsers([])
       }
     } catch (error) {
       console.log("[v0] Error loading users:", error)
-      toast({
-        title: "Error",
-        description: "Failed to load users",
-        variant: "destructive",
-      })
+      setUsers([])
     } finally {
       setIsLoadingUsers(false)
     }
@@ -292,26 +292,25 @@ export default function AdminAddonsPage() {
     try {
       const token = authService.getToken()
 
-      const response = await fetch("/api/addons", {
+      const response = await fetch(`/api/addons/${addon.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          id: addon.id,
           isActive: !addon.isActive,
         }),
       })
 
       if (response.ok) {
         toast({
-          title: addon.isActive ? "Addon Deactivated" : "Addon Activated",
-          description: `The addon has been ${addon.isActive ? "deactivated" : "activated"}`,
+          title: "Success",
+          description: `Addon ${!addon.isActive ? "activated" : "deactivated"}`,
         })
         await loadAddons()
       } else {
-        throw new Error("Failed to toggle addon status")
+        throw new Error("Failed to update addon")
       }
     } catch (error) {
       toast({
