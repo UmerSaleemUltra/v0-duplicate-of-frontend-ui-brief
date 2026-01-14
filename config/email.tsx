@@ -41,7 +41,7 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
     return { success: true, messageId: info.messageId }
   } catch (error: any) {
     console.error("[v0] Email send error:", error.message)
-    console.error("[v0] Full error:", error)
+    console.log("[v0] Full error:", error)
     return { success: false, error: error.message }
   }
 }
@@ -1273,61 +1273,6 @@ export const emailTemplates = {
                   <td style="background-color: #8b0000; height: 8px;"></td>
                 </tr>
                 
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-  mailReceived: (senderName: string, subject: string, mailType: string, receivedDate: string) => ({
-    subject: `New Mail Received from ${senderName} — BuzzFiling`,
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
-          <tr>
-            <td align="center" style="padding: 40px 20px;">
-              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
-                <tr>
-                  <td style="background-color: #8b0000; height: 8px;"></td>
-                </tr>
-                <tr>
-                  <td style="padding: 40px 40px 20px 40px; text-align: center;">
-                    <img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 150px; height: auto; margin-bottom: 20px;" />
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #333333; line-height: 1.6;">
-                      You have received new mail at your BuzzFiling mailroom.
-                    </p>
-                    <div style="background-color: #f0f0f0; padding: 20px; border-radius: 6px; margin: 20px 0;">
-                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333; font-weight: 600;">Mail Details:</p>
-                      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;">• From: ${senderName}</p>
-                      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;">• Subject: ${subject}</p>
-                      <p style="margin: 0 0 8px 0; font-size: 14px; color: #333333;">• Type: ${mailType}</p>
-                      <p style="margin: 0; font-size: 14px; color: #333333;">• Received: ${receivedDate}</p>
-                    </div>
-                    <p style="margin: 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Log in to your account to view and manage this mail.
-                    </p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 20px 40px; text-align: center; font-size: 12px; color: #666666; border-top: 1px solid #e0e0e0;">
-                    <p style="margin: 0;">All rights reserved © 2026 | BuzzFiling</p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="background-color: #8b0000; height: 8px;"></td>
-                </tr>
               </table>
             </td>
           </tr>
