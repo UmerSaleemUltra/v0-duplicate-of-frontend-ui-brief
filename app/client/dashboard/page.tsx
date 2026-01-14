@@ -83,7 +83,15 @@ export default function ClientDashboard() {
   }, [router])
 
   useEffect(() => {
-    if (isAuthenticating || !selectedCompanyId) return
+    if (isAuthenticating) return
+
+    if (!selectedCompanyId) {
+      console.log("[v0] No company selected, showing no-company state")
+      setHasNoCompanies(true)
+      return
+    }
+
+    setHasNoCompanies(false)
 
     if (selectedCompanyId && selectedCompanyId !== lastLoadedCompanyId) {
       setDataLoaded(false)
@@ -540,7 +548,7 @@ export default function ClientDashboard() {
                     {copiedEIN ? (
                       <Check className="w-4 h-4 text-green-600" />
                     ) : (
-                      <Copy className="w-4 h-4 text-slate-400" />
+                      <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600" />
                     )}
                   </Button>
                 )}
@@ -570,7 +578,7 @@ export default function ClientDashboard() {
                     {copiedBusinessId ? (
                       <Check className="w-4 h-4 text-green-600" />
                     ) : (
-                      <Copy className="w-4 h-4 text-slate-400" />
+                      <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600" />
                     )}
                   </Button>
                 )}
