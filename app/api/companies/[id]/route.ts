@@ -190,6 +190,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             })
 
             broadcastUpdate("notifications", "created", { userId: company.userId })
+
+            try {
+              const { sendEmail, emailTemplates } = await import("@/config/email")
+              const user = await db
+                .collection("users")
+                .findOne({ _id: new ObjectId(company.userId) }, { projection: { name: 1, email: 1 } })
+
+              if (user) {
+                const milestoneEmail = emailTemplates.milestoneCompleted(user.name, title, company.name)
+                await sendEmail({ to: user.email, subject: milestoneEmail.subject, html: milestoneEmail.html })
+              }
+            } catch (emailError) {
+              console.log("[v0] Error sending milestone email (non-critical):", emailError)
+            }
           } catch (notifError) {
             console.log("[v0] Error creating milestone notification:", notifError)
           }

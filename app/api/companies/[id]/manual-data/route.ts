@@ -95,6 +95,35 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: "Company not found" }, { status: 404 })
     }
 
+    // Send email notifications for tax data uploads
+    if (dataType === "tax") {
+      try {
+        const { sendEmail, emailTemplates } = await import("@/config/email")
+        const user = await db
+          .collection("users")
+          .findOne({ _id: new ObjectId(result.userId) }, { projection: { name: 1, email: 1 } })
+
+        if (user) {
+          if (data.ein) {
+            const email = emailTemplates.einUploaded(user.name, result.name, data.ein)
+            await sendEmail({ to: user.email, subject: email.subject, html: email.html })
+          }
+
+          if (data.itin) {
+            const email = emailTemplates.itinUploaded(user.name, result.name, data.itin)
+            await sendEmail({ to: user.email, subject: email.subject, html: email.html })
+          }
+
+          if (data.businessId) {
+            const email = emailTemplates.businessIdUploaded(user.name, result.name, data.businessId)
+            await sendEmail({ to: user.email, subject: email.subject, html: email.html })
+          }
+        }
+      } catch (emailError) {
+        console.log("[v0] Error sending tax data email (non-critical):", emailError)
+      }
+    }
+
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
     console.error("[v0] Error updating manual data:", error)
