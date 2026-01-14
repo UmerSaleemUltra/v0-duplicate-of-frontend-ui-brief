@@ -149,7 +149,7 @@ export default function CompanyPage() {
             registeredAgent: selectedComp.registeredAgent,
             businessAddress: selectedComp.businessAddress,
             itin: selectedComp.itin || "Not yet",
-            mailingAddressStatus: selectedComp.mailingAddressStatus || "pending",
+            businessAddressStatus: selectedComp.businessAddressStatus || "pending",
             companyStatus: selectedComp.status || "pending",
             registeredAgentStatus: selectedComp.registeredAgentStatus || "pending",
             businessAddressStatus: selectedComp.businessAddressStatus,
