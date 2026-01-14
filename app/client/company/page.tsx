@@ -45,7 +45,10 @@ export default function CompanyPage() {
       setLoading(true)
       console.log("[v0] Fetching company details for:", selectedCompanyId)
 
-      if (!selectedCompanyId) return
+      if (!selectedCompanyId) {
+        setLoading(false)
+        return
+      }
 
       try {
         setError(null)
@@ -244,6 +247,22 @@ export default function CompanyPage() {
     return null
   }
 
+  if (loading && !error) {
+    return (
+      <ClientShell>
+        <CompanySkeleton />
+      </ClientShell>
+    )
+  }
+
+  if (!selectedCompanyId || !companyData) {
+    return (
+      <ClientShell>
+        <NoCompanyState />
+      </ClientShell>
+    )
+  }
+
   if (error) {
     return (
       <ClientShell>
@@ -256,14 +275,6 @@ export default function CompanyPage() {
             </Button>
           </div>
         </div>
-      </ClientShell>
-    )
-  }
-
-  if (!companyData) {
-    return (
-      <ClientShell>
-        <NoCompanyState />
       </ClientShell>
     )
   }
