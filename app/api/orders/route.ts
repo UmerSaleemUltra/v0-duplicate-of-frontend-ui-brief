@@ -110,7 +110,7 @@ export async function POST(req: NextRequest) {
       companyName,
       type,
       packageType: packageType || "starter",
-      status: "pending",
+      status: "Order Proceeded",
       amount,
       total: total || amount,
       packagePrice,

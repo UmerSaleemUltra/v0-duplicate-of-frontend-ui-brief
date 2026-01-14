@@ -863,6 +863,7 @@ export default function OrderDetailPage() {
             servicePeriod: agentForm.servicePeriod,
             status: "Active",
           },
+          registeredAgentStatus: "active",
           milestones: {
             ...milestones,
             registeredAgentAssigned: true,
