@@ -32,6 +32,10 @@ export default function AdminAddonsPage() {
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
+  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
+  const [selectedAddonForAssign, setSelectedAddonForAssign] = useState<Addon | null>(null)
+  const [assignToAllUsers, setAssignToAllUsers] = useState(false)
+  const [isAssigning, setIsAssigning] = useState(false)
   const { toast } = useToast()
 
   const [formData, setFormData] = useState({
@@ -105,6 +109,70 @@ export default function AdminAddonsPage() {
       })
     }
     setIsDialogOpen(true)
+  }
+
+  const handleAssignAddon = (addon: Addon) => {
+    setSelectedAddonForAssign(addon)
+    setAssignToAllUsers(false)
+    setIsAssignDialogOpen(true)
+  }
+
+  const handleSubmitAssignment = async () => {
+    if (!selectedAddonForAssign) {
+      toast({
+        title: "Error",
+        description: "No addon selected",
+        variant: "destructive",
+      })
+      return
+    }
+
+    if (!assignToAllUsers) {
+      toast({
+        title: "Info",
+        description: "Please select 'Assign to All Users' option",
+        variant: "default",
+      })
+      return
+    }
+
+    setIsAssigning(true)
+
+    try {
+      const token = authService.getToken()
+
+      const response = await fetch("/api/addons/assign", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          addonId: selectedAddonForAssign.id,
+          assignToAll: assignToAllUsers,
+        }),
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        toast({
+          title: "Success",
+          description: data.message || "Addon assigned successfully",
+        })
+        setIsAssignDialogOpen(false)
+        setSelectedAddonForAssign(null)
+      } else {
+        throw new Error("Failed to assign addon")
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to assign addon to users",
+        variant: "destructive",
+      })
+    } finally {
+      setIsAssigning(false)
+    }
   }
 
   const handleSave = async () => {
@@ -343,6 +411,10 @@ export default function AdminAddonsPage() {
                     <Edit className="w-3 h-3 mr-1" />
                     Edit
                   </Button>
+                  <Button variant="outline" size="sm" onClick={() => handleAssignAddon(addon)} className="flex-1">
+                    <Package className="w-3 h-3 mr-1" />
+                    Assign
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"
@@ -477,6 +549,57 @@ export default function AdminAddonsPage() {
               ) : (
                 <>{editingAddon ? "Update Addon" : "Create Addon"}</>
               )}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle>Assign Addon to Users</DialogTitle>
+            <DialogDescription>Assign "{selectedAddonForAssign?.name}" to users</DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-3">
+              <Label className="text-base font-semibold">Assignment Option</Label>
+              <div className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
+                <input
+                  type="radio"
+                  id="assignAll"
+                  name="assignOption"
+                  checked={assignToAllUsers}
+                  onChange={(e) => setAssignToAllUsers(e.target.checked)}
+                  className="w-4 h-4"
+                />
+                <Label htmlFor="assignAll" className="flex-1 cursor-pointer mb-0">
+                  <span className="font-medium">Assign to All Users</span>
+                  <p className="text-xs text-slate-600 mt-1">Grant this addon to all registered users</p>
+                </Label>
+              </div>
+            </div>
+
+            {selectedAddonForAssign && (
+              <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                <p className="text-sm font-medium text-slate-900">Addon Details:</p>
+                <p className="text-sm text-slate-600 mt-1">
+                  ${selectedAddonForAssign.price} - {selectedAddonForAssign.name}
+                </p>
+              </div>
+            )}
+          </div>
+
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setIsAssignDialogOpen(false)} disabled={isAssigning}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSubmitAssignment}
+              className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+              disabled={isAssigning || !assignToAllUsers}
+            >
+              {isAssigning ? "Assigning..." : "Assign Addon"}
             </Button>
           </div>
         </DialogContent>
