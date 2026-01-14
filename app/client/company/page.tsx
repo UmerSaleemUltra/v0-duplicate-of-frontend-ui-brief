@@ -152,7 +152,7 @@ export default function CompanyPage() {
             mailingAddressStatus: selectedComp.mailingAddressStatus || "pending",
             companyStatus: selectedComp.status || "pending",
             registeredAgentStatus: selectedComp.registeredAgentStatus || "pending",
-            businessAddressStatus: selectedComp.businessAddressStatus || "pending",
+            businessAddressStatus: selectedComp.businessAddressStatus,
             serviceStatus: selectedComp.serviceStatus || "pending",
             mailingAddress: selectedComp.mailingAddress,
             taxFilingDate: selectedComp.taxFilingDate,
