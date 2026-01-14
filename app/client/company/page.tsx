@@ -299,7 +299,13 @@ export default function CompanyPage() {
     companyData.businessAddress.address !== "Not yet" &&
     companyData.businessAddress.address !== "Not Yet Assigned"
 
-  const hasITIN = companyData?.itin && companyData.itin.trim() !== ""
+  const hasITIN =
+    companyData?.itin &&
+    companyData.itin.trim() !== "" &&
+    companyData.itin !== "Not Yet" &&
+    companyData.itin !== "Not yet" &&
+    companyData.itin !== "Not Yet Assigned" &&
+    companyData.itin !== "Pending"
 
   const hasMailingAddress =
     companyData?.mailingAddress &&
@@ -742,9 +748,9 @@ export default function CompanyPage() {
                 </span>
               </div>
 
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Status</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+              <div className="flex justify-between items-center">
+                <span className="text-slate-600 text-sm sm:text-base">Status</span>
+                <span>
                   <Badge
                     className={
                       companyData.mailingAddressStatus === "active"
@@ -754,7 +760,9 @@ export default function CompanyPage() {
                           : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
                     }
                   >
-                    {companyData.mailingAddressStatus ? companyData.mailingAddressStatus.toLowerCase() : "pending"}
+                    {companyData.mailingAddressStatus && companyData.mailingAddressStatus.trim() !== ""
+                      ? companyData.mailingAddressStatus.toLowerCase()
+                      : "pending"}
                   </Badge>
                 </span>
               </div>
