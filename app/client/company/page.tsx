@@ -763,15 +763,15 @@ export default function CompanyPage() {
                 <span>
                   <Badge
                     className={
-                      companyData.mailingAddressStatus === "active"
+                      companyData.businessAddressStatus === "active"
                         ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
-                        : companyData.mailingAddressStatus === "inactive"
+                        : companyData.businessAddressStatus === "inactive"
                           ? "bg-red-50 text-red-700 border-red-200 capitalize"
                           : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
                     }
                   >
-                    {companyData.mailingAddressStatus && companyData.mailingAddressStatus.trim() !== ""
-                      ? companyData.mailingAddressStatus.toLowerCase()
+                    {companyData.businessAddressStatus && companyData.businessAddressStatus.trim() !== ""
+                      ? companyData.businessAddressStatus.toLowerCase()
                       : "pending"}
                   </Badge>
                 </span>
