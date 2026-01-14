@@ -72,6 +72,16 @@ export default function CompanyPage() {
             return
           }
 
+          console.log("[v0] Company data from API:", selectedComp)
+          console.log("[v0] businessAddressStatus value:", selectedComp.businessAddressStatus)
+          console.log("[v0] mailingAddressStatus value:", selectedComp.mailingAddressStatus)
+          console.log("[v0] All address-related fields:", {
+            businessAddressStatus: selectedComp.businessAddressStatus,
+            mailingAddressStatus: selectedComp.mailingAddressStatus,
+            businessAddress: selectedComp.businessAddress,
+            mailingAddress: selectedComp.mailingAddress,
+          })
+
           const mailCount = mailResponse.status === "fulfilled" ? (mailResponse.value.data || []).length : 0
           const docCount = docsResponse.status === "fulfilled" ? (docsResponse.value.data || []).length : 0
 
