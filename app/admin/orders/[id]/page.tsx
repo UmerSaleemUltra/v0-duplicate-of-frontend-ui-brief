@@ -963,6 +963,7 @@ export default function OrderDetailPage() {
             state: mailingAddress.state.trim(),
             zip: mailingAddress.zip.trim(),
           },
+          mailingAddressStatus: "active",
           milestones: {
             ...milestones,
             mailingAddressIssued: true,

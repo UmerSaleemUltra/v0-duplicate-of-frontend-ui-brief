@@ -148,13 +148,13 @@ export default function CompanyPage() {
             members: builtMembers,
             registeredAgent: selectedComp.registeredAgent,
             businessAddress: selectedComp.businessAddress,
-            itin: selectedComp.itin,
+            itin: selectedComp.itin || "Not yet",
+            mailingAddressStatus: selectedComp.mailingAddressStatus || "pending",
             companyStatus: selectedComp.status || "pending",
             registeredAgentStatus: selectedComp.registeredAgentStatus || "pending",
             businessAddressStatus: selectedComp.businessAddressStatus || "pending",
             serviceStatus: selectedComp.serviceStatus || "pending",
             mailingAddress: selectedComp.mailingAddress,
-            mailingAddressStatus: selectedComp.mailingAddressStatus || "pending",
             taxFilingDate: selectedComp.taxFilingDate,
             taxClassification: selectedComp.taxClassification || "Not Yet",
             annualReportFilingDate: selectedComp.annualReportFilingDate,
@@ -776,6 +776,19 @@ export default function CompanyPage() {
                   {index < companyData.purchasedAddons.length - 1 && <div className="border-t border-slate-200" />}
                 </div>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* ITIN Information */}
+        {hasITIN && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <h2 className="text-base sm:text-lg font-semibold mb-4">ITIN Information</h2>
+            <div className="space-y-4">
+              <div className="flex flex-col py-2 gap-2">
+                <span className="text-slate-600 text-sm sm:text-base text-left">ITIN</span>
+                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">{companyData.itin}</span>
+              </div>
             </div>
           </div>
         )}
