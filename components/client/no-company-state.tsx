@@ -77,3 +77,5 @@ export function NoCompanyState() {
     </div>
   )
 }
+
+export default NoCompanyState
