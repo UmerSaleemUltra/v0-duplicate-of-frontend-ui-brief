@@ -1163,7 +1163,7 @@ export const emailTemplates = {
               <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
                 <tr>
                   <td style="background-color: #8b0000; padding: 20px 40px; text-align: center; color: #ffffff;">
-                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">Mail Uploaded</h1>
+                    <h1 style="margin: 0; font-size: 24px; font-weight: 700;">Document Upload Notification</h1>
                   </td>
                 </tr>
                 <tr>
