@@ -26,6 +26,12 @@ interface Addon {
   features?: string[]
 }
 
+interface User {
+  id: string
+  email: string
+  name?: string
+}
+
 export default function AdminAddonsPage() {
   const [addons, setAddons] = useState<Addon[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
@@ -36,17 +42,81 @@ export default function AdminAddonsPage() {
   const [selectedAddonForAssign, setSelectedAddonForAssign] = useState<Addon | null>(null)
   const [assignToAllUsers, setAssignToAllUsers] = useState(false)
   const [isAssigning, setIsAssigning] = useState(false)
+  const [users, setUsers] = useState<User[]>([])
+  const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
+  const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const { toast } = useToast()
 
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    category: "other" as Addon["category"],
-    isActive: true,
-    icon: "",
-    features: "",
-  })
+  const handleDelete = async (addonId: string) => {
+    try {
+      const token = authService.getToken()
+
+      const response = await fetch(`/api/addons/${addonId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Addon deleted successfully",
+        })
+        await loadAddons()
+      } else {
+        throw new Error("Failed to delete addon")
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete addon",
+        variant: "destructive",
+      })
+    }
+  }
+
+  const handleSave = async () => {
+    setIsSaving(true)
+
+    try {
+      const token = authService.getToken()
+      const method = editingAddon ? "PUT" : "POST"
+      const url = editingAddon ? `/api/addons/${editingAddon.id}` : "/api/addons"
+      const body = JSON.stringify({
+        ...formData,
+        features: formData.features.split(", ").filter(Boolean),
+      })
+
+      const response = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body,
+      })
+
+      if (response.ok) {
+        toast({
+          title: editingAddon ? "Addon Updated" : "Addon Created",
+          description: `The addon has been ${editingAddon ? "updated" : "created"}`,
+        })
+        setIsDialogOpen(false)
+        await loadAddons()
+      } else {
+        throw new Error("Failed to save addon")
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to save addon",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
 
   useEffect(() => {
     loadAddons()
@@ -84,6 +154,34 @@ export default function AdminAddonsPage() {
     }
   }
 
+  const loadUsers = async () => {
+    try {
+      setIsLoadingUsers(true)
+      const token = authService.getToken()
+
+      const response = await fetch("/api/users", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const usersList = data.data?.users || data.users || []
+        setUsers(usersList)
+      }
+    } catch (error) {
+      console.log("[v0] Error loading users:", error)
+      toast({
+        title: "Error",
+        description: "Failed to load users",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoadingUsers(false)
+    }
+  }
+
   const handleOpenDialog = (addon?: Addon) => {
     if (addon) {
       setEditingAddon(addon)
@@ -114,7 +212,19 @@ export default function AdminAddonsPage() {
   const handleAssignAddon = (addon: Addon) => {
     setSelectedAddonForAssign(addon)
     setAssignToAllUsers(false)
+    setSelectedUserIds(new Set())
+    loadUsers()
     setIsAssignDialogOpen(true)
+  }
+
+  const handleUserToggle = (userId: string) => {
+    const newSelected = new Set(selectedUserIds)
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId)
+    } else {
+      newSelected.add(userId)
+    }
+    setSelectedUserIds(newSelected)
   }
 
   const handleSubmitAssignment = async () => {
@@ -127,11 +237,11 @@ export default function AdminAddonsPage() {
       return
     }
 
-    if (!assignToAllUsers) {
+    if (!assignToAllUsers && selectedUserIds.size === 0) {
       toast({
-        title: "Info",
-        description: "Please select 'Assign to All Users' option",
-        variant: "default",
+        title: "Error",
+        description: "Please select users or choose 'Assign to All Users'",
+        variant: "destructive",
       })
       return
     }
@@ -150,146 +260,31 @@ export default function AdminAddonsPage() {
         body: JSON.stringify({
           addonId: selectedAddonForAssign.id,
           assignToAll: assignToAllUsers,
+          userIds: assignToAllUsers ? [] : Array.from(selectedUserIds),
         }),
       })
 
       if (response.ok) {
-        const data = await response.json()
         toast({
           title: "Success",
-          description: data.message || "Addon assigned successfully",
+          description: "Addon assigned successfully",
         })
         setIsAssignDialogOpen(false)
-        setSelectedAddonForAssign(null)
       } else {
-        throw new Error("Failed to assign addon")
+        toast({
+          title: "Error",
+          description: "Failed to assign addon",
+          variant: "destructive",
+        })
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to assign addon to users",
+        description: "Failed to assign addon",
         variant: "destructive",
       })
     } finally {
       setIsAssigning(false)
-    }
-  }
-
-  const handleSave = async () => {
-    if (!formData.name || !formData.description || !formData.price) {
-      toast({
-        title: "Validation Error",
-        description: "Please fill in all required fields",
-        variant: "destructive",
-      })
-      return
-    }
-
-    setIsSaving(true)
-
-    try {
-      const token = authService.getToken()
-      const addonData = {
-        name: formData.name,
-        description: formData.description,
-        price: Number.parseFloat(formData.price),
-        category: formData.category,
-        isActive: formData.isActive,
-        icon: formData.icon || undefined,
-        features: formData.features
-          ? formData.features
-              .split(",")
-              .map((f) => f.trim())
-              .filter(Boolean)
-          : [],
-      }
-
-      if (editingAddon) {
-        // Update existing addon
-        const response = await fetch("/api/addons", {
-          method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({
-            id: editingAddon.id,
-            ...addonData,
-          }),
-        })
-
-        if (response.ok) {
-          toast({
-            title: "Addon Updated",
-            description: "The addon has been updated successfully",
-          })
-        } else {
-          throw new Error("Failed to update addon")
-        }
-      } else {
-        // Create new addon
-        const response = await fetch("/api/addons", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(addonData),
-        })
-
-        if (response.ok) {
-          toast({
-            title: "Addon Created",
-            description: "The addon has been created successfully",
-          })
-        } else {
-          throw new Error("Failed to create addon")
-        }
-      }
-
-      await loadAddons()
-      setIsDialogOpen(false)
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save addon",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSaving(false)
-    }
-  }
-
-  const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this addon?")) {
-      return
-    }
-
-    try {
-      const token = authService.getToken()
-
-      const response = await fetch(`/api/addons?id=${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      })
-
-      if (response.ok) {
-        toast({
-          title: "Addon Deleted",
-          description: "The addon has been deleted successfully",
-        })
-        await loadAddons()
-      } else {
-        throw new Error("Failed to delete addon")
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to delete addon",
-        variant: "destructive",
-      })
     }
   }
 
@@ -337,6 +332,16 @@ export default function AdminAddonsPage() {
     }
     return colors[category] || colors.other
   }
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    category: "other" as Addon["category"],
+    isActive: true,
+    icon: "",
+    features: "",
+  })
 
   if (isLoading) {
     return (
@@ -555,7 +560,7 @@ export default function AdminAddonsPage() {
       </Dialog>
 
       <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
-        <DialogContent className="sm:max-w-[425px]">
+        <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>Assign Addon to Users</DialogTitle>
             <DialogDescription>Assign "{selectedAddonForAssign?.name}" to users</DialogDescription>
@@ -564,21 +569,71 @@ export default function AdminAddonsPage() {
           <div className="space-y-4 py-4">
             <div className="space-y-3">
               <Label className="text-base font-semibold">Assignment Option</Label>
-              <div className="flex items-center gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
                 <input
                   type="radio"
                   id="assignAll"
                   name="assignOption"
                   checked={assignToAllUsers}
-                  onChange={(e) => setAssignToAllUsers(e.target.checked)}
-                  className="w-4 h-4"
+                  onChange={(e) => {
+                    setAssignToAllUsers(e.target.checked)
+                    setSelectedUserIds(new Set())
+                  }}
+                  className="w-4 h-4 mt-1"
                 />
                 <Label htmlFor="assignAll" className="flex-1 cursor-pointer mb-0">
                   <span className="font-medium">Assign to All Users</span>
                   <p className="text-xs text-slate-600 mt-1">Grant this addon to all registered users</p>
                 </Label>
               </div>
+              <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
+                <input
+                  type="radio"
+                  id="assignSelected"
+                  name="assignOption"
+                  checked={!assignToAllUsers}
+                  onChange={(e) => {
+                    if (e.target.checked) {
+                      setAssignToAllUsers(false)
+                    }
+                  }}
+                  className="w-4 h-4 mt-1"
+                />
+                <Label htmlFor="assignSelected" className="flex-1 cursor-pointer mb-0">
+                  <span className="font-medium">Assign to Selected Users</span>
+                  <p className="text-xs text-slate-600 mt-1">Choose specific users to grant this addon</p>
+                </Label>
+              </div>
             </div>
+
+            {!assignToAllUsers && (
+              <div className="space-y-3">
+                <Label className="text-base font-semibold">Select Users ({selectedUserIds.size} selected)</Label>
+                <div className="border border-slate-200 rounded-lg p-3 max-h-64 overflow-y-auto space-y-2">
+                  {isLoadingUsers ? (
+                    <p className="text-sm text-slate-600 py-4 text-center">Loading users...</p>
+                  ) : users.length === 0 ? (
+                    <p className="text-sm text-slate-600 py-4 text-center">No users found</p>
+                  ) : (
+                    users.map((user) => (
+                      <div key={user.id} className="flex items-center gap-2 p-2 hover:bg-slate-50 rounded">
+                        <input
+                          type="checkbox"
+                          id={`user-${user.id}`}
+                          checked={selectedUserIds.has(user.id)}
+                          onChange={() => handleUserToggle(user.id)}
+                          className="w-4 h-4"
+                        />
+                        <label htmlFor={`user-${user.id}`} className="flex-1 cursor-pointer">
+                          <span className="text-sm font-medium">{user.name || user.email}</span>
+                          <span className="text-xs text-slate-600 ml-2">({user.email})</span>
+                        </label>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
 
             {selectedAddonForAssign && (
               <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
@@ -597,7 +652,7 @@ export default function AdminAddonsPage() {
             <Button
               onClick={handleSubmitAssignment}
               className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-              disabled={isAssigning || !assignToAllUsers}
+              disabled={isAssigning || (!assignToAllUsers && selectedUserIds.size === 0)}
             >
               {isAssigning ? "Assigning..." : "Assign Addon"}
             </Button>
