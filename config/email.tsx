@@ -160,7 +160,7 @@ export const emailTemplates = {
       </body>
     </html>
   `),
-\
+
   einUpdate: (name: string, status: string) => (
 {
     subject: "EIN Application Update — BuzzFiling",
