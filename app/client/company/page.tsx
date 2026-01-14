@@ -117,7 +117,7 @@ export default function CompanyPage() {
               state: m.state || "Not yet",
               country: m.country || "US",
               zip: m.zip || "Not yet",
-              ssn: m.ssn && m.ssn.trim() ? `***-**-${String(m.ssn).slice(-4)}` : "Not yet",
+              ssn: m.ssn && m.ssn.trim() ? m.ssn : "Not yet",
               isResponsiblePerson: !!m.isResponsiblePerson,
               itinAdded: !!m.needsItin,
               ownership: `${m.ownershipPercentage || 0}%`,
@@ -618,7 +618,7 @@ export default function CompanyPage() {
                     <div className="flex flex-col py-2 gap-2">
                       <span className="text-slate-600 text-sm sm:text-base text-left">SSN/ITIN</span>
                       <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                        {member.ssn}
+                        {member.ssn || "Not Yet"}
                         {member.itinAdded && (
                           <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs ml-2">
                             ITIN Application Added

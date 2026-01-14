@@ -2687,9 +2687,7 @@ export default function OrderDetailPage() {
                         {member.ssn && (
                           <div>
                             <p className="text-xs text-slate-600">SSN/ITIN</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {member.ssn.length > 4 ? `***-**-${member.ssn.slice(-4)}` : "Provided"}
-                            </p>
+                            <p className="text-sm font-medium text-slate-900">{member.ssn}</p>
                           </div>
                         )}
                         {member.passportUrl && (
