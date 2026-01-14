@@ -47,8 +47,13 @@ export async function POST(request: NextRequest) {
     // Find user
     const user = await usersCollection.findOne({ email })
     if (!user) {
-      // Don't reveal if email exists or not
-      return addSecurityHeaders(apiResponse({ message: "If email exists, reset link will be sent" }))
+      return addSecurityHeaders(
+        apiResponse({
+          message:
+            "If an account exists with this email, a reset link will be sent. Please check your email (including spam folder).",
+          success: true,
+        }),
+      )
     }
 
     // Generate reset token
