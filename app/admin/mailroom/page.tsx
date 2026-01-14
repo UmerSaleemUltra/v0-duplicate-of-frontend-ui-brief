@@ -552,11 +552,24 @@ Notes: ${mail.notes || "None"}
                 <Label htmlFor="from">From (Sender) *</Label>
                 <Input
                   id="from"
-                  placeholder="e.g., Delaware Secretary of State"
+                  placeholder="e.g., IRS, Delaware Secretary of State, Local Government"
                   value={mailFrom}
                   onChange={(e) => setMailFrom(e.target.value)}
                   className="h-10"
+                  list="senderSuggestions"
                 />
+                <datalist id="senderSuggestions">
+                  <option value="IRS" />
+                  <option value="Secretary of State" />
+                  <option value="State Tax Authority" />
+                  <option value="BuzzFiling" />
+                  <option value="Local Government" />
+                  <option value="Federal Agency" />
+                </datalist>
+                <p className="text-xs text-slate-500 mt-1">
+                  Added context: This is WHO SENT the mail, not the mail type. Examples: IRS, Delaware Secretary of
+                  State, etc.
+                </p>
               </div>
 
               <div className="space-y-2">
@@ -831,11 +844,24 @@ Notes: ${mail.notes || "None"}
               <Label htmlFor="edit-from">From (Sender) *</Label>
               <Input
                 id="edit-from"
-                placeholder="e.g., Delaware Secretary of State"
+                placeholder="e.g., IRS, Delaware Secretary of State, Local Government"
                 value={editFrom}
                 onChange={(e) => setEditFrom(e.target.value)}
                 className="h-10"
+                list="senderSuggestions"
               />
+              <datalist id="senderSuggestions">
+                <option value="IRS" />
+                <option value="Secretary of State" />
+                <option value="State Tax Authority" />
+                <option value="BuzzFiling" />
+                <option value="Local Government" />
+                <option value="Federal Agency" />
+              </datalist>
+              <p className="text-xs text-slate-500 mt-1">
+                Added context: This is WHO SENT the mail, not the mail type. Examples: IRS, Delaware Secretary of State,
+                etc.
+              </p>
             </div>
 
             <div className="space-y-2">
