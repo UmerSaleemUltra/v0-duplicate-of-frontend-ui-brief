@@ -10,6 +10,9 @@ import { securityGuard } from "@/lib/middleware/security-guard"
 // Rate limiter: 5 requests per 15 minutes
 const forgotPasswordRateLimit = rateLimit({ windowMs: 900000, maxRequests: 5 })
 
+// Global lock: ensures only 1 request at a time
+let isProcessing = false
+
 export async function POST(request: NextRequest) {
   // Security guard
   const securityResponse = await securityGuard(request)
@@ -23,23 +26,18 @@ export async function POST(request: NextRequest) {
     return addSecurityHeaders(rateLimitResponse)
   }
 
+  // Single request at a time
+  if (isProcessing) {
+    return addSecurityHeaders(apiError("Server busy. Try again later.", 429))
+  }
+
+  isProcessing = true // lock
   try {
     const body = await request.json()
     const { email } = body
 
-    if (!email || !email.trim()) {
+    if (!email) {
       return addSecurityHeaders(apiError("Email is required", 400))
-    }
-
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(email.trim())) {
-      return addSecurityHeaders(
-        apiResponse({
-          message:
-            "If an account exists with this email, a reset link will be sent. Please check your email (including spam folder).",
-          success: true,
-        }),
-      )
     }
 
     const db = await getDatabase()
@@ -47,15 +45,10 @@ export async function POST(request: NextRequest) {
     const otpCollection = db.collection("otps")
 
     // Find user
-    const user = await usersCollection.findOne({ email: email.trim().toLowerCase() })
+    const user = await usersCollection.findOne({ email })
     if (!user) {
-      return addSecurityHeaders(
-        apiResponse({
-          message:
-            "If an account exists with this email, a reset link will be sent. Please check your email (including spam folder).",
-          success: true,
-        }),
-      )
+      // Don't reveal if email exists or not
+      return addSecurityHeaders(apiResponse({ message: "If email exists, reset link will be sent" }))
     }
 
     // Generate reset token
@@ -72,49 +65,35 @@ export async function POST(request: NextRequest) {
     })
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://buzzfiling.com"
+
     const resetLink = `${baseUrl}/reset-password?token=${resetToken}&userId=${user._id.toString()}`
 
-    const resetEmail = emailTemplates.passwordReset(user.name || "User", resetLink)
+    const resetEmail = emailTemplates.passwordReset(user.name, resetLink)
 
-    if (!resetEmail) {
-      console.error("[v0] Password reset email template returned null")
+    if (!resetEmail || !resetEmail.subject || !resetEmail.html) {
+      console.error("[v0] Password reset email template is invalid:", resetEmail)
       return addSecurityHeaders(apiError("Email template error", 500))
     }
 
-    if (!resetEmail.subject || !resetEmail.html) {
-      console.error("[v0] Password reset email template missing fields:", {
-        hasSubject: !!resetEmail.subject,
-        hasHtml: !!resetEmail.html,
-      })
-      return addSecurityHeaders(apiError("Email template error", 500))
-    }
-
-    console.log("[v0] Sending password reset email to:", email.trim().toLowerCase())
-
-    const emailPromise = sendEmail({
-      to: email.trim().toLowerCase(),
+    console.log("[v0] Attempting to send password reset email to:", email)
+    console.log("[v0] Reset link:", resetLink)
+    const emailResult = await sendEmail({
+      to: email,
       subject: resetEmail.subject,
       html: resetEmail.html,
     })
 
-    const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("Email send timeout")), 10000))
-
-    const emailResult = await Promise.race([emailPromise, timeoutPromise])
-
-    if (!emailResult || !emailResult.success) {
-      console.error("[v0] Password reset email failed. Result:", emailResult)
+    if (!emailResult.success) {
+      console.error("[v0] Password reset email failed for:", email, "Error:", emailResult.error)
       return addSecurityHeaders(apiError("Failed to send reset email. Please try again later.", 500))
     }
 
-    console.log("[v0] Password reset email sent successfully")
-    return addSecurityHeaders(
-      apiResponse({
-        message:
-          "If an account exists with this email, a reset link will be sent. Please check your email (including spam folder).",
-      }),
-    )
-  } catch (error: any) {
-    console.error("[v0] Forgot password error:", error.message)
+    console.log("[v0] Password reset email sent successfully to:", email, "Message ID:", emailResult.messageId)
+    return addSecurityHeaders(apiResponse({ message: "If email exists, reset link will be sent" }))
+  } catch (error) {
+    console.error("Forgot password error:", error)
     return addSecurityHeaders(apiError("Failed to process request", 500))
+  } finally {
+    isProcessing = false // release lock
   }
 }

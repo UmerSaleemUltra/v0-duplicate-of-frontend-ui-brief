@@ -1,64 +1,19 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Mail, ArrowRight, ArrowLeft, CheckCircle, AlertCircle } from "lucide-react"
+import { Mail, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function ForgotPasswordPage() {
-  const router = useRouter()
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
-  const [emailValid, setEmailValid] = useState(false)
-  const [isUserLoggedIn, setIsUserLoggedIn] = useState(false)
-  const [pageLoading, setPageLoading] = useState(true)
-
-  useEffect(() => {
-    const checkAuthStatus = async () => {
-      try {
-        const response = await fetch("/api/auth/me", {
-          method: "GET",
-          credentials: "include",
-        })
-        if (response.ok) {
-          setIsUserLoggedIn(true)
-        }
-      } catch (err) {
-        console.log("[v0] User not logged in")
-      } finally {
-        setPageLoading(false)
-      }
-    }
-    checkAuthStatus()
-  }, [])
-
-  const validateEmail = (value: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    setEmail(value)
-    setEmailValid(emailRegex.test(value))
-  }
-
-  const checkEmailExists = async (emailToCheck: string): Promise<boolean> => {
-    try {
-      const response = await fetch("/api/auth/check-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: emailToCheck }),
-      })
-      const data = await response.json()
-      return data.exists
-    } catch (err) {
-      console.error("[v0] Error checking email:", err)
-      return false
-    }
-  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,19 +21,6 @@ export default function ForgotPasswordPage() {
     setLoading(true)
 
     try {
-      if (!emailValid) {
-        setError("Please enter a valid email address")
-        setLoading(false)
-        return
-      }
-
-      const emailExists = await checkEmailExists(email)
-      if (!emailExists) {
-        setError("No account found with this email address")
-        setLoading(false)
-        return
-      }
-
       const response = await fetch("/api/auth/forgot-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -90,7 +32,7 @@ export default function ForgotPasswordPage() {
       if (response.ok) {
         setSuccess(true)
       } else {
-        setError(data.error || "Failed to send reset link. Please try again.")
+        setError(data.error || "Failed to send reset link")
       }
     } catch (err) {
       console.error("[v0] Forgot password error:", err)
@@ -123,48 +65,6 @@ export default function ForgotPasswordPage() {
     } finally {
       setLoading(false)
     }
-  }
-
-  if (pageLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          <div className="glass-modal rounded-3xl p-8 animate-pulse">
-            <div className="h-16 bg-muted rounded-lg mb-8"></div>
-            <div className="h-8 bg-muted rounded-lg mb-2"></div>
-            <div className="h-4 bg-muted rounded-lg mb-8"></div>
-            <div className="h-11 bg-muted rounded-lg"></div>
-          </div>
-        </div>
-      </div>
-    )
-  }
-
-  if (isUserLoggedIn) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="w-full max-w-md">
-          <div className="glass-modal rounded-3xl p-8">
-            <div className="flex justify-center mb-6">
-              <div className="w-16 h-16 rounded-2xl bg-warning/20 flex items-center justify-center">
-                <AlertCircle className="w-8 h-8 text-warning" />
-              </div>
-            </div>
-            <h1 className="text-2xl font-bold text-center mb-2">Already Logged In</h1>
-            <p className="text-muted text-center mb-8">
-              You're already logged into your account. If you want to change your password, please access it from your
-              account settings.
-            </p>
-            <Link href="/client/dashboard">
-              <Button className="w-full bg-brand hover:bg-brand-hover text-white h-11">
-                Go to Dashboard
-                <ArrowRight className="ml-2 w-4 h-4" />
-              </Button>
-            </Link>
-          </div>
-        </div>
-      </div>
-    )
   }
 
   if (success) {
@@ -203,12 +103,7 @@ export default function ForgotPasswordPage() {
                 </p>
               </div>
 
-              <Button
-                onClick={handleResend}
-                variant="outline"
-                className="w-full h-11 bg-transparent"
-                disabled={loading}
-              >
+              <Button onClick={handleResend} variant="outline" className="w-full h-11" disabled={loading}>
                 {loading ? "Sending..." : "Resend Email"}
               </Button>
 
@@ -247,10 +142,7 @@ export default function ForgotPasswordPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-4 rounded-xl bg-error/10 border border-error/20 text-error text-sm flex items-start gap-3">
-                <AlertCircle className="w-5 h-5 flex-shrink-0 mt-0.5" />
-                <span>{error}</span>
-              </div>
+              <div className="p-4 rounded-xl bg-error/10 border border-error/20 text-error text-sm">{error}</div>
             )}
 
             <div className="space-y-2">
@@ -262,19 +154,14 @@ export default function ForgotPasswordPage() {
                   type="email"
                   placeholder="you@example.com"
                   value={email}
-                  onChange={(e) => validateEmail(e.target.value)}
-                  className={`pl-10 h-11 ${!emailValid && email ? "border-error" : ""}`}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="pl-10 h-11"
                   required
                 />
               </div>
-              {email && !emailValid && <p className="text-xs text-error">Please enter a valid email address</p>}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-brand hover:bg-brand-hover text-white h-11"
-              disabled={loading || !emailValid}
-            >
+            <Button type="submit" className="w-full bg-brand hover:bg-brand-hover text-white h-11" disabled={loading}>
               {loading ? "Sending..." : "Send Reset Link"}
               {!loading && <ArrowRight className="ml-2 w-4 h-4" />}
             </Button>
