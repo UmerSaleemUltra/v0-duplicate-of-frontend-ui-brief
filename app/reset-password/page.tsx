@@ -28,28 +28,33 @@ function ResetPasswordForm() {
     const tokenParam = searchParams.get("token")
     const userIdParam = searchParams.get("userId")
 
-    if (!tokenParam || !userIdParam) {
-      const checkAuth = async () => {
-        try {
-          const { authService } = await import("@/lib/auth")
-          const currentUser = await authService.getCurrentUser()
-          if (currentUser) {
-            if (currentUser.role === "admin") {
-              router.push("/admin")
-            } else {
-              router.push("/client/dashboard")
-            }
+    if (tokenParam && userIdParam) {
+      // Valid reset link - allow page access regardless of auth status
+      setToken(tokenParam)
+      setUserId(userIdParam)
+      setAuthChecked(true)
+      return
+    }
+
+    // No reset link - check if user is logged in and redirect
+    const checkAuth = async () => {
+      try {
+        const { authService } = await import("@/lib/auth")
+        const currentUser = await authService.getCurrentUser()
+        if (currentUser) {
+          if (currentUser.role === "admin") {
+            router.push("/admin")
           } else {
-            setAuthChecked(true)
+            router.push("/client/dashboard")
           }
-        } catch {
+        } else {
           setAuthChecked(true)
         }
+      } catch {
+        setAuthChecked(true)
       }
-      checkAuth()
-    } else {
-      setAuthChecked(true)
     }
+    checkAuth()
   }, [searchParams, router])
 
   useEffect(() => {
