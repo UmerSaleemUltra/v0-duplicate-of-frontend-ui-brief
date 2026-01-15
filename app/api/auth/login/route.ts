@@ -112,20 +112,25 @@ export async function POST(request: NextRequest) {
 
       if (isFirstLogin) {
         const welcomeEmail = emailTemplates.welcome(userResponse.name)
-        await sendEmail({
-          to: email,
-          subject: "Welcome to Buzz Filing! 🎉",
-          html: welcomeEmail.html,
-        })
+        if (welcomeEmail && welcomeEmail.html && welcomeEmail.subject) {
+          await sendEmail({
+            to: email,
+            subject: welcomeEmail.subject,
+            html: welcomeEmail.html,
+          })
+        }
       } else {
         const loginEmail = emailTemplates.loginNotification(userResponse.name, loginTime)
-        await sendEmail({
-          to: email,
-          subject: loginEmail.subject,
-          html: loginEmail.html,
-        })
+        if (loginEmail && loginEmail.html && loginEmail.subject) {
+          await sendEmail({
+            to: email,
+            subject: loginEmail.subject,
+            html: loginEmail.html,
+          })
+        }
       }
     } catch (emailError) {
+      console.log("[v0] Login email error:", emailError instanceof Error ? emailError.message : String(emailError))
       // Email failure is non-fatal
     }
 
