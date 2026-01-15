@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
+  const [authChecked, setAuthChecked] = useState(false)
   const [token, setToken] = useState("")
   const [userId, setUserId] = useState("")
   const [password, setPassword] = useState("")
@@ -22,6 +23,34 @@ function ResetPasswordForm() {
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    const tokenParam = searchParams.get("token")
+    const userIdParam = searchParams.get("userId")
+
+    if (!tokenParam || !userIdParam) {
+      const checkAuth = async () => {
+        try {
+          const { authService } = await import("@/lib/auth")
+          const currentUser = await authService.getCurrentUser()
+          if (currentUser) {
+            if (currentUser.role === "admin") {
+              router.push("/admin")
+            } else {
+              router.push("/client/dashboard")
+            }
+          } else {
+            setAuthChecked(true)
+          }
+        } catch {
+          setAuthChecked(true)
+        }
+      }
+      checkAuth()
+    } else {
+      setAuthChecked(true)
+    }
+  }, [searchParams, router])
 
   useEffect(() => {
     const tokenParam = searchParams.get("token")
@@ -89,6 +118,17 @@ function ResetPasswordForm() {
     } finally {
       setLoading(false)
     }
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full bg-brand/20 animate-pulse mx-auto mb-4"></div>
+          <p className="text-muted">Checking authentication...</p>
+        </div>
+      </div>
+    )
   }
 
   if (success) {

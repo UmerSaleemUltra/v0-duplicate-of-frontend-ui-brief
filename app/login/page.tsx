@@ -14,6 +14,7 @@ import { setupMultiTabSync } from "@/lib/multi-tab-sync"
 
 export default function LoginPage() {
   const router = useRouter()
+  const [authChecked, setAuthChecked] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [remember, setRemember] = useState(false)
@@ -22,6 +23,27 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [retryAfter, setRetryAfter] = useState<number | null>(null)
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { authService } = await import("@/lib/auth")
+        const currentUser = await authService.getCurrentUser()
+        if (currentUser) {
+          if (currentUser.role === "admin") {
+            router.push("/admin")
+          } else {
+            router.push("/client/dashboard")
+          }
+        } else {
+          setAuthChecked(true)
+        }
+      } catch {
+        setAuthChecked(true)
+      }
+    }
+    checkAuth()
+  }, [router])
 
   useEffect(() => {
     const cleanup = setupMultiTabSync(() => {
@@ -78,6 +100,17 @@ export default function LoginPage() {
       setError(errorMessage)
       setLoading(false)
     }
+  }
+
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full bg-brand/20 animate-pulse mx-auto mb-4"></div>
+          <p className="text-muted">Checking authentication...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

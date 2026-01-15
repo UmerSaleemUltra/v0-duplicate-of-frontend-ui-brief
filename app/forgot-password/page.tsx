@@ -1,19 +1,43 @@
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { Mail, ArrowRight, ArrowLeft, CheckCircle } from 'lucide-react'
+import { useRouter } from "next/navigation"
+import { Mail, ArrowRight, ArrowLeft, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function ForgotPasswordPage() {
+  const router = useRouter()
+  const [authChecked, setAuthChecked] = useState(false)
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const { authService } = await import("@/lib/auth")
+        const currentUser = await authService.getCurrentUser()
+        if (currentUser) {
+          if (currentUser.role === "admin") {
+            router.push("/admin")
+          } else {
+            router.push("/client/dashboard")
+          }
+        } else {
+          setAuthChecked(true)
+        }
+      } catch {
+        setAuthChecked(true)
+      }
+    }
+    checkAuth()
+  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -67,6 +91,17 @@ export default function ForgotPasswordPage() {
     }
   }
 
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="text-center">
+          <div className="w-12 h-12 rounded-full bg-brand/20 animate-pulse mx-auto mb-4"></div>
+          <p className="text-muted">Checking authentication...</p>
+        </div>
+      </div>
+    )
+  }
+
   if (success) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
@@ -103,7 +138,12 @@ export default function ForgotPasswordPage() {
                 </p>
               </div>
 
-              <Button onClick={handleResend} variant="outline" className="w-full h-11" disabled={loading}>
+              <Button
+                onClick={handleResend}
+                variant="outline"
+                className="w-full h-11 bg-transparent"
+                disabled={loading}
+              >
                 {loading ? "Sending..." : "Resend Email"}
               </Button>
 
