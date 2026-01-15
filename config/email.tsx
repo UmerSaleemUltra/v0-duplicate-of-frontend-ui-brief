@@ -569,7 +569,8 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 20px 40px; text-align: center;">
-                    <img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 150px; height: auto; margin-bottom: 20px;" />
+                    <!-- Updated logo URL to official BuzzFiling URL with www -->
+                    <img src="https://buzzfiling.com/images/buzz-filling-logo.png" alt="BuzzFiling" style="width: 160px; height: auto;" />
                   </td>
                 </tr>
                 
