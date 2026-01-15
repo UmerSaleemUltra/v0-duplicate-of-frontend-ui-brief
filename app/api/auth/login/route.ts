@@ -109,18 +109,20 @@ export async function POST(request: NextRequest) {
 
     try {
       const loginDateTime = new Date()
+      const pakistaniTime = new Date(loginDateTime.toLocaleString("en-US", { timeZone: "Asia/Karachi" }))
       const formattedLoginTime =
-        loginDateTime.toLocaleDateString("en-US", {
+        pakistaniTime.toLocaleDateString("en-US", {
           year: "numeric",
           month: "long",
           day: "numeric",
         }) +
         " at " +
-        loginDateTime.toLocaleTimeString("en-US", {
+        pakistaniTime.toLocaleTimeString("en-US", {
           hour: "numeric",
           minute: "2-digit",
           hour12: true,
-        })
+        }) +
+        " PST"
 
       if (isFirstLogin) {
         const welcomeEmail = emailTemplates.welcome(userResponse.name)
