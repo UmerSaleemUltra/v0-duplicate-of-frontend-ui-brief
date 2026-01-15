@@ -120,7 +120,7 @@ export async function POST(request: NextRequest) {
           })
         }
       } else {
-        const loginEmail = emailTemplates.loginNotification(userResponse.name, loginTime)
+        const loginEmail = emailTemplates.loginAlert(userResponse.name, loginTime)
         if (loginEmail && loginEmail.html && loginEmail.subject) {
           await sendEmail({
             to: email,
