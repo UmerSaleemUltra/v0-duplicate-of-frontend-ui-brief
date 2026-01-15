@@ -108,7 +108,19 @@ export async function POST(request: NextRequest) {
     }
 
     try {
-      const loginTime = new Date().toLocaleString()
+      const loginDateTime = new Date()
+      const formattedLoginTime =
+        loginDateTime.toLocaleDateString("en-US", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }) +
+        " at " +
+        loginDateTime.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          minute: "2-digit",
+          hour12: true,
+        })
 
       if (isFirstLogin) {
         const welcomeEmail = emailTemplates.welcome(userResponse.name)
@@ -120,7 +132,7 @@ export async function POST(request: NextRequest) {
           })
         }
       } else {
-        const loginEmail = emailTemplates.loginAlert(userResponse.name, loginTime)
+        const loginEmail = emailTemplates.loginAlert(userResponse.name, formattedLoginTime)
         if (loginEmail && loginEmail.html && loginEmail.subject) {
           await sendEmail({
             to: email,
