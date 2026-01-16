@@ -42,7 +42,6 @@ export async function POST(request: NextRequest) {
 
     const db = await getDatabase()
     const usersCollection = db.collection("users")
-    const otpCollection = db.collection("otps")
 
     // Find user
     const user = await usersCollection.findOne({ email })
@@ -53,16 +52,17 @@ export async function POST(request: NextRequest) {
 
     // Generate reset token
     const resetToken = generateOTP()
-    const expiresAt = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
 
-    // Store token in DB
-    await otpCollection.insertOne({
-      userId: user._id.toString(),
-      otp: resetToken,
-      type: "password_reset",
-      expiresAt,
-      createdAt: new Date().toISOString(),
-    })
+    await usersCollection.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          resetToken: resetToken,
+          resetTokenExpiry: resetTokenExpiry,
+        },
+      },
+    )
 
     const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://buzzfiling.com"
 

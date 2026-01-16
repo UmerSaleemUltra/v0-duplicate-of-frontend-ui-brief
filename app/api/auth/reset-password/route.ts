@@ -35,17 +35,16 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const otpCollection = db.collection("otps")
+    if (!user.resetToken || !user.resetTokenExpiry) {
+      return apiError("No reset token found. Please request a new reset link.", 400)
+    }
 
-    const otpDoc = await otpCollection.findOne({
-      userId,
-      otp: token,
-      type: "password_reset",
-      expiresAt: { $gt: new Date() },
-    })
+    if (user.resetToken !== token) {
+      return apiError("Invalid reset token", 400)
+    }
 
-    if (!otpDoc) {
-      return apiError("Invalid or expired reset token", 400)
+    if (new Date(user.resetTokenExpiry) < new Date()) {
+      return apiError("Reset token has expired. Please request a new reset link.", 400)
     }
 
     const hashedPassword = await hashPassword(newPassword)
@@ -57,10 +56,12 @@ export async function POST(request: NextRequest) {
           password: hashedPassword,
           updatedAt: new Date().toISOString(),
         },
+        $unset: {
+          resetToken: "",
+          resetTokenExpiry: "",
+        },
       },
     )
-
-    await otpCollection.deleteOne({ _id: otpDoc._id })
 
     return addSecurityHeaders(apiResponse({ message: "Password reset successfully" }))
   } catch (error) {
