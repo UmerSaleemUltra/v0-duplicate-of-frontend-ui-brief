@@ -281,49 +281,45 @@ export default function MailroomPage() {
                 return (
                   <div
                     key={item.id}
-                    className="p-3 sm:p-4 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-slate-100 transition-all duration-200"
+                    className="p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200"
                   >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                        <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
+                        <Icon className="w-5 h-5 text-white" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <div className="font-medium text-slate-900 text-sm sm:text-base">
-                          {item.subject}
-                          {item.hasAttachment && item.attachments && item.attachments.length > 0 && (
-                            <Badge variant="secondary" className="ml-2 text-xs">
-                              {item.attachments.length} file(s)
-                            </Badge>
-                          )}
-                        </div>
-                        <div className="text-xs sm:text-sm text-slate-600 break-words">
+                        <div className="font-medium text-slate-900 text-sm sm:text-base">{item.subject}</div>
+                        <div className="text-xs sm:text-sm text-slate-600 mt-1">
                           {item.from || item.sender} •{" "}
                           {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()} • {item.type}
+                          {item.hasAttachment && item.attachments && item.attachments.length > 0 && (
+                            <span> • {item.attachments.length} file(s)</span>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 mt-2">
+                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Received</Badge>
+                          {item.hasAttachment && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0 cursor-pointer"
+                                onClick={() => handleViewDocument(item.id)}
+                                title="View document"
+                              >
+                                <Eye className="w-4 h-4 cursor-pointer" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                className="h-8 w-8 p-0 cursor-pointer"
+                                onClick={() => handleDownloadDocument(item.id)}
+                                title="Download document"
+                              >
+                                <Download className="w-4 h-4 cursor-pointer" />
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 self-end sm:self-center">
-                      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Received</Badge>
-                      {item.hasAttachment && (
-                        <div className="flex gap-2">
-                          <Button
-                            variant="ghost"
-                            className="h-8 w-8 sm:h-10 sm:w-10 p-0 cursor-pointer"
-                            onClick={() => handleViewDocument(item.id)}
-                            title="View document"
-                          >
-                            <Eye className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            className="h-8 w-8 sm:h-10 sm:w-10 p-0 cursor-pointer"
-                            onClick={() => handleDownloadDocument(item.id)}
-                            title="Download document"
-                          >
-                            <Download className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" />
-                          </Button>
-                        </div>
-                      )}
                     </div>
                   </div>
                 )
