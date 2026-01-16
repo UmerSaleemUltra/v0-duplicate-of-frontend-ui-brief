@@ -22,6 +22,7 @@ export default function ClientSettingsPage() {
   })
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingUser, setIsLoadingUser] = useState(true)
+  const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false)
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -89,6 +90,8 @@ export default function ClientSettingsPage() {
   }
 
   const handleChangePassword = async () => {
+    setPasswordChangeSuccess(false)
+
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
       toast({
         title: "Error",
@@ -166,6 +169,8 @@ export default function ClientSettingsPage() {
           newPassword: "",
           confirmPassword: "",
         })
+
+        setPasswordChangeSuccess(true)
       } else {
         toast({
           title: "Error",
@@ -307,6 +312,13 @@ export default function ClientSettingsPage() {
               <Lock className="w-4 h-4 mr-2" />
               {isLoading ? "Updating..." : "Update Password"}
             </Button>
+
+            {passwordChangeSuccess && (
+              <div className="flex items-center gap-2 text-green-600 mt-3">
+                <CheckCircle2 className="w-5 h-5" />
+                <span className="text-sm font-medium">Password changed successfully!</span>
+              </div>
+            )}
           </div>
         </div>
 
