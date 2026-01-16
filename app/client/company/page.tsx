@@ -648,7 +648,22 @@ export default function CompanyPage() {
         {/* Registered Agent */}
         {hasRegisteredAgent && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Registered Agent</h2>
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-base sm:text-lg font-semibold">Registered Agent</h2>
+              <Badge
+                className={
+                  companyData.registeredAgentStatus === "active"
+                    ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
+                    : companyData.registeredAgentStatus === "inactive"
+                      ? "bg-red-50 text-red-700 border-red-200 capitalize"
+                      : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
+                }
+              >
+                {companyData.registeredAgentStatus && companyData.registeredAgentStatus.trim() !== ""
+                  ? companyData.registeredAgentStatus.toLowerCase()
+                  : "pending"}
+              </Badge>
+            </div>
             <div className="space-y-4">
               <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Registered Agent</span>
@@ -685,24 +700,6 @@ export default function CompanyPage() {
                     : new Date(
                         new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
                       ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-                </span>
-              </div>
-
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Status</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  <Badge
-                    className={
-                      companyData.registeredAgentStatus === "active"
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-200 capitalize"
-                        : companyData.registeredAgentStatus === "inactive"
-                          ? "bg-red-50 text-red-700 border-red-200 capitalize"
-                          : "bg-yellow-50 text-yellow-700 border-yellow-200 capitalize"
-                    }
-                  >
-                    {(companyData.registeredAgentStatus || "pending").charAt(0).toUpperCase() +
-                      (companyData.registeredAgentStatus || "pending").slice(1)}
-                  </Badge>
                 </span>
               </div>
             </div>
