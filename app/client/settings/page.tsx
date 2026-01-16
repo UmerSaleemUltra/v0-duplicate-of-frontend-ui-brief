@@ -335,32 +335,32 @@ export default function ClientSettingsPage() {
           </div>
 
           <div className="space-y-4">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 border-b border-slate-100 gap-1 sm:gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center py-3 border-b border-slate-100 gap-1 sm:gap-3">
               <div className="flex items-center gap-3">
                 <CheckCircle2 className="w-5 h-5 text-slate-400 cursor-pointer" />
                 <span className="text-sm font-medium text-slate-700">Account Status</span>
               </div>
-              <span className="text-sm font-semibold text-green-600 ml-8 sm:ml-0">Active</span>
+              <span className="text-sm font-semibold text-green-600 ml-8 sm:ml-3">Active</span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 border-b border-slate-100 gap-1 sm:gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center py-3 border-b border-slate-100 gap-1 sm:gap-3">
               <div className="flex items-center gap-3">
                 <Calendar className="w-5 h-5 text-slate-400 cursor-pointer" />
                 <span className="text-sm font-medium text-slate-700">Member Since</span>
               </div>
-              <span className="text-sm text-slate-600 ml-8 sm:ml-0">
+              <span className="text-sm text-slate-600 ml-8 sm:ml-3">
                 {currentUser?.createdAt ? formatMemberSince(currentUser.createdAt) : "January 15, 2024"}
               </span>
             </div>
 
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 gap-1 sm:gap-3">
+            <div className="flex flex-col sm:flex-row sm:items-center py-3 gap-1 sm:gap-3">
               <div className="flex items-center gap-3 flex-shrink-0">
                 <Hash className="w-5 h-5 text-slate-400 cursor-pointer" />
                 <span className="text-sm font-medium text-slate-700">Account ID</span>
               </div>
-              <div className="flex items-center gap-2 ml-8 sm:ml-0">
+              <div className="flex items-center gap-2 ml-8 sm:ml-3">
                 <span
-                  className="text-sm text-slate-600 font-mono break-all sm:truncate sm:max-w-[200px] md:max-w-[280px] lg:max-w-full"
+                  className="text-sm text-slate-600 font-mono break-all sm:break-normal"
                   title={currentUser?.id || "USR-2024-001234"}
                 >
                   {currentUser?.id || "USR-2024-001234"}
