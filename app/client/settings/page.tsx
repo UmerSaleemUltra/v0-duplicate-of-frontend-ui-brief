@@ -148,20 +148,23 @@ export default function ClientSettingsPage() {
         const responseData = result.data || result
 
         if (responseData.token && responseData.user) {
-          authService.setToken(responseData.token)
-          authService.setUser(responseData.user)
+          authService.setAuth(responseData.token, {
+            id: responseData.user.id,
+            email: responseData.user.email,
+            name: responseData.user.name,
+            role: responseData.user.role,
+          })
         }
+
+        toast({
+          title: "Success",
+          description: "Your password has been changed successfully. Your session has been updated.",
+        })
 
         setPasswordData({
           currentPassword: "",
           newPassword: "",
           confirmPassword: "",
-        })
-
-        toast({
-          title: "Success",
-          description: "Your password has been changed successfully. Your session has been updated.",
-          variant: "default",
         })
       } else {
         toast({
