@@ -13,7 +13,7 @@ export interface LoginCredentials {
   password: string
 }
 
-const setCookie = (name: string, value: string, days = 7) => {
+const setCookie = (name: string, value: string, days = 3) => {
   if (typeof window === "undefined") return
 
   const expires = new Date()
@@ -97,8 +97,8 @@ export const authService = {
       inMemoryUser = authUser
 
       const tokenKey = getAuthTokenKey(authUser.role)
-      setCookie(tokenKey, tokenData, 7)
-      setCookie("auth_user", encodeURIComponent(JSON.stringify(authUser)), 7)
+      setCookie(tokenKey, tokenData, 3)
+      setCookie("auth_user", encodeURIComponent(JSON.stringify(authUser)), 3)
 
       return { success: true, user: authUser }
     } catch (error: any) {
@@ -214,8 +214,8 @@ export const authService = {
       inMemoryUser = authUser
 
       const tokenKey = getAuthTokenKey(authUser.role)
-      setCookie(tokenKey, tokenData, 7)
-      setCookie("auth_user", encodeURIComponent(JSON.stringify(authUser)), 7)
+      setCookie(tokenKey, tokenData, 3)
+      setCookie("auth_user", encodeURIComponent(JSON.stringify(authUser)), 3)
 
       return { success: true, user: authUser }
     } catch (error: any) {
@@ -229,8 +229,8 @@ export const authService = {
     inMemoryUser = user
 
     const tokenKey = getAuthTokenKey(user.role)
-    setCookie(tokenKey, token, 7)
-    setCookie("auth_user", encodeURIComponent(JSON.stringify(user)), 7)
+    setCookie(tokenKey, token, 3)
+    setCookie("auth_user", encodeURIComponent(JSON.stringify(user)), 3)
   },
 
   refreshUser: async (): Promise<AuthUser | null> => {
