@@ -204,13 +204,13 @@ export default function ClientSettingsPage() {
         </div>
 
         {/* Personal Information */}
-        <div className="bg-white border border-slate-200 rounded-lg p-8 transition-all duration-200 hover:shadow-lg hover:border-primary/50">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+        <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-8 transition-all duration-200 hover:shadow-lg hover:border-primary/50">
+          <div className="flex items-start sm:items-center gap-3 mb-6">
+            <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center cursor-pointer">
               <User className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900">Personal Information</h2>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Personal Information</h2>
               <p className="text-sm text-slate-600">Your personal details</p>
             </div>
           </div>
@@ -257,13 +257,13 @@ export default function ClientSettingsPage() {
         </div>
 
         {/* Change Password */}
-        <div className="bg-white border border-slate-200 rounded-lg p-8 transition-all duration-200 hover:shadow-lg hover:border-primary/50">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+        <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-8 transition-all duration-200 hover:shadow-lg hover:border-primary/50">
+          <div className="flex items-start sm:items-center gap-3 mb-6">
+            <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center cursor-pointer">
               <Lock className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900">Change Password</h2>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Change Password</h2>
               <p className="text-sm text-slate-600">Update your password to keep your account secure</p>
             </div>
           </div>
@@ -308,7 +308,7 @@ export default function ClientSettingsPage() {
               />
             </div>
 
-            <Button onClick={handleChangePassword} disabled={isLoading} className="h-10">
+            <Button onClick={handleChangePassword} disabled={isLoading} className="h-10 cursor-pointer">
               <Lock className="w-4 h-4 mr-2" />
               {isLoading ? "Updating..." : "Update Password"}
             </Button>
@@ -323,13 +323,13 @@ export default function ClientSettingsPage() {
         </div>
 
         {/* Account Information */}
-        <div className="bg-white border border-slate-200 rounded-lg p-8 transition-all duration-200 hover:shadow-lg hover:border-primary/50">
-          <div className="flex items-center gap-3 mb-6">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+        <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-8 transition-all duration-200 hover:shadow-lg hover:border-primary/50">
+          <div className="flex items-start sm:items-center gap-3 mb-6">
+            <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center cursor-pointer">
               <Info className="w-5 h-5 text-white" />
             </div>
-            <div>
-              <h2 className="text-xl font-semibold text-slate-900">Account Information</h2>
+            <div className="min-w-0">
+              <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Account Information</h2>
               <p className="text-sm text-slate-600">View your account details</p>
             </div>
           </div>
@@ -337,7 +337,7 @@ export default function ClientSettingsPage() {
           <div className="space-y-4">
             <div className="flex items-center justify-between py-3 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <CheckCircle2 className="w-5 h-5 text-slate-400" />
+                <CheckCircle2 className="w-5 h-5 text-slate-400 cursor-pointer" />
                 <span className="text-sm font-medium text-slate-700">Account Status</span>
               </div>
               <span className="text-sm font-semibold text-green-600">Active</span>
@@ -345,7 +345,7 @@ export default function ClientSettingsPage() {
 
             <div className="flex items-center justify-between py-3 border-b border-slate-100">
               <div className="flex items-center gap-3">
-                <Calendar className="w-5 h-5 text-slate-400" />
+                <Calendar className="w-5 h-5 text-slate-400 cursor-pointer" />
                 <span className="text-sm font-medium text-slate-700">Member Since</span>
               </div>
               <span className="text-sm text-slate-600">
@@ -355,7 +355,7 @@ export default function ClientSettingsPage() {
 
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between py-3 gap-2">
               <div className="flex items-center gap-3 flex-shrink-0">
-                <Hash className="w-5 h-5 text-slate-400" />
+                <Hash className="w-5 h-5 text-slate-400 cursor-pointer" />
                 <span className="text-sm font-medium text-slate-700">Account ID</span>
               </div>
               <div className="flex items-center gap-2 sm:justify-end">
@@ -368,7 +368,7 @@ export default function ClientSettingsPage() {
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="h-7 w-7 p-0 flex-shrink-0"
+                  className="h-7 w-7 p-0 flex-shrink-0 cursor-pointer"
                   onClick={() => {
                     navigator.clipboard.writeText(currentUser?.id || "USR-2024-001234")
                     toast({
