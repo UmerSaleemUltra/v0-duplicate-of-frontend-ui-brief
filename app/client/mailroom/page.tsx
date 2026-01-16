@@ -5,6 +5,7 @@ import { Mail, Eye, Search, FileText, Building2, User, Download } from "lucide-r
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Badge } from "@/components/ui/badge"
 import { useState, useEffect } from "react"
 import type { MailItem } from "@/lib/types"
 import { useSelectedCompany } from "@/lib/company-context"
@@ -57,7 +58,6 @@ export default function MailroomPage() {
         type: mail.type || "general",
       }))
 
-      console.log("[v0] Loaded mail items:", normalizedItems.length)
       setMailItems(normalizedItems)
       setFilteredItems(normalizedItems)
     } catch (error) {
@@ -165,6 +165,9 @@ export default function MailroomPage() {
   }
 
   const totalMail = mailItems.length
+  const mailWithAttachments = mailItems.filter(
+    (m) => m.hasAttachment && m.attachments && m.attachments.length > 0,
+  ).length
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -194,46 +197,58 @@ export default function MailroomPage() {
 
   return (
     <ClientShell>
-      <div className="space-y-8">
+      <div className="space-y-6 md:space-y-8">
         <div className="flex items-center gap-3">
-          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
-            <Mail className="w-6 h-6 text-white" />
+          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg flex-shrink-0">
+            <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
           </div>
-          <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold">Mailroom</h1>
-            <p className="text-slate-600 text-sm sm:text-base">View and manage official correspondence</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Mailroom</h1>
+            <p className="text-slate-600 text-xs sm:text-sm md:text-base">View and manage official correspondence</p>
           </div>
         </div>
 
-        <div className="grid md:grid-cols-1 gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-8 transition-shadow duration-200 hover:shadow-lg">
+        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
-                <Mail className="w-5 h-5 text-white" />
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
+                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
               </div>
-              <div>
-                <div className="text-2xl font-semibold text-slate-900">{totalMail}</div>
-                <div className="text-sm text-slate-600">Total Mail</div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xl sm:text-2xl font-semibold text-slate-900">{totalMail}</div>
+                <div className="text-xs sm:text-sm text-slate-600">Total Mail</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
+                <Download className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <div className="min-w-0 flex-1">
+                <div className="text-xl sm:text-2xl font-semibold text-slate-900">{mailWithAttachments}</div>
+                <div className="text-xs sm:text-sm text-slate-600">With Attachments</div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-6 transition-shadow duration-200 hover:shadow-lg">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 transition-shadow duration-200 hover:shadow-lg">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   placeholder="Search mail by subject or sender..."
-                  className="pl-10 h-10 border-slate-200 focus:border-primary focus:ring-primary"
+                  className="pl-10 h-10 border-slate-200 focus:border-primary focus:ring-primary text-sm"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] h-10 border-slate-200">
+              <SelectTrigger className="w-full sm:w-[180px] h-10 border-slate-200 cursor-pointer">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
@@ -250,15 +265,13 @@ export default function MailroomPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-lg font-semibold mb-4">Your Mail</h2>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Your Mail</h2>
           {filteredItems.length === 0 ? (
             <div className="text-center py-12">
-              <div className="w-16 h-16 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center mx-auto mb-4 shadow-lg">
-                <Mail className="w-8 h-8 text-white" />
-              </div>
-              <p className="text-slate-900 font-medium">No mail items found</p>
-              <p className="text-sm text-slate-600 mt-1">Mail sent to your company will appear here</p>
+              <Mail className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
+              <p className="text-slate-600 mb-2 text-sm sm:text-base">No mail items found</p>
+              <p className="text-xs sm:text-sm text-slate-500">Mail sent to your company will appear here</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -268,50 +281,49 @@ export default function MailroomPage() {
                 return (
                   <div
                     key={item.id}
-                    className="p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200"
+                    className="p-3 sm:p-4 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-slate-100 transition-all duration-200"
                   >
-                    <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                        <Icon className="w-5 h-5 text-white" />
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
+                        <Icon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="font-medium text-slate-900">{item.subject}</div>
-                        <div className="text-sm text-slate-600">
+                      <div className="min-w-0 flex-1">
+                        <div className="font-medium text-slate-900 text-sm sm:text-base">
+                          {item.subject}
+                          {item.hasAttachment && item.attachments && item.attachments.length > 0 && (
+                            <Badge variant="secondary" className="ml-2 text-xs">
+                              {item.attachments.length} file(s)
+                            </Badge>
+                          )}
+                        </div>
+                        <div className="text-xs sm:text-sm text-slate-600 break-words">
                           {item.from || item.sender} •{" "}
                           {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()} • {item.type}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between mt-3">
-                      <div className="flex items-center gap-2">
-                        {item.hasAttachment && item.attachments && item.attachments.length > 0 && (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
-                            {item.attachments.length} file(s)
-                          </span>
-                        )}
-                      </div>
-                      <div className="flex gap-2">
-                        {item.hasAttachment && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 cursor-pointer"
-                              onClick={() => handleViewDocument(item.id)}
-                              title="View document"
-                            >
-                              <Eye className="w-4 h-4 cursor-pointer" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 cursor-pointer"
-                              onClick={() => handleDownloadDocument(item.id)}
-                              title="Download document"
-                            >
-                              <Download className="w-4 h-4 cursor-pointer" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
+                    <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 self-end sm:self-center">
+                      <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Received</Badge>
+                      {item.hasAttachment && (
+                        <div className="flex gap-2">
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 sm:h-10 sm:w-10 p-0 cursor-pointer"
+                            onClick={() => handleViewDocument(item.id)}
+                            title="View document"
+                          >
+                            <Eye className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            className="h-8 w-8 sm:h-10 sm:w-10 p-0 cursor-pointer"
+                            onClick={() => handleDownloadDocument(item.id)}
+                            title="Download document"
+                          >
+                            <Download className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" />
+                          </Button>
+                        </div>
+                      )}
                     </div>
                   </div>
                 )
