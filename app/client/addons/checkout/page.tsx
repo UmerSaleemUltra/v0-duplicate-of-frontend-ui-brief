@@ -348,7 +348,7 @@ function AddonCheckoutContent() {
             variant="ghost"
             size="sm"
             onClick={handleBackToPaymentMethods}
-            className="text-slate-600"
+            className="text-slate-600 cursor-pointer"
           >
             Change Method
           </Button>
@@ -435,12 +435,16 @@ function AddonCheckoutContent() {
             type="button"
             variant="outline"
             onClick={handleBackToPaymentMethods}
-            className="flex-1 bg-transparent"
+            className="flex-1 bg-transparent cursor-pointer"
             disabled={isProcessing}
           >
             Back
           </Button>
-          <Button type="submit" disabled={isProcessing} className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+          <Button
+            type="submit"
+            disabled={isProcessing}
+            className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer"
+          >
             {isProcessing ? "Processing..." : `Pay $${addon?.price}`}
           </Button>
         </div>
@@ -473,7 +477,7 @@ function AddonCheckoutContent() {
             variant="ghost"
             size="sm"
             onClick={handleBackToPaymentMethods}
-            className="text-slate-600"
+            className="text-slate-600 cursor-pointer"
           >
             Change Method
           </Button>
@@ -541,7 +545,7 @@ function AddonCheckoutContent() {
             type="button"
             variant="outline"
             onClick={handleBackToPaymentMethods}
-            className="flex-1 bg-transparent"
+            className="flex-1 bg-transparent cursor-pointer"
             disabled={isProcessing}
           >
             Back
@@ -549,7 +553,7 @@ function AddonCheckoutContent() {
           <Button
             type="submit"
             disabled={isProcessing || !transactionId}
-            className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+            className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer"
           >
             {isProcessing ? "Submitting..." : "Submit Reference"}
           </Button>
@@ -577,7 +581,7 @@ function AddonCheckoutContent() {
         <div className="flex items-center justify-center min-h-[400px]">
           <div className="text-center">
             <p className="text-slate-600">Addon not found</p>
-            <Button onClick={() => router.push("/client/addons")} className="mt-4">
+            <Button onClick={() => router.push("/client/addons")} className="mt-4 cursor-pointer">
               Back to Addons
             </Button>
           </div>
@@ -589,8 +593,8 @@ function AddonCheckoutContent() {
   return (
     <ClientShell>
       <div className="max-w-4xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => router.back()} className="gap-2">
-          <ArrowLeft className="w-4 h-4" />
+        <Button variant="ghost" onClick={() => router.back()} className="gap-2 cursor-pointer">
+          <ArrowLeft className="w-4 h-4 cursor-pointer" />
           Back to Addons
         </Button>
 

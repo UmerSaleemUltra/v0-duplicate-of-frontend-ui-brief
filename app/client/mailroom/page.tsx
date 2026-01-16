@@ -268,33 +268,34 @@ export default function MailroomPage() {
                 return (
                   <div
                     key={item.id}
-                    className="p-4 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-100 transition-all duration-200 gap-3"
+                    className="p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200"
                   >
-                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
+                    <div className="flex items-start gap-3">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
                         <Icon className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-slate-900 break-words sm:truncate">{item.subject}</div>
-                        <div className="text-sm text-slate-600 break-words sm:truncate">
+                        <div className="font-medium text-slate-900">{item.subject}</div>
+                        <div className="text-sm text-slate-600">
                           {item.from || item.sender} •{" "}
                           {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()} • {item.type}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 pl-13 sm:pl-0">
-                      {item.hasAttachment && item.attachments && item.attachments.length > 0 && (
-                        <div className="flex items-center gap-1 text-xs text-slate-600">
-                          <FileText className="w-3 h-3" />
-                          <span>{item.attachments.length} file(s)</span>
-                        </div>
-                      )}
+                    <div className="flex items-center justify-between mt-3">
+                      <div className="flex items-center gap-2">
+                        {item.hasAttachment && item.attachments && item.attachments.length > 0 && (
+                          <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 text-green-700 border border-green-200">
+                            {item.attachments.length} file(s)
+                          </span>
+                        )}
+                      </div>
                       <div className="flex gap-2">
                         {item.hasAttachment && (
                           <>
                             <Button
                               variant="ghost"
-                              className="h-10 w-10 p-0 cursor-pointer"
+                              className="h-8 w-8 p-0 cursor-pointer"
                               onClick={() => handleViewDocument(item.id)}
                               title="View document"
                             >
@@ -302,7 +303,7 @@ export default function MailroomPage() {
                             </Button>
                             <Button
                               variant="ghost"
-                              className="h-10 w-10 p-0 cursor-pointer"
+                              className="h-8 w-8 p-0 cursor-pointer"
                               onClick={() => handleDownloadDocument(item.id)}
                               title="Download document"
                             >

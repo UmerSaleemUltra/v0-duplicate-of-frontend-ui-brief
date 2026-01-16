@@ -186,7 +186,7 @@ export default function ClientAddonsPage() {
                         <ul className="space-y-2">
                           {addon.features.map((feature, index) => (
                             <li key={index} className="text-sm text-slate-600 flex items-start gap-2">
-                              <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
+                              <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5 cursor-pointer" />
                               <span>{feature}</span>
                             </li>
                           ))}
@@ -197,16 +197,16 @@ export default function ClientAddonsPage() {
                     <Button
                       onClick={() => handleBuyAddon(addon.id, addon)}
                       disabled={disabled}
-                      className={`w-full mt-4 gap-2 ${disabled ? "cursor-not-allowed" : "bg-gradient-to-r from-[#880000] to-[#ff0d13]"}`}
+                      className={`w-full mt-4 gap-2 cursor-pointer ${disabled ? "cursor-not-allowed" : "bg-gradient-to-r from-[#880000] to-[#ff0d13]"}`}
                     >
                       {disabled ? (
                         <>
-                          <Check className="w-4 h-4" />
+                          <Check className="w-4 h-4 cursor-pointer" />
                           Already Included
                         </>
                       ) : (
                         <>
-                          <ShoppingCart className="w-4 h-4" />
+                          <ShoppingCart className="w-4 h-4 cursor-pointer" />
                           Buy Now
                         </>
                       )}
