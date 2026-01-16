@@ -290,15 +290,19 @@ export default function DocumentsPage() {
                   <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 self-end sm:self-center">
                     <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Ready</Badge>
                     <div className="flex gap-2">
-                      <Button variant="ghost" className="h-8 w-8 sm:h-10 sm:w-10 p-0" onClick={() => handleView(doc)}>
-                        <Eye className="w-3 h-3 sm:w-4 sm:h-4" />
+                      <Button
+                        variant="ghost"
+                        className="h-8 w-8 sm:h-10 sm:w-10 p-0 cursor-pointer"
+                        onClick={() => handleView(doc)}
+                      >
+                        <Eye className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" />
                       </Button>
                       <Button
                         variant="ghost"
-                        className="h-8 w-8 sm:h-10 sm:w-10 p-0"
+                        className="h-8 w-8 sm:h-10 sm:w-10 p-0 cursor-pointer"
                         onClick={() => handleDownload(doc)}
                       >
-                        <Download className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <Download className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" />
                       </Button>
                     </div>
                   </div>

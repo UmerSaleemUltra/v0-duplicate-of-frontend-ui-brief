@@ -270,7 +270,10 @@ export default function CompanyPage() {
           <div className="text-center">
             <AlertCircle className="w-12 h-12 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-600 mb-4">{error}</p>
-            <Button onClick={() => window.location.reload()} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]">
+            <Button
+              onClick={() => window.location.reload()}
+              className="bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer"
+            >
               Retry
             </Button>
           </div>

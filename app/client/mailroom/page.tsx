@@ -294,19 +294,19 @@ export default function MailroomPage() {
                           <>
                             <Button
                               variant="ghost"
-                              className="h-10 w-10 p-0"
+                              className="h-10 w-10 p-0 cursor-pointer"
                               onClick={() => handleViewDocument(item.id)}
                               title="View document"
                             >
-                              <Eye className="w-4 h-4" />
+                              <Eye className="w-4 h-4 cursor-pointer" />
                             </Button>
                             <Button
                               variant="ghost"
-                              className="h-10 w-10 p-0"
+                              className="h-10 w-10 p-0 cursor-pointer"
                               onClick={() => handleDownloadDocument(item.id)}
                               title="Download document"
                             >
-                              <Download className="w-4 h-4" />
+                              <Download className="w-4 h-4 cursor-pointer" />
                             </Button>
                           </>
                         )}

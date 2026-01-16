@@ -505,14 +505,14 @@ export default function ClientDashboard() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-8 w-8 -mr-2 -mt-2"
+                  className="h-8 w-8 -mr-2 -mt-2 cursor-pointer"
                   onClick={() => handleCopy(businessName, setCopied)}
                   title="Copy business name"
                 >
                   {copied ? (
-                    <Check className="w-4 h-4 text-green-600" />
+                    <Check className="w-4 h-4 text-green-600 cursor-pointer" />
                   ) : (
-                    <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                    <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-pointer" />
                   )}
                 </Button>
               </div>
@@ -542,13 +542,13 @@ export default function ClientDashboard() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 -mr-2 -mt-2"
+                    className="h-8 w-8 -mr-2 -mt-2 cursor-pointer"
                     onClick={() => handleCopy(company.ein, setCopiedEIN)}
                   >
                     {copiedEIN ? (
-                      <Check className="w-4 h-4 text-green-600" />
+                      <Check className="w-4 h-4 text-green-600 cursor-pointer" />
                     ) : (
-                      <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                      <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-pointer" />
                     )}
                   </Button>
                 )}
@@ -572,13 +572,13 @@ export default function ClientDashboard() {
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="h-8 w-8 -mr-2 -mt-2"
+                    className="h-8 w-8 -mr-2 -mt-2 cursor-pointer"
                     onClick={() => handleCopy(businessId, setCopiedBusinessId)}
                   >
                     {copiedBusinessId ? (
-                      <Check className="w-4 h-4 text-green-600" />
+                      <Check className="w-4 h-4 text-green-600 cursor-pointer" />
                     ) : (
-                      <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600" />
+                      <Copy className="w-4 h-4 text-slate-400 hover:text-slate-600 cursor-pointer" />
                     )}
                   </Button>
                 )}
