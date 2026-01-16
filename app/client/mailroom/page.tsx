@@ -268,21 +268,21 @@ export default function MailroomPage() {
                 return (
                   <div
                     key={item.id}
-                    className="p-4 rounded-lg bg-slate-50 flex items-center justify-between hover:bg-slate-100 transition-all duration-200"
+                    className="p-4 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between hover:bg-slate-100 transition-all duration-200 gap-3"
                   >
-                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
                       <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
                         <Icon className="w-5 h-5 text-white" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="font-medium text-slate-900 truncate">{item.subject}</div>
-                        <div className="text-sm text-slate-600 truncate">
+                        <div className="font-medium text-slate-900 break-words sm:truncate">{item.subject}</div>
+                        <div className="text-sm text-slate-600 break-words sm:truncate">
                           {item.from || item.sender} •{" "}
                           {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()} • {item.type}
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex items-center justify-between sm:justify-end gap-3 flex-shrink-0 pl-13 sm:pl-0">
                       {item.hasAttachment && item.attachments && item.attachments.length > 0 && (
                         <div className="flex items-center gap-1 text-xs text-slate-600">
                           <FileText className="w-3 h-3" />
