@@ -521,55 +521,42 @@ export default function CompanyPage() {
         {hasTaxInfo && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
             <h2 className="text-base sm:text-lg font-semibold mb-4">Tax Information</h2>
-            <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-              {/* Tax Classification - Always show if available */}
+            <div className="space-y-3">
+              {/* Tax Classification */}
               {companyData?.taxClassification && companyData.taxClassification !== "Not Yet" && (
-                <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                    <Building className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs sm:text-sm text-slate-600 mb-1">Tax Classification</div>
-                    <p className="text-sm sm:text-base font-semibold text-slate-900">{companyData.taxClassification}</p>
-                  </div>
+                <div className="flex flex-col py-2 gap-2">
+                  <span className="text-slate-600 text-sm sm:text-base text-left">Tax Classification</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                    {companyData.taxClassification}
+                  </span>
                 </div>
               )}
 
               {/* Annual Report Filing Date */}
               {companyData?.annualReportFilingDate && (
-                <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs sm:text-sm text-slate-600 mb-1">Annual Report Filing Date</div>
-                    <p className="text-sm sm:text-base font-semibold text-slate-900">
-                      {new Date(companyData.annualReportFilingDate).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </div>
+                <div className="flex flex-col py-2 gap-2">
+                  <span className="text-slate-600 text-sm sm:text-base text-left">Annual Report Filing Date</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                    {new Date(companyData.annualReportFilingDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
                 </div>
               )}
 
               {/* IRS Filing Date */}
               {companyData?.irsFilingDate && (
-                <div className="flex items-start gap-3 p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                    <Calendar className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <div className="text-xs sm:text-sm text-slate-600 mb-1">IRS Filing Date</div>
-                    <p className="text-sm sm:text-base font-semibold text-slate-900">
-                      {new Date(companyData.irsFilingDate).toLocaleDateString("en-US", {
-                        year: "numeric",
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
-                  </div>
+                <div className="flex flex-col py-2 gap-2">
+                  <span className="text-slate-600 text-sm sm:text-base text-left">IRS Filing Date</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                    {new Date(companyData.irsFilingDate).toLocaleDateString("en-US", {
+                      year: "numeric",
+                      month: "long",
+                      day: "numeric",
+                    })}
+                  </span>
                 </div>
               )}
             </div>
