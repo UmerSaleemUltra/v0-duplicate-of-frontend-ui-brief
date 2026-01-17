@@ -162,7 +162,7 @@ function VideoCard({ testimonial }: { testimonial: VideoTestimonial }) {
           <>
             <div className="absolute inset-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]">
               <img
-                src={thumbnailUrl || "/placeholder.svg"}
+                src={thumbnailUrl || `https://img.youtube.com/vi/${testimonial.videoId}/maxresdefault.jpg`}
                 alt={`${testimonial.name} testimonial`}
                 className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105 opacity-90"
                 onError={(e) => {

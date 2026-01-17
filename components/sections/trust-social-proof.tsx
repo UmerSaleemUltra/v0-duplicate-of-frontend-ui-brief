@@ -304,13 +304,15 @@ const TrustSocialProof = () => {
                 {whatsappFeedback.map((feedback, index) => (
                   <div key={index} className="relative group">
                     <div className="overflow-hidden rounded-2xl shadow-xl hover:shadow-2xl transition-shadow">
-                      <Image
-                        src={feedback.screenshot || "/placeholder.svg"}
-                        alt={feedback.alt}
-                        width={740}
-                        height={368}
-                        className="w-full h-auto object-cover"
-                      />
+                      {feedback.screenshot && (
+                        <Image
+                          src={feedback.screenshot || "/placeholder.svg"}
+                          alt={feedback.alt}
+                          width={740}
+                          height={368}
+                          className="w-full h-auto object-cover"
+                        />
+                      )}
                     </div>
                   </div>
                 ))}

@@ -13,7 +13,6 @@ const regions = [
   { name: "Canada", code: "ca", flagUrl: "https://flagcdn.com/w40/ca.png" },
 ]
 
-
 const GlobalFounders = () => {
   return (
     <section className="py-16 md:py-20 lg:py-24 relative overflow-hidden">
@@ -48,13 +47,15 @@ const GlobalFounders = () => {
               {region.code ? (
                 <>
                   <div className="relative w-6 h-6 rounded-sm overflow-hidden">
-                    <Image
-                      src={region.flagUrl! || "/placeholder.svg"}
-                      alt={`${region.name} flag`}
-                      width={24}
-                      height={24}
-                      className="object-cover"
-                    />
+                    {region.flagUrl && (
+                      <Image
+                        src={region.flagUrl || "/placeholder.svg"}
+                        alt={`${region.name} flag`}
+                        width={24}
+                        height={24}
+                        className="object-cover"
+                      />
+                    )}
                   </div>
                 </>
               ) : (

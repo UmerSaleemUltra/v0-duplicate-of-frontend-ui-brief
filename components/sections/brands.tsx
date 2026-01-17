@@ -40,15 +40,17 @@ export default function Brands() {
               <div
                 className={`relative w-full h-[clamp(28px,6vw,72px)] ${b.name === "Slash" ? "max-w-[120px]" : "max-w-[200px]"}`}
               >
-                <Image
-                  src={b.logo || "/placeholder.svg"}
-                  alt={`${b.name} logo`}
-                  fill
-                  className="object-contain transition-opacity brightness-0 invert"
-                  sizes="(max-width: 640px) 140px, (max-width: 1024px) 180px, 200px"
-                  loading="lazy"
-                  decoding="async"
-                />
+                {b.logo && (
+                  <Image
+                    src={b.logo || "/placeholder.svg"}
+                    alt={`${b.name} logo`}
+                    fill
+                    className="object-contain transition-opacity brightness-0 invert"
+                    sizes="(max-width: 640px) 140px, (max-width: 1024px) 180px, 200px"
+                    loading="lazy"
+                    decoding="async"
+                  />
+                )}
               </div>
             </div>
           ))}
@@ -60,14 +62,16 @@ export default function Brands() {
             {brands.concat(brands).map((b, i) => (
               <div key={`${b.name}-${i}`} className="flex-shrink-0 flex items-center justify-center">
                 <div className={`relative h-[40px] ${b.name === "Slash" ? "w-[70px]" : "w-[100px]"}`}>
-                  <Image
-                    src={b.logo || "/placeholder.svg"}
-                    alt={`${b.name} logo`}
-                    fill
-                    className="object-contain opacity-90 brightness-0 invert"
-                    loading="lazy"
-                    decoding="async"
-                  />
+                  {b.logo && (
+                    <Image
+                      src={b.logo || "/placeholder.svg"}
+                      alt={`${b.name} logo`}
+                      fill
+                      className="object-contain opacity-90 brightness-0 invert"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  )}
                 </div>
               </div>
             ))}
