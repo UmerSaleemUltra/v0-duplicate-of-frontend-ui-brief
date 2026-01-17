@@ -4,6 +4,7 @@ import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
 import {
   Download,
@@ -16,6 +17,9 @@ import {
   Building2,
   DollarSign,
   ShoppingCart,
+  Search,
+  Filter,
+  X,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -96,7 +100,6 @@ export default function OrdersPage() {
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        console.log("[v0] Admin Orders: Loading companies with embedded orders...")
         const token = authService.getToken()
         if (!token) return
 
@@ -122,8 +125,6 @@ export default function OrdersPage() {
         const allUsers = usersData.data || usersData || []
         const allCompanies = companiesData.data || companiesData || []
 
-        console.log("[v0] Admin Orders: Loaded companies:", allCompanies.length)
-
         const allOrders = allCompanies.flatMap((company: any) => {
           const companyOrders = company.orders || []
           return companyOrders.map((order: any) => ({
@@ -135,37 +136,27 @@ export default function OrdersPage() {
           }))
         })
 
-        console.log("[v0] Admin Orders: Extracted orders from companies:", allOrders.length)
-
         const ordersWithDetails = allOrders.map((order: any) => {
           const company = allCompanies.find((c: any) => c.id === order.companyId)
           const user = allUsers.find((u: any) => String(u.id) === String(company?.userId))
-
-          console.log(
-            "[v0] Order mapping - Order ID:",
-            order.id,
-            "Company ID:",
-            order.companyId,
-            "Company userId:",
-            company?.userId,
-            "Found user:",
-            user?.name || user?.email,
-          )
 
           return {
             ...order,
             customerName: user?.name || company?.members?.[0]?.name || "Unknown",
             customerEmail: user?.email || "N/A",
-            userId: company?.userId, // Add userId for tracking
+            userId: company?.userId,
           }
         })
 
-        console.log("[v0] Admin Orders: Orders with details:", ordersWithDetails.length)
+        const sortedOrders = ordersWithDetails.sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+        )
+
         setCompanies(allCompanies)
-        setOrders(ordersWithDetails)
-        setFilteredOrders(ordersWithDetails)
+        setOrders(sortedOrders)
+        setFilteredOrders(sortedOrders)
       } catch (error) {
-        console.error("[v0] Admin Orders: Error loading data:", error)
+        console.error("Error loading data:", error)
         toast({
           title: "Error",
           description: "Failed to load orders. Please try again.",
@@ -263,7 +254,7 @@ export default function OrdersPage() {
         description: "Order deleted successfully",
       })
     } catch (error) {
-      console.error("[v0] Admin Orders: Error deleting order:", error)
+      console.error("Error deleting order:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to delete order. Please try again.",
@@ -310,8 +301,6 @@ export default function OrdersPage() {
     const orderAmount = order.pricing?.total || order.amount || order.total || 0
     return sum + orderAmount
   }, 0)
-
-  console.log("[v0] Admin Orders: Total revenue calculated:", totalRevenue, "from", orders.length, "orders")
 
   const totalOrders = orders.length
 
@@ -392,6 +381,140 @@ export default function OrdersPage() {
         </Card>
       </div>
 
+      <Card className="bg-white border-slate-200">
+        <CardContent className="pt-6">
+          <div className="space-y-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <Input
+                placeholder="Search by Order ID, Customer, Email, or Company..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10 pr-10 h-11 border-slate-300 focus:border-red-500 focus:ring-red-500"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery("")}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                >
+                  <X className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <div className="flex items-center gap-2">
+                <Filter className="h-4 w-4 text-slate-600" />
+                <span className="text-sm font-medium text-slate-700">Status:</span>
+                <div className="flex gap-2">
+                  <Button
+                    variant={statusFilter === "all" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setStatusFilter("all")}
+                    className={
+                      statusFilter === "all"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                        : "hover:bg-slate-100"
+                    }
+                  >
+                    All
+                  </Button>
+                  <Button
+                    variant={statusFilter === "pending" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setStatusFilter("pending")}
+                    className={
+                      statusFilter === "pending"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                        : "hover:bg-slate-100"
+                    }
+                  >
+                    <AlertCircle className="h-3 w-3 mr-1" />
+                    Pending
+                  </Button>
+                  <Button
+                    variant={statusFilter === "processing" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setStatusFilter("processing")}
+                    className={
+                      statusFilter === "processing"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                        : "hover:bg-slate-100"
+                    }
+                  >
+                    <Clock className="h-3 w-3 mr-1" />
+                    Processing
+                  </Button>
+                  <Button
+                    variant={statusFilter === "completed" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setStatusFilter("completed")}
+                    className={
+                      statusFilter === "completed"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                        : "hover:bg-slate-100"
+                    }
+                  >
+                    <CheckCircle2 className="h-3 w-3 mr-1" />
+                    Completed
+                  </Button>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium text-slate-700">Period:</span>
+                <div className="flex gap-2">
+                  <Button
+                    variant={dateFilter === "current-month" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setDateFilter("current-month")}
+                    className={
+                      dateFilter === "current-month"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                        : "hover:bg-slate-100"
+                    }
+                  >
+                    This Month
+                  </Button>
+                  <Button
+                    variant={dateFilter === "all-time" ? "default" : "outline"}
+                    size="sm"
+                    onClick={() => setDateFilter("all-time")}
+                    className={
+                      dateFilter === "all-time"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                        : "hover:bg-slate-100"
+                    }
+                  >
+                    All Time
+                  </Button>
+                </div>
+              </div>
+
+              {(searchQuery || statusFilter !== "all" || stateFilter !== "all") && (
+                <div className="flex items-center gap-2 ml-auto">
+                  <Badge variant="secondary" className="text-xs">
+                    {filteredOrders.length} results
+                  </Badge>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => {
+                      setSearchQuery("")
+                      setStatusFilter("all")
+                      setStateFilter("all")
+                    }}
+                    className="h-8 text-xs text-slate-600 hover:text-slate-900"
+                  >
+                    Clear filters
+                  </Button>
+                </div>
+              )}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-slate-900">All Orders ({filteredOrders.length})</CardTitle>
@@ -400,7 +523,11 @@ export default function OrdersPage() {
           {filteredOrders.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-slate-600">No orders found</p>
-              <p className="text-sm text-slate-500 mt-2">Orders will appear here once customers complete checkout</p>
+              <p className="text-sm text-slate-500 mt-2">
+                {searchQuery || statusFilter !== "all" || stateFilter !== "all"
+                  ? "Try adjusting your filters"
+                  : "Orders will appear here once customers complete checkout"}
+              </p>
             </div>
           ) : (
             <>
@@ -529,7 +656,11 @@ export default function OrdersPage() {
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(page)}
-                          className={currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""}
+                          className={
+                            currentPage === page
+                              ? "w-8 h-8 p-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                              : "w-8 h-8 p-0"
+                          }
                         >
                           {page}
                         </Button>
@@ -555,7 +686,7 @@ export default function OrdersPage() {
         open={companyModalOpen}
         onOpenChange={setCompanyModalOpen}
         companyId={selectedCompanyId}
-        showOwnerDetails={true}
+        companies={companies}
       />
     </div>
   )
