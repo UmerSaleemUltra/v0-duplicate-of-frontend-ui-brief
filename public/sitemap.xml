@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
-  <!-- Updated sitemap for better Google and AI search engine crawling like Doola -->
+  <!-- Comprehensive sitemap with all public pages for Google and AI crawlers -->
   
   <!-- Home Page - Main Landing -->
   <url>
@@ -19,6 +19,14 @@
     <priority>0.9</priority>
   </url>
   
+  <!-- Order Confirmation -->
+  <url>
+    <loc>https://www.buzzfiling.com/order-confirmation</loc>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>
+  
   <!-- Blog - Content Hub -->
   <url>
     <loc>https://www.buzzfiling.com/blog</loc>
@@ -32,6 +40,13 @@
     <loc>https://www.buzzfiling.com/login</loc>
     <lastmod>2026-01-17</lastmod>
     <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.buzzfiling.com/auth</loc>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
   
@@ -42,8 +57,14 @@
     <priority>0.4</priority>
   </url>
   
+  <url>
+    <loc>https://www.buzzfiling.com/reset-password</loc>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+  </url>
+  
   <!-- Legal Pages - Compliance -->
-  <!-- Changed changefreq from "quarterly" to "monthly" (quarterly is not valid) -->
   <url>
     <loc>https://www.buzzfiling.com/privacy</loc>
     <lastmod>2026-01-17</lastmod>
@@ -51,12 +72,33 @@
     <priority>0.5</priority>
   </url>
   
-  <!-- Changed changefreq from "quarterly" to "monthly" (quarterly is not valid) -->
   <url>
     <loc>https://www.buzzfiling.com/terms</loc>
     <lastmod>2026-01-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+  </url>
+  
+  <!-- Utility Pages -->
+  <url>
+    <loc>https://www.buzzfiling.com/coming-soon</loc>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.3</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.buzzfiling.com/access-denied</loc>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.buzzfiling.com/blocked</loc>
+    <lastmod>2026-01-17</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.2</priority>
   </url>
   
 </urlset>
