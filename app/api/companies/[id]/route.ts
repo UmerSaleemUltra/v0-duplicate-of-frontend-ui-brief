@@ -6,9 +6,9 @@ import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 import type { Company } from "@/lib/types"
 
-export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params
+    const { id } = params
 
     if (!id || !ObjectId.isValid(id)) {
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
@@ -77,6 +77,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           businessId: company.businessId || null,
           registeredAgent: company.registeredAgent || null,
           mailingAddress: company.mailingAddress || null,
+          taxClassification: company.taxClassification || null,
+          annualReportFilingDate: company.annualReportFilingDate || null,
+          irsFilingDate: company.irsFilingDate || null,
           createdAt: company.createdAt,
           updatedAt: company.updatedAt,
         },
@@ -91,9 +94,9 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function PUT(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params
+    const { id } = params
 
     if (!id || !ObjectId.isValid(id)) {
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
@@ -254,9 +257,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
   }
 }
 
-export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
   try {
-    const { id } = await params
+    const { id } = params
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
