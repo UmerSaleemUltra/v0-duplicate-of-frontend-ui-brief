@@ -211,6 +211,12 @@ export default function CompanyPage() {
 
   useEffect(() => {
     if (companyData) {
+      console.log("[v0] Tax Info Check - companyData:", {
+        taxClassification: companyData?.taxClassification,
+        annualReportFilingDate: companyData?.annualReportFilingDate,
+        irsFilingDate: companyData?.irsFilingDate,
+      })
+
       const hasTax = Boolean(
         (companyData?.taxClassification &&
           companyData.taxClassification !== "Not Yet" &&
@@ -220,6 +226,7 @@ export default function CompanyPage() {
           companyData?.irsFilingDate,
       )
 
+      console.log("[v0] hasTaxInfo will be set to:", hasTax)
       setHasTaxInfo(hasTax)
     }
   }, [companyData])
