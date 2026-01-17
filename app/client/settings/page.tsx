@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User, Lock, Info, Calendar, Hash, CheckCircle2, Copy } from "lucide-react"
+import { User, Lock, Info, Calendar, Hash, CheckCircle2, Copy, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
@@ -23,6 +23,10 @@ export default function ClientSettingsPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [isLoadingUser, setIsLoadingUser] = useState(true)
   const [passwordChangeSuccess, setPasswordChangeSuccess] = useState(false)
+  const [passwordChangeError, setPasswordChangeError] = useState("")
+  const [showCurrentPassword, setShowCurrentPassword] = useState(false)
+  const [showNewPassword, setShowNewPassword] = useState(false)
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -91,31 +95,20 @@ export default function ClientSettingsPage() {
 
   const handleChangePassword = async () => {
     setPasswordChangeSuccess(false)
+    setPasswordChangeError("")
 
     if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Please fill in all password fields",
-        variant: "destructive",
-      })
+      setPasswordChangeError("Please fill in all password fields")
       return
     }
 
     if (passwordData.newPassword !== passwordData.confirmPassword) {
-      toast({
-        title: "Error",
-        description: "New passwords do not match",
-        variant: "destructive",
-      })
+      setPasswordChangeError("New passwords do not match")
       return
     }
 
     if (passwordData.newPassword.length < 8) {
-      toast({
-        title: "Error",
-        description: "Password must be at least 8 characters long",
-        variant: "destructive",
-      })
+      setPasswordChangeError("Password must be at least 8 characters long")
       return
     }
 
@@ -124,11 +117,7 @@ export default function ClientSettingsPage() {
     try {
       const token = authService.getToken()
       if (!token) {
-        toast({
-          title: "Error",
-          description: "You must be logged in to change your password.",
-          variant: "destructive",
-        })
+        setPasswordChangeError("You must be logged in to change your password.")
         setIsLoading(false)
         return
       }
@@ -159,11 +148,6 @@ export default function ClientSettingsPage() {
           })
         }
 
-        toast({
-          title: "Success",
-          description: "Your password has been changed successfully. Your session has been updated.",
-        })
-
         setPasswordData({
           currentPassword: "",
           newPassword: "",
@@ -172,18 +156,10 @@ export default function ClientSettingsPage() {
 
         setPasswordChangeSuccess(true)
       } else {
-        toast({
-          title: "Error",
-          description: result.error || "Failed to change password. Please try again.",
-          variant: "destructive",
-        })
+        setPasswordChangeError(result.error || "Failed to change password. Please try again.")
       }
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "Unable to change password. Please try again.",
-        variant: "destructive",
-      })
+      setPasswordChangeError("Unable to change password. Please try again.")
     } finally {
       setIsLoading(false)
     }
@@ -273,39 +249,66 @@ export default function ClientSettingsPage() {
               <Label htmlFor="currentPassword" className="text-sm font-medium text-slate-700">
                 Current Password
               </Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                value={passwordData.currentPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
-                className="h-10"
-              />
+              <div className="relative">
+                <Input
+                  id="currentPassword"
+                  type={showCurrentPassword ? "text" : "password"}
+                  value={passwordData.currentPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, currentPassword: e.target.value })}
+                  className="h-10 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowCurrentPassword(!showCurrentPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  {showCurrentPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="newPassword" className="text-sm font-medium text-slate-700">
                 New Password
               </Label>
-              <Input
-                id="newPassword"
-                type="password"
-                value={passwordData.newPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
-                className="h-10"
-              />
+              <div className="relative">
+                <Input
+                  id="newPassword"
+                  type={showNewPassword ? "text" : "password"}
+                  value={passwordData.newPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, newPassword: e.target.value })}
+                  className="h-10 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowNewPassword(!showNewPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  {showNewPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="confirmPassword" className="text-sm font-medium text-slate-700">
                 Confirm New Password
               </Label>
-              <Input
-                id="confirmPassword"
-                type="password"
-                value={passwordData.confirmPassword}
-                onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
-                className="h-10"
-              />
+              <div className="relative">
+                <Input
+                  id="confirmPassword"
+                  type={showConfirmPassword ? "text" : "password"}
+                  value={passwordData.confirmPassword}
+                  onChange={(e) => setPasswordData({ ...passwordData, confirmPassword: e.target.value })}
+                  className="h-10 pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 cursor-pointer"
+                >
+                  {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                </button>
+              </div>
             </div>
 
             <Button onClick={handleChangePassword} disabled={isLoading} className="h-10 cursor-pointer">
@@ -314,9 +317,17 @@ export default function ClientSettingsPage() {
             </Button>
 
             {passwordChangeSuccess && (
-              <div className="flex items-center gap-2 text-green-600 mt-3">
+              <div className="flex items-center gap-2 text-green-600 mt-3 bg-green-50 p-3 rounded-lg">
                 <CheckCircle2 className="w-5 h-5" />
-                <span className="text-sm font-medium">Password changed successfully!</span>
+                <span className="text-sm font-medium">
+                  Password changed successfully! A confirmation email has been sent.
+                </span>
+              </div>
+            )}
+
+            {passwordChangeError && (
+              <div className="flex items-center gap-2 text-red-600 mt-3 bg-red-50 p-3 rounded-lg">
+                <span className="text-sm font-medium">{passwordChangeError}</span>
               </div>
             )}
           </div>

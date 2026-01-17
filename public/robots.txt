@@ -1,11 +1,38 @@
-# Allow all search engines to crawl the site
+# Allow all search engines and AI crawlers to crawl the site
 User-agent: *
+Allow: /
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: anthropic-ai
+Allow: /
+
+User-agent: Claude-Web
 Allow: /
 
 # Disallow admin and client dashboard areas
 Disallow: /admin/
 Disallow: /client/
 Disallow: /api/
+Disallow: /checkout/
+
+# Allow important pages for SEO and AI indexing
+Allow: /
+Allow: /blog
+Allow: /pricing
+Allow: /about
+Allow: /contact
+Allow: /services
 
 # Sitemap location
-Sitemap: https://buzzfiling.com/sitemap.xml
+Sitemap: https://www.buzzfiling.com/sitemap.xml

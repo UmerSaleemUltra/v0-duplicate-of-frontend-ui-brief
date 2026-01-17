@@ -1048,4 +1048,90 @@ export const emailTemplates = {
     </html>
     `,
   }),
+  passwordChanged: (name: string, email: string) => ({
+    subject: "Your BuzzFiling Password Has Been Changed",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5;">
+          <tr>
+            <td align="center" style="padding: 40px 20px;">
+              <table width="600" cellpadding="0" cellspacing="0" style="background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 16px rgba(0,0,0,0.08);">
+                
+                <tr>
+                  <td style="padding: 32px 40px 16px 40px; text-align: center;">
+                    <img src="https://www.buzzfiling.com/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 160px; height: auto;" />
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 32px 40px 32px 40px; text-align: center; background: linear-gradient(135deg, #8b0000 0%, #a00000 100%);">
+                    <div style="width: 60px; height: 60px; background-color: #ffffff; border-radius: 12px; margin: 0 auto; display: inline-flex; align-items: center; justify-content: center;">
+                      <span style="font-size: 32px;">🔒</span>
+                    </div>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 40px 40px;">
+                    <h1 style="margin: 0 0 24px 0; font-size: 24px; font-weight: 700; color: #1a1a1a; line-height: 1.3;">
+                      Password Changed Successfully
+                    </h1>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #4a4a4a; line-height: 1.6;">
+                      Dear ${name},
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #4a4a4a; line-height: 1.6;">
+                      This email confirms that your BuzzFiling account password has been successfully changed.
+                    </p>
+
+                    <div style="background-color: #f8f9fa; border-left: 4px solid #8b0000; padding: 20px; margin: 24px 0; border-radius: 6px;">
+                      <p style="margin: 0 0 12px 0; font-size: 14px; font-weight: 600; color: #1a1a1a;">
+                        Account Details:
+                      </p>
+                      <p style="margin: 0 0 8px 0; font-size: 14px; color: #4a4a4a;">
+                        <strong>Email:</strong> ${email}
+                      </p>
+                      <p style="margin: 0; font-size: 14px; color: #4a4a4a;">
+                        <strong>Date:</strong> ${new Date().toLocaleString("en-US", {
+                          dateStyle: "full",
+                          timeStyle: "short",
+                          timeZone: "Asia/Karachi",
+                        })} PST
+                      </p>
+                    </div>
+                    
+                    <p style="margin: 24px 0 20px 0; font-size: 16px; color: #4a4a4a; line-height: 1.6;">
+                      If you did not make this change, please contact our support team immediately at <a href="mailto:support@buzzfiling.com" style="color: #8b0000; text-decoration: none;">support@buzzfiling.com</a>
+                    </p>
+
+                    <div style="margin: 32px 0; text-align: center;">
+                      <a href="https://www.buzzfiling.com/client/dashboard" style="display: inline-block; padding: 14px 32px; background: linear-gradient(135deg, #8b0000 0%, #a00000 100%); color: #ffffff; text-decoration: none; border-radius: 8px; font-weight: 600; font-size: 16px;">
+                        Go to Dashboard
+                      </a>
+                    </div>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 32px 40px; background-color: #f8f9fa; text-align: center; border-top: 1px solid #e0e0e0;">
+                    <p style="margin: 0; font-size: 14px; color: #666;">
+                      © ${new Date().getFullYear()} BuzzFiling. All rights reserved.
+                    </p>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
 }

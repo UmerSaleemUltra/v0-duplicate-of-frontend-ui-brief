@@ -59,6 +59,20 @@ export const POST = requireAuth(async (request: NextRequest, user) => {
       },
     )
 
+    const { sendEmail, emailTemplates } = await import("@/config/email")
+
+    try {
+      const emailTemplate = emailTemplates.passwordChanged(userDoc.name, userDoc.email)
+      await sendEmail({
+        to: userDoc.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+      })
+    } catch (emailError) {
+      console.error("[v0] Password change email failed:", emailError)
+      // Don't fail the password change if email fails
+    }
+
     const newToken = jwt.sign(
       {
         userId: user.userId,

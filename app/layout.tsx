@@ -11,23 +11,27 @@ const unbounded = Unbounded({
 })
 
 export const metadata = {
-  metadataBase: new URL("https://buzzfiling.com"),
+  metadataBase: new URL("https://www.buzzfiling.com"),
 
   title: {
-    default: "Buzz Filing | US LLC & C-Corp Formation for Pakistani & International Founders",
-    template: "%s | Buzz Filing",
+    default: "BuzzFiling | Top LLC Formation Company in Karachi, Pakistan | Best US Company Registration Services",
+    template: "%s | BuzzFiling",
   },
 
   description:
-    "Buzz Filing helps Pakistani and international entrepreneurs register US LLCs and C-Corporations. Services include EIN assistance, registered agent, US business address, ITIN support, and ongoing compliance guidance.",
+    "BuzzFiling is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Best company registration services, ITIN & EIN assistance, registered agent, US business address, and compliance support for Pakistani and international entrepreneurs.",
 
   keywords: [
+    "Top LLC formation companies in Karachi",
+    "Best company registration services in Pakistan",
+    "Best ITIN & US LLC service providers in Karachi",
     "US LLC formation Pakistan",
     "form US LLC from Pakistan",
     "US company registration Pakistan",
     "US business formation service",
     "register US company online",
     "Buzz Filing",
+    "BuzzFiling Karachi",
     "US C-Corp formation",
     "foreign owned LLC USA",
     "US LLC for non residents",
@@ -48,9 +52,13 @@ export const metadata = {
     "US company for Amazon sellers",
     "LLC registration service",
     "US business setup Pakistan",
+    "best LLC service Karachi",
+    "top company formation Pakistan",
+    "Pakistani entrepreneurs US LLC",
+    "non-resident US company formation",
   ],
 
-  authors: [{ name: "Buzz Filing", url: "https://buzzfiling.com" }],
+  authors: [{ name: "Buzz Filing", url: "https://www.buzzfiling.com" }],
   creator: "Buzz Filing",
   publisher: "Buzz Filing",
 
@@ -63,14 +71,14 @@ export const metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://buzzfiling.com",
+    url: "https://www.buzzfiling.com",
     siteName: "Buzz Filing",
-    title: "Buzz Filing | US LLC & C-Corp Formation for Pakistani & International Founders",
+    title: "Buzz Filing | Top LLC Formation Company in Karachi, Pakistan | Best US Company Registration Services",
     description:
-      "Register your US LLC or C-Corporation with Buzz Filing. Get help with EIN, registered agent, US business address, ITIN support, and compliance guidance for non-resident founders.",
+      "Register your US LLC or C-Corporation with Buzz Filing in Karachi. Get help with EIN, registered agent, US business address, ITIN support, and compliance guidance for non-resident founders.",
     images: [
       {
-        url: "https://buzzfiling.com/images/buzzfiling-logo.png",
+        url: "https://www.buzzfiling.com/images/buzzfiling-logo.png",
         width: 1200,
         height: 630,
         alt: "Buzz Filing – US Company Formation & Compliance Support",
@@ -83,7 +91,7 @@ export const metadata = {
     title: "Buzz Filing | US Company Formation for Pakistani Founders",
     description:
       "US LLC & C-Corp formation with EIN assistance, registered agent, US business address, ITIN support, and compliance guidance for non-resident founders.",
-    images: ["https://buzzfiling.com/images/buzzfiling-logo.png"],
+    images: ["https://www.buzzfiling.com/images/buzzfiling-logo.png"],
     creator: "@buzzfiling",
     site: "@buzzfiling",
   },
@@ -107,20 +115,18 @@ export const metadata = {
       { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
       { url: "/images/buzzfiling-logo.png", sizes: "192x192", type: "image/png" },
     ],
-    apple: [
-      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
-    ],
+    apple: [{ url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" }],
     shortcut: ["/favicon.ico"],
   },
 
   manifest: "/site.webmanifest",
 
   verification: {
-    google: "75c07262157089ce",
+    google: "_j7SOmcEbiEhWO3bwy53HWXQMwmad7jhs7rQKM5oPd4",
   },
 
   alternates: {
-    canonical: "https://buzzfiling.com",
+    canonical: "https://www.buzzfiling.com",
   },
 
   category: "Business Services",
@@ -131,7 +137,7 @@ export const metadata = {
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   },
     generator: 'v0.app'
-};
+}
 
 export const viewport = {
   width: "device-width",
@@ -147,6 +153,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={unbounded.variable}>
       <head>
+        <Script id="google-tag-manager" strategy="afterInteractive">
+          {`(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+          new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
+          j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
+          'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
+          })(window,document,'script','dataLayer','GTM-KTZXH7FM');`}
+        </Script>
+
         <Script async src="https://www.googletagmanager.com/gtag/js?id=G-9NH7KYTZH5" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
@@ -162,6 +176,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <meta httpEquiv="X-Frame-Options" content="SAMEORIGIN" />
         <meta httpEquiv="X-XSS-Protection" content="1; mode=block" />
         <meta name="referrer" content="strict-origin-when-cross-origin" />
+        <meta name="google-site-verification" content="_j7SOmcEbiEhWO3bwy53HWXQMwmad7jhs7rQKM5oPd4" />
 
         <script
           type="application/ld+json"
@@ -169,29 +184,29 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             __html: JSON.stringify({
               "@context": "https://schema.org",
               "@type": "ProfessionalService",
-              "@id": "https://buzzfiling.com/#organization",
+              "@id": "https://www.buzzfiling.com/#organization",
               name: "BuzzFiling",
               alternateName: "Buzz Filing",
-              url: "https://buzzfiling.com",
+              url: "https://www.buzzfiling.com",
               logo: {
                 "@type": "ImageObject",
-                url: "https://buzzfiling.com/images/buzzfiling-logo.png",
+                url: "https://www.buzzfiling.com/images/buzzfiling-logo.png",
                 width: 400,
                 height: 120,
               },
-              image: "https://buzzfiling.com/images/buzzfiling-logo.png",
+              image: "https://www.buzzfiling.com/images/buzzfiling-logo.png",
               description:
                 "BuzzFiling is Pakistan's premier US business formation service, helping entrepreneurs establish US LLCs and Corporations with comprehensive support including EIN, registered agent, business address, and compliance services.",
               priceRange: "$149 - $448",
               address: {
                 "@type": "PostalAddress",
                 addressCountry: "PK",
-                addressLocality: "Pakistan",
+                addressLocality: "Karachi",
               },
               geo: {
                 "@type": "GeoCoordinates",
-                latitude: "30.3753",
-                longitude: "69.3451",
+                latitude: "24.8607",
+                longitude: "66.9910",
               },
               contactPoint: {
                 "@type": "ContactPoint",
@@ -314,15 +329,23 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   "@type": "ListItem",
                   position: 1,
                   name: "Home",
-                  item: "https://buzzfiling.com",
+                  item: "https://www.buzzfiling.com",
                 },
-               
               ],
             }),
           }}
         />
       </head>
       <body className="font-sans antialiased">
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-KTZXH7FM"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+
         <AuthProvider>
           <CompanyProvider>{children}</CompanyProvider>
         </AuthProvider>
