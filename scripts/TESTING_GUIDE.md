@@ -14,7 +14,7 @@ pip install requests
 **IMPORTANT:** Update the `BASE_URL` in each script before running:
 
 ```python
-BASE_URL = "https://your-domain.vercel.app"  # UPDATE THIS
+BASE_URL = "https://www.buzzfiling.com"  # UPDATE THIS
 ```
 
 ## Test Scripts

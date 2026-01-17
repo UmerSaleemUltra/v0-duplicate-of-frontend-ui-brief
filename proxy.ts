@@ -18,7 +18,6 @@ export async function proxy(request: NextRequest) {
         "https://www.buzzfiling.com",
         "http://localhost:3000",
         "http://localhost:3001",
-        "https://v0-frontend-ui-brief.vercel.app",
       ]
 
       if (origin && allowedOrigins.includes(origin)) {
@@ -46,7 +45,6 @@ export async function proxy(request: NextRequest) {
         "https://www.buzzfiling.com",
         "http://localhost:3000",
         "http://localhost:3001",
-        "https://v0-frontend-ui-brief.vercel.app",
       ]
 
       if (origin && allowedOrigins.includes(origin)) {
@@ -99,7 +97,6 @@ export async function proxy(request: NextRequest) {
         "https://www.buzzfiling.com",
         "http://localhost:3000",
         "http://localhost:3001",
-        "https://v0-frontend-ui-brief.vercel.app",
       ]
 
       const headers: Record<string, string> = {
@@ -140,7 +137,6 @@ export async function proxy(request: NextRequest) {
       "https://www.buzzfiling.com",
       "http://localhost:3000",
       "http://localhost:3001",
-      "https://v0-frontend-ui-brief.vercel.app",
     ]
 
     if (origin && allowedOrigins.includes(origin)) {
