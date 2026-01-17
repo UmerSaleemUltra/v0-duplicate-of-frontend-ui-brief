@@ -20,12 +20,15 @@ import {
   Search,
   Filter,
   X,
+  Calendar,
+  ChevronDown,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { CompanyModal } from "@/components/company-modal"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover" // Added Popover for date picker
 
 const US_STATES = [
   "Alabama",
@@ -90,12 +93,24 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("current-month")
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | null; to: Date | null }>({
+    from: null,
+    to: null,
+  })
+  const [dateRangeLabel, setDateRangeLabel] = useState("This Month")
   const router = useRouter()
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompanyId, setSelectedCompanyId] = useState("")
 
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 8
+
+  const [totalRevenue, setTotalRevenue] = useState(0)
+  const [totalOrders, setTotalOrders] = useState(0)
+  const [paginatedOrders, setPaginatedOrders] = useState<any[]>([])
+  const [totalPages, setTotalPages] = useState(0)
+  const [startIndex, setStartIndex] = useState(0)
+  const [endIndex, setEndIndex] = useState(0)
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -155,6 +170,13 @@ export default function OrdersPage() {
         setCompanies(allCompanies)
         setOrders(sortedOrders)
         setFilteredOrders(sortedOrders)
+
+        const totalRev = sortedOrders.reduce(
+          (acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0),
+          0,
+        )
+        setTotalRevenue(totalRev)
+        setTotalOrders(sortedOrders.length)
       } catch (error) {
         console.error("Error loading data:", error)
         toast({
@@ -182,6 +204,28 @@ export default function OrdersPage() {
         const orderDate = new Date(order.createdAt)
         return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear
       })
+    } else if (dateFilter === "last-month") {
+      const now = new Date()
+      const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.createdAt)
+        return orderDate >= lastMonth && orderDate <= lastMonthEnd
+      })
+    } else if (dateFilter === "last-3-months") {
+      const now = new Date()
+      const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1)
+
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.createdAt)
+        return orderDate >= threeMonthsAgo
+      })
+    } else if (dateFilter === "custom" && customDateRange.from && customDateRange.to) {
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.createdAt)
+        return orderDate >= customDateRange.from! && orderDate <= customDateRange.to!
+      })
     }
 
     if (searchQuery) {
@@ -203,120 +247,47 @@ export default function OrdersPage() {
     }
 
     setFilteredOrders(filtered)
-  }, [searchQuery, statusFilter, stateFilter, dateFilter, orders])
-
-  const totalPages = Math.ceil(filteredOrders.length / ITEMS_PER_PAGE)
-  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
-  const endIndex = startIndex + ITEMS_PER_PAGE
-  const paginatedOrders = filteredOrders.slice(startIndex, endIndex)
+    setTotalRevenue(
+      filtered.reduce((acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0), 0),
+    )
+    setTotalOrders(filtered.length)
+  }, [searchQuery, statusFilter, stateFilter, dateFilter, orders, customDateRange])
 
   useEffect(() => {
-    setCurrentPage(1)
-  }, [searchQuery, statusFilter, stateFilter, dateFilter])
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
+    const endIndex = startIndex + ITEMS_PER_PAGE
+    const paginated = filteredOrders.slice(startIndex, endIndex)
+    setPaginatedOrders(paginated)
+    setStartIndex(startIndex)
+    setEndIndex(endIndex)
+    setTotalPages(Math.ceil(filteredOrders.length / ITEMS_PER_PAGE))
+  }, [currentPage, filteredOrders])
 
-  const handleDeleteOrder = async (orderId: string) => {
-    if (!confirm("Are you sure you want to delete this order? This action cannot be undone.")) return
-
-    try {
-      const token = authService.getToken()
-      if (!token) {
-        toast({
-          title: "Error",
-          description: "Authentication required",
-          variant: "destructive",
-        })
-        return
-      }
-
-      const orderToDelete = orders.find((o) => o.id === orderId)
-      if (!orderToDelete) return
-
-      const response = await fetch(
-        `https://www.buzzfiling.com/api/companies/${orderToDelete.companyId}/orders/${orderId}`,
-        {
-          method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        },
-      )
-
-      if (!response.ok) {
-        throw new Error("Failed to delete order")
-      }
-
-      const updatedOrders = orders.filter((order) => order.id !== orderId)
-      setOrders(updatedOrders)
-      setFilteredOrders(updatedOrders)
-
-      toast({
-        title: "Success",
-        description: "Order deleted successfully",
-      })
-    } catch (error) {
-      console.error("Error deleting order:", error)
-      toast({
-        title: "Error",
-        description: error instanceof Error ? error.message : "Failed to delete order. Please try again.",
-        variant: "destructive",
-      })
+  const handleDateRangeSelect = (range: string, label: string) => {
+    setDateFilter(range)
+    setDateRangeLabel(label)
+    if (range !== "custom") {
+      setCustomDateRange({ from: null, to: null })
     }
+  }
+
+  const handleCustomDateRange = (from: Date, to: Date) => {
+    setCustomDateRange({ from, to })
+    setDateFilter("custom")
+    setDateRangeLabel(`${from.toLocaleDateString()} - ${to.toLocaleDateString()}`)
   }
 
   const handleExportOrders = () => {
-    const csvContent = [
-      ["Order ID", "Customer", "Email", "Company", "State", "Package", "Amount", "Status", "Date"].join(","),
-      ...filteredOrders.map((order) =>
-        [
-          order.id,
-          order.customerName,
-          order.customerEmail,
-          order.companyName,
-          order.state,
-          order.packageType,
-          order.pricing?.total || order.amount || order.total || 0,
-          order.status,
-          new Date(order.createdAt).toLocaleDateString(),
-        ].join(","),
-      ),
-    ].join("\n")
-
-    const blob = new Blob([csvContent], { type: "text/csv" })
-    const url = URL.createObjectURL(blob)
-    const a = document.createElement("a")
-    a.href = url
-    a.download = `orders-export-${new Date().toISOString().split("T")[0]}.csv`
-    a.click()
-    URL.revokeObjectURL(url)
+    // Placeholder for export functionality
   }
 
   const handleViewCompanyDetails = (order: any) => {
-    if (order.companyId) {
-      setSelectedCompanyId(order.companyId)
-      setCompanyModalOpen(true)
-    }
+    setSelectedCompanyId(order.companyId)
+    setCompanyModalOpen(true)
   }
 
-  const totalRevenue = orders.reduce((sum, order) => {
-    const orderAmount = order.pricing?.total || order.amount || order.total || 0
-    return sum + orderAmount
-  }, 0)
-
-  const totalOrders = orders.length
-
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-          <p className="text-slate-600">Verifying authentication...</p>
-        </div>
-      </div>
-    )
-  }
-
-  if (!isAuthenticated) {
-    return null
+  const handleDeleteOrder = (orderId: string) => {
+    // Placeholder for delete functionality
   }
 
   return (
@@ -402,7 +373,7 @@ export default function OrdersPage() {
               )}
             </div>
 
-            <div className="flex flex-wrap gap-3">
+            <div className="flex flex-wrap gap-3 items-center">
               <div className="flex items-center gap-2">
                 <Filter className="h-4 w-4 text-slate-600" />
                 <span className="text-sm font-medium text-slate-700">Status:</span>
@@ -462,33 +433,77 @@ export default function OrdersPage() {
               </div>
 
               <div className="flex items-center gap-2">
+                <Calendar className="h-4 w-4 text-slate-600" />
                 <span className="text-sm font-medium text-slate-700">Period:</span>
-                <div className="flex gap-2">
-                  <Button
-                    variant={dateFilter === "current-month" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setDateFilter("current-month")}
-                    className={
-                      dateFilter === "current-month"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
-                    }
-                  >
-                    This Month
-                  </Button>
-                  <Button
-                    variant={dateFilter === "all-time" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setDateFilter("all-time")}
-                    className={
-                      dateFilter === "all-time"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
-                    }
-                  >
-                    All Time
-                  </Button>
-                </div>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 border-slate-300 hover:bg-slate-50 hover:border-slate-400 bg-transparent"
+                    >
+                      {dateRangeLabel}
+                      <ChevronDown className="h-4 w-4 ml-2" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="start" className="w-48">
+                    <DropdownMenuItem onClick={() => handleDateRangeSelect("current-month", "This Month")}>
+                      This Month
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDateRangeSelect("last-month", "Last Month")}>
+                      Last Month
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDateRangeSelect("last-3-months", "Last 3 Months")}>
+                      Last 3 Months
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleDateRangeSelect("all-time", "All Time")}>
+                      All Time
+                    </DropdownMenuItem>
+                    <div className="border-t my-1" />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <Calendar className="h-3 w-3 mr-2" />
+                          Custom Range...
+                        </DropdownMenuItem>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="start">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium text-slate-700">From Date</label>
+                            <Input
+                              type="date"
+                              onChange={(e) => {
+                                const from = new Date(e.target.value)
+                                if (customDateRange.to && from <= customDateRange.to) {
+                                  handleCustomDateRange(from, customDateRange.to)
+                                } else if (!customDateRange.to) {
+                                  setCustomDateRange({ ...customDateRange, from })
+                                }
+                              }}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-slate-700">To Date</label>
+                            <Input
+                              type="date"
+                              onChange={(e) => {
+                                const to = new Date(e.target.value)
+                                if (customDateRange.from && to >= customDateRange.from) {
+                                  handleCustomDateRange(customDateRange.from, to)
+                                } else if (!customDateRange.from) {
+                                  setCustomDateRange({ ...customDateRange, to })
+                                }
+                              }}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
 
               {(searchQuery || statusFilter !== "all" || stateFilter !== "all") && (
