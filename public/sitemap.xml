@@ -43,17 +43,19 @@
   </url>
   
   <!-- Legal Pages - Compliance -->
+  <!-- Changed changefreq from "quarterly" to "monthly" (quarterly is not valid) -->
   <url>
     <loc>https://www.buzzfiling.com/privacy</loc>
     <lastmod>2026-01-17</lastmod>
-    <changefreq>quarterly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
+  <!-- Changed changefreq from "quarterly" to "monthly" (quarterly is not valid) -->
   <url>
     <loc>https://www.buzzfiling.com/terms</loc>
     <lastmod>2026-01-17</lastmod>
-    <changefreq>quarterly</changefreq>
+    <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
