@@ -1,38 +1,54 @@
-# Allow all search engines and AI crawlers to crawl the site
+# BuzzFiling - Robots.txt
+# Allow all search engines and AI crawlers
+
+# Allow all crawlers by default
 User-agent: *
 Allow: /
 
+# Explicitly allow AI crawlers for better indexing
 User-agent: GPTBot
 Allow: /
 
 User-agent: ChatGPT-User
 Allow: /
 
-User-agent: Google-Extended
-Allow: /
-
-User-agent: CCBot
+User-agent: Claude-Web
 Allow: /
 
 User-agent: anthropic-ai
 Allow: /
 
-User-agent: Claude-Web
+User-agent: Google-Extended
 Allow: /
 
-# Disallow admin and client dashboard areas
+User-agent: GoogleOther
+Allow: /
+
+User-agent: CCBot
+Allow: /
+
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+# Disallow sensitive areas
 Disallow: /admin/
 Disallow: /client/
 Disallow: /api/
-Disallow: /checkout/
 
-# Allow important pages for SEO and AI indexing
+# Allow public pages for SEO and AI search
 Allow: /
 Allow: /blog
-Allow: /pricing
-Allow: /about
-Allow: /contact
-Allow: /services
+Allow: /blog/*
+Allow: /login
+Allow: /forgot-password
+Allow: /checkout
+Allow: /order-confirmation
 
-# Sitemap location
+# Sitemap location for crawlers
 Sitemap: https://www.buzzfiling.com/sitemap.xml
+
+# Crawl delay (optional - removes if causing issues)
+Crawl-delay: 1
