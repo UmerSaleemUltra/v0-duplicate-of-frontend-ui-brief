@@ -87,7 +87,6 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
         status: body.paymentStatus || "pending",
         whatsappPhone: body.whatsappPhone || null,
         receiptUrl: body.receiptUrl || null,
-        transactionId: body.transactionId || null,
         date: new Date().toISOString(),
       },
       passportDocuments: body.passportDocuments || [],

@@ -41,8 +41,6 @@ export async function GET(req: NextRequest) {
         addonsTotal: order.addonsTotal,
         paymentStatus: order.paymentStatus,
         paymentMethod: order.paymentMethod,
-        transactionId: order.transactionId,
-        transactionReference: order.transactionReference,
         items: order.items,
         purchasedAddons: order.purchasedAddons,
         createdAt: order.createdAt,

@@ -57,7 +57,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           businessDescription: company.businessDescription,
           businessWebsite: company.businessWebsite,
           packageType: company.packageType,
-          transactionReference: company.transactionReference || null,
           members: company.members || [],
           milestones: company.milestones || {
             orderProcessed: false,

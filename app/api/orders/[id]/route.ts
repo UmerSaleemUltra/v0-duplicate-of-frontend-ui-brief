@@ -166,7 +166,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             businessDescription: companyDoc.businessDescription,
             businessWebsite: companyDoc.businessWebsite,
             packageType: companyDoc.packageType,
-            transactionReference: companyDoc.transactionReference,
             userId: companyDoc.userId?.toString(),
             ein: companyDoc.ein || null,
             itin: companyDoc.itin || null,
@@ -272,8 +271,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         paymentInfo: orderDoc.paymentInfo || {
           method: orderDoc.paymentMethod,
           status: orderDoc.paymentStatus,
-          transactionId: orderDoc.transactionId,
-          transactionReference: orderDoc.transactionReference,
           date: orderDoc.paymentDate || orderDoc.createdAt,
         },
         createdAt: orderDoc.createdAt,

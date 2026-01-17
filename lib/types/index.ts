@@ -134,7 +134,6 @@ export interface Company {
   orders?: Order[]
   revenue?: number
   lastOrderDate?: string | null
-  transactionReference?: string | null
   createdAt: string
   updatedAt: string
 }
@@ -164,7 +163,6 @@ export interface Order {
   paymentInfo: {
     method: "whatsapp" | "bank_transfer" | "stripe"
     status: "pending" | "pending_verification" | "paid" | "failed"
-    transactionId?: string
     whatsappPhone?: string
     receiptUrl?: string
     date: string
@@ -336,7 +334,6 @@ export interface PaymentDetails {
 
 export interface PaymentVerification {
   orderId: string
-  transactionId: string
   screenshot?: File
   status: "pending" | "verifying" | "approved" | "rejected"
   verifiedAt?: string

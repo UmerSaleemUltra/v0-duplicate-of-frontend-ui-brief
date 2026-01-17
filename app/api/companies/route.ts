@@ -50,7 +50,6 @@ export async function GET(req: NextRequest) {
         businessId: 1,
         formationDate: 1,
         purchasedAddons: 1,
-        transactionReference: 1,
         orders: 1, // Include embedded orders array
         revenue: 1, // Include total revenue
         lastOrderDate: 1, // Include last order date
@@ -105,7 +104,6 @@ export async function GET(req: NextRequest) {
         businessId: company.businessId,
         formationDate: company.formationDate,
         purchasedAddons: company.purchasedAddons || [],
-        transactionReference: company.transactionReference || null,
         orders: company.orders || [], // Include orders array
         revenue: company.revenue || 0, // Include revenue
         lastOrderDate: company.lastOrderDate || null, // Include last order date
@@ -186,7 +184,6 @@ export async function POST(req: NextRequest) {
       packageType,
       milestones,
       purchasedAddons,
-      transactionReference,
       orderData,
       companyStatus,
       registeredAgentStatus,
@@ -246,7 +243,6 @@ export async function POST(req: NextRequest) {
               status: orderData.paymentStatus || "pending",
               whatsappPhone: orderData.whatsappPhone || null,
               receiptUrl: orderData.receiptUrl || null,
-              transactionId: orderData.transactionId || transactionReference || null,
               date: new Date().toISOString(),
             },
             passportDocuments: orderData.passportDocuments || [],
@@ -273,7 +269,6 @@ export async function POST(req: NextRequest) {
       businessDescription: businessDescription || "",
       businessWebsite: businessWebsite || "",
       packageType: packageType || "basic",
-      transactionReference: transactionReference || null,
       members: processedMembers,
       milestones: milestones || {
         orderProcessed: false,
