@@ -37,6 +37,7 @@ export const metadata = {
     "US business formation service",
     "register US company online",
     "Buzz Filing",
+    "buzzfiling"
     "BuzzFiling Karachi",
     "US C-Corp formation",
     "foreign owned LLC USA",
