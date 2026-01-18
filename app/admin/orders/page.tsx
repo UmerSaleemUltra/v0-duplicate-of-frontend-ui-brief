@@ -193,8 +193,9 @@ export default function OrdersPage() {
   }, [isLoading, isAuthenticated, toast])
 
   useEffect(() => {
-    let filtered = orders
+    let filtered = [...orders]
 
+    // Date filtering
     if (dateFilter === "current-month") {
       const now = new Date()
       const currentMonth = now.getMonth()
@@ -207,7 +208,7 @@ export default function OrdersPage() {
     } else if (dateFilter === "last-month") {
       const now = new Date()
       const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
-      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0)
+      const lastMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59)
 
       filtered = filtered.filter((order) => {
         const orderDate = new Date(order.createdAt)
@@ -222,31 +223,42 @@ export default function OrdersPage() {
         return orderDate >= threeMonthsAgo
       })
     } else if (dateFilter === "custom" && customDateRange.from && customDateRange.to) {
+      const fromDate = new Date(customDateRange.from)
+      fromDate.setHours(0, 0, 0, 0)
+      const toDate = new Date(customDateRange.to)
+      toDate.setHours(23, 59, 59, 999)
+
       filtered = filtered.filter((order) => {
         const orderDate = new Date(order.createdAt)
-        return orderDate >= customDateRange.from! && orderDate <= customDateRange.to!
+        return orderDate >= fromDate && orderDate <= toDate
       })
     }
+    // "all-time" doesn't filter by date
 
-    if (searchQuery) {
+    // Search filtering
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase().trim()
       filtered = filtered.filter(
         (order) =>
-          order.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.customerName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.customerEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          order.companyName.toLowerCase().includes(searchQuery.toLowerCase()),
+          (order.id && order.id.toLowerCase().includes(query)) ||
+          (order.customerName && order.customerName.toLowerCase().includes(query)) ||
+          (order.customerEmail && order.customerEmail.toLowerCase().includes(query)) ||
+          (order.companyName && order.companyName.toLowerCase().includes(query)),
       )
     }
 
+    // Status filtering
     if (statusFilter !== "all") {
-      filtered = filtered.filter((order) => order.status === statusFilter)
+      filtered = filtered.filter((order) => order.status && order.status.toLowerCase() === statusFilter.toLowerCase())
     }
 
+    // State filtering
     if (stateFilter !== "all") {
-      filtered = filtered.filter((order) => order.state.toLowerCase() === stateFilter.toLowerCase())
+      filtered = filtered.filter((order) => order.state && order.state.toLowerCase() === stateFilter.toLowerCase())
     }
 
     setFilteredOrders(filtered)
+    setCurrentPage(1) // Reset to first page when filters change
     setTotalRevenue(
       filtered.reduce((acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0), 0),
     )
