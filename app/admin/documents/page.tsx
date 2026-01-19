@@ -344,12 +344,12 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+    <div className="space-y-8">
       {/* Header */}
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Documents</h1>
-          <p className="text-muted-foreground mt-1">Manage and upload formation documents</p>
+          <h1 className="text-3xl font-semibold text-slate-900">Documents</h1>
+          <p className="text-slate-600 mt-1">Manage and upload formation documents</p>
         </div>
         <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
           <DialogTrigger asChild>

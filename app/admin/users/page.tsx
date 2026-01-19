@@ -1,5 +1,9 @@
 "use client"
 
+import { CardContent } from "@/components/ui/card"
+import { CardTitle } from "@/components/ui/card"
+import { CardHeader } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
 import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -13,6 +17,9 @@ import { useToast } from "@/hooks/use-toast"
 import { authService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import type { User, Company, Order } from "@/lib/types"
+import UsersIcon from "@/components/UsersIcon" // Placeholder for Users component
+import UserCheckIcon from "@/components/UserCheckIcon" // Placeholder for UserCheck component
+import ClockIcon from "@/components/ClockIcon" // Placeholder for Clock component
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -361,193 +368,183 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-6 p-4 md:p-6 lg:p-8">
+    <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
+          <h1 className="text-3xl font-semibold text-slate-900">
             User Management
           </h1>
-          <p className="text-muted-foreground mt-2">Manage users, companies, and access control</p>
+          <p className="text-slate-600 mt-1">Manage users, companies, and access control</p>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <div className="glass-card p-6 rounded-2xl border border-white/10 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Users</p>
-              <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-                {users.length}
-              </p>
-            </div>
-            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
-              <UserPlus className="h-7 w-7 text-white" />
-            </div>
-          </div>
-        </div>
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Total Users</CardTitle>
+            <UsersIcon className="h-4 w-4 text-slate-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold text-slate-900">{users.length}</div>
+          </CardContent>
+        </Card>
 
-        <div className="glass-card p-6 rounded-2xl border border-white/10 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Active Users</p>
-              <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-green-600 to-green-700 bg-clip-text text-transparent">
-                {users.filter((u) => u.status === "active").length}
-              </p>
-            </div>
-            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center shadow-lg">
-              <UserPlus className="h-7 w-7 text-white" />
-            </div>
-          </div>
-        </div>
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Total Companies</CardTitle>
+            <Building2 className="h-4 w-4 text-slate-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold text-slate-900">{companies.length}</div>
+          </CardContent>
+        </Card>
 
-        <div className="glass-card p-6 rounded-2xl border border-white/10 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Total Companies</p>
-              <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-                {companies.length}
-              </p>
-            </div>
-            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg">
-              <Building2 className="h-7 w-7 text-white" />
-            </div>
-          </div>
-        </div>
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
+            <Building2 className="h-4 w-4 text-slate-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold text-slate-900">{orders.length}</div>
+          </CardContent>
+        </Card>
 
-        <div className="glass-card p-6 rounded-2xl border border-white/10 hover:shadow-lg transition-shadow">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm font-medium text-muted-foreground">Pending Users</p>
-              <p className="text-3xl font-bold mt-2 bg-gradient-to-r from-amber-600 to-amber-700 bg-clip-text text-transparent">
-                {users.filter((u) => u.status === "pending").length}
-              </p>
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
+            <Building2 className="h-4 w-4 text-slate-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold text-slate-900">
+              {orders.reduce((sum, order) => sum + (order.pricing?.total || order.amount || order.total || 0), 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
             </div>
-            <div className="h-14 w-14 rounded-xl bg-gradient-to-br from-amber-500 to-amber-600 flex items-center justify-center shadow-lg">
-              <UserPlus className="h-7 w-7 text-white" />
-            </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
-      <div className="glass-card p-4 rounded-2xl border border-white/10">
-        <div className="relative">
-          <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search users by name or email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-12 h-12 bg-background/50 text-base"
-          />
-        </div>
-      </div>
+      <Card className="bg-white border-slate-200">
+        <CardContent className="pt-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search users by name or email..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 h-11 border-slate-300"
+            />
+          </div>
+        </CardContent>
+      </Card>
 
-      <div className="glass-card rounded-2xl border border-white/10 overflow-hidden shadow-lg">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-gradient-to-r from-slate-50 to-slate-100 border-b border-slate-200">
-              <tr>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700">User</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700">Email</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700">Status</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700">Companies</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700">Orders</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.length === 0 ? (
+      <Card className="bg-white border-slate-200">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-slate-50 border-b border-slate-200">
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-muted-foreground">
-                    No users found
-                  </td>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700">User</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Email</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Status</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Companies</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Orders</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Actions</th>
                 </tr>
-              ) : (
-                filteredUsers.map((user) => {
-                  const userCompanies = getUserCompanies(user.id)
-                  const userOrders = getUserOrders(user.id)
+              </thead>
+              <tbody>
+                {filteredUsers.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                      No users found
+                    </td>
+                  </tr>
+                ) : (
+                  filteredUsers.map((user) => {
+                    const userCompanies = getUserCompanies(user.id)
+                    const userOrders = getUserOrders(user.id)
 
-                  return (
-                    <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-all">
-                      <td className="p-4">
-                        <div>
-                          <p className="font-semibold text-slate-900">{user.name}</p>
-                          <p className="text-sm text-slate-500">{user.phone || "No phone"}</p>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <span className="text-sm text-slate-700">{user.email}</span>
-                      </td>
-                      <td className="p-4">
-                        <Badge
-                          variant="outline"
-                          className={
-                            user.status === "active"
-                              ? "bg-green-50 text-green-700 border-green-200 font-medium"
-                              : "bg-amber-50 text-amber-700 border-amber-200 font-medium"
-                          }
-                        >
-                          {user.status}
-                        </Badge>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                            <Building2 className="h-4 w-4 text-blue-600" />
+                    return (
+                      <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-all">
+                        <td className="p-4">
+                          <div>
+                            <p className="font-semibold text-slate-900">{user.name}</p>
+                            <p className="text-sm text-slate-500">{user.phone || "No phone"}</p>
                           </div>
-                          <span className="text-sm font-medium">{userCompanies.length}</span>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex items-center gap-2">
-                          <div className="h-8 w-8 rounded-lg bg-purple-50 flex items-center justify-center">
-                            <FileText className="h-4 w-4 text-purple-600" />
+                        </td>
+                        <td className="p-4">
+                          <span className="text-sm text-slate-700">{user.email}</span>
+                        </td>
+                        <td className="p-4">
+                          <Badge
+                            variant="outline"
+                            className={
+                              user.status === "active"
+                                ? "bg-green-50 text-green-700 border-green-200 font-medium"
+                                : "bg-amber-50 text-amber-700 border-amber-200 font-medium"
+                            }
+                          >
+                            {user.status}
+                          </Badge>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
+                              <Building2 className="h-4 w-4 text-blue-600" />
+                            </div>
+                            <span className="text-sm font-medium">{userCompanies.length}</span>
                           </div>
-                          <span className="text-sm font-medium">{userOrders.length}</span>
-                        </div>
-                      </td>
-                      <td className="p-4">
-                        <div className="flex gap-2">
-                          <Link href={`/admin/users/${user.id}`}>
-                            <Button size="sm" variant="ghost" className="h-9 px-3 hover:bg-slate-100">
-                              View
+                        </td>
+                        <td className="p-4">
+                          <div className="flex items-center gap-2">
+                            <div className="h-8 w-8 rounded-lg bg-purple-50 flex items-center justify-center">
+                              <FileText className="h-4 w-4 text-purple-600" />
+                            </div>
+                            <span className="text-sm font-medium">{userOrders.length}</span>
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <div className="flex gap-2">
+                            <Link href={`/admin/users/${user.id}`}>
+                              <Button size="sm" variant="ghost" className="h-9 px-3 hover:bg-slate-100">
+                                View
+                              </Button>
+                            </Link>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-9 w-9 p-0 hover:bg-slate-100"
+                              onClick={() => handleEditUser(user)}
+                            >
+                              <Edit className="h-4 w-4" />
                             </Button>
-                          </Link>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-9 w-9 p-0 hover:bg-slate-100"
-                            onClick={() => handleEditUser(user)}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-9 w-9 p-0 hover:bg-slate-100"
-                            onClick={() => handleOpenPasswordModal(user)}
-                            title="Change Password"
-                          >
-                            <Key className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-9 w-9 p-0 hover:bg-slate-100"
-                            onClick={() => handleLoginAsUser(user)}
-                            title="Login as User"
-                          >
-                            <LogIn className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </td>
-                    </tr>
-                  )
-                })
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-9 w-9 p-0 hover:bg-slate-100"
+                              onClick={() => handleOpenPasswordModal(user)}
+                              title="Change Password"
+                            >
+                              <Key className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="h-9 w-9 p-0 hover:bg-slate-100"
+                              onClick={() => handleLoginAsUser(user)}
+                              title="Login as User"
+                            >
+                              <LogIn className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </td>
+                      </tr>
+                    )
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
 
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent>
@@ -585,7 +582,7 @@ export default function UsersPage() {
                   onValueChange={(value: any) => setSelectedUser({ ...selectedUser, status: value })}
                 >
                   <SelectTrigger>
-                    <SelectValue />
+                    <SelectValue placeholder="Select status" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="active">Active</SelectItem>

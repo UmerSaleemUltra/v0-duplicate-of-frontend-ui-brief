@@ -233,41 +233,53 @@ export default function CustomersPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-xl hover:scale-105">
-          <CardHeader className="pb-2">
+      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Customers</CardTitle>
+            <Building2 className="h-4 w-4 text-slate-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
-              {customers.length}
-            </div>
-            <p className="text-xs text-slate-500 mt-1">Registered users</p>
+            <div className="text-2xl font-semibold text-slate-900">{customers.length}</div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-white to-green-50 border-green-200 transition-all duration-300 hover:shadow-xl hover:scale-105">
-          <CardHeader>
+
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Active Customers</CardTitle>
+            <Building2 className="h-4 w-4 text-slate-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">
+            <div className="text-2xl font-semibold text-slate-900">
               {customers.filter((c) => c.status === "active").length}
             </div>
-            <p className="text-xs text-slate-500 mt-1">
-              {customers.length > 0
-                ? Math.round((customers.filter((c) => c.status === "active").length / customers.length) * 100)
-                : 0}
-              % of total
-            </p>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-200 transition-all duration-300 hover:shadow-xl hover:scale-105">
-          <CardHeader>
+
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
+            <Building2 className="h-4 w-4 text-slate-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">{customers.reduce((sum, c) => sum + c.orders, 0)}</div>
-            <p className="text-xs text-slate-500 mt-1">Across all customers</p>
+            <div className="text-2xl font-semibold text-slate-900">
+              {customers.reduce((sum, c) => sum + c.orders, 0)}
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border-slate-200">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
+            <Building2 className="h-4 w-4 text-slate-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-semibold text-slate-900">
+              {customers.reduce((sum, c) => {
+                const spent = typeof c.totalSpent === 'string' ? parseFloat(c.totalSpent.replace('$', '')) || 0 : c.totalSpent || 0
+                return sum + spent
+              }, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
+            </div>
           </CardContent>
         </Card>
       </div>
