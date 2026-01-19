@@ -48,7 +48,6 @@ import {
   Plus,
   Receipt,
   Calendar,
-  XCircle,
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
@@ -2234,142 +2233,12 @@ export default function OrderDetailPage() {
                   </div>
                   <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
                     <p className="text-xs text-slate-600 mb-1">Account Status</p>
-                    <Badge
-                      variant={
-                        user?.accountStatus === "active"
-                          ? "default"
-                          : user?.accountStatus === "inactive"
-                            ? "destructive"
-                            : "secondary"
-                      }
-                      className={
-                        user?.accountStatus === "active"
-                          ? "bg-green-600 hover:bg-green-700"
-                          : user?.accountStatus === "inactive"
-                            ? "bg-red-600 hover:bg-red-700"
-                            : "bg-yellow-600 hover:bg-yellow-700"
-                      }
-                    >
-                      {user?.accountStatus === "active"
-                        ? "Active"
-                        : user?.accountStatus === "inactive"
-                          ? "Inactive"
-                          : user?.accountStatus || "Pending Setup"}
+                    <Badge variant={user?.accountStatus === "active" ? "default" : "secondary"}>
+                      {user?.accountStatus || "Incomplete"}
                     </Badge>
                   </div>
                 </div>
               )}
-            </CardContent>
-          </Card>
-
-          {/* Assigned Items Status */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <CheckCircle2 className="w-5 h-5" />
-                Assigned Items
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">Track which company identifiers have been assigned</p>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                {/* EIN Status */}
-                <div
-                  className={`p-4 rounded-lg border-2 ${hasEIN ? "bg-green-50 border-green-300" : "bg-red-50 border-red-300"}`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {hasEIN ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-600" />
-                      )}
-                      <span className="font-semibold text-slate-900">EIN</span>
-                    </div>
-                    <Badge variant={hasEIN ? "default" : "secondary"} className={hasEIN ? "bg-green-600" : "bg-red-600"}>
-                      {hasEIN ? "Assigned" : "Not Assigned"}
-                    </Badge>
-                  </div>
-                  {hasEIN && company?.ein && (
-                    <p className="text-sm font-mono text-slate-700 mt-1">{formatEIN(company.ein, true)}</p>
-                  )}
-                </div>
-
-                {/* Business ID Status */}
-                <div
-                  className={`p-4 rounded-lg border-2 ${hasBusinessId ? "bg-green-50 border-green-300" : "bg-red-50 border-red-300"}`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {hasBusinessId ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-600" />
-                      )}
-                      <span className="font-semibold text-slate-900">Business ID</span>
-                    </div>
-                    <Badge
-                      variant={hasBusinessId ? "default" : "secondary"}
-                      className={hasBusinessId ? "bg-green-600" : "bg-red-600"}
-                    >
-                      {hasBusinessId ? "Assigned" : "Not Assigned"}
-                    </Badge>
-                  </div>
-                  {hasBusinessId && company?.businessId && (
-                    <p className="text-sm font-mono text-slate-700 mt-1">{formatBusinessId(company.businessId)}</p>
-                  )}
-                </div>
-
-                {/* ITIN Status */}
-                <div
-                  className={`p-4 rounded-lg border-2 ${company?.itin && company.itin !== "N/A" ? "bg-green-50 border-green-300" : "bg-amber-50 border-amber-300"}`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {company?.itin && company.itin !== "N/A" ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <AlertCircle className="w-5 h-5 text-amber-600" />
-                      )}
-                      <span className="font-semibold text-slate-900">ITIN</span>
-                    </div>
-                    <Badge
-                      variant={company?.itin && company.itin !== "N/A" ? "default" : "secondary"}
-                      className={company?.itin && company.itin !== "N/A" ? "bg-green-600" : "bg-amber-600"}
-                    >
-                      {company?.itin && company.itin !== "N/A" ? "Assigned" : "Optional"}
-                    </Badge>
-                  </div>
-                  {company?.itin && company.itin !== "N/A" && (
-                    <p className="text-sm font-mono text-slate-700 mt-1">{company.itin}</p>
-                  )}
-                </div>
-
-                {/* Registered Agent Status */}
-                <div
-                  className={`p-4 rounded-lg border-2 ${company?.registeredAgent?.name ? "bg-green-50 border-green-300" : "bg-red-50 border-red-300"}`}
-                >
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {company?.registeredAgent?.name ? (
-                        <CheckCircle2 className="w-5 h-5 text-green-600" />
-                      ) : (
-                        <XCircle className="w-5 h-5 text-red-600" />
-                      )}
-                      <span className="font-semibold text-slate-900">Registered Agent</span>
-                    </div>
-                    <Badge
-                      variant={company?.registeredAgent?.name ? "default" : "secondary"}
-                      className={company?.registeredAgent?.name ? "bg-green-600" : "bg-red-600"}
-                    >
-                      {company?.registeredAgent?.name ? "Assigned" : "Not Assigned"}
-                    </Badge>
-                  </div>
-                  {company?.registeredAgent?.name && (
-                    <p className="text-sm text-slate-700 mt-1">{company.registeredAgent.name}</p>
-                  )}
-                </div>
-              </div>
             </CardContent>
           </Card>
 

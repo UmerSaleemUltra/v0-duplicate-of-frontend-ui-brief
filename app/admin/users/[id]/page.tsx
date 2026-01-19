@@ -419,31 +419,6 @@ export default function UserDetailPage() {
                       </p>
                     </div>
                     <div className="flex gap-2">
-                      {editingCompany === company.id ? (
-                        <Button
-                          size="sm"
-                          onClick={() => handleSaveCompany(company.id)}
-                          disabled={savingCompany}
-                          className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                        >
-                          {savingCompany ? (
-                            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                          ) : (
-                            <Save className="h-4 w-4 mr-2" />
-                          )}
-                          Save
-                        </Button>
-                      ) : (
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => handleEditCompany(company)}
-                          className="border-2"
-                        >
-                          <Edit className="h-4 w-4 mr-2" />
-                          Edit IDs
-                        </Button>
-                      )}
                       <Button
                         size="sm"
                         variant="outline"
