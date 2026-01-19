@@ -5,7 +5,7 @@ import { CardTitle } from "@/components/ui/card"
 import { CardHeader } from "@/components/ui/card"
 import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
-import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn } from "lucide-react"
+import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn, Users, UserCheck, Clock } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -17,9 +17,7 @@ import { useToast } from "@/hooks/use-toast"
 import { authService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import type { User, Company, Order } from "@/lib/types"
-import UsersIcon from "@/components/UsersIcon" // Placeholder for Users component
-import UserCheckIcon from "@/components/UserCheckIcon" // Placeholder for UserCheck component
-import ClockIcon from "@/components/ClockIcon" // Placeholder for Clock component
+import { UsersIcon } from "@/components/icons" // Import UsersIcon here
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -382,7 +380,7 @@ export default function UsersPage() {
         <Card className="bg-white border-slate-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Users</CardTitle>
-            <UsersIcon className="h-4 w-4 text-slate-600" />
+            <Users className="h-4 w-4 text-slate-600" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold text-slate-900">{users.length}</div>
