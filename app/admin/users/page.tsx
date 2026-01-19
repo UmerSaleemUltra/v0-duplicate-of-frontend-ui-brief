@@ -18,6 +18,8 @@ import { authService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import type { User, Company, Order } from "@/lib/types"
 import { UsersIcon } from "@/components/icons" // Import UsersIcon here
+import { ShoppingCart } from "lucide-react"
+import { DollarSign } from "lucide-react"
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -377,43 +379,43 @@ export default function UsersPage() {
       </div>
 
       <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-lg">
+        <Card className="bg-white border-slate-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Users</CardTitle>
             <Users className="h-4 w-4 text-slate-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">{users.length}</div>
+            <div className="text-2xl font-semibold text-slate-900">{users.length}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-lg">
+        <Card className="bg-white border-slate-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Companies</CardTitle>
             <Building2 className="h-4 w-4 text-slate-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">{companies.length}</div>
+            <div className="text-2xl font-semibold text-slate-900">{companies.length}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-lg">
+        <Card className="bg-white border-slate-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
-            <Building2 className="h-4 w-4 text-slate-600" />
+            <ShoppingCart className="h-4 w-4 text-slate-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">{orders.length}</div>
+            <div className="text-2xl font-semibold text-slate-900">{orders.length}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-lg">
+        <Card className="bg-white border-slate-200">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
-            <Building2 className="h-4 w-4 text-slate-600" />
+            <DollarSign className="h-4 w-4 text-slate-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
+            <div className="text-2xl font-semibold text-slate-900">
               {orders.reduce((sum, order) => sum + (order.pricing?.total || order.amount || order.total || 0), 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
             </div>
           </CardContent>
