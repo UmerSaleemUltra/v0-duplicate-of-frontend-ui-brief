@@ -496,25 +496,7 @@ export default function CustomerDetailPage() {
                   <p className="text-sm text-muted-foreground">{company.state}</p>
                   <p className="text-xs text-muted-foreground mt-1">ID: {company.id}</p>
                 </div>
-                <div className="flex gap-2">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      console.log("[v0] Editing company:", company)
-                      console.log("[v0] Company ITIN value:", company.itin)
-                      setSelectedCompany(company)
-                      setCompanyNameInput(company.name)
-                      setEinInput(company.ein || "")
-                      setItinInput(company.itin || "")
-                      setBusinessIdInput(company.businessId || "")
-                      setEditCompanyState(company.state)
-                      setEditCompanyDialogOpen(true)
-                    }}
-                  >
-                    <Pencil className="h-4 w-4" />
-                  </Button>
-                </div>
+
               </div>
 
               <div className="space-y-2">
@@ -709,132 +691,7 @@ export default function CustomerDetailPage() {
         ))}
       </div>
 
-      <Dialog open={editCompanyDialogOpen} onOpenChange={setEditCompanyDialogOpen}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Edit Company Information</DialogTitle>
-            <DialogDescription>Update company tax IDs and registration details</DialogDescription>
-          </DialogHeader>
-          <div className="space-y-6 py-4">
-            {companies.length > 1 && (
-              <div className="space-y-2">
-                <Label htmlFor="companySelect">Select Company</Label>
-                <select
-                  id="companySelect"
-                  className="h-10 border-slate-200 rounded-lg px-4"
-                  value={selectedCompany?.id}
-                  onChange={(e) => {
-                    const company = companies.find((c: any) => c.id === e.target.value)
-                    if (company) {
-                      setSelectedCompany(company)
-                      setCompanyNameInput(company.name)
-                      setEinInput(company.ein || "")
-                      setItinInput(company.itin || "")
-                      setBusinessIdInput(company.businessId || "")
-                      setEditCompanyState(company.state || "")
-                    }
-                  }}
-                >
-                  {companies.map((company: any) => (
-                    <option key={company.id} value={company.id}>
-                      {company.name} ({company.state})
-                    </option>
-                  ))}
-                </select>
-              </div>
-            )}
 
-            {selectedCompany && (
-              <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                <p className="text-sm font-semibold text-slate-900">Editing: {selectedCompany.name}</p>
-                <p className="text-xs text-slate-600 mt-1">Company ID: {selectedCompany.id}</p>
-              </div>
-            )}
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-900">Basic Information</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
-                  <input
-                    id="companyName"
-                    defaultValue={selectedCompany?.name}
-                    value={companyNameInput}
-                    onChange={(e) => setCompanyNameInput(e.target.value)}
-                    className="w-full h-10 border border-slate-200 rounded-lg px-4"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="state">State</Label>
-                  <select
-                    id="state"
-                    className="w-full h-10 border border-slate-200 rounded-lg px-4"
-                    value={editCompanyState}
-                    onChange={(e) => setEditCompanyState(e.target.value)}
-                  >
-                    {US_STATES.map((state) => (
-                      <option key={state} value={state}>
-                        {state}
-                      </option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-slate-900">Tax & Registration IDs</h3>
-              <div className="grid grid-cols-1 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="ein">EIN (Employer Identification Number)</Label>
-                  <input
-                    id="ein"
-                    defaultValue={selectedCompany?.ein}
-                    value={einInput}
-                    onChange={(e) => setEinInput(e.target.value)}
-                    placeholder="12-3456789"
-                    className="w-full h-10 border border-slate-200 rounded-lg px-4 font-mono"
-                  />
-                  <p className="text-xs text-slate-500">Format: XX-XXXXXXX</p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="itin">ITIN (Individual Taxpayer Identification Number)</Label>
-                  <input
-                    id="itin"
-                    defaultValue={selectedCompany?.itin}
-                    value={itinInput}
-                    onChange={(e) => setItinInput(e.target.value)}
-                    placeholder="9XX-XX-XXXX"
-                    className="w-full h-10 border border-slate-200 rounded-lg px-4 font-mono"
-                  />
-                  <p className="text-xs text-slate-500">Format: 9XX-XX-XXXX (Optional)</p>
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="businessId">Business ID / Registration Number</Label>
-                  <input
-                    id="businessId"
-                    defaultValue={selectedCompany?.businessId}
-                    value={businessIdInput}
-                    onChange={(e) => setBusinessIdInput(e.target.value)}
-                    placeholder="Enter state registration number"
-                    className="w-full h-10 border border-slate-200 rounded-lg px-4 font-mono"
-                  />
-                  <p className="text-xs text-slate-500">State-issued business registration number</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="flex justify-end gap-3 pt-4 border-t">
-              <Button variant="outline" onClick={() => setEditCompanyDialogOpen(false)} className="h-10">
-                Cancel
-              </Button>
-              <Button onClick={handleSaveCompany} className="h-10 bg-primary hover:bg-primary/90">
-                Save Changes
-              </Button>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
       <Dialog open={taxDetailsModalOpen} onOpenChange={setTaxDetailsModalOpen}>
         <DialogContent className="max-w-md">
