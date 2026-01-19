@@ -84,8 +84,6 @@ export interface Company {
   packageType?: string // (F)
 
   einDocument?: string
-  itemNumber?: string
-  itemNumberDocument?: string
   address?: {
     street: string
     city: string

@@ -1,104 +1,93 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   
-  <!-- Comprehensive sitemap with all public pages for Google and AI crawlers -->
+  <!-- TOP PRIORITY PAGES - Google Sitelinks -->
   
   <!-- Home Page - Main Landing -->
   <url>
     <loc>https://www.buzzfiling.com/</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-19</lastmod>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
   </url>
   
-  <!-- Order/Checkout - Primary CTA -->
+  <!-- Checkout - Start Your LLC -->
   <url>
     <loc>https://www.buzzfiling.com/checkout</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.95</priority>
+  </url>
+  
+  <!-- Login - Client Portal Access -->
+  <url>
+    <loc>https://www.buzzfiling.com/login</loc>
+    <lastmod>2026-01-19</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.9</priority>
   </url>
   
-  <!-- Order Confirmation -->
-  <url>
-    <loc>https://www.buzzfiling.com/order-confirmation</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <!-- Blog - Content Hub -->
+  <!-- Blog - Resources & Guides -->
   <url>
     <loc>https://www.buzzfiling.com/blog</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-19</lastmod>
     <changefreq>weekly</changefreq>
-    <priority>0.8</priority>
+    <priority>0.85</priority>
   </url>
   
-  <!-- Auth Pages - User Access -->
-  <url>
-    <loc>https://www.buzzfiling.com/login</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.7</priority>
-  </url>
+  <!-- SECONDARY PAGES -->
   
-  <url>
-    <loc>https://www.buzzfiling.com/auth</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>monthly</changefreq>
-    <priority>0.6</priority>
-  </url>
-  
-  <url>
-    <loc>https://www.buzzfiling.com/forgot-password</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  
-  <url>
-    <loc>https://www.buzzfiling.com/reset-password</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.4</priority>
-  </url>
-  
-  <!-- Legal Pages - Compliance -->
+  <!-- Legal & Compliance -->
   <url>
     <loc>https://www.buzzfiling.com/privacy</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
   <url>
     <loc>https://www.buzzfiling.com/terms</loc>
-    <lastmod>2026-01-17</lastmod>
+    <lastmod>2026-01-19</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
   </url>
   
-  <!-- Utility Pages -->
+  <!-- Order Confirmation -->
   <url>
-    <loc>https://www.buzzfiling.com/coming-soon</loc>
-    <lastmod>2026-01-17</lastmod>
+    <loc>https://www.buzzfiling.com/order-confirmation</loc>
+    <lastmod>2026-01-19</lastmod>
     <changefreq>monthly</changefreq>
-    <priority>0.3</priority>
+    <priority>0.4</priority>
+  </url>
+  
+  <!-- LOW PRIORITY - Exclude from Sitelinks -->
+  
+  <url>
+    <loc>https://www.buzzfiling.com/forgot-password</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>never</changefreq>
+    <priority>0.1</priority>
+  </url>
+  
+  <url>
+    <loc>https://www.buzzfiling.com/reset-password</loc>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>never</changefreq>
+    <priority>0.1</priority>
   </url>
   
   <url>
     <loc>https://www.buzzfiling.com/access-denied</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>never</changefreq>
+    <priority>0.1</priority>
   </url>
   
   <url>
     <loc>https://www.buzzfiling.com/blocked</loc>
-    <lastmod>2026-01-17</lastmod>
-    <changefreq>yearly</changefreq>
-    <priority>0.2</priority>
+    <lastmod>2026-01-19</lastmod>
+    <changefreq>never</changefreq>
+    <priority>0.1</priority>
   </url>
   
 </urlset>

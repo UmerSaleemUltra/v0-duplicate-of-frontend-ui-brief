@@ -265,10 +265,6 @@ export default function ClientOrderDetailsPage() {
                         <p className="text-sm text-slate-500">Business ID</p>
                         <p className="font-mono font-semibold text-slate-900">{company.businessId || "Not assigned"}</p>
                       </div>
-                      <div>
-                        <p className="text-sm text-slate-500">Item Number</p>
-                        <p className="font-mono font-semibold text-slate-900">{company.itemNumber || "Not assigned"}</p>
-                      </div>
                     </div>
                   </div>
 

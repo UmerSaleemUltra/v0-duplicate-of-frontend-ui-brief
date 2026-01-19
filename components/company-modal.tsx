@@ -348,10 +348,6 @@ export function CompanyModal({
                   <p className="text-sm text-slate-600">Business ID</p>
                   <p className="font-mono font-medium">{company.businessId || "Not assigned"}</p>
                 </div>
-                <div>
-                  <p className="text-sm text-slate-600">Item Number</p>
-                  <p className="font-mono font-medium">{company.itemNumber || "Not assigned"}</p>
-                </div>
               </div>
             </CardContent>
           </Card>
@@ -673,5 +669,3 @@ export function CompanyModal({
     </Dialog>
   )
 }
-
-export { CompanyModal as CompanyDetailsModal }
