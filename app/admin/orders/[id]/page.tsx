@@ -2127,8 +2127,8 @@ export default function OrderDetailPage() {
   // Removed duplicate handleUpdateServiceStatus
 
   return (
-    <div className="space-y-4">
-      {/* Header */}
+    <div className="space-y-6">
+      {/* Header - Prominent Order ID */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div className="flex items-center gap-4">
           <Button
@@ -2139,15 +2139,20 @@ export default function OrderDetailPage() {
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <div>
-            <h1 className="text-3xl font-semibold text-slate-900">Order Details</h1>
-            <p className="text-slate-600 mt-1">Order ID: {order.id}</p>
+            <h1 className="text-2xl font-semibold text-slate-900">Order Details</h1>
+            <div className="flex items-center gap-2 mt-2">
+              <Package className="w-4 h-4 text-slate-500" />
+              <p className="text-lg font-mono font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
+                #{order.id}
+              </p>
+            </div>
           </div>
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-4">
+      <div className="grid lg:grid-cols-3 gap-6">
         {/* Main Content - Left Column */}
-        <div className="lg:col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-6">
           {/* Customer Information Card */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
@@ -2638,43 +2643,49 @@ export default function OrderDetailPage() {
                   {company.members.map((member: any, index: number) => (
                     <div
                       key={member.id || index}
-                      className={`p-4 rounded-lg border border-slate-200 ${member.responsiblePerson ? "bg-blue-50 border-blue-300" : "bg-slate-50"}`}
+                      className={`p-5 rounded-xl border-2 ${member.responsiblePerson ? "bg-gradient-to-br from-red-50 to-orange-50 border-red-300 shadow-sm" : "bg-slate-50 border-slate-200"}`}
                     >
-                      <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-start justify-between mb-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                            <User className="w-5 h-5 text-white" />
+                          <div
+                            className={`w-12 h-12 rounded-full ${member.responsiblePerson ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : "bg-slate-400"} flex items-center justify-center shadow-md`}
+                          >
+                            <User className="w-6 h-6 text-white" />
                           </div>
                           <div>
-                            <h3 className="font-semibold text-slate-900">{member.name || "N/A"}</h3>
+                            <h3 className="font-bold text-slate-900 text-base">{member.name || "N/A"}</h3>
                             {member.responsiblePerson && (
-                              <Badge variant="secondary" className="mt-1 text-xs">
+                              <Badge
+                                variant="secondary"
+                                className="mt-1.5 text-xs bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0"
+                              >
+                                <UserCheck className="w-3 h-3 mr-1" />
                                 Responsible Person
                               </Badge>
                             )}
                           </div>
                         </div>
-                        <Badge variant="outline" className="text-xs">
-                          Member {index + 1}
+                        <Badge variant="outline" className="text-xs font-medium">
+                          Member #{index + 1}
                         </Badge>
                       </div>
 
-                      <div className="grid sm:grid-cols-2 gap-3 mt-3">
+                      <div className="grid sm:grid-cols-2 gap-4 mt-4">
                         {member.email && (
-                          <div>
-                            <p className="text-xs text-slate-600">Email</p>
+                          <div className="p-3 rounded-lg bg-white border border-slate-200">
+                            <p className="text-xs text-slate-500 mb-1">Email Address</p>
                             <p className="text-sm font-medium text-slate-900">{member.email}</p>
                           </div>
                         )}
                         {member.phone && (
-                          <div>
-                            <p className="text-xs text-slate-600">Phone</p>
+                          <div className="p-3 rounded-lg bg-white border border-slate-200">
+                            <p className="text-xs text-slate-500 mb-1">Phone Number</p>
                             <p className="text-sm font-medium text-slate-900">{member.phone}</p>
                           </div>
                         )}
                         {member.address && (
-                          <div className="sm:col-span-2">
-                            <p className="text-xs text-slate-600">Address</p>
+                          <div className="sm:col-span-2 p-3 rounded-lg bg-white border border-slate-200">
+                            <p className="text-xs text-slate-500 mb-1">Full Address</p>
                             <p className="text-sm font-medium text-slate-900">
                               {member.address}
                               {member.city && `, ${member.city}`}
@@ -2685,28 +2696,29 @@ export default function OrderDetailPage() {
                           </div>
                         )}
                         {member.ssn && (
-                          <div>
-                            <p className="text-xs text-slate-600">SSN/ITIN</p>
-                            <p className="text-sm font-medium text-slate-900">{member.ssn}</p>
+                          <div className="p-3 rounded-lg bg-white border border-slate-200">
+                            <p className="text-xs text-slate-500 mb-1">SSN / ITIN</p>
+                            <p className="text-sm font-medium text-slate-900 font-mono">{member.ssn}</p>
                           </div>
                         )}
                         {member.passportUrl && (
-                          <div>
-                            <p className="text-xs text-slate-600">Passport Document</p>
-                            <a
-                              href={member.passportUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
+                          <div className="p-3 rounded-lg bg-white border border-slate-200">
+                            <p className="text-xs text-slate-500 mb-2">Passport / ID Document</p>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              onClick={() => window.open(member.passportUrl, "_blank")}
+                              className="w-full justify-center h-9 bg-transparent hover:bg-slate-100"
                             >
-                              <FileText className="w-4 h-4" />
+                              <FileText className="w-4 h-4 mr-2" />
                               View Document
-                            </a>
+                            </Button>
                           </div>
                         )}
                         {member.itinAdded && (
                           <div className="sm:col-span-2">
-                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800">
+                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 px-3 py-1.5">
+                              <AlertCircle className="w-3 h-3 mr-1" />
                               ITIN Application Requested
                             </Badge>
                           </div>
@@ -2764,6 +2776,14 @@ export default function OrderDetailPage() {
                       <p className="text-sm font-medium text-slate-900 capitalize">
                         {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
                       </p>
+                      {/* Show WhatsApp Phone if payment method is WhatsApp */}
+                      {(order?.paymentInfo?.method?.toLowerCase() === "whatsapp" ||
+                        order?.paymentInfo?.method?.toLowerCase() === "whatsapp phone") &&
+                        order?.paymentInfo?.phone && (
+                          <p className="text-xs text-slate-600 mt-1">
+                            Phone: <span className="font-mono text-slate-900">{order.paymentInfo.phone}</span>
+                          </p>
+                        )}
                     </div>
                     <div>
                       <p className="text-xs text-slate-600 mb-1">Payment Status</p>
@@ -2771,12 +2791,19 @@ export default function OrderDetailPage() {
                         {order?.paymentInfo?.status || "Pending"}
                       </Badge>
                     </div>
-                    {order?.paymentInfo?.transactionReference && (
+                    {/* Show Receipt URL if available */}
+                    {order?.paymentInfo?.receiptUrl && (
                       <div className="sm:col-span-2">
-                        <p className="text-xs text-slate-600 mb-1">Transaction Reference</p>
-                        <p className="text-sm font-medium text-slate-900 font-mono">
-                          {order.paymentInfo.transactionReference}
-                        </p>
+                        <p className="text-xs text-slate-600 mb-1">Payment Receipt</p>
+                        <a
+                          href={order.paymentInfo.receiptUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                          <Receipt className="w-4 h-4" />
+                          View Receipt
+                        </a>
                       </div>
                     )}
                   </div>
@@ -2806,7 +2833,7 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Admin Actions Card */}
           <Card className="shadow-sm border-slate-200">
             <CardHeader className="bg-slate-50/50 border-b">
