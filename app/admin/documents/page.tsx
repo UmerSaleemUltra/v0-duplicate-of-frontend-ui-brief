@@ -259,20 +259,26 @@ export default function DocumentsPage() {
       if (!token) throw new Error("No auth token")
 
       if (editFile) {
-        await ApiClient.documents.delete(editingDocument.id, token)
-
-        await ApiClient.documents.upload(token, editFile, {
-          companyId: editingDocument.companyId,
-          userId: editingDocument.userId,
-          title: editFileName,
-          documentType: editDocType,
-          description: editingDocument.description || `${editDocType}`,
-          uploadedBy: "admin",
+        // Update document with new file using FormData
+        const formData = new FormData()
+        formData.append("file", editFile)
+        formData.append("title", editFileName)
+        formData.append("fileName", editFileName)
+        formData.append("type", editDocType)
+        formData.append("documentType", editDocType)
+        formData.append("category", editDocType)
+        formData.append("companyId", editingDocument.companyId)
+        formData.append("userId", editingDocument.userId)
+        
+        await ApiClient.request(`/documents/${editingDocument.id}`, {
+          method: "PUT",
+          body: formData,
+          token,
         })
 
         toast({
-          title: "Document Replaced",
-          description: `Successfully replaced document with ${editFile.name}`,
+          title: "Document Updated",
+          description: `Successfully updated document with ${editFile.name}`,
         })
       } else {
         // Update document metadata without changing the file
