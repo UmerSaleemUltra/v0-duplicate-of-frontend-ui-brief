@@ -275,13 +275,15 @@ export default function DocumentsPage() {
           description: `Successfully replaced document with ${editFile.name}`,
         })
       } else {
+        // Update document metadata without changing the file
         await ApiClient.documents.update(
           editingDocument.id,
           {
-            fileName: editFileName,
-            documentType: editDocType,
-            type: editDocType,
             title: editFileName,
+            fileName: editFileName,
+            type: editDocType,
+            documentType: editDocType,
+            category: editDocType,
           },
           token,
         )
