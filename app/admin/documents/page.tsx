@@ -279,6 +279,7 @@ export default function DocumentsPage() {
           {
             fileName: editFileName,
             documentType: editDocType,
+            type: editDocType,
             title: editFileName,
           },
           token,
