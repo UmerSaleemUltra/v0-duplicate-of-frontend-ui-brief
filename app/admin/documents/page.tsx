@@ -238,7 +238,7 @@ export default function DocumentsPage() {
   const handleEditDocument = (doc: any) => {
     setEditingDocument(doc)
     setEditFileName(doc.fileName || doc.title)
-    setEditDocType(doc.documentType || doc.title)
+    setEditDocType(doc.type || doc.documentType || "Other")
     setEditFile(null)
     setEditModalOpen(true)
   }
