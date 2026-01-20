@@ -84,6 +84,7 @@ export default function DocumentsPage() {
           ...doc,
           id: doc.id || doc._id?.toString() || doc._id,
           fileUrls: Array.isArray(doc.fileUrls) ? doc.fileUrls : [doc.fileUrl || doc.url].filter(Boolean),
+          documentType: doc.documentType || doc.type || "Document",
         }))
 
       setCompanies(companiesData)
@@ -238,7 +239,7 @@ export default function DocumentsPage() {
   const handleEditDocument = (doc: any) => {
     setEditingDocument(doc)
     setEditFileName(doc.fileName || doc.title)
-    setEditDocType(doc.type || doc.documentType || "Other")
+    setEditDocType(doc.documentType || "Other")
     setEditFile(null)
     setEditModalOpen(true)
   }
