@@ -259,17 +259,14 @@ export default function DocumentsPage() {
       if (!token) throw new Error("No auth token")
 
       if (editFile) {
-        // Replace document by deleting old one and uploading new one
+        // Replace document by uploading new one first, then deleting old one
         const docId = editingDocument.id || editingDocument._id?.toString() || editingDocument._id
         
         if (!docId) {
           throw new Error("Document ID is missing")
         }
 
-        // First delete the old document
-        await ApiClient.documents.delete(docId, token)
-
-        // Then upload the new document with same metadata
+        // First upload the new document with same metadata
         await ApiClient.documents.upload(token, editFile, {
           companyId: editingDocument.companyId,
           userId: editingDocument.userId,
@@ -280,6 +277,9 @@ export default function DocumentsPage() {
           description: editingDocument.description || `${editDocType}`,
           uploadedBy: "admin",
         })
+
+        // Only delete the old document after successful upload
+        await ApiClient.documents.delete(docId, token)
 
         toast({
           title: "Document Replaced",
