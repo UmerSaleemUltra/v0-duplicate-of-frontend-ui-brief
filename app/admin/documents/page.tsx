@@ -259,26 +259,31 @@ export default function DocumentsPage() {
       if (!token) throw new Error("No auth token")
 
       if (editFile) {
-        // Update document with new file
+        // Replace document by deleting old one and uploading new one
         const docId = editingDocument.id || editingDocument._id?.toString() || editingDocument._id
         
         if (!docId) {
           throw new Error("Document ID is missing")
         }
-        
-        await ApiClient.documents.updateWithFile(docId, token, editFile, {
-          title: editFileName,
-          fileName: editFileName,
-          type: editDocType,
-          documentType: editDocType,
-          category: editDocType,
+
+        // First delete the old document
+        await ApiClient.documents.delete(docId, token)
+
+        // Then upload the new document with same metadata
+        await ApiClient.documents.upload(token, editFile, {
           companyId: editingDocument.companyId,
           userId: editingDocument.userId,
+          title: editFileName,
+          documentType: editDocType,
+          type: editDocType,
+          category: editDocType,
+          description: editingDocument.description || `${editDocType}`,
+          uploadedBy: "admin",
         })
 
         toast({
-          title: "Document Updated",
-          description: `Successfully updated document with ${editFile.name}`,
+          title: "Document Replaced",
+          description: `Successfully replaced document with ${editFile.name}`,
         })
       } else {
         // Update document metadata without changing the file
