@@ -260,6 +260,12 @@ export default function DocumentsPage() {
 
       if (editFile) {
         // Update document with new file using FormData
+        const docId = editingDocument.id || editingDocument._id?.toString() || editingDocument._id
+        
+        if (!docId) {
+          throw new Error("Document ID is missing")
+        }
+        
         const formData = new FormData()
         formData.append("file", editFile)
         formData.append("title", editFileName)
@@ -267,10 +273,15 @@ export default function DocumentsPage() {
         formData.append("type", editDocType)
         formData.append("documentType", editDocType)
         formData.append("category", editDocType)
-        formData.append("companyId", editingDocument.companyId)
-        formData.append("userId", editingDocument.userId)
         
-        await ApiClient.request(`/documents/${editingDocument.id}`, {
+        if (editingDocument.companyId) {
+          formData.append("companyId", editingDocument.companyId)
+        }
+        if (editingDocument.userId) {
+          formData.append("userId", editingDocument.userId)
+        }
+        
+        await ApiClient.request(`/documents/${docId}`, {
           method: "PUT",
           body: formData,
           token,
