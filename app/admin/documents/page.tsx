@@ -259,32 +259,21 @@ export default function DocumentsPage() {
       if (!token) throw new Error("No auth token")
 
       if (editFile) {
-        // Update document with new file using FormData
+        // Update document with new file
         const docId = editingDocument.id || editingDocument._id?.toString() || editingDocument._id
         
         if (!docId) {
           throw new Error("Document ID is missing")
         }
         
-        const formData = new FormData()
-        formData.append("file", editFile)
-        formData.append("title", editFileName)
-        formData.append("fileName", editFileName)
-        formData.append("type", editDocType)
-        formData.append("documentType", editDocType)
-        formData.append("category", editDocType)
-        
-        if (editingDocument.companyId) {
-          formData.append("companyId", editingDocument.companyId)
-        }
-        if (editingDocument.userId) {
-          formData.append("userId", editingDocument.userId)
-        }
-        
-        await ApiClient.request(`/documents/${docId}`, {
-          method: "PUT",
-          body: formData,
-          token,
+        await ApiClient.documents.updateWithFile(docId, token, editFile, {
+          title: editFileName,
+          fileName: editFileName,
+          type: editDocType,
+          documentType: editDocType,
+          category: editDocType,
+          companyId: editingDocument.companyId,
+          userId: editingDocument.userId,
         })
 
         toast({

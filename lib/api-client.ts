@@ -176,6 +176,16 @@ export class ApiClient {
     },
     update: (id: string, data: any, token: string) =>
       this.request(`/documents/${id}`, { method: "PUT", body: data, token }),
+    updateWithFile: (id: string, token: string, file: File, metadata: any) => {
+      const formData = new FormData()
+      formData.append("file", file)
+      Object.keys(metadata).forEach((key) => {
+        if (metadata[key] !== undefined && metadata[key] !== null) {
+          formData.append(key, metadata[key])
+        }
+      })
+      return this.request(`/documents/${id}`, { method: "PUT", body: formData, token })
+    },
     delete: (id: string, token: string) => this.request(`/documents/${id}`, { method: "DELETE", token }),
     download: (token: string, id: string): Promise<Blob> =>
       this.request(`/documents/${id}/download`, { token, responseType: "blob" }),
