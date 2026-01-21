@@ -245,7 +245,14 @@ export default function DocumentsPage() {
   }
 
   const handleSaveEdit = async () => {
+    console.log("[v0] handleSaveEdit called")
+    console.log("[v0] editFileName:", editFileName)
+    console.log("[v0] editDocType:", editDocType)
+    console.log("[v0] editFile:", editFile)
+    console.log("[v0] editingDocument:", editingDocument)
+    
     if (!editingDocument || !editFileName) {
+      console.log("[v0] Missing information - editingDocument or editFileName")
       toast({
         title: "Missing Information",
         description: "Please provide a file name",
@@ -259,15 +266,17 @@ export default function DocumentsPage() {
       if (!token) throw new Error("No auth token")
 
       if (editFile) {
+        console.log("[v0] File change detected, replacing document")
         // Replace document by uploading new one first, then deleting old one
         const docId = editingDocument.id || editingDocument._id?.toString() || editingDocument._id
+        console.log("[v0] Document ID:", docId)
         
         if (!docId) {
+          console.error("[v0] Document ID is missing!")
           throw new Error("Document ID is missing")
         }
 
-        // First upload the new document with same metadata
-        await ApiClient.documents.upload(token, editFile, {
+        const uploadMetadata = {
           companyId: editingDocument.companyId,
           userId: editingDocument.userId,
           title: editFileName,
@@ -276,28 +285,42 @@ export default function DocumentsPage() {
           category: editDocType,
           description: editingDocument.description || `${editDocType}`,
           uploadedBy: "admin",
-        })
+        }
+        console.log("[v0] Upload metadata:", uploadMetadata)
+
+        // First upload the new document with same metadata
+        console.log("[v0] Uploading new document...")
+        const uploadResult = await ApiClient.documents.upload(token, editFile, uploadMetadata)
+        console.log("[v0] Upload result:", uploadResult)
 
         // Only delete the old document after successful upload
-        await ApiClient.documents.delete(docId, token)
+        console.log("[v0] Deleting old document with ID:", docId)
+        const deleteResult = await ApiClient.documents.delete(docId, token)
+        console.log("[v0] Delete result:", deleteResult)
 
         toast({
           title: "Document Replaced",
           description: `Successfully replaced document with ${editFile.name}`,
         })
       } else {
+        console.log("[v0] No file change, updating metadata only")
+        const updateData = {
+          title: editFileName,
+          fileName: editFileName,
+          type: editDocType,
+          documentType: editDocType,
+          category: editDocType,
+        }
+        console.log("[v0] Update data:", updateData)
+        console.log("[v0] Updating document ID:", editingDocument.id)
+        
         // Update document metadata without changing the file
-        await ApiClient.documents.update(
+        const updateResult = await ApiClient.documents.update(
           editingDocument.id,
-          {
-            title: editFileName,
-            fileName: editFileName,
-            type: editDocType,
-            documentType: editDocType,
-            category: editDocType,
-          },
+          updateData,
           token,
         )
+        console.log("[v0] Update result:", updateResult)
 
         toast({
           title: "Document Updated",
@@ -305,14 +328,22 @@ export default function DocumentsPage() {
         })
       }
 
+      console.log("[v0] Reloading data...")
       await loadData()
+      console.log("[v0] Data reloaded, closing modal")
       setEditModalOpen(false)
       setEditingDocument(null)
       setEditFile(null)
     } catch (error) {
+      console.error("[v0] Update failed with error:", error)
+      console.error("[v0] Error details:", {
+        message: error.message,
+        stack: error.stack,
+        error
+      })
       toast({
         title: "Update Failed",
-        description: "Failed to update document. Please try again.",
+        description: error.message || "Failed to update document. Please try again.",
         variant: "destructive",
       })
     }
