@@ -276,21 +276,38 @@ export default function DocumentsPage() {
           throw new Error("Document ID is missing")
         }
 
-        const uploadMetadata = {
+        // First upload the new document with same metadata using direct fetch like the working upload
+        console.log("[v0] Uploading new document...")
+        const formData = new FormData()
+        formData.append("files", editFile)
+        formData.append("companyId", editingDocument.companyId)
+        formData.append("userId", editingDocument.userId)
+        formData.append("title", editFileName)
+        formData.append("type", editDocType)
+        formData.append("category", "general")
+        
+        console.log("[v0] Upload FormData fields:", {
           companyId: editingDocument.companyId,
           userId: editingDocument.userId,
           title: editFileName,
-          documentType: editDocType,
           type: editDocType,
-          category: editDocType,
-          description: editingDocument.description || `${editDocType}`,
-          uploadedBy: "admin",
-        }
-        console.log("[v0] Upload metadata:", uploadMetadata)
+        })
 
-        // First upload the new document with same metadata
-        console.log("[v0] Uploading new document...")
-        const uploadResult = await ApiClient.documents.upload(token, editFile, uploadMetadata)
+        const uploadResponse = await fetch("/api/documents", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        })
+
+        if (!uploadResponse.ok) {
+          const errorText = await uploadResponse.text()
+          console.error("[v0] Upload failed:", errorText)
+          throw new Error(`Upload failed: ${errorText}`)
+        }
+
+        const uploadResult = await uploadResponse.json()
         console.log("[v0] Upload result:", uploadResult)
 
         // Only delete the old document after successful upload
