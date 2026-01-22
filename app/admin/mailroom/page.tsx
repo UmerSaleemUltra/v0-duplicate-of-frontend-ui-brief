@@ -458,9 +458,9 @@ Notes: ${mail.notes || "None"}
     const company = companies.find((c) => c.id === item.companyId)
 
     const matchesSearch =
-      company?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.userId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (company?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.userId || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.subject || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.from || item.sender || "").toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesType = typeFilter === "all" || item.type === typeFilter
