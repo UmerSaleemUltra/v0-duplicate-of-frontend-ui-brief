@@ -228,17 +228,19 @@ export default function DocumentsPage() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                <Download className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xl sm:text-2xl font-semibold text-slate-900">{completedDocs.length}</div>
-                <div className="text-xs sm:text-sm text-slate-600">Ready to Download</div>
+          {completedDocs.length > 0 && (
+            <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
+                  <Download className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="text-xl sm:text-2xl font-semibold text-slate-900">{completedDocs.length}</div>
+                  <div className="text-xs sm:text-sm text-slate-600">Ready to Download</div>
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
