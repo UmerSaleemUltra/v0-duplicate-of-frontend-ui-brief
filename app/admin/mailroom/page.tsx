@@ -384,67 +384,52 @@ Notes: ${mail.notes || "None"}
         uploadedFileUrl = uploadData.url
       }
 
-      if (uploadedFileUrl) {
-        const response = await ApiClient.mail.update(
-          mailToEdit.id,
-          {
-            subject: editSubject,
-            from: editFrom,
-            type: editType,
-            notes: editNotes,
-            attachments: [
-              {
-                name: editFile!.name,
-                fileUrl: uploadedFileUrl,
-                size: editFile!.size,
-              },
-            ],
-            hasAttachment: true,
-          },
-          token,
-        )
-
-        const updatedMail = response.data
-
-        setMailItems(
-          mailItems.map((item) =>
-            item.id === mailToEdit.id
-              ? {
-                  ...updatedMail,
-                  id: updatedMail.id || updatedMail._id?.toString(),
-                  sender: updatedMail.from || updatedMail.sender,
-                  receivedAt: updatedMail.receivedDate || updatedMail.receivedAt,
-                }
-              : item,
-          ),
-        )
-      } else {
-        const response = await ApiClient.mail.update(
-          mailToEdit.id,
-          {
-            subject: editSubject,
-            from: editFrom,
-            type: editType,
-            notes: editNotes,
-          },
-          token,
-        )
-
-        const updatedMail = response.data
-
-        setMailItems(
-          mailItems.map((item) =>
-            item.id === mailToEdit.id
-              ? {
-                  ...updatedMail,
-                  id: updatedMail.id || updatedMail._id?.toString(),
-                  sender: updatedMail.from || updatedMail.sender,
-                  receivedAt: updatedMail.receivedDate || updatedMail.receivedAt,
-                }
-              : item,
-          ),
-        )
+      const updateData = {
+        subject: editSubject,
+        from: editFrom,
+        type: editType,
+        notes: editNotes,
+        ...(uploadedFileUrl && {
+          attachments: [
+            {
+              name: editFile!.name,
+              fileUrl: uploadedFileUrl,
+              size: editFile!.size,
+            },
+          ],
+          hasAttachment: true,
+        }),
       }
+
+      const response = await fetch(`/api/mail/${mailToEdit.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(updateData),
+      })
+
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.error("[v0] Mail update failed:", response.status, errorText)
+        throw new Error(`Mail update failed with status ${response.status}`)
+      }
+
+      const updatedMail = await response.json()
+
+      setMailItems(
+        mailItems.map((item) =>
+          item.id === mailToEdit.id
+            ? {
+                ...updatedMail,
+                id: updatedMail.id || updatedMail._id?.toString(),
+                sender: updatedMail.from || updatedMail.sender,
+                receivedAt: updatedMail.receivedDate || updatedMail.receivedAt,
+              }
+            : item,
+        ),
+      )
 
       setEditDialogOpen(false)
       setMailToEdit(null)
