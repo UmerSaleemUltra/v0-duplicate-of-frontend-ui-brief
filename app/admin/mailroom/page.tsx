@@ -702,6 +702,7 @@ Notes: ${mail.notes || "None"}
                 <TableHead className="text-slate-900 font-semibold">From</TableHead>
                 <TableHead className="text-slate-900 font-semibold">Subject</TableHead>
                 <TableHead className="text-slate-900 font-semibold">Type</TableHead>
+                <TableHead className="text-slate-900 font-semibold">Notes</TableHead>
                 <TableHead className="text-slate-900 font-semibold">Date</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
@@ -709,7 +710,7 @@ Notes: ${mail.notes || "None"}
             <TableBody>
               {paginatedItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center text-muted-foreground py-12">
+                  <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
                     No mail items found
                   </TableCell>
                 </TableRow>
@@ -737,6 +738,15 @@ Notes: ${mail.notes || "None"}
                       <TableCell className="text-slate-600">{item.from || item.sender}</TableCell>
                       <TableCell className="text-slate-900">{item.subject}</TableCell>
                       <TableCell className="text-slate-600 text-sm capitalize">{item.type}</TableCell>
+                      <TableCell className="text-slate-600 text-sm">
+                        {item.notes ? (
+                          <span className="line-clamp-2" title={item.notes}>
+                            {item.notes}
+                          </span>
+                        ) : (
+                          <span className="text-slate-400 italic">No notes</span>
+                        )}
+                      </TableCell>
                       <TableCell className="text-slate-600">
                         {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()}
                       </TableCell>
