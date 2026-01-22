@@ -296,6 +296,11 @@ export default function MailroomPage() {
                             <span> • {item.attachments.length} file(s)</span>
                           )}
                         </div>
+                        {item.notes && (
+                          <div className="text-xs sm:text-sm text-slate-500 mt-2 italic bg-slate-100 rounded px-2 py-1">
+                            {item.notes}
+                          </div>
+                        )}
                         <div className="flex items-center gap-2 mt-2">
                           <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Received</Badge>
                           {item.hasAttachment && (
