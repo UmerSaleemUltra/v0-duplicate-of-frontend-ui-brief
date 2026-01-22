@@ -367,48 +367,49 @@ Notes: ${mail.notes || "None"}
       const token = authService.getToken()
       if (!token) throw new Error("No auth token")
 
-      let uploadedFileUrl = null
+      console.log("[v0] Updating mail item:", mailToEdit.id)
+      console.log("[v0] Has file:", !!editFile)
+
+      let response
 
       if (editFile) {
+        // Update with file using FormData
+        console.log("[v0] Updating with file using FormData")
         const formData = new FormData()
         formData.append("file", editFile)
-        const uploadResponse = await fetch("/api/mail", {
-          method: "POST",
-          body: formData,
+        formData.append("subject", editSubject)
+        formData.append("from", editFrom)
+        formData.append("type", editType)
+        formData.append("notes", editNotes)
+
+        response = await fetch(`/api/mail/${mailToEdit.id}`, {
+          method: "PUT",
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          body: formData,
         })
-        const uploadData = await uploadResponse.json()
-        if (!uploadData.url) throw new Error("File upload failed")
-        uploadedFileUrl = uploadData.url
+      } else {
+        // Update without file using JSON
+        console.log("[v0] Updating without file using JSON")
+        const updateData = {
+          subject: editSubject,
+          from: editFrom,
+          type: editType,
+          notes: editNotes,
+        }
+
+        response = await fetch(`/api/mail/${mailToEdit.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updateData),
+        })
       }
 
-      const updateData = {
-        subject: editSubject,
-        from: editFrom,
-        type: editType,
-        notes: editNotes,
-        ...(uploadedFileUrl && {
-          attachments: [
-            {
-              name: editFile!.name,
-              fileUrl: uploadedFileUrl,
-              size: editFile!.size,
-            },
-          ],
-          hasAttachment: true,
-        }),
-      }
-
-      const response = await fetch(`/api/mail/${mailToEdit.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updateData),
-      })
+      console.log("[v0] Response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
@@ -417,6 +418,7 @@ Notes: ${mail.notes || "None"}
       }
 
       const updatedMail = await response.json()
+      console.log("[v0] Mail updated successfully:", updatedMail)
 
       setMailItems(
         mailItems.map((item) =>
@@ -456,9 +458,9 @@ Notes: ${mail.notes || "None"}
     const company = companies.find((c) => c.id === item.companyId)
 
     const matchesSearch =
-      company?.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.userId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      item.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (company?.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.userId || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (item.subject || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
       (item.from || item.sender || "").toLowerCase().includes(searchQuery.toLowerCase())
 
     const matchesType = typeFilter === "all" || item.type === typeFilter
