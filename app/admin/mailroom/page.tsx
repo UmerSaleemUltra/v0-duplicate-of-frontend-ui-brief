@@ -372,7 +372,7 @@ Notes: ${mail.notes || "None"}
       if (editFile) {
         const formData = new FormData()
         formData.append("file", editFile)
-        const uploadResponse = await fetch("/api/upload", {
+        const uploadResponse = await fetch("/api/mail", {
           method: "POST",
           body: formData,
           headers: {
