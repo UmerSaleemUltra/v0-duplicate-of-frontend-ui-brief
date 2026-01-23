@@ -26,28 +26,61 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Number.parseInt(searchParams.get("limit") || "50"), 100)
     const skip = (page - 1) * limit
 
-    const { db } = await connectDB()
+    const { db, ObjectId } = await connectDB()
 
-    const filter = isAdmin ? {} : { isActive: true }
+    let addons
 
-    const addons = await db
-      .collection("addons")
-      .find(filter)
-      .project({
-        _id: 1,
-        name: 1,
-        description: 1,
-        price: 1,
-        category: 1,
-        isActive: 1,
-        icon: 1,
-        features: 1,
-        createdAt: 1,
-      })
-      .sort({ createdAt: -1 })
-      .skip(skip)
-      .limit(limit)
-      .toArray()
+    if (isAdmin) {
+      // Admin sees all addons
+      addons = await db
+        .collection("addons")
+        .find({})
+        .project({
+          _id: 1,
+          name: 1,
+          description: 1,
+          price: 1,
+          category: 1,
+          isActive: 1,
+          icon: 1,
+          features: 1,
+          createdAt: 1,
+        })
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit)
+        .toArray()
+    } else {
+      // Regular users only see addons assigned to them
+      const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.userId) })
+      
+      if (!user || !user.purchasedAddons || !Array.isArray(user.purchasedAddons) || user.purchasedAddons.length === 0) {
+        // User has no purchased addons
+        addons = []
+      } else {
+        // Get the addon IDs from user's purchasedAddons
+        const addonIds = user.purchasedAddons.map((pa: any) => new ObjectId(pa.addonId))
+        
+        addons = await db
+          .collection("addons")
+          .find({ _id: { $in: addonIds }, isActive: true })
+          .project({
+            _id: 1,
+            name: 1,
+            description: 1,
+            price: 1,
+            category: 1,
+            isActive: 1,
+            icon: 1,
+            features: 1,
+            createdAt: 1,
+          })
+          .sort({ createdAt: -1 })
+          .skip(skip)
+          .limit(limit)
+          .toArray()
+      }
+    }
 
     const result = {
       success: true,
@@ -60,7 +93,7 @@ export async function GET(request: NextRequest) {
         pagination: {
           page,
           limit,
-          total: await db.collection("addons").countDocuments(filter),
+          total: addons.length,
         },
       },
     }
@@ -87,7 +120,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, price, category, isActive, icon, features } = body
+    const { name, description, price, category, isActive, icon, features, userIds, assignToAll } = body
 
     if (!name || !description || price === undefined) {
       return NextResponse.json(
@@ -107,7 +140,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Description must be under 1000 characters" }, { status: 400 })
     }
 
-    const { db } = await connectDB()
+    const { db, ObjectId } = await connectDB()
 
     const addonData = {
       name,
@@ -123,17 +156,47 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await db.collection("addons").insertOne(addonData)
-    const addonId = result.insertedId.toString()
+    const addonId = result.insertedId
+
+    // Assign addon to users if specified
+    if (assignToAll) {
+      await db.collection("users").updateMany(
+        {},
+        {
+          $addToSet: {
+            purchasedAddons: {
+              addonId: addonId,
+              purchasedAt: new Date(),
+              price: addonData.price,
+            },
+          },
+        },
+      )
+    } else if (userIds && Array.isArray(userIds) && userIds.length > 0) {
+      const validUserIds = userIds.filter((id: string) => ObjectId.isValid(id)).map((id: string) => new ObjectId(id))
+      await db.collection("users").updateMany(
+        { _id: { $in: validUserIds } },
+        {
+          $addToSet: {
+            purchasedAddons: {
+              addonId: addonId,
+              purchasedAt: new Date(),
+              price: addonData.price,
+            },
+          },
+        },
+      )
+    }
 
     broadcast("addon_created", {
-      id: addonId,
+      id: addonId.toString(),
       name: addonData.name,
       price: addonData.price,
     })
 
     const response = NextResponse.json({
       success: true,
-      data: { addon: { ...addonData, id: addonId, _id: undefined } },
+      data: { addon: { ...addonData, id: addonId.toString(), _id: undefined } },
       message: "Addon created successfully",
     })
     addSecurityHeaders(response)

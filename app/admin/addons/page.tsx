@@ -56,6 +56,9 @@ export default function AdminAddonsPage() {
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [userSearchQuery, setUserSearchQuery] = useState("")
+  const [assignOnCreate, setAssignOnCreate] = useState(false)
+  const [createAssignToAll, setCreateAssignToAll] = useState(false)
+  const [createSelectedUserIds, setCreateSelectedUserIds] = useState<Set<string>>(new Set())
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [addonToDelete, setAddonToDelete] = useState<Addon | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -110,10 +113,21 @@ export default function AdminAddonsPage() {
       const token = authService.getToken()
       const method = editingAddon ? "PUT" : "POST"
       const url = editingAddon ? `/api/addons/${editingAddon.id}` : "/api/addons"
-      const body = JSON.stringify({
+      
+      const bodyData: any = {
         ...formData,
         features: formData.features.split(", ").filter(Boolean),
-      })
+      }
+
+      // Add user assignment for new addons only
+      if (!editingAddon && assignOnCreate) {
+        bodyData.assignToAll = createAssignToAll
+        if (!createAssignToAll) {
+          bodyData.userIds = Array.from(createSelectedUserIds)
+        }
+      }
+
+      const body = JSON.stringify(bodyData)
 
       const response = await fetch(url, {
         method,
@@ -232,6 +246,13 @@ export default function AdminAddonsPage() {
         icon: "",
         features: "",
       })
+      // Reset assignment states for new addon
+      setAssignOnCreate(false)
+      setCreateAssignToAll(false)
+      setCreateSelectedUserIds(new Set())
+      setUserSearchQuery("")
+      // Load users when creating new addon
+      loadUsers()
     }
     setIsDialogOpen(true)
   }
@@ -262,6 +283,26 @@ export default function AdminAddonsPage() {
 
   const handleClearSelection = () => {
     setSelectedUserIds(new Set())
+  }
+
+  const handleCreateUserToggle = (userId: string) => {
+    const newSelected = new Set(createSelectedUserIds)
+    if (newSelected.has(userId)) {
+      newSelected.delete(userId)
+    } else {
+      newSelected.add(userId)
+    }
+    setCreateSelectedUserIds(newSelected)
+  }
+
+  const handleSelectAllFilteredCreate = () => {
+    const newSelected = new Set(createSelectedUserIds)
+    filteredUsers.forEach((user) => newSelected.add(user.id))
+    setCreateSelectedUserIds(newSelected)
+  }
+
+  const handleClearSelectionCreate = () => {
+    setCreateSelectedUserIds(new Set())
   }
 
   const handleUserToggle = (userId: string) => {
@@ -614,6 +655,164 @@ export default function AdminAddonsPage() {
                   onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
                 />
               </div>
+
+              {!editingAddon && (
+                <div className="space-y-4 p-4 border border-slate-200 rounded-lg">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label htmlFor="assignOnCreate" className="text-sm font-medium">
+                        Assign to Users
+                      </Label>
+                      <p className="text-xs text-slate-600 mt-1">Assign this addon to users when created</p>
+                    </div>
+                    <Switch
+                      id="assignOnCreate"
+                      checked={assignOnCreate}
+                      onCheckedChange={(checked) => {
+                        setAssignOnCreate(checked)
+                        if (!checked) {
+                          setCreateAssignToAll(false)
+                          setCreateSelectedUserIds(new Set())
+                        }
+                      }}
+                    />
+                  </div>
+
+                  {assignOnCreate && (
+                    <div className="space-y-3 pt-3 border-t">
+                      <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
+                        <input
+                          type="radio"
+                          id="create-assign-all"
+                          checked={createAssignToAll}
+                          onChange={() => setCreateAssignToAll(true)}
+                          className="w-4 h-4 mt-1"
+                        />
+                        <label htmlFor="create-assign-all" className="flex-1 cursor-pointer">
+                          <span className="text-sm font-medium block">Assign to All Users</span>
+                          <span className="text-xs text-slate-600">All current and future users will have access</span>
+                        </label>
+                      </div>
+
+                      <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
+                        <input
+                          type="radio"
+                          id="create-assign-specific"
+                          checked={!createAssignToAll}
+                          onChange={() => setCreateAssignToAll(false)}
+                          className="w-4 h-4 mt-1"
+                        />
+                        <label htmlFor="create-assign-specific" className="flex-1 cursor-pointer">
+                          <span className="text-sm font-medium block">Assign to Specific Users</span>
+                          <span className="text-xs text-slate-600">Choose which users can access this addon</span>
+                        </label>
+                      </div>
+
+                      {!createAssignToAll && (
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <Label className="text-base font-semibold">
+                              Select Users ({createSelectedUserIds.size} selected)
+                            </Label>
+                            <div className="flex gap-2">
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleSelectAllFilteredCreate}
+                                disabled={filteredUsers.length === 0}
+                                className="text-xs"
+                              >
+                                <Check className="w-3 h-3 mr-1" />
+                                Select All
+                              </Button>
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={handleClearSelectionCreate}
+                                disabled={createSelectedUserIds.size === 0}
+                                className="text-xs"
+                              >
+                                <X className="w-3 h-3 mr-1" />
+                                Clear
+                              </Button>
+                            </div>
+                          </div>
+
+                          <div className="relative">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                            <Input
+                              placeholder="Search users by name or email..."
+                              value={userSearchQuery}
+                              onChange={(e) => setUserSearchQuery(e.target.value)}
+                              className="pl-9"
+                            />
+                            {userSearchQuery && (
+                              <button
+                                type="button"
+                                onClick={() => setUserSearchQuery("")}
+                                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                              >
+                                <X className="w-4 h-4" />
+                              </button>
+                            )}
+                          </div>
+
+                          <div className="border border-slate-200 rounded-lg max-h-64 overflow-y-auto">
+                            {isLoadingUsers ? (
+                              <div className="flex items-center justify-center py-8">
+                                <Spinner className="w-6 h-6" />
+                                <span className="ml-2 text-sm text-slate-600">Loading users...</span>
+                              </div>
+                            ) : filteredUsers.length === 0 ? (
+                              <div className="py-8 text-center">
+                                <p className="text-sm text-slate-600">
+                                  {userSearchQuery ? "No users match your search" : "No users found"}
+                                </p>
+                              </div>
+                            ) : (
+                              <div className="divide-y divide-slate-100">
+                                {filteredUsers.map((user) => (
+                                  <div
+                                    key={user.id}
+                                    onClick={() => handleCreateUserToggle(user.id)}
+                                    className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
+                                      createSelectedUserIds.has(user.id) ? "bg-red-50" : "hover:bg-slate-50"
+                                    }`}
+                                  >
+                                    <div
+                                      className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                        createSelectedUserIds.has(user.id)
+                                          ? "bg-[#880000] border-[#880000]"
+                                          : "border-slate-300"
+                                      }`}
+                                    >
+                                      {createSelectedUserIds.has(user.id) && <Check className="w-3 h-3 text-white" />}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-sm font-medium text-slate-900 truncate">
+                                        {user.name || "No Name"}
+                                      </p>
+                                      <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+
+                          {filteredUsers.length > 0 && (
+                            <p className="text-xs text-slate-500">
+                              Showing {filteredUsers.length} of {users.length} users
+                            </p>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 justify-end">
