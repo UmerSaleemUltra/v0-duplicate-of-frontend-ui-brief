@@ -805,7 +805,7 @@ export default function AdminAddonsPage() {
               }} disabled={isSaving || isAssigning}>
                 {showAssignmentInDialog && !editingAddon ? "Skip Assignment" : "Cancel"}
               </Button>
-              {!showAssignmentInDialog && (
+              {!showAssignmentInDialog ? (
                 <Button onClick={handleSave} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]" disabled={isSaving || isAssigning}>
                   {isSaving ? (
                     <>
@@ -841,7 +841,6 @@ export default function AdminAddonsPage() {
                   </Button>
                 </>
               )}
-            </div>
           </DialogContent>
         </Dialog>
 
