@@ -29,14 +29,8 @@ function AddonCheckoutContent() {
   const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
-  const [cardNumber, setCardNumber] = useState("")
-  const [expiry, setExpiry] = useState("")
-  const [cvc, setCvc] = useState("")
-  const [cardholderName, setCardholderName] = useState("")
-
   const [whatsappPhoneNumber, setWhatsappPhoneNumber] = useState("")
   const [whatsappReceiptFile, setWhatsappReceiptFile] = useState<File | null>(null)
-  const [transactionId, setTransactionId] = useState("")
 
   useEffect(() => {
     const fetchAddon = async () => {
@@ -111,20 +105,11 @@ function AddonCheckoutContent() {
       return
     }
 
-    if (paymentMethod === "stripe") {
-      if (!cardNumber || !expiry || !cvc || !cardholderName) {
+    if (paymentMethod === "whatsapp") {
+      if (!whatsappPhoneNumber || !whatsappReceiptFile) {
         toast({
           title: "Error",
-          description: "Please fill in all card details",
-          variant: "destructive",
-        })
-        return
-      }
-    } else if (paymentMethod === "whatsapp") {
-      if (!transactionId) {
-        toast({
-          title: "Error",
-          description: "Please enter your transaction ID",
+          description: "Please enter your phone number and upload a receipt file",
           variant: "destructive",
         })
         return
@@ -335,137 +320,16 @@ function AddonCheckoutContent() {
     setShowPaymentForm(false)
   }, [])
 
-  const stripePaymentForm = useMemo(() => {
-    if (!showPaymentForm || paymentMethod !== "stripe") return null
-
-    return (
-      <form onSubmit={handlePurchase} className="space-y-6">
-        <div className="flex items-center justify-between pb-4 border-b">
-          <h3 className="font-semibold flex items-center gap-2">
-            <CreditCard className="w-5 h-5 text-[#ff0d13]" />
-            Card Details
-          </h3>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToPaymentMethods}
-            className="text-slate-600 cursor-pointer"
-          >
-            Change Method
-          </Button>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="cardNumber">Card Number</Label>
-          <div className="relative">
-            <CreditCard className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
-            <Input
-              id="cardNumber"
-              placeholder="1234 5678 9012 3456"
-              value={cardNumber}
-              onChange={(e) => setCardNumber(e.target.value)}
-              className="pl-10"
-              required
-            />
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div className="space-y-2">
-            <Label htmlFor="expiry">Expiry Date</Label>
-            <Input
-              id="expiry"
-              placeholder="MM/YY"
-              value={expiry}
-              onChange={(e) => setExpiry(e.target.value)}
-              required
-            />
-          </div>
-          <div className="space-y-2">
-            <Label htmlFor="cvc">CVC</Label>
-            <Input
-              id="cvc"
-              placeholder="123"
-              value={cvc}
-              onChange={(e) => setCvc(e.target.value)}
-              maxLength={4}
-              required
-            />
-          </div>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="cardholderName">Cardholder Name</Label>
-          <Input
-            id="cardholderName"
-            placeholder="John Smith"
-            value={cardholderName}
-            onChange={(e) => setCardholderName(e.target.value)}
-            required
-          />
-        </div>
-
-        <div className="p-4 rounded-lg bg-[#ff0d13]/5 border border-[#ff0d13]/20 flex items-start gap-3">
-          <Lock className="w-5 h-5 text-[#ff0d13] flex-shrink-0 mt-0.5" />
-          <div className="text-sm">
-            <p className="font-semibold text-[#ff0d13] mb-1">256-bit SSL Encryption</p>
-            <p className="text-slate-600">Your payment information is encrypted and secure.</p>
-          </div>
-        </div>
-
-        <Separator />
-
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Subtotal</span>
-            <span className="font-medium">${addon?.price}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-slate-600">Processing Fee</span>
-            <span className="font-medium">$0</span>
-          </div>
-          <Separator />
-          <div className="flex justify-between">
-            <span className="font-semibold text-slate-900">Total</span>
-            <span className="font-bold text-xl text-slate-900">${addon?.price}</span>
-          </div>
-        </div>
-
-        <div className="flex gap-3">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={handleBackToPaymentMethods}
-            className="flex-1 bg-transparent cursor-pointer"
-            disabled={isProcessing}
-          >
-            Back
-          </Button>
-          <Button
-            type="submit"
-            disabled={isProcessing}
-            className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer"
-          >
-            {isProcessing ? "Processing..." : `Pay $${addon?.price}`}
-          </Button>
-        </div>
-      </form>
-    )
-  }, [
-    showPaymentForm,
-    paymentMethod,
-    cardNumber,
-    expiry,
-    cvc,
-    cardholderName,
-    isProcessing,
-    addon,
-    handleBackToPaymentMethods,
-  ])
 
   const whatsappPaymentForm = useMemo(() => {
     if (!showPaymentForm || paymentMethod !== "whatsapp") return null
+
+    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0]
+      if (file) {
+        setWhatsappReceiptFile(file)
+      }
+    }
 
     return (
       <form onSubmit={handlePurchase} className="space-y-6">
@@ -493,7 +357,7 @@ function AddonCheckoutContent() {
               <ol className="text-sm text-slate-700 space-y-1 list-decimal list-inside">
                 <li>Contact us on WhatsApp to receive payment details</li>
                 <li>Complete your payment via WhatsApp</li>
-                <li>Enter your transaction reference below</li>
+                <li>Enter your phone number and upload the payment receipt</li>
                 <li>Submit to complete your order</li>
               </ol>
             </div>
@@ -501,17 +365,49 @@ function AddonCheckoutContent() {
         </div>
 
         <div className="space-y-2">
-          <Label htmlFor="transactionId">Transaction ID / Reference Number</Label>
+          <Label htmlFor="whatsappPhone" className="flex items-center gap-2">
+            <Phone className="w-4 h-4" />
+            WhatsApp Phone Number
+          </Label>
           <Input
-            id="transactionId"
-            placeholder="Enter your transaction ID or reference number"
-            value={transactionId}
-            onChange={(e) => setTransactionId(e.target.value)}
+            id="whatsappPhone"
+            placeholder="Enter your WhatsApp phone number (e.g., +1234567890)"
+            value={whatsappPhoneNumber}
+            onChange={(e) => setWhatsappPhoneNumber(e.target.value)}
             required
           />
           <p className="text-sm text-slate-600">
-            Please enter the transaction ID or reference number from your WhatsApp payment
+            We'll use this number to confirm your payment
           </p>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="receipt" className="flex items-center gap-2">
+            <Upload className="w-4 h-4" />
+            Upload Payment Receipt
+          </Label>
+          <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
+            <input
+              id="receipt"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={handleFileChange}
+              className="hidden"
+              required
+            />
+            <label
+              htmlFor="receipt"
+              className="cursor-pointer block"
+            >
+              <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
+              <p className="text-sm font-medium text-slate-700 mb-1">
+                {whatsappReceiptFile ? whatsappReceiptFile.name : "Click to upload receipt"}
+              </p>
+              <p className="text-xs text-slate-600">
+                PNG, JPG, GIF or PDF (max. 10MB)
+              </p>
+            </label>
+          </div>
         </div>
 
         <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-3">
@@ -519,7 +415,7 @@ function AddonCheckoutContent() {
           <div className="text-sm">
             <p className="font-semibold text-amber-900 mb-1">Payment Verification</p>
             <p className="text-slate-700">
-              Your order will be processed once we verify your payment. This usually takes 1-2 business hours.
+              Your order will be processed once we verify your payment and receipt. This usually takes 1-2 business hours.
             </p>
           </div>
         </div>
@@ -554,15 +450,15 @@ function AddonCheckoutContent() {
           </Button>
           <Button
             type="submit"
-            disabled={isProcessing || !transactionId}
+            disabled={isProcessing || !whatsappPhoneNumber || !whatsappReceiptFile}
             className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer"
           >
-            {isProcessing ? "Submitting..." : "Submit Reference"}
+            {isProcessing ? "Submitting..." : `Submit Payment`}
           </Button>
         </div>
       </form>
     )
-  }, [showPaymentForm, paymentMethod, transactionId, isProcessing, addon, handleBackToPaymentMethods])
+  }, [showPaymentForm, paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, handleBackToPaymentMethods])
 
   if (isLoading) {
     return (
@@ -654,19 +550,6 @@ function AddonCheckoutContent() {
                 <div className="space-y-4">
                   <RadioGroup value={paymentMethod || ""} onValueChange={handlePaymentMethodChange}>
                     <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-slate-200 hover:border-[#ff0d13] transition-colors cursor-pointer">
-                      <RadioGroupItem value="stripe" id="stripe" />
-                      <Label htmlFor="stripe" className="flex items-center gap-3 cursor-pointer flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                          <CreditCard className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium">Credit/Debit Card</div>
-                          <div className="text-sm text-slate-600">Pay securely with Stripe</div>
-                        </div>
-                      </Label>
-                    </div>
-
-                    <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-slate-200 hover:border-[#ff0d13] transition-colors cursor-pointer">
                       <RadioGroupItem value="whatsapp" id="whatsapp" />
                       <Label htmlFor="whatsapp" className="flex items-center gap-3 cursor-pointer flex-1">
                         <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
@@ -682,7 +565,6 @@ function AddonCheckoutContent() {
                 </div>
               )}
 
-              {stripePaymentForm}
               {whatsappPaymentForm}
             </CardContent>
           </Card>
