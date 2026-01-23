@@ -53,26 +53,28 @@ export const PUT = requireAuth(async (request: NextRequest, user, { params }: { 
     const { db } = await connectDB()
     const addonsCollection = db.collection("addons")
 
-    const updateData: Record<string, string | number | boolean> = {
+    const updateData: Record<string, string | number | boolean | string[]> = {
       updatedAt: new Date().toISOString(),
     }
 
-    if (body.name) {
+    if (body.name !== undefined) {
       if (typeof body.name !== "string" || body.name.length > 200) {
         return apiError("Invalid name: must be string under 200 characters", 400)
       }
       updateData.name = body.name
     }
-    if (body.description) {
+    if (body.description !== undefined) {
       if (typeof body.description !== "string" || body.description.length > 1000) {
         return apiError("Invalid description: must be string under 1000 characters", 400)
       }
       updateData.description = body.description
     }
     if (body.price !== undefined) updateData.price = Number.parseFloat(body.price)
-    if (body.category) updateData.category = body.category
-    if (body.processingTime) updateData.processingTime = body.processingTime
+    if (body.category !== undefined) updateData.category = body.category
+    if (body.processingTime !== undefined) updateData.processingTime = body.processingTime
     if (body.isActive !== undefined) updateData.isActive = body.isActive
+    if (body.features !== undefined) updateData.features = body.features
+    if (body.icon !== undefined) updateData.icon = body.icon
 
     const result = await addonsCollection.findOneAndUpdate(
       { _id: new ObjectId(id) },

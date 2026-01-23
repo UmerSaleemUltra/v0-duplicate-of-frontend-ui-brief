@@ -31,20 +31,20 @@ export async function authenticateRequest(
   return { success: true, user }
 }
 
-export function requireAuth(handler: (request: NextRequest, user: JWTPayload) => Promise<NextResponse>) {
-  return async (request: NextRequest) => {
+export function requireAuth(handler: (request: NextRequest, user: JWTPayload, context?: any) => Promise<NextResponse>) {
+  return async (request: NextRequest, context?: any) => {
     const auth = await authenticateRequest(request)
 
     if (!auth.success || !auth.user) {
       return NextResponse.json({ success: false, error: auth.error || "Unauthorized" }, { status: 401 })
     }
 
-    return handler(request, auth.user)
+    return handler(request, auth.user, context)
   }
 }
 
-export function requireAdmin(handler: (request: NextRequest, user: JWTPayload) => Promise<NextResponse>) {
-  return async (request: NextRequest) => {
+export function requireAdmin(handler: (request: NextRequest, user: JWTPayload, context?: any) => Promise<NextResponse>) {
+  return async (request: NextRequest, context?: any) => {
     const auth = await authenticateRequest(request)
 
     if (!auth.success || !auth.user) {
@@ -55,7 +55,7 @@ export function requireAdmin(handler: (request: NextRequest, user: JWTPayload) =
       return NextResponse.json({ success: false, error: "Admin access required" }, { status: 403 })
     }
 
-    return handler(request, auth.user)
+    return handler(request, auth.user, context)
   }
 }
 

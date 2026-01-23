@@ -5,7 +5,17 @@ import { Plus, Edit, Trash2, Package, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
@@ -45,13 +55,24 @@ export default function AdminAddonsPage() {
   const [users, setUsers] = useState<User[]>([])
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [addonToDelete, setAddonToDelete] = useState<Addon | null>(null)
+  const [isDeleting, setIsDeleting] = useState(false)
   const { toast } = useToast()
 
-  const handleDelete = async (addonId: string) => {
+  const handleDeleteClick = (addon: Addon) => {
+    setAddonToDelete(addon)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleConfirmDelete = async () => {
+    if (!addonToDelete) return
+
+    setIsDeleting(true)
     try {
       const token = authService.getToken()
 
-      const response = await fetch(`/api/addons/${addonId}`, {
+      const response = await fetch(`/api/addons/${addonToDelete.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -63,16 +84,21 @@ export default function AdminAddonsPage() {
           title: "Success",
           description: "Addon deleted successfully",
         })
+        setDeleteDialogOpen(false)
+        setAddonToDelete(null)
         await loadAddons()
       } else {
-        throw new Error("Failed to delete addon")
+        const data = await response.json()
+        throw new Error(data.error || "Failed to delete addon")
       }
     } catch (error) {
       toast({
         title: "Error",
-        description: "Failed to delete addon",
+        description: error instanceof Error ? error.message : "Failed to delete addon",
         variant: "destructive",
       })
+    } finally {
+      setIsDeleting(false)
     }
   }
 
@@ -321,6 +347,35 @@ export default function AdminAddonsPage() {
     }
   }
 
+  const handleDelete = async (addonId: string) => {
+    try {
+      const token = authService.getToken()
+
+      const response = await fetch(`/api/addons/${addonId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        toast({
+          title: "Success",
+          description: "Addon deleted successfully",
+        })
+        await loadAddons()
+      } else {
+        throw new Error("Failed to delete addon")
+      }
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete addon",
+        variant: "destructive",
+      })
+    }
+  }
+
   const getCategoryColor = (category: string) => {
     const colors: Record<string, string> = {
       compliance: "bg-blue-100 text-blue-700 border-blue-200",
@@ -422,7 +477,7 @@ export default function AdminAddonsPage() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => handleDelete(addon.id)}
+                    onClick={() => handleDeleteClick(addon)}
                     className="text-red-600 hover:text-red-700 hover:bg-red-50"
                   >
                     <Trash2 className="w-3 h-3" />
@@ -658,6 +713,34 @@ export default function AdminAddonsPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Addon</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete "{addonToDelete?.name}"? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={isDeleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleConfirmDelete}
+              disabled={isDeleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {isDeleting ? (
+                <>
+                  <Spinner className="w-4 h-4 mr-2" />
+                  Deleting...
+                </>
+              ) : (
+                "Delete"
+              )}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
