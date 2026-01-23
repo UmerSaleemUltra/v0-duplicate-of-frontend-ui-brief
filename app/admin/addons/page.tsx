@@ -558,7 +558,7 @@ export default function AdminAddonsPage() {
         </div>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogContent className="w-[95vw] sm:max-w-2xl md:max-w-3xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>{editingAddon ? "Edit Addon" : "Create New Addon"}</DialogTitle>
               <DialogDescription>
@@ -592,7 +592,7 @@ export default function AdminAddonsPage() {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="price">
                     Price ($) <span className="text-red-500">*</span>
@@ -639,7 +639,7 @@ export default function AdminAddonsPage() {
                 <p className="text-xs text-slate-500">Separate each feature with a comma</p>
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-slate-50 rounded-lg gap-3">
                 <div>
                   <Label htmlFor="isActive" className="text-sm font-medium">
                     Active Status
@@ -655,7 +655,7 @@ export default function AdminAddonsPage() {
 
               {showAssignmentInDialog && (
                 <div className="space-y-4 p-4 border border-slate-200 rounded-lg">
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div>
                       <Label className="text-sm font-medium">
                         Assign to Users
@@ -680,7 +680,7 @@ export default function AdminAddonsPage() {
 
                   {!assignToAllUsers && (
                     <div className="space-y-3">
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                         <Label className="text-base font-semibold">
                           Select Users ({selectedUserIds.size} selected)
                         </Label>
@@ -797,16 +797,16 @@ export default function AdminAddonsPage() {
               </div>
             </div>
 
-            <div className="flex gap-3 justify-end">
+            <div className="flex flex-col sm:flex-row gap-3 justify-end mt-6">
               <Button variant="outline" onClick={() => {
                 setIsDialogOpen(false)
                 setShowAssignmentInDialog(false)
                 setNewlyCreatedAddonId(null)
-              }} disabled={isSaving || isAssigning}>
+              }} disabled={isSaving || isAssigning} className="w-full sm:w-auto">
                 {showAssignmentInDialog && !editingAddon ? "Skip Assignment" : "Cancel"}
               </Button>
               {!showAssignmentInDialog ? (
-                <Button onClick={handleSave} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]" disabled={isSaving || isAssigning}>
+                <Button onClick={handleSave} className="bg-gradient-to-r from-[#880000] to-[#ff0d13] w-full sm:w-auto" disabled={isSaving || isAssigning}>
                   {isSaving ? (
                     <>
                       <Spinner className="w-4 h-4 mr-2" />
@@ -822,12 +822,13 @@ export default function AdminAddonsPage() {
                     variant="outline"
                     onClick={handleSkipAssignment}
                     disabled={isAssigning}
+                    className="w-full sm:w-auto"
                   >
                     Skip
                   </Button>
                   <Button
                     onClick={handleSubmitAssignmentAfterCreate}
-                    className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                    className="bg-gradient-to-r from-[#880000] to-[#ff0d13] w-full sm:w-auto"
                     disabled={isAssigning || (!assignToAllUsers && selectedUserIds.size === 0)}
                   >
                     {isAssigning ? (
