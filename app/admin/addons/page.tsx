@@ -24,9 +24,6 @@ import { Switch } from "@/components/ui/switch"
 import { useToast } from "@/hooks/use-toast"
 import { authService } from "@/lib/auth"
 import { Spinner } from "@/components/ui/spinner"
-import { useSearchParams } from "next/navigation"
-import { Suspense } from "react"
-import Loading from "./loading"
 
 interface Addon {
   id: string
@@ -46,7 +43,6 @@ interface User {
 }
 
 export default function AdminAddonsPage() {
-  const searchParams = useSearchParams()
   const [addons, setAddons] = useState<Addon[]>([])
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null)
