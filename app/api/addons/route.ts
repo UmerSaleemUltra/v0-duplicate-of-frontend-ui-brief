@@ -53,14 +53,19 @@ export async function GET(request: NextRequest) {
     } else {
       // Regular users only see addons assigned to them
       const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.userId) })
-      
+
       if (!user || !user.purchasedAddons || !Array.isArray(user.purchasedAddons) || user.purchasedAddons.length === 0) {
         // User has no purchased addons
         addons = []
       } else {
-        // Get the addon IDs from user's purchasedAddons
-        const addonIds = user.purchasedAddons.map((pa: any) => new ObjectId(pa.addonId))
-        
+        // Get the addon IDs from user's purchasedAddons - handle both string and ObjectId
+        const addonIds = user.purchasedAddons.map((pa: any) => {
+          if (typeof pa.addonId === 'string') {
+            return new ObjectId(pa.addonId)
+          }
+          return pa.addonId // Already an ObjectId
+        })
+
         addons = await db
           .collection("addons")
           .find({ _id: { $in: addonIds }, isActive: true })

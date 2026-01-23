@@ -209,8 +209,10 @@ export default function AdminAddonsPage() {
       if (response.ok) {
         const data = await response.json()
         const usersList = data.data?.users || data.users || data.data || []
-        console.log("[v0] Users loaded successfully:", usersList.length)
-        setUsers(usersList)
+        // Filter out admin@buzzfiling.com
+        const filteredUsers = usersList.filter((user: any) => user.email !== "admin@buzzfiling.com")
+        console.log("[v0] Users loaded successfully:", filteredUsers.length)
+        setUsers(filteredUsers)
       } else {
         console.log("[v0] Failed to load users, status:", response.status)
         setUsers([])
