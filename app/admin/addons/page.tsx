@@ -278,35 +278,6 @@ export default function AdminAddonsPage() {
     }
     setIsDialogOpen(true)
   }
-      })
-    } else {
-      setEditingAddon(null)
-      setFormData({
-        name: "",
-        description: "",
-        price: "",
-        category: "other",
-        isActive: true,
-        icon: "",
-        features: "",
-      })
-      setShowAssignmentInDialog(false)
-      setNewlyCreatedAddonId(null)
-      setSelectedUserIds(new Set())
-      setAssignToAllUsers(false)
-      setCurrentlyAssignedUsers([])
-    }
-    setIsDialogOpen(true)
-  }
-
-  const handleOpenAssignDialog = (addon: Addon) => {
-    setSelectedAddonForAssign(addon)
-    setSelectedUserIds(new Set())
-    setAssignToAllUsers(false)
-    setUserSearchQuery("")
-    setIsAssignDialogOpen(true)
-    loadUsers()
-  }
 
   const filteredUsers = users.filter((user) => {
     if (!userSearchQuery.trim()) return true
