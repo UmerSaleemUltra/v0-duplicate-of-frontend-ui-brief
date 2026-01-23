@@ -815,21 +815,6 @@ export default function AdminAddonsPage() {
               {editingAddon && showAssignmentInDialog && (
                 <div className="space-y-4 p-4 border border-slate-200 rounded-lg">
                   <Label className="text-base font-semibold">Assign Addon to Users</Label>
-
-                  {currentlyAssignedUsers.length > 0 && (
-                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                      <p className="text-sm font-medium text-blue-900 mb-2">Currently Assigned Users ({currentlyAssignedUsers.length})</p>
-                      <div className="space-y-2">
-                        {currentlyAssignedUsers.map((user) => (
-                          <div key={user.id} className="flex items-center gap-2 text-sm">
-                            <Check className="w-4 h-4 text-blue-600" />
-                            <span className="font-medium text-blue-900">{user.name || user.email}</span>
-                            <span className="text-blue-700">({user.email})</span>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
                   
                   <div className="space-y-3">
                     <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
