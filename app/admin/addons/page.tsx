@@ -17,7 +17,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
-import { Suspense } from 'react';
 import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
@@ -428,7 +427,6 @@ export default function AdminAddonsPage() {
   }
 
   return (
-    <Suspense fallback={<Loading />}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -838,6 +836,5 @@ export default function AdminAddonsPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </Suspense>
   )
 }
