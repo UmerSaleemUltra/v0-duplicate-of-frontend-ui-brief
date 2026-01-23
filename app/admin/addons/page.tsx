@@ -530,10 +530,6 @@ export default function AdminAddonsPage() {
                       <Edit className="w-3 h-3 mr-1" />
                       Edit
                     </Button>
-                    <Button variant="outline" size="sm" onClick={() => handleOpenAssignDialog(addon)} className="flex-1">
-                      <Package className="w-3 h-3 mr-1" />
-                      Assign
-                    </Button>
                     <Button
                       variant="outline"
                       size="sm"
@@ -654,39 +650,37 @@ export default function AdminAddonsPage() {
                 />
               </div>
 
-              {!editingAddon && (
+              {!editingAddon && showAssignmentInDialog && (
                 <div className="space-y-4 p-4 border border-slate-200 rounded-lg">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label htmlFor="assignOnCreate" className="text-sm font-medium">
+                      <Label className="text-sm font-medium">
                         Assign to Users
                       </Label>
-                      <p className="text-xs text-slate-600 mt-1">Assign this addon to users when created</p>
+                      <p className="text-xs text-slate-600 mt-1">Assign this addon to users immediately after creation</p>
                     </div>
                     <Switch
-                      id="assignOnCreate"
-                      checked={assignOnCreate}
+                      checked={assignToAllUsers}
                       onCheckedChange={(checked) => {
-                        setAssignOnCreate(checked)
+                        setAssignToAllUsers(checked)
                         if (!checked) {
-                          setCreateAssignToAll(false)
-                          setCreateSelectedUserIds(new Set())
+                          setSelectedUserIds(new Set())
                         }
                       }}
                     />
                   </div>
 
-                  {assignOnCreate && (
+                  {assignToAllUsers && (
                     <div className="space-y-3 pt-3 border-t">
                       <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
                         <input
                           type="radio"
                           id="create-assign-all"
-                          checked={createAssignToAll}
-                          onChange={() => setCreateAssignToAll(true)}
+                          checked={assignToAllUsers}
+                          readOnly
                           className="w-4 h-4 mt-1"
                         />
-                        <label htmlFor="create-assign-all" className="flex-1 cursor-pointer">
+                        <label className="flex-1">
                           <span className="text-sm font-medium block">Assign to All Users</span>
                           <span className="text-xs text-slate-600">All current and future users will have access</span>
                         </label>
@@ -696,8 +690,8 @@ export default function AdminAddonsPage() {
                         <input
                           type="radio"
                           id="create-assign-specific"
-                          checked={!createAssignToAll}
-                          onChange={() => setCreateAssignToAll(false)}
+                          checked={!assignToAllUsers}
+                          onChange={() => setAssignToAllUsers(false)}
                           className="w-4 h-4 mt-1"
                         />
                         <label htmlFor="create-assign-specific" className="flex-1 cursor-pointer">
@@ -706,18 +700,18 @@ export default function AdminAddonsPage() {
                         </label>
                       </div>
 
-                      {!createAssignToAll && (
+                      {!assignToAllUsers && (
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <Label className="text-base font-semibold">
-                              Select Users ({createSelectedUserIds.size} selected)
+                              Select Users ({selectedUserIds.size} selected)
                             </Label>
                             <div className="flex gap-2">
                               <Button
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={handleSelectAllFilteredCreate}
+                                onClick={handleSelectAllFiltered}
                                 disabled={filteredUsers.length === 0}
                                 className="text-xs"
                               >
@@ -728,8 +722,8 @@ export default function AdminAddonsPage() {
                                 type="button"
                                 variant="outline"
                                 size="sm"
-                                onClick={handleClearSelectionCreate}
-                                disabled={createSelectedUserIds.size === 0}
+                                onClick={handleClearSelection}
+                                disabled={selectedUserIds.size === 0}
                                 className="text-xs"
                               >
                                 <X className="w-3 h-3 mr-1" />
@@ -774,19 +768,19 @@ export default function AdminAddonsPage() {
                                 {filteredUsers.map((user) => (
                                   <div
                                     key={user.id}
-                                    onClick={() => handleCreateUserToggle(user.id)}
+                                    onClick={() => handleUserToggle(user.id)}
                                     className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
-                                      createSelectedUserIds.has(user.id) ? "bg-red-50" : "hover:bg-slate-50"
+                                      selectedUserIds.has(user.id) ? "bg-red-50" : "hover:bg-slate-50"
                                     }`}
                                   >
                                     <div
                                       className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                                        createSelectedUserIds.has(user.id)
+                                        selectedUserIds.has(user.id)
                                           ? "bg-[#880000] border-[#880000]"
                                           : "border-slate-300"
                                       }`}
                                     >
-                                      {createSelectedUserIds.has(user.id) && <Check className="w-3 h-3 text-white" />}
+                                      {selectedUserIds.has(user.id) && <Check className="w-3 h-3 text-white" />}
                                     </div>
                                     <div className="flex-1 min-w-0">
                                       <p className="text-sm font-medium text-slate-900 truncate">
@@ -811,196 +805,190 @@ export default function AdminAddonsPage() {
                   )}
                 </div>
               )}
-            </div>
 
-            <div className="flex gap-3 justify-end">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={isSaving}>
-                Cancel
-              </Button>
-              <Button onClick={handleSave} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]" disabled={isSaving}>
-                {isSaving ? (
-                  <>
-                    <Spinner className="w-4 h-4 mr-2" />
-                    {editingAddon ? "Updating..." : "Creating..."}
-                  </>
-                ) : (
-                  <>{editingAddon ? "Update Addon" : "Create Addon"}</>
-                )}
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+              {editingAddon && showAssignmentInDialog && (
+                <div className="space-y-4 p-4 border border-slate-200 rounded-lg">
+                  <Label className="text-base font-semibold">Assign Addon to Users</Label>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
+                      <input
+                        type="radio"
+                        id="edit-assign-all"
+                        checked={assignToAllUsers}
+                        onChange={() => setAssignToAllUsers(true)}
+                        className="w-4 h-4 mt-1"
+                      />
+                      <label htmlFor="edit-assign-all" className="flex-1 cursor-pointer">
+                        <span className="text-sm font-medium block">Assign to All Users</span>
+                        <span className="text-xs text-slate-600">All current and future users will have access</span>
+                      </label>
+                    </div>
 
-        <Dialog open={isAssignDialogOpen} onOpenChange={setIsAssignDialogOpen}>
-          <DialogContent className="sm:max-w-[600px] max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Assign Addon to Users</DialogTitle>
-              <DialogDescription>Assign "{selectedAddonForAssign?.name}" to users</DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-4 py-4">
-              <div className="space-y-3">
-                <Label className="text-base font-semibold">Assignment Option</Label>
-                <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="radio"
-                    id="assignAll"
-                    name="assignOption"
-                    checked={assignToAllUsers}
-                    onChange={(e) => {
-                      setAssignToAllUsers(e.target.checked)
-                      setSelectedUserIds(new Set())
-                    }}
-                    className="w-4 h-4 mt-1"
-                  />
-                  <Label htmlFor="assignAll" className="flex-1 cursor-pointer mb-0">
-                    <span className="font-medium">Assign to All Users</span>
-                    <p className="text-xs text-slate-600 mt-1">Grant this addon to all registered users</p>
-                  </Label>
-                </div>
-                <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-                  <input
-                    type="radio"
-                    id="assignSelected"
-                    name="assignOption"
-                    checked={!assignToAllUsers}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setAssignToAllUsers(false)
-                      }
-                    }}
-                    className="w-4 h-4 mt-1"
-                  />
-                  <Label htmlFor="assignSelected" className="flex-1 cursor-pointer mb-0">
-                    <span className="font-medium">Assign to Selected Users</span>
-                    <p className="text-xs text-slate-600 mt-1">Choose specific users to grant this addon</p>
-                  </Label>
-                </div>
-              </div>
-
-              {!assignToAllUsers && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-base font-semibold">Select Users ({selectedUserIds.size} selected)</Label>
-                    <div className="flex gap-2">
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleSelectAllFiltered}
-                        disabled={filteredUsers.length === 0}
-                        className="text-xs bg-transparent"
-                      >
-                        <Check className="w-3 h-3 mr-1" />
-                        Select All
-                      </Button>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={handleClearSelection}
-                        disabled={selectedUserIds.size === 0}
-                        className="text-xs bg-transparent"
-                      >
-                        <X className="w-3 h-3 mr-1" />
-                        Clear
-                      </Button>
+                    <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
+                      <input
+                        type="radio"
+                        id="edit-assign-specific"
+                        checked={!assignToAllUsers}
+                        onChange={() => setAssignToAllUsers(false)}
+                        className="w-4 h-4 mt-1"
+                      />
+                      <label htmlFor="edit-assign-specific" className="flex-1 cursor-pointer">
+                        <span className="text-sm font-medium block">Assign to Specific Users</span>
+                        <span className="text-xs text-slate-600">Choose which users can access this addon</span>
+                      </label>
                     </div>
                   </div>
-                  
-                  <div className="relative">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                    <Input
-                      placeholder="Search users by name or email..."
-                      value={userSearchQuery}
-                      onChange={(e) => setUserSearchQuery(e.target.value)}
-                      className="pl-9"
-                    />
-                    {userSearchQuery && (
-                      <button
-                        type="button"
-                        onClick={() => setUserSearchQuery("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                      >
-                        <X className="w-4 h-4" />
-                      </button>
-                    )}
-                  </div>
 
-                  <div className="border border-slate-200 rounded-lg max-h-64 overflow-y-auto">
-                    {isLoadingUsers ? (
-                      <div className="flex items-center justify-center py-8">
-                        <Spinner className="w-6 h-6" />
-                        <span className="ml-2 text-sm text-slate-600">Loading users...</span>
-                      </div>
-                    ) : filteredUsers.length === 0 ? (
-                      <div className="py-8 text-center">
-                        <p className="text-sm text-slate-600">
-                          {userSearchQuery ? "No users match your search" : "No users found"}
-                        </p>
-                      </div>
-                    ) : (
-                      <div className="divide-y divide-slate-100">
-                        {filteredUsers.map((user) => (
-                          <div
-                            key={user.id}
-                            onClick={() => handleUserToggle(user.id)}
-                            className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
-                              selectedUserIds.has(user.id) ? "bg-red-50" : "hover:bg-slate-50"
-                            }`}
+                  {!assignToAllUsers && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <Label className="text-base font-semibold">
+                          Select Users ({selectedUserIds.size} selected)
+                        </Label>
+                        <div className="flex gap-2">
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleSelectAllFiltered}
+                            disabled={filteredUsers.length === 0}
+                            className="text-xs"
                           >
-                            <div
-                              className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
-                                selectedUserIds.has(user.id)
-                                  ? "bg-[#880000] border-[#880000]"
-                                  : "border-slate-300"
-                              }`}
-                            >
-                              {selectedUserIds.has(user.id) && (
-                                <Check className="w-3 h-3 text-white" />
-                              )}
-                            </div>
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium text-slate-900 truncate">
-                                {user.name || "No Name"}
-                              </p>
-                              <p className="text-xs text-slate-500 truncate">{user.email}</p>
-                            </div>
-                          </div>
-                        ))}
+                            <Check className="w-3 h-3 mr-1" />
+                            Select All
+                          </Button>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={handleClearSelection}
+                            disabled={selectedUserIds.size === 0}
+                            className="text-xs"
+                          >
+                            <X className="w-3 h-3 mr-1" />
+                            Clear
+                          </Button>
+                        </div>
                       </div>
-                    )}
-                  </div>
-                  
-                  {filteredUsers.length > 0 && (
-                    <p className="text-xs text-slate-500">
-                      Showing {filteredUsers.length} of {users.length} users
-                    </p>
+
+                      <div className="relative">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+                        <Input
+                          placeholder="Search users by name or email..."
+                          value={userSearchQuery}
+                          onChange={(e) => setUserSearchQuery(e.target.value)}
+                          className="pl-9"
+                        />
+                        {userSearchQuery && (
+                          <button
+                            type="button"
+                            onClick={() => setUserSearchQuery("")}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        )}
+                      </div>
+
+                      <div className="border border-slate-200 rounded-lg max-h-64 overflow-y-auto">
+                        {isLoadingUsers ? (
+                          <div className="flex items-center justify-center py-8">
+                            <Spinner className="w-6 h-6" />
+                            <span className="ml-2 text-sm text-slate-600">Loading users...</span>
+                          </div>
+                        ) : filteredUsers.length === 0 ? (
+                          <div className="py-8 text-center">
+                            <p className="text-sm text-slate-600">
+                              {userSearchQuery ? "No users match your search" : "No users found"}
+                            </p>
+                          </div>
+                        ) : (
+                          <div className="divide-y divide-slate-100">
+                            {filteredUsers.map((user) => (
+                              <div
+                                key={user.id}
+                                onClick={() => handleUserToggle(user.id)}
+                                className={`flex items-center gap-3 p-3 cursor-pointer transition-colors ${
+                                  selectedUserIds.has(user.id) ? "bg-red-50" : "hover:bg-slate-50"
+                                }`}
+                              >
+                                <div
+                                  className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                    selectedUserIds.has(user.id)
+                                      ? "bg-[#880000] border-[#880000]"
+                                      : "border-slate-300"
+                                  }`}
+                                >
+                                  {selectedUserIds.has(user.id) && <Check className="w-3 h-3 text-white" />}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-slate-900 truncate">
+                                    {user.name || "No Name"}
+                                  </p>
+                                  <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+
+                      {filteredUsers.length > 0 && (
+                        <p className="text-xs text-slate-500">
+                          Showing {filteredUsers.length} of {users.length} users
+                        </p>
+                      )}
+                    </div>
                   )}
                 </div>
               )}
-
-              {selectedAddonForAssign && (
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-sm font-medium text-slate-900">Addon Details:</p>
-                  <p className="text-sm text-slate-600 mt-1">
-                    ${selectedAddonForAssign.price} - {selectedAddonForAssign.name}
-                  </p>
-                </div>
-              )}
             </div>
 
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setIsAssignDialogOpen(false)} disabled={isAssigning}>
-                Cancel
+            <div className="flex gap-3 justify-end">
+              <Button variant="outline" onClick={() => {
+                setIsDialogOpen(false)
+                setShowAssignmentInDialog(false)
+                setNewlyCreatedAddonId(null)
+              }} disabled={isSaving || isAssigning}>
+                {showAssignmentInDialog && !editingAddon ? "Skip Assignment" : "Cancel"}
               </Button>
-              <Button
-                onClick={handleSubmitAssignment}
-                className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                disabled={isAssigning || (!assignToAllUsers && selectedUserIds.size === 0)}
-              >
-                {isAssigning ? "Assigning..." : "Assign Addon"}
-              </Button>
+              {!showAssignmentInDialog || !editingAddon ? (
+                <Button onClick={handleSave} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]" disabled={isSaving || isAssigning}>
+                  {isSaving ? (
+                    <>
+                      <Spinner className="w-4 h-4 mr-2" />
+                      {editingAddon ? "Updating..." : "Creating..."}
+                    </>
+                  ) : (
+                    <>{editingAddon ? "Update Addon" : "Create Addon"}</>
+                  )}
+                </Button>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    onClick={handleSkipAssignment}
+                    disabled={isAssigning}
+                  >
+                    Skip
+                  </Button>
+                  <Button
+                    onClick={handleSubmitAssignmentAfterCreate}
+                    className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+                    disabled={isAssigning || (!assignToAllUsers && selectedUserIds.size === 0)}
+                  >
+                    {isAssigning ? (
+                      <>
+                        <Spinner className="w-4 h-4 mr-2" />
+                        Assigning...
+                      </>
+                    ) : (
+                      <>Complete & Assign</>
+                    )}
+                  </Button>
+                </>
+              )}
             </div>
           </DialogContent>
         </Dialog>
