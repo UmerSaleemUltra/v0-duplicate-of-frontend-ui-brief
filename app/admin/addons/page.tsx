@@ -841,6 +841,7 @@ export default function AdminAddonsPage() {
                   </Button>
                 </>
               )}
+            </div>
           </DialogContent>
         </Dialog>
 
