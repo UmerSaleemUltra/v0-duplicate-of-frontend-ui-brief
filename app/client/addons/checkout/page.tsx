@@ -325,6 +325,7 @@ function AddonCheckoutContent() {
             <MessageCircle className="w-5 h-5 text-green-600" />
             WhatsApp Payment
           </h3>
+        </div>
 
         <div className="p-4 rounded-lg bg-green-50 border border-green-200">
           <div className="flex items-start gap-3 mb-3">
