@@ -427,7 +427,6 @@ export default function AdminAddonsPage() {
   }
 
   return (
-    <Suspense fallback={<Loading />}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -837,6 +836,5 @@ export default function AdminAddonsPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
-    </Suspense>
   )
 }
