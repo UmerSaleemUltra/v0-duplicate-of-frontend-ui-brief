@@ -593,35 +593,13 @@ export default function AdminAddonsPage() {
 
                   {assignToAllUsers && (
                     <div className="space-y-3 pt-3 border-t">
-                      <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-                        <input
-                          type="radio"
-                          id="create-assign-all"
-                          checked={assignToAllUsers}
-                          readOnly
-                          className="w-4 h-4 mt-1"
-                        />
-                        <label className="flex-1">
-                          <span className="text-sm font-medium block">Assign to All Users</span>
-                          <span className="text-xs text-slate-600">All current and future users will have access</span>
-                        </label>
+                      <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200">
+                        <span className="text-sm font-medium block">All users will have access to this addon</span>
                       </div>
+                    </div>
+                  )}
 
-                      <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 cursor-pointer hover:bg-slate-50">
-                        <input
-                          type="radio"
-                          id="create-assign-specific"
-                          checked={!assignToAllUsers}
-                          onChange={() => setAssignToAllUsers(false)}
-                          className="w-4 h-4 mt-1"
-                        />
-                        <label htmlFor="create-assign-specific" className="flex-1 cursor-pointer">
-                          <span className="text-sm font-medium block">Assign to Specific Users</span>
-                          <span className="text-xs text-slate-600">Choose which users can access this addon</span>
-                        </label>
-                      </div>
-
-                      {!assignToAllUsers && (
+                  {!assignToAllUsers && (
                         <div className="space-y-3">
                           <div className="flex items-center justify-between">
                             <Label className="text-base font-semibold">
@@ -722,8 +700,6 @@ export default function AdminAddonsPage() {
                           )}
                         </div>
                       )}
-                    </div>
-                  )}
                 </div>
               ) : (
                 // Show form fields for creating or editing
