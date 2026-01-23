@@ -45,6 +45,7 @@ export async function GET(request: NextRequest) {
           isActive: 1,
           icon: 1,
           features: 1,
+          assignedUserIds: 1,
           createdAt: 1,
         })
         .sort({ createdAt: -1 })
@@ -89,6 +90,7 @@ export async function GET(request: NextRequest) {
             isActive: 1,
             icon: 1,
             features: 1,
+            assignedUserIds: 1,
             createdAt: 1,
           })
           .sort({ createdAt: -1 })
