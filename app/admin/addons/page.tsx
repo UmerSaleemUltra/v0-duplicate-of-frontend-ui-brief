@@ -243,18 +243,42 @@ export default function AdminAddonsPage() {
         features: addon.features?.join(", ") || "",
       })
       setShowAssignmentInDialog(true)
-      setSelectedUserIds(new Set())
       setAssignToAllUsers(false)
       setUserSearchQuery("")
-      loadUsers()
       
-      // Load currently assigned users
+      // Load currently assigned users and pre-select them
       if (addon.assignedUserIds && addon.assignedUserIds.length > 0) {
-        const assigned = users.filter(u => addon.assignedUserIds?.includes(u.id))
-        setCurrentlyAssignedUsers(assigned)
+        // Pre-populate selectedUserIds with currently assigned users
+        setSelectedUserIds(new Set(addon.assignedUserIds))
+        setCurrentlyAssignedUsers(addon.assignedUserIds.map(userId => {
+          return users.find(u => u.id === userId) || { id: userId, email: "Unknown" }
+        }))
       } else {
         setCurrentlyAssignedUsers([])
+        setSelectedUserIds(new Set())
       }
+      
+      loadUsers()
+    } else {
+      setEditingAddon(null)
+      setFormData({
+        name: "",
+        description: "",
+        price: "",
+        category: "other",
+        isActive: true,
+        icon: "",
+        features: "",
+      })
+      setShowAssignmentInDialog(false)
+      setNewlyCreatedAddonId(null)
+      setSelectedUserIds(new Set())
+      setAssignToAllUsers(false)
+      setCurrentlyAssignedUsers([])
+    }
+    setIsDialogOpen(true)
+  }
+      })
     } else {
       setEditingAddon(null)
       setFormData({
