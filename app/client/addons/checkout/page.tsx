@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { ArrowLeft, CreditCard, MessageCircle, Check, Package, DollarSign, Lock, Shield } from "lucide-react"
+import { ArrowLeft, CreditCard, MessageCircle, Check, Package, DollarSign, Lock, Shield, Upload, Phone } from "lucide-react"
 import type { Addon } from "@/lib/local-storage"
 import { useSelectedCompany } from "@/lib/company-context"
 import { useToast } from "@/hooks/use-toast"
@@ -34,6 +34,8 @@ function AddonCheckoutContent() {
   const [cvc, setCvc] = useState("")
   const [cardholderName, setCardholderName] = useState("")
 
+  const [whatsappPhoneNumber, setWhatsappPhoneNumber] = useState("")
+  const [whatsappReceiptFile, setWhatsappReceiptFile] = useState<File | null>(null)
   const [transactionId, setTransactionId] = useState("")
 
   useEffect(() => {
