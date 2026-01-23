@@ -5,7 +5,7 @@ import { Plus, Edit, Trash2, Package, DollarSign, Search, X, Check } from "lucid
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Dialog, DialogContent, DialogFooter, DialogDescription ,DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -427,6 +427,7 @@ export default function AdminAddonsPage() {
   }
 
   return (
+    <Suspense fallback={<Loading />}>
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
@@ -836,5 +837,6 @@ export default function AdminAddonsPage() {
           </AlertDialogContent>
         </AlertDialog>
       </div>
+    </Suspense>
   )
 }
