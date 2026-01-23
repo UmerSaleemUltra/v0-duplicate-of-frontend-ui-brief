@@ -35,9 +35,19 @@ export async function POST(request: NextRequest) {
     let updateResult
 
     if (assignToAll) {
+      // Get all user IDs (excluding admin)
+      const allUsers = await db.collection("users").find({ email: { $ne: "admin@buzzfiling.com" } }).project({ _id: 1 }).toArray()
+      const allUserIds = allUsers.map((u) => u._id)
+
+      // Update addon with all user IDs (or empty array to indicate assigned to all)
+      await db.collection("addons").updateOne(
+        { _id: new ObjectId(addonId) },
+        { $set: { assignedUserIds: [] } }
+      )
+
       // Assign to all users
       updateResult = await db.collection("users").updateMany(
-        {},
+        { email: { $ne: "admin@buzzfiling.com" } },
         {
           $addToSet: {
             purchasedAddons: {
@@ -52,6 +62,13 @@ export async function POST(request: NextRequest) {
       // Assign to specific users
       const validUserIds = userIds.filter((id) => ObjectId.isValid(id)).map((id) => new ObjectId(id))
 
+      // Update addon with assigned user IDs
+      await db.collection("addons").updateOne(
+        { _id: new ObjectId(addonId) },
+        { $set: { assignedUserIds: validUserIds } }
+      )
+
+      // Assign to specific users
       updateResult = await db.collection("users").updateMany(
         { _id: { $in: validUserIds } },
         {

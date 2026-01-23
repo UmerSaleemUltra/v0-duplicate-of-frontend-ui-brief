@@ -54,21 +54,31 @@ export async function GET(request: NextRequest) {
       // Regular users only see addons assigned to them
       const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.userId) })
 
-      if (!user || !user.purchasedAddons || !Array.isArray(user.purchasedAddons) || user.purchasedAddons.length === 0) {
-        // User has no purchased addons
+      if (!user) {
         addons = []
       } else {
-        // Get the addon IDs from user's purchasedAddons - handle both string and ObjectId
-        const addonIds = user.purchasedAddons.map((pa: any) => {
+        // Get addon IDs from user's purchasedAddons array
+        const userAddonIds = (user.purchasedAddons || []).map((pa: any) => {
           if (typeof pa.addonId === 'string') {
             return new ObjectId(pa.addonId)
           }
-          return pa.addonId // Already an ObjectId
+          return pa.addonId
         })
 
+        // Query addons where:
+        // 1. Addon is in user's purchasedAddons array, OR
+        // 2. User ID is in addon's assignedUserIds array, OR
+        // 3. Addon is assigned to all users (empty assignedUserIds means assigned to all)
         addons = await db
           .collection("addons")
-          .find({ _id: { $in: addonIds }, isActive: true })
+          .find({
+            $or: [
+              { _id: { $in: userAddonIds } },
+              { assignedUserIds: new ObjectId(decoded.userId) },
+              { assignedUserIds: { $size: 0 }, isActive: true }
+            ],
+            isActive: true
+          })
           .project({
             _id: 1,
             name: 1,
@@ -155,6 +165,7 @@ export async function POST(request: NextRequest) {
       isActive: isActive !== undefined ? isActive : true,
       icon: icon || undefined,
       features: features || [],
+      assignedUserIds: [], // New field to track which users have access
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: decoded.userId,
@@ -165,6 +176,17 @@ export async function POST(request: NextRequest) {
 
     // Assign addon to users if specified
     if (assignToAll) {
+      // Get all user IDs (excluding admin)
+      const allUsers = await db.collection("users").find({ email: { $ne: "admin@buzzfiling.com" } }).project({ _id: 1 }).toArray()
+      const allUserIds = allUsers.map((u) => u._id)
+
+      // Update addon with all user IDs
+      await db.collection("addons").updateOne(
+        { _id: addonId },
+        { $set: { assignedUserIds: allUserIds } }
+      )
+
+      // Update users
       await db.collection("users").updateMany(
         {},
         {
@@ -179,6 +201,14 @@ export async function POST(request: NextRequest) {
       )
     } else if (userIds && Array.isArray(userIds) && userIds.length > 0) {
       const validUserIds = userIds.filter((id: string) => ObjectId.isValid(id)).map((id: string) => new ObjectId(id))
+
+      // Update addon with assigned user IDs
+      await db.collection("addons").updateOne(
+        { _id: addonId },
+        { $set: { assignedUserIds: validUserIds } }
+      )
+
+      // Update users
       await db.collection("users").updateMany(
         { _id: { $in: validUserIds } },
         {
