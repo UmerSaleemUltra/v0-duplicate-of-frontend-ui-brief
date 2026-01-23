@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Separator } from "@/components/ui/separator"
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { ArrowLeft, CreditCard, MessageCircle, Check, Package, DollarSign, Lock, Shield, Upload, Phone } from "lucide-react"
+import { ArrowLeft, MessageCircle, Check, Package, DollarSign, Lock, Shield, Upload, Phone } from "lucide-react"
 import type { Addon } from "@/lib/local-storage"
 import { useSelectedCompany } from "@/lib/company-context"
 import { useToast } from "@/hooks/use-toast"
@@ -24,9 +23,8 @@ function AddonCheckoutContent() {
   const { toast } = useToast()
   const { selectedCompanyId } = useSelectedCompany()
   const [addon, setAddon] = useState<Addon | null>(null)
-  const [paymentMethod, setPaymentMethod] = useState<"stripe" | "whatsapp" | null>(null)
+  const [paymentMethod, setPaymentMethod] = useState<"whatsapp">("whatsapp")
   const [isProcessing, setIsProcessing] = useState(false)
-  const [showPaymentForm, setShowPaymentForm] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
 
   const [whatsappPhoneNumber, setWhatsappPhoneNumber] = useState("")
@@ -310,19 +308,8 @@ function AddonCheckoutContent() {
     }
   }
 
-  const handlePaymentMethodChange = useCallback((value: "stripe" | "whatsapp") => {
-    setPaymentMethod(value)
-    setShowPaymentForm(true)
-  }, [])
-
-  const handleBackToPaymentMethods = useCallback(() => {
-    setPaymentMethod(null)
-    setShowPaymentForm(false)
-  }, [])
-
-
   const whatsappPaymentForm = useMemo(() => {
-    if (!showPaymentForm || paymentMethod !== "whatsapp") return null
+    if (paymentMethod !== "whatsapp") return null
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0]
@@ -333,21 +320,11 @@ function AddonCheckoutContent() {
 
     return (
       <form onSubmit={handlePurchase} className="space-y-6">
-        <div className="flex items-center justify-between pb-4 border-b">
+        <div className="pb-4 border-b">
           <h3 className="font-semibold flex items-center gap-2">
             <MessageCircle className="w-5 h-5 text-green-600" />
             WhatsApp Payment
           </h3>
-          <Button
-            type="button"
-            variant="ghost"
-            size="sm"
-            onClick={handleBackToPaymentMethods}
-            className="text-slate-600 cursor-pointer"
-          >
-            Change Method
-          </Button>
-        </div>
 
         <div className="p-4 rounded-lg bg-green-50 border border-green-200">
           <div className="flex items-start gap-3 mb-3">
@@ -440,15 +417,6 @@ function AddonCheckoutContent() {
 
         <div className="flex gap-3">
           <Button
-            type="button"
-            variant="outline"
-            onClick={handleBackToPaymentMethods}
-            className="flex-1 bg-transparent cursor-pointer"
-            disabled={isProcessing}
-          >
-            Back
-          </Button>
-          <Button
             type="submit"
             disabled={isProcessing || !whatsappPhoneNumber || !whatsappReceiptFile}
             className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer"
@@ -458,7 +426,7 @@ function AddonCheckoutContent() {
         </div>
       </form>
     )
-  }, [showPaymentForm, paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, handleBackToPaymentMethods])
+  }, [paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, handlePurchase])
 
   if (isLoading) {
     return (
@@ -539,32 +507,16 @@ function AddonCheckoutContent() {
             </CardContent>
           </Card>
 
-          {/* Payment Method */}
+          {/* WhatsApp Payment Form */}
           <Card>
             <CardHeader>
-              <CardTitle>Payment Method</CardTitle>
-              <CardDescription>Choose how you'd like to pay</CardDescription>
+              <CardTitle className="flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-green-600" />
+                Payment Information
+              </CardTitle>
+              <CardDescription>Enter your phone number and upload payment receipt</CardDescription>
             </CardHeader>
             <CardContent>
-              {!showPaymentForm && (
-                <div className="space-y-4">
-                  <RadioGroup value={paymentMethod || ""} onValueChange={handlePaymentMethodChange}>
-                    <div className="flex items-center space-x-3 p-4 rounded-lg border-2 border-slate-200 hover:border-[#ff0d13] transition-colors cursor-pointer">
-                      <RadioGroupItem value="whatsapp" id="whatsapp" />
-                      <Label htmlFor="whatsapp" className="flex items-center gap-3 cursor-pointer flex-1">
-                        <div className="w-10 h-10 rounded-lg bg-green-500 flex items-center justify-center">
-                          <MessageCircle className="w-5 h-5 text-white" />
-                        </div>
-                        <div>
-                          <div className="font-medium">WhatsApp Payment</div>
-                          <div className="text-sm text-slate-600">Pay via WhatsApp transfer</div>
-                        </div>
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
-              )}
-
               {whatsappPaymentForm}
             </CardContent>
           </Card>
