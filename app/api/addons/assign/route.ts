@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
+import { ObjectId } from "mongodb"
 import { connectDB } from "@/config/database"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
@@ -24,7 +25,6 @@ export async function POST(request: NextRequest) {
     }
 
     const { db } = await connectDB()
-    const { ObjectId } = await import("mongodb")
 
     // Verify addon exists
     const addon = await db.collection("addons").findOne({ _id: new ObjectId(addonId) })

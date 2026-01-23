@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server"
 import { NextResponse } from "next/server"
+import { ObjectId } from "mongodb"
 import { connectDB } from "@/config/database"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
@@ -26,7 +27,7 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Number.parseInt(searchParams.get("limit") || "50"), 100)
     const skip = (page - 1) * limit
 
-    const { db, ObjectId } = await connectDB()
+    const { db } = await connectDB()
 
     let addons
 
@@ -155,7 +156,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Description must be under 1000 characters" }, { status: 400 })
     }
 
-    const { db, ObjectId } = await connectDB()
+    const { db } = await connectDB()
 
     const addonData = {
       name,
