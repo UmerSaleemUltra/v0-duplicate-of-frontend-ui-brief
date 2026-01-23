@@ -200,7 +200,7 @@ export default function AdminAddonsPage() {
     }
   }
 
-  const loadUsers = async (): Promise<void> => {
+  const loadUsers = async (): Promise<any[]> => {
     try {
       setIsLoadingUsers(true)
       const token = authService.getToken()
@@ -217,11 +217,14 @@ export default function AdminAddonsPage() {
         // Filter out admin@buzzfiling.com
         const filteredUsers = usersList.filter((user: any) => user.email !== "admin@buzzfiling.com")
         setUsers(filteredUsers)
+        return filteredUsers
       } else {
         setUsers([])
+        return []
       }
     } catch (error) {
       setUsers([])
+      return []
     } finally {
       setIsLoadingUsers(false)
     }
@@ -240,17 +243,16 @@ export default function AdminAddonsPage() {
         features: addon.features?.join(", ") || "",
       })
       setShowAssignmentInDialog(true)
-      setAssignToAllUsers(false)
+      // Check if addon is assigned to all users
+      const isAssignedToAll = addon.assignedUserIds && addon.assignedUserIds.length === 0
+      setAssignToAllUsers(isAssignedToAll)
       setUserSearchQuery("")
       
       // Load users first
-      loadUsers().then(() => {
+      loadUsers().then((loadedUsers) => {
         // Then pre-populate selectedUserIds with currently assigned users
         if (addon.assignedUserIds && addon.assignedUserIds.length > 0) {
           setSelectedUserIds(new Set(addon.assignedUserIds))
-          setCurrentlyAssignedUsers(addon.assignedUserIds.map(userId => {
-            return users.find(u => u.id === userId) || { id: userId, email: "Unknown" }
-          }))
         } else {
           setCurrentlyAssignedUsers([])
           setSelectedUserIds(new Set())
@@ -518,8 +520,8 @@ export default function AdminAddonsPage() {
                     <div className="space-y-2">
                       <p className="text-xs font-medium text-slate-700">Features:</p>
                       <ul className="space-y-1">
-                        {addon.features.slice(0, 3).map((feature, index) => (
-                          <li key={index} className="text-xs text-slate-600 flex items-start gap-1">
+                        {addon.features.slice(0, 3).map((feature) => (
+                          <li key={feature} className="text-xs text-slate-600 flex items-start gap-1">
                             <span className="text-[#ff0d13] mt-0.5">•</span>
                             <span>{feature}</span>
                           </li>
