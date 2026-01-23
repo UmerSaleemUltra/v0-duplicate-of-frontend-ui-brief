@@ -48,17 +48,14 @@ export default function AdminAddonsPage() {
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [isAssignDialogOpen, setIsAssignDialogOpen] = useState(false)
-  const [selectedAddonForAssign, setSelectedAddonForAssign] = useState<Addon | null>(null)
   const [assignToAllUsers, setAssignToAllUsers] = useState(false)
   const [isAssigning, setIsAssigning] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
   const [isLoadingUsers, setIsLoadingUsers] = useState(false)
   const [userSearchQuery, setUserSearchQuery] = useState("")
-  const [assignOnCreate, setAssignOnCreate] = useState(false)
-  const [createAssignToAll, setCreateAssignToAll] = useState(false)
-  const [createSelectedUserIds, setCreateSelectedUserIds] = useState<Set<string>>(new Set())
+  const [showAssignmentInDialog, setShowAssignmentInDialog] = useState(false)
+  const [newlyCreatedAddonId, setNewlyCreatedAddonId] = useState<string | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [addonToDelete, setAddonToDelete] = useState<Addon | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
@@ -119,14 +116,6 @@ export default function AdminAddonsPage() {
         features: formData.features.split(", ").filter(Boolean),
       }
 
-      // Add user assignment for new addons only
-      if (!editingAddon && assignOnCreate) {
-        bodyData.assignToAll = createAssignToAll
-        if (!createAssignToAll) {
-          bodyData.userIds = Array.from(createSelectedUserIds)
-        }
-      }
-
       const body = JSON.stringify(bodyData)
 
       const response = await fetch(url, {
@@ -139,12 +128,26 @@ export default function AdminAddonsPage() {
       })
 
       if (response.ok) {
-        toast({
-          title: editingAddon ? "Addon Updated" : "Addon Created",
-          description: `The addon has been ${editingAddon ? "updated" : "created"}`,
-        })
-        setIsDialogOpen(false)
-        await loadAddons()
+        const data = await response.json()
+        const addonId = data.data?.addon?.id || editingAddon?.id
+        
+        if (!editingAddon) {
+          // New addon created, show assignment modal
+          setNewlyCreatedAddonId(addonId)
+          setShowAssignmentInDialog(true)
+          setSelectedUserIds(new Set())
+          setAssignToAllUsers(false)
+          setUserSearchQuery("")
+          loadUsers()
+        } else {
+          // Existing addon updated
+          toast({
+            title: "Success",
+            description: "Addon updated successfully",
+          })
+          setIsDialogOpen(false)
+          await loadAddons()
+        }
       } else {
         throw new Error("Failed to save addon")
       }
@@ -237,6 +240,11 @@ export default function AdminAddonsPage() {
         icon: addon.icon || "",
         features: addon.features?.join(", ") || "",
       })
+      setShowAssignmentInDialog(true)
+      setSelectedUserIds(new Set())
+      setAssignToAllUsers(false)
+      setUserSearchQuery("")
+      loadUsers()
     } else {
       setEditingAddon(null)
       setFormData({
@@ -248,13 +256,10 @@ export default function AdminAddonsPage() {
         icon: "",
         features: "",
       })
-      // Reset assignment states for new addon
-      setAssignOnCreate(false)
-      setCreateAssignToAll(false)
-      setCreateSelectedUserIds(new Set())
-      setUserSearchQuery("")
-      // Load users when creating new addon
-      loadUsers()
+      setShowAssignmentInDialog(false)
+      setNewlyCreatedAddonId(null)
+      setSelectedUserIds(new Set())
+      setAssignToAllUsers(false)
     }
     setIsDialogOpen(true)
   }
@@ -287,26 +292,6 @@ export default function AdminAddonsPage() {
     setSelectedUserIds(new Set())
   }
 
-  const handleCreateUserToggle = (userId: string) => {
-    const newSelected = new Set(createSelectedUserIds)
-    if (newSelected.has(userId)) {
-      newSelected.delete(userId)
-    } else {
-      newSelected.add(userId)
-    }
-    setCreateSelectedUserIds(newSelected)
-  }
-
-  const handleSelectAllFilteredCreate = () => {
-    const newSelected = new Set(createSelectedUserIds)
-    filteredUsers.forEach((user) => newSelected.add(user.id))
-    setCreateSelectedUserIds(newSelected)
-  }
-
-  const handleClearSelectionCreate = () => {
-    setCreateSelectedUserIds(new Set())
-  }
-
   const handleUserToggle = (userId: string) => {
     const newSelected = new Set(selectedUserIds)
     if (newSelected.has(userId)) {
@@ -317,22 +302,19 @@ export default function AdminAddonsPage() {
     setSelectedUserIds(newSelected)
   }
 
-  const handleSubmitAssignment = async () => {
-    if (!selectedAddonForAssign) {
-      toast({
-        title: "Error",
-        description: "No addon selected",
-        variant: "destructive",
-      })
-      return
-    }
+  const handleSubmitAssignmentAfterCreate = async () => {
+    if (!newlyCreatedAddonId) return
 
     if (!assignToAllUsers && selectedUserIds.size === 0) {
+      // Just close without assigning
+      setShowAssignmentInDialog(false)
+      setNewlyCreatedAddonId(null)
       toast({
-        title: "Error",
-        description: "Please select users or choose 'Assign to All Users'",
-        variant: "destructive",
+        title: "Success",
+        description: "Addon created successfully",
       })
+      setIsDialogOpen(false)
+      await loadAddons()
       return
     }
 
@@ -348,7 +330,7 @@ export default function AdminAddonsPage() {
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
-          addonId: selectedAddonForAssign.id,
+          addonId: newlyCreatedAddonId,
           assignToAll: assignToAllUsers,
           userIds: assignToAllUsers ? [] : Array.from(selectedUserIds),
         }),
@@ -357,9 +339,12 @@ export default function AdminAddonsPage() {
       if (response.ok) {
         toast({
           title: "Success",
-          description: "Addon assigned successfully",
+          description: "Addon created and assigned successfully",
         })
-        setIsAssignDialogOpen(false)
+        setShowAssignmentInDialog(false)
+        setNewlyCreatedAddonId(null)
+        setIsDialogOpen(false)
+        await loadAddons()
       } else {
         toast({
           title: "Error",
@@ -376,6 +361,17 @@ export default function AdminAddonsPage() {
     } finally {
       setIsAssigning(false)
     }
+  }
+
+  const handleSkipAssignment = () => {
+    setShowAssignmentInDialog(false)
+    setNewlyCreatedAddonId(null)
+    toast({
+      title: "Success",
+      description: "Addon created successfully",
+    })
+    setIsDialogOpen(false)
+    loadAddons()
   }
 
   const handleToggleActive = async (addon: Addon) => {
