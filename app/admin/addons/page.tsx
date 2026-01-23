@@ -200,7 +200,7 @@ export default function AdminAddonsPage() {
     }
   }
 
-  const loadUsers = async () => {
+  const loadUsers = async (): Promise<void> => {
     try {
       setIsLoadingUsers(true)
       const token = authService.getToken()
@@ -216,14 +216,11 @@ export default function AdminAddonsPage() {
         const usersList = data.data?.users || data.users || data.data || []
         // Filter out admin@buzzfiling.com
         const filteredUsers = usersList.filter((user: any) => user.email !== "admin@buzzfiling.com")
-        console.log("[v0] Users loaded successfully:", filteredUsers.length)
         setUsers(filteredUsers)
       } else {
-        console.log("[v0] Failed to load users, status:", response.status)
         setUsers([])
       }
     } catch (error) {
-      console.log("[v0] Error loading users:", error)
       setUsers([])
     } finally {
       setIsLoadingUsers(false)
@@ -246,19 +243,19 @@ export default function AdminAddonsPage() {
       setAssignToAllUsers(false)
       setUserSearchQuery("")
       
-      // Load currently assigned users and pre-select them
-      if (addon.assignedUserIds && addon.assignedUserIds.length > 0) {
-        // Pre-populate selectedUserIds with currently assigned users
-        setSelectedUserIds(new Set(addon.assignedUserIds))
-        setCurrentlyAssignedUsers(addon.assignedUserIds.map(userId => {
-          return users.find(u => u.id === userId) || { id: userId, email: "Unknown" }
-        }))
-      } else {
-        setCurrentlyAssignedUsers([])
-        setSelectedUserIds(new Set())
-      }
-      
-      loadUsers()
+      // Load users first
+      loadUsers().then(() => {
+        // Then pre-populate selectedUserIds with currently assigned users
+        if (addon.assignedUserIds && addon.assignedUserIds.length > 0) {
+          setSelectedUserIds(new Set(addon.assignedUserIds))
+          setCurrentlyAssignedUsers(addon.assignedUserIds.map(userId => {
+            return users.find(u => u.id === userId) || { id: userId, email: "Unknown" }
+          }))
+        } else {
+          setCurrentlyAssignedUsers([])
+          setSelectedUserIds(new Set())
+        }
+      })
     } else {
       setEditingAddon(null)
       setFormData({
@@ -669,9 +666,6 @@ export default function AdminAddonsPage() {
                       checked={assignToAllUsers}
                       onCheckedChange={(checked) => {
                         setAssignToAllUsers(checked)
-                        if (!checked) {
-                          setSelectedUserIds(new Set())
-                        }
                       }}
                     />
                   </div>
@@ -811,7 +805,7 @@ export default function AdminAddonsPage() {
               }} disabled={isSaving || isAssigning}>
                 {showAssignmentInDialog && !editingAddon ? "Skip Assignment" : "Cancel"}
               </Button>
-              {!showAssignmentInDialog || !editingAddon ? (
+              {!showAssignmentInDialog && (
                 <Button onClick={handleSave} className="bg-gradient-to-r from-[#880000] to-[#ff0d13]" disabled={isSaving || isAssigning}>
                   {isSaving ? (
                     <>
