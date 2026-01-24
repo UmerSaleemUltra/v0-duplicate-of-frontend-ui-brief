@@ -5,17 +5,17 @@ This directory contains comprehensive security test scripts to validate your web
 
 ## Prerequisites
 
-```bash
+\`\`\`bash
 pip install requests
-```
+\`\`\`
 
 ## Configuration
 
 **IMPORTANT:** Update the `BASE_URL` in each script before running:
 
-```python
+\`\`\`python
 BASE_URL = "https://www.buzzfiling.com"  # UPDATE THIS
-```
+\`\`\`
 
 ## Test Scripts
 
@@ -28,9 +28,9 @@ Tests rate limiting and automatic IP blocking for high-volume requests.
 - Concurrent request handling
 
 **Run:**
-```bash
+\`\`\`bash
 python scripts/test-ddos.py
-```
+\`\`\`
 
 **Expected Results:**
 - First 20-50 requests: Success (200)
@@ -48,9 +48,9 @@ Tests login rate limiting and account protection.
 - Account-based blocking (5 attempts per email)
 
 **Run:**
-```bash
+\`\`\`bash
 python scripts/test-login-brute-force.py
-```
+\`\`\`
 
 **Expected Results:**
 - First 5 attempts: Failed Login (401)
@@ -68,9 +68,9 @@ Tests XSS protection and input sanitization.
 - Input sanitization
 
 **Run:**
-```bash
+\`\`\`bash
 python scripts/test-xss-injection.py
-```
+\`\`\`
 
 **Expected Results:**
 - Dangerous inputs: Blocked (403) or Sanitized
@@ -88,9 +88,9 @@ Tests SQL injection protection.
 - Input validation
 
 **Run:**
-```bash
+\`\`\`bash
 python scripts/test-sql-injection.py
-```
+\`\`\`
 
 **Expected Results:**
 - SQL patterns: Blocked (403) or Error Handled (400/401)
@@ -101,9 +101,9 @@ python scripts/test-sql-injection.py
 Runs all security tests in sequence.
 
 **Run:**
-```bash
+\`\`\`bash
 python scripts/test-all-attacks.py
-```
+\`\`\`
 
 This will execute all tests with 5-second delays between them and provide a final summary.
 
@@ -182,20 +182,20 @@ This will execute all tests with 5-second delays between them and provide a fina
 ### Custom Payloads
 Edit the payload arrays in each script to add custom test cases:
 
-```python
+\`\`\`python
 XSS_PAYLOADS = [
     "<script>alert('XSS')</script>",
     "your-custom-payload-here",
 ]
-```
+\`\`\`
 
 ### Adjust Thresholds
 Modify request counts to test specific thresholds:
 
-```python
+\`\`\`python
 TOTAL_REQUESTS = 500  # Test at different levels
 FAILED_ATTEMPTS = 12  # Test specific blocking point
-```
+\`\`\`
 
 ### Monitor Database
 Check MongoDB for threat logs:
