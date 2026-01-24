@@ -5,7 +5,6 @@ import { connectDB } from "@/config/database"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { put } from "@vercel/blob"
-import { blobConfig } from "@/config/blob"
 
 export async function POST(request: NextRequest) {
   try {
@@ -102,13 +101,23 @@ export async function POST(request: NextRequest) {
     // Upload receipt file if provided
     if (receiptFile) {
       try {
+        const blobToken = process.env.BLOB_READ_WRITE_TOKEN
+
+        if (!blobToken) {
+          console.error("[v0] BLOB_READ_WRITE_TOKEN not configured")
+          return NextResponse.json(
+            { success: false, error: "File upload service not configured. Please contact support." },
+            { status: 500 },
+          )
+        }
+
         const buffer = await receiptFile.arrayBuffer()
         const filename = `receipts/${companyId}/${addonId}/${Date.now()}-${receiptFile.name}`
 
         const blob = await put(filename, buffer, {
           access: "public",
           contentType: receiptFile.type,
-          token: blobConfig.token,
+          token: blobToken,
         })
 
         receiptUrl = blob.url
