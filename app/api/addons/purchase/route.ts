@@ -101,26 +101,13 @@ export async function POST(request: NextRequest) {
     // Upload receipt file if provided
     if (receiptFile) {
       try {
-        const blobToken = process.env.BLOB_READ_WRITE_TOKEN
-
-        if (!blobToken) {
-          console.error("[v0] BLOB_READ_WRITE_TOKEN not configured")
-          return NextResponse.json(
-            { success: false, error: "File upload service not configured. Please contact support." },
-            { status: 500 },
-          )
-        }
-
-        const buffer = await receiptFile.arrayBuffer()
-        const filename = `receipts/${companyId}/${addonId}/${Date.now()}-${receiptFile.name}`
-
-        const blob = await put(filename, buffer, {
+        const uploadResult = await blobStorage.upload(receiptFile, {
+          folder: `receipts/${companyId}/${addonId}`,
+          filename: receiptFile.name,
           access: "public",
-          contentType: receiptFile.type,
-          token: blobToken,
         })
 
-        receiptUrl = blob.url
+        receiptUrl = uploadResult.url
       } catch (uploadError) {
         console.error("[v0] Failed to upload receipt file:", uploadError)
         return NextResponse.json(
