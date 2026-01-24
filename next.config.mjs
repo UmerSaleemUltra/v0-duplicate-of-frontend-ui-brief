@@ -6,7 +6,27 @@ const nextConfig = {
   images: {
     unoptimized: true,
   },
-  // Next.js will automatically handle 404s without needing a redirect rule
+  headers: async () => {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          {
+            key: "Access-Control-Allow-Origin",
+            value: "*",
+          },
+          {
+            key: "Access-Control-Allow-Methods",
+            value: "GET, POST, PUT, DELETE, PATCH, OPTIONS",
+          },
+          {
+            key: "Access-Control-Allow-Headers",
+            value: "Content-Type, Authorization, X-Requested-With",
+          },
+        ],
+      },
+    ]
+  },
 }
 
 export default nextConfig

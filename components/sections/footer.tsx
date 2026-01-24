@@ -20,9 +20,6 @@ const footerLinks = {
     { name: "Privacy Policy", href: "/privacy" },
     { name: "Terms & Conditions", href: "/terms" },
     { name: "Refund Policy", href: "/terms" },
-    {
-      /* Changed refund URL from /refund to /terms */
-    },
   ],
 }
 
