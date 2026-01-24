@@ -95,12 +95,22 @@ function AddonCheckoutContent() {
   const handlePurchase = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (!addon || !selectedCompanyId) {
+    if (!addon) {
       toast({
         title: "Error",
-        description: "Please select a company first",
+        description: "Addon details are not loaded yet. Please refresh the page.",
         variant: "destructive",
       })
+      return
+    }
+
+    if (!selectedCompanyId) {
+      toast({
+        title: "Error",
+        description: "No company selected. Please go back and select a company first.",
+        variant: "destructive",
+      })
+      router.push("/client/company")
       return
     }
 
@@ -147,6 +157,7 @@ function AddonCheckoutContent() {
       }
 
       // Submit WhatsApp payment
+      console.log("[v0] Submitting payment with companyId:", selectedCompanyId, "addonId:", addon.id)
       const paymentResponse = await fetch("/api/addons/purchase", {
         method: "POST",
         headers: {

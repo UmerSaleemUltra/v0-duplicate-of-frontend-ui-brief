@@ -57,10 +57,37 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify company exists and belongs to user
-    const company = await db.collection("companies").findOne({
+    let company = await db.collection("companies").findOne({
       _id: new ObjectId(companyId),
       userId: new ObjectId(decoded.userId),
     })
+
+    // If not found with userId as ObjectId, try with userId as string
+    if (!company) {
+      company = await db.collection("companies").findOne({
+        _id: new ObjectId(companyId),
+        userId: decoded.userId,
+      })
+    }
+
+    // If still not found, try without userId check (for debugging)
+    if (!company) {
+      company = await db.collection("companies").findOne({
+        _id: new ObjectId(companyId),
+      })
+
+      // If company exists but userId doesn't match, deny access
+      if (company && company.userId) {
+        const companyUserId = company.userId instanceof ObjectId ? company.userId.toString() : company.userId
+        const decodedUserId = decoded.userId instanceof ObjectId ? decoded.userId.toString() : decoded.userId
+        if (companyUserId !== decodedUserId) {
+          return NextResponse.json(
+            { success: false, error: "Company not found or unauthorized access" },
+            { status: 404 },
+          )
+        }
+      }
+    }
 
     if (!company) {
       return NextResponse.json(
