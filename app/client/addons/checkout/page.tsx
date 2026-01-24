@@ -91,7 +91,7 @@ function AddonCheckoutContent() {
     fetchAddon()
   }, [searchParams, router, toast])
 
-  const handlePurchase = async (e: React.FormEvent) => {
+  const handlePurchase = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!addon || !selectedCompanyId) {
@@ -124,8 +124,6 @@ function AddonCheckoutContent() {
 
       // Phone number validation - ensure it's a valid string
       const validPhoneNumber = whatsappPhoneNumber?.trim() || ""
-      console.log("[v0] Phone number:", validPhoneNumber)
-      console.log("[v0] Receipt file:", whatsappReceiptFile?.name)
 
       // Create FormData to send file and other data
       const formData = new FormData()
@@ -142,8 +140,6 @@ function AddonCheckoutContent() {
         formData.append("receiptFile", whatsappReceiptFile)
       }
 
-      console.log("[v0] Submitting WhatsApp payment with addon ID:", addon.id)
-
       // Submit WhatsApp payment
       const paymentResponse = await fetch("/api/addons/purchase", {
         method: "POST",
@@ -155,12 +151,10 @@ function AddonCheckoutContent() {
 
       if (!paymentResponse.ok) {
         const errorData = await paymentResponse.json()
-        console.error("[v0] Payment submission failed:", errorData)
         throw new Error(errorData.error || "Failed to submit payment details")
       }
 
       const paymentData = await paymentResponse.json()
-      console.log("[v0] Payment submitted successfully:", paymentData)
 
       // Get user data for notifications
       const userResponse = await fetch("/api/auth/me", {
@@ -194,7 +188,6 @@ function AddonCheckoutContent() {
               phoneNumber: validPhoneNumber || "Not provided",
             }),
           })
-          console.log("[v0] Sent addon purchase email notification")
         } catch (emailError) {
           console.error("[v0] Failed to send email:", emailError)
         }
@@ -221,7 +214,6 @@ function AddonCheckoutContent() {
               },
             }),
           })
-          console.log("[v0] Created addon purchase notification")
         } catch (notifError) {
           console.error("[v0] Failed to create notification:", notifError)
         }
@@ -243,7 +235,7 @@ function AddonCheckoutContent() {
     } finally {
       setIsProcessing(false)
     }
-  }
+  }, [addon, selectedCompanyId, paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, toast, router])
 
   const whatsappPaymentForm = useMemo(() => {
     if (paymentMethod !== "whatsapp") return null
@@ -371,7 +363,7 @@ function AddonCheckoutContent() {
         </div>
       </form>
     )
-  }, [paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, handlePurchase])
+  }, [paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, selectedCompanyId, handlePurchase])
 
   if (isLoading) {
     return (
