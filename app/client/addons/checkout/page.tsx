@@ -104,10 +104,10 @@ function AddonCheckoutContent() {
     }
 
     if (paymentMethod === "whatsapp") {
-      if (!whatsappPhoneNumber || !whatsappReceiptFile) {
+      if (!whatsappPhoneNumber && !whatsappReceiptFile) {
         toast({
           title: "Error",
-          description: "Please enter your phone number and upload a receipt file",
+          description: "Please provide either your phone number or upload a receipt file",
           variant: "destructive",
         })
         return
@@ -352,7 +352,6 @@ function AddonCheckoutContent() {
             placeholder="Enter your WhatsApp phone number (e.g., +1234567890)"
             value={whatsappPhoneNumber}
             onChange={(e) => setWhatsappPhoneNumber(e.target.value)}
-            required
           />
           <p className="text-sm text-slate-600">
             We'll use this number to confirm your payment
@@ -371,7 +370,6 @@ function AddonCheckoutContent() {
               accept="image/*,.pdf"
               onChange={handleFileChange}
               className="hidden"
-              required
             />
             <label
               htmlFor="receipt"
@@ -419,7 +417,7 @@ function AddonCheckoutContent() {
         <div className="flex gap-3">
           <Button
             type="submit"
-            disabled={isProcessing || !whatsappPhoneNumber || !whatsappReceiptFile}
+            disabled={isProcessing || (!whatsappPhoneNumber && !whatsappReceiptFile)}
             className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer"
           >
             {isProcessing ? "Submitting..." : `Submit Payment`}
