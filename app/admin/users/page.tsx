@@ -5,7 +5,7 @@ import { CardTitle } from "@/components/ui/card"
 import { CardHeader } from "@/components/ui/card"
 import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
-import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn, Users, UserCheck, Clock } from "lucide-react"
+import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn, Users, UserCheck, Clock, ShoppingCart, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -17,9 +17,6 @@ import { useToast } from "@/hooks/use-toast"
 import { authService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import type { User, Company, Order } from "@/lib/types"
-import { UsersIcon } from "@/components/icons" // Import UsersIcon here
-import { ShoppingCart } from "lucide-react"
-import { DollarSign } from "lucide-react"
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
