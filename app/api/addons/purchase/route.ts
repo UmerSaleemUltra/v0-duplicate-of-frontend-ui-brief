@@ -5,6 +5,7 @@ import { connectDB } from "@/config/database"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { put } from "@vercel/blob"
+import { blobConfig } from "@/config/blob"
 
 export async function POST(request: NextRequest) {
   try {
@@ -107,6 +108,7 @@ export async function POST(request: NextRequest) {
         const blob = await put(filename, buffer, {
           access: "public",
           contentType: receiptFile.type,
+          token: blobConfig.token,
         })
 
         receiptUrl = blob.url
