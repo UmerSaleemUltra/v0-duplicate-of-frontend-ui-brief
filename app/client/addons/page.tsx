@@ -135,8 +135,8 @@ export default function ClientAddonsPage() {
     <ClientShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Available Addons</h1>
-          <p className="text-slate-600 mt-1">Enhance your business with additional services</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Available Addons</h1>
+          <p className="text-slate-600 text-xs sm:text-sm md:text-base mt-1">Enhance your business with additional services</p>
         </div>
 
         <div className="flex gap-2 flex-wrap">
