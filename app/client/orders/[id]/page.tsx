@@ -492,16 +492,30 @@ export default function ClientOrderDetailsPage() {
 
                   {company.purchasedAddons && company.purchasedAddons.length > 0 && (
                     <div>
-                      <p className="text-sm font-semibold text-slate-900 mb-3">Purchased Add-ons</p>
+                      <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                        <Package className="w-4 h-4" />
+                        Purchased Add-ons
+                      </p>
                       <div className="space-y-2">
                         {company.purchasedAddons.map((addon: any, index: number) => (
-                          <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-                            <span className="text-sm font-medium text-slate-900">{addon.name || addon}</span>
+                          <div key={index} className="flex items-center justify-between p-3 bg-slate-50 rounded-lg border border-slate-200">
+                            <div>
+                              <span className="text-sm font-medium text-slate-900">{addon.name || addon}</span>
+                              {addon.serviceId && (
+                                <p className="text-xs text-slate-500">ID: {addon.serviceId}</p>
+                              )}
+                            </div>
                             {addon.price && (
                               <span className="text-sm font-semibold text-slate-900">${addon.price.toFixed(2)}</span>
                             )}
                           </div>
                         ))}
+                        {order.pricing?.addonsTotal > 0 && (
+                          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg border-2 border-blue-200 mt-3">
+                            <span className="font-semibold text-slate-900">Total Add-ons</span>
+                            <span className="font-bold text-blue-600">${order.pricing.addonsTotal.toFixed(2)}</span>
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}
