@@ -143,8 +143,8 @@ export default function NotificationsPage() {
       <div className="space-y-8">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold">Notifications</h1>
-            <p className="text-slate-600 text-sm sm:text-base">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Notifications</h1>
+            <p className="text-slate-600 text-sm sm:text-base mt-1">
               {unreadCount} unread notification{unreadCount !== 1 ? "s" : ""}
             </p>
           </div>
