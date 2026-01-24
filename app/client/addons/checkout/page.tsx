@@ -29,6 +29,7 @@ function AddonCheckoutContent() {
 
   const [whatsappPhoneNumber, setWhatsappPhoneNumber] = useState("")
   const [whatsappReceiptFile, setWhatsappReceiptFile] = useState<File | null>(null)
+  const [notes, setNotes] = useState("")
 
   useEffect(() => {
     const fetchAddon = async () => {
@@ -138,6 +139,11 @@ function AddonCheckoutContent() {
       // Only append receipt file if it exists
       if (whatsappReceiptFile) {
         formData.append("receiptFile", whatsappReceiptFile)
+      }
+
+      // Append notes if provided
+      if (notes.trim()) {
+        formData.append("notes", notes.trim())
       }
 
       // Submit WhatsApp payment
@@ -324,6 +330,44 @@ function AddonCheckoutContent() {
           </div>
         </div>
 
+        {whatsappReceiptFile && (
+          <div className="p-3 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-between">
+            <div className="flex items-center gap-2 flex-1">
+              <Upload className="w-4 h-4 text-slate-600" />
+              <span className="text-sm text-slate-700 break-all">{whatsappReceiptFile.name}</span>
+            </div>
+            <Button
+              type="button"
+              variant="ghost"
+              size="sm"
+              onClick={() => {
+                setWhatsappReceiptFile(null)
+                console.log("[v0] Receipt file removed")
+              }}
+              className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
+            >
+              Remove
+            </Button>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="notes" className="text-slate-700">
+            Additional Notes (Optional)
+          </Label>
+          <textarea
+            id="notes"
+            placeholder="Add any special instructions or notes about your payment..."
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
+            rows={3}
+          />
+          <p className="text-xs text-slate-600">
+            {notes.length}/500 characters
+          </p>
+        </div>
+
         <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-3">
           <Shield className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm">
@@ -363,7 +407,7 @@ function AddonCheckoutContent() {
         </div>
       </form>
     )
-  }, [paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, selectedCompanyId, handlePurchase])
+  }, [paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, selectedCompanyId, handlePurchase, notes])
 
   if (isLoading) {
     return (
