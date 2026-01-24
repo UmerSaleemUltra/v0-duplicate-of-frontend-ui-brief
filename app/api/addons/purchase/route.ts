@@ -4,7 +4,7 @@ import { ObjectId } from "mongodb"
 import { connectDB } from "@/config/database"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
-import { put } from "@vercel/blob"
+import { blobStorage } from "@/config/storage"
 
 export async function POST(request: NextRequest) {
   try {
