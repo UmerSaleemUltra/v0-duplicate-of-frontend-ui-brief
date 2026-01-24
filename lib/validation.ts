@@ -57,3 +57,42 @@ export function validateFileUpload(file: File, options: {
   
   return { valid: true }
 }
+
+export function validatePhoneNumber(phone: string): { valid: boolean; error?: string } {
+  if (!phone || typeof phone !== 'string') {
+    return { valid: false, error: "Phone number is required" }
+  }
+
+  const trimmed = phone.trim()
+  
+  if (trimmed.length === 0) {
+    return { valid: false, error: "Phone number cannot be empty" }
+  }
+
+  // Remove common formatting characters
+  const cleaned = trimmed.replace(/[\s\-().+]/g, '')
+  
+  if (!/^\d{10,15}$/.test(cleaned)) {
+    return { valid: false, error: "Phone number must contain 10-15 digits" }
+  }
+
+  return { valid: true }
+}
+
+export function validateNumberInput(value: string | number): { valid: boolean; error?: string; value?: number } {
+  if (value === null || value === undefined || value === '') {
+    return { valid: false, error: "Number is required", value: 0 }
+  }
+
+  const num = typeof value === 'number' ? value : Number.parseFloat(String(value))
+  
+  if (isNaN(num)) {
+    return { valid: false, error: "Invalid number format", value: 0 }
+  }
+
+  if (num <= 0) {
+    return { valid: false, error: "Number must be greater than 0", value: num }
+  }
+
+  return { valid: true, value: num }
+}
