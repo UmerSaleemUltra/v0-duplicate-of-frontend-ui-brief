@@ -91,7 +91,7 @@ function AddonCheckoutContent() {
     fetchAddon()
   }, [searchParams, router, toast])
 
-  const handlePurchase = async (e: React.FormEvent) => {
+  const handlePurchase = useCallback(async (e: React.FormEvent) => {
     e.preventDefault()
 
     if (!addon || !selectedCompanyId) {
@@ -122,118 +122,41 @@ function AddonCheckoutContent() {
         throw new Error("Not authenticated")
       }
 
-      const companyResponse = await ApiClient.companies.getById(selectedCompanyId, token)
-      const company = companyResponse.data
+      // Phone number validation - ensure it's a valid string
+      const validPhoneNumber = whatsappPhoneNumber?.trim() || ""
 
-      if (!company) {
-        throw new Error("Company not found")
+      // Create FormData to send file and other data
+      const formData = new FormData()
+      formData.append("addonId", addon.id)
+      formData.append("companyId", selectedCompanyId)
+
+      // Only append phone number if it's provided and not empty
+      if (validPhoneNumber) {
+        formData.append("phoneNumber", validPhoneNumber)
       }
 
-      console.log("[v0] Purchasing addon for company:", company.name)
-
-      const existingOrder = company.orders?.[0]
-
-      if (!existingOrder) {
-        throw new Error("No order found for this company")
+      // Only append receipt file if it exists
+      if (whatsappReceiptFile) {
+        formData.append("receiptFile", whatsappReceiptFile)
       }
 
-      const orderId = existingOrder._id || existingOrder.id
-      console.log("[v0] Found existing order:", orderId)
-
-      let existingAddons = []
-      if (Array.isArray(existingOrder.purchasedAddons)) {
-        existingAddons = existingOrder.purchasedAddons
-      } else if (existingOrder.purchasedAddons) {
-        existingAddons = [existingOrder.purchasedAddons]
-      }
-
-      const isDuplicate = existingAddons.some((existingAddon: any) => {
-        const existingServiceId = typeof existingAddon === "object" ? existingAddon.serviceId : existingAddon
-        return existingServiceId === addon.id
-      })
-
-      if (isDuplicate) {
-        toast({
-          title: "Already Purchased",
-          description: `You have already purchased ${addon.name} for this company.`,
-          variant: "destructive",
-        })
-        setIsProcessing(false)
-        return
-      }
-
-      const addonObject = {
-        serviceId: addon.id,
-        name: addon.name,
-        price: addon.price,
-        memberName: undefined,
-        memberId: undefined,
-      }
-
-      const updatedPurchasedAddons = [...existingAddons, addonObject]
-      const existingAddonsTotal = existingOrder.addonsTotal || 0
-      const updatedAddonsTotal = existingAddonsTotal + addon.price
-
-      const baseTotal = existingOrder.pricing?.total || existingOrder.amount || existingOrder.total || 0
-      const updatedTotal = baseTotal + addon.price
-
-      console.log(
-        "[v0] Updating order with addon. Base total:",
-        baseTotal,
-        "Addon price:",
-        addon.price,
-        "New total:",
-        updatedTotal,
-      )
-
-      const updateOrderResponse = await fetch(`/api/companies/${selectedCompanyId}/orders/${orderId}`, {
-        method: "PUT",
+      // Submit WhatsApp payment
+      const paymentResponse = await fetch("/api/addons/purchase", {
+        method: "POST",
         headers: {
-          "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          purchasedAddons: updatedPurchasedAddons,
-          addonsTotal: updatedAddonsTotal,
-          total: updatedTotal,
-          amount: updatedTotal,
-          pricing: {
-            ...(existingOrder.pricing || {}),
-            total: updatedTotal,
-            addonsTotal: updatedAddonsTotal,
-          },
-        }),
+        body: formData,
       })
 
-      if (!updateOrderResponse.ok) {
-        const errorData = await updateOrderResponse.json()
-        console.error("[v0] Failed to update order:", errorData)
-        throw new Error(errorData.error || "Failed to update order with addon")
+      if (!paymentResponse.ok) {
+        const errorData = await paymentResponse.json()
+        throw new Error(errorData.error || "Failed to submit payment details")
       }
 
-      const updatedOrderData = await updateOrderResponse.json()
-      console.log("[v0] Order update response:", updatedOrderData)
-      console.log("[v0] Updated order with addon, new total:", updatedTotal)
+      const paymentData = await paymentResponse.json()
 
-      const updatedCompanyAddons = [...(company.purchasedAddons || []), addonObject]
-
-      const updateCompanyResponse = await fetch(`/api/companies/${selectedCompanyId}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify({
-          purchasedAddons: updatedCompanyAddons,
-        }),
-      })
-
-      if (!updateCompanyResponse.ok) {
-        console.error("[v0] Failed to update company addons")
-      } else {
-        console.log("[v0] Updated company with new addon")
-      }
-
+      // Get user data for notifications
       const userResponse = await fetch("/api/auth/me", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -254,10 +177,17 @@ function AddonCheckoutContent() {
             body: JSON.stringify({
               to: user.email,
               name: user.name,
-              addonDetails: [addonObject],
+              addonDetails: [
+                {
+                  serviceId: addon.id,
+                  name: addon.name,
+                  price: addon.price,
+                },
+              ],
+              paymentMethod: "whatsapp",
+              phoneNumber: validPhoneNumber || "Not provided",
             }),
           })
-          console.log("[v0] Sent addon purchase email notification")
         } catch (emailError) {
           console.error("[v0] Failed to send email:", emailError)
         }
@@ -272,27 +202,26 @@ function AddonCheckoutContent() {
             body: JSON.stringify({
               userId: user.id,
               type: "addon_purchased",
-              title: "Add-on Purchased Successfully",
-              message: `${addon.name} has been added to your ${company.name} account for $${addon.price}.`,
+              title: "Add-on Purchase Submitted",
+              message: `Payment for ${addon.name} has been submitted. We'll verify and process it shortly.`,
               actionUrl: "/client/company",
               metadata: {
                 companyId: selectedCompanyId,
-                companyName: company.name,
                 addonId: addon.id,
                 addonName: addon.name,
                 addonPrice: addon.price,
+                paymentRecordId: paymentData.data?.paymentId,
               },
             }),
           })
-          console.log("[v0] Created addon purchase notification")
         } catch (notifError) {
           console.error("[v0] Failed to create notification:", notifError)
         }
       }
 
       toast({
-        title: "Purchase Successful!",
-        description: `${addon.name} has been added to your company. Order updated with new revenue.`,
+        title: "Payment Submitted!",
+        description: `Your payment details for ${addon.name} have been submitted. We'll verify and process your order shortly.`,
       })
 
       router.push("/client/company")
@@ -300,20 +229,28 @@ function AddonCheckoutContent() {
       console.error("[v0] Error purchasing addon:", error)
       toast({
         title: "Error",
-        description: error instanceof Error ? error.message : "Failed to purchase addon. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to submit payment. Please try again.",
         variant: "destructive",
       })
     } finally {
       setIsProcessing(false)
     }
-  }
+  }, [addon, selectedCompanyId, paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, toast, router])
 
   const whatsappPaymentForm = useMemo(() => {
     if (paymentMethod !== "whatsapp") return null
 
+    const handlePhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+      const value = event.target.value || ""
+      // Trim and store the phone number as string
+      setWhatsappPhoneNumber(value.trim())
+      console.log("[v0] Phone number updated:", value.trim())
+    }
+
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0]
       if (file) {
+        console.log("[v0] Receipt file selected:", file.name, "Size:", file.size, "Type:", file.type)
         setWhatsappReceiptFile(file)
       }
     }
@@ -349,9 +286,10 @@ function AddonCheckoutContent() {
           </Label>
           <Input
             id="whatsappPhone"
+            type="tel"
             placeholder="Enter your WhatsApp phone number (e.g., +1234567890)"
             value={whatsappPhoneNumber}
-            onChange={(e) => setWhatsappPhoneNumber(e.target.value)}
+            onChange={handlePhoneChange}
           />
           <p className="text-sm text-slate-600">
             We'll use this number to confirm your payment
@@ -425,7 +363,7 @@ function AddonCheckoutContent() {
         </div>
       </form>
     )
-  }, [paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, handlePurchase])
+  }, [paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, selectedCompanyId, handlePurchase])
 
   if (isLoading) {
     return (

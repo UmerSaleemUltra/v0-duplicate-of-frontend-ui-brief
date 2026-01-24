@@ -770,16 +770,33 @@ export default function CompanyPage() {
         {/* Purchased Add-ons */}
         {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Purchased Add-ons</h2>
+            <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+              <Package className="w-5 h-5" />
+              Purchased Add-ons
+            </h2>
             <div className="space-y-3">
               {companyData.purchasedAddons.map((addon: any, index: number) => (
                 <div key={index}>
-                  <div className="py-2">
-                    <span className="font-medium text-slate-900 text-sm sm:text-base">{addon.name}</span>
+                  <div className="flex justify-between items-center py-3 px-3 sm:px-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
+                    <div>
+                      <p className="font-medium text-slate-900 text-sm sm:text-base">{addon.name}</p>
+                      {addon.serviceId && (
+                        <p className="text-xs text-slate-500 mt-1">ID: {addon.serviceId}</p>
+                      )}
+                    </div>
+                    {addon.price && (
+                      <span className="font-semibold text-slate-900 text-sm sm:text-base">${addon.price.toFixed(2)}</span>
+                    )}
                   </div>
                   {index < companyData.purchasedAddons.length - 1 && <div className="border-t border-slate-200" />}
                 </div>
               ))}
+              {orderDetails?.pricing?.addonsTotal > 0 && (
+                <div className="flex justify-between items-center py-3 px-3 sm:px-4 rounded-lg bg-blue-50 border-2 border-blue-200 mt-4">
+                  <span className="font-semibold text-slate-900 text-sm sm:text-base">Total Add-ons</span>
+                  <span className="font-bold text-blue-600 text-sm sm:text-base">${orderDetails.pricing.addonsTotal.toFixed(2)}</span>
+                </div>
+              )}
             </div>
           </div>
         )}
