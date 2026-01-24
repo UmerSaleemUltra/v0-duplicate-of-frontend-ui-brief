@@ -175,7 +175,7 @@ export default function ClientSettingsPage() {
       <div className="space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Settings</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Settings</h1>
           <p className="text-slate-600 mt-2">Manage your account settings and preferences</p>
         </div>
 

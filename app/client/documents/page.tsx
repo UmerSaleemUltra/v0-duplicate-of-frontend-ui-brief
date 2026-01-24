@@ -265,16 +265,18 @@ export default function DocumentsPage() {
                       <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-slate-900 truncate text-sm sm:text-base">
+                      <div className="font-medium text-slate-900 truncate text-sm sm:text-base flex items-center gap-2 flex-wrap">
                         {doc.title || doc.name || "Untitled Document"}
+                        <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs whitespace-nowrap">
+                          {doc.type || doc.category || "Document"}
+                        </Badge>
                         {doc.fileCount && doc.fileCount > 1 && (
-                          <Badge variant="secondary" className="ml-2 text-xs">
+                          <Badge variant="secondary" className="text-xs">
                             {doc.fileCount} files
                           </Badge>
                         )}
                       </div>
-                      <div className="text-xs sm:text-sm text-slate-600 break-words">
-                        {doc.type || doc.category || "Document"} •{" "}
+                      <div className="text-xs sm:text-sm text-slate-600 break-words mt-1">
                         {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"} •{" "}
                         {doc.fileSize
                           ? `${(doc.fileSize / 1024).toFixed(0)} KB`
