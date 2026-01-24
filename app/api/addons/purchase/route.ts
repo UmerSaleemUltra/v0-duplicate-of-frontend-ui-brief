@@ -105,7 +105,7 @@ export async function POST(request: NextRequest) {
         const filename = `receipts/${companyId}/${addonId}/${Date.now()}-${receiptFile.name}`
 
         const blob = await put(filename, buffer, {
-          access: "private",
+          access: "public",
           contentType: receiptFile.type,
         })
 

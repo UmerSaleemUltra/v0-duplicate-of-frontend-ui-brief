@@ -56,6 +56,7 @@ function AddonCheckoutContent() {
           headers: {
             Authorization: `Bearer ${token}`,
           },
+          cache: "no-store",
         })
 
         if (!response.ok) {
@@ -63,7 +64,12 @@ function AddonCheckoutContent() {
         }
 
         const data = await response.json()
-        const addonsList = data.data?.addons || data.addons || []
+        const addonsList = Array.isArray(data) ? data : (data.data?.addons || data.addons || [])
+        
+        if (!Array.isArray(addonsList)) {
+          throw new Error("Invalid addons data format")
+        }
+
         const foundAddon = addonsList.find((a: Addon) => a.id === addonId)
 
         if (foundAddon) {
@@ -71,7 +77,7 @@ function AddonCheckoutContent() {
         } else {
           toast({
             title: "Error",
-            description: "Addon not found",
+            description: `Addon with ID ${addonId} not found. Please select a valid addon.`,
             variant: "destructive",
           })
           router.push("/client/addons")
@@ -115,10 +121,31 @@ function AddonCheckoutContent() {
     }
 
     if (paymentMethod === "whatsapp") {
-      if (!whatsappPhoneNumber && !whatsappReceiptFile) {
+      const hasPhone = whatsappPhoneNumber?.trim().length > 0
+      const hasFile = whatsappReceiptFile !== null
+
+      if (!hasPhone && !hasFile) {
         toast({
-          title: "Error",
-          description: "Please provide either your phone number or upload a receipt file",
+          title: "Required Information Missing",
+          description: "Please add your phone number and/or upload a payment receipt to continue.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (!hasPhone) {
+        toast({
+          title: "Phone Number Required",
+          description: "Please add your WhatsApp phone number.",
+          variant: "destructive",
+        })
+        return
+      }
+
+      if (!hasFile) {
+        toast({
+          title: "Receipt Required",
+          description: "Please upload a payment receipt.",
           variant: "destructive",
         })
         return
@@ -157,7 +184,6 @@ function AddonCheckoutContent() {
       }
 
       // Submit WhatsApp payment
-      console.log("[v0] Submitting payment with companyId:", selectedCompanyId, "addonId:", addon.id)
       const paymentResponse = await fetch("/api/addons/purchase", {
         method: "POST",
         headers: {
