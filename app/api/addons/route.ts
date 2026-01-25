@@ -6,6 +6,15 @@ import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcast } from "@/lib/realtime/broadcaster"
 
+// Helper function to normalize addon dates for consistent storage
+function normalizeAddonDates(addon: any) {
+  return {
+    ...addon,
+    createdAt: addon.createdAt instanceof Date ? addon.createdAt : new Date(addon.createdAt),
+    updatedAt: addon.updatedAt instanceof Date ? addon.updatedAt : new Date(addon.updatedAt),
+  }
+}
+
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization")
@@ -45,6 +54,8 @@ export async function GET(request: NextRequest) {
           isActive: 1,
           icon: 1,
           features: 1,
+          billingType: 1,
+          customDuration: 1,
           assignedUserIds: 1,
           createdAt: 1,
         })
@@ -90,6 +101,8 @@ export async function GET(request: NextRequest) {
             isActive: 1,
             icon: 1,
             features: 1,
+            billingType: 1,
+            customDuration: 1,
             assignedUserIds: 1,
             createdAt: 1,
           })
@@ -103,11 +116,14 @@ export async function GET(request: NextRequest) {
     const result = {
       success: true,
       data: {
-        addons: addons.map((addon) => ({
-          ...addon,
-          id: addon._id.toString(),
-          _id: undefined,
-        })),
+        addons: addons.map((addon) => {
+          const normalized = normalizeAddonDates(addon)
+          return {
+            ...normalized,
+            id: addon._id.toString(),
+            _id: undefined,
+          }
+        }),
         pagination: {
           page,
           limit,
@@ -138,7 +154,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, price, category, isActive, icon, features, userIds, assignToAll } = body
+    const { name, description, price, category, isActive, icon, features, userIds, assignToAll, billingType, customDuration, assignedUserIds } = body
 
     if (!name || !description || price === undefined) {
       return NextResponse.json(
@@ -160,7 +176,7 @@ export async function POST(request: NextRequest) {
 
     const { db } = await connectDB()
 
-    const addonData = {
+    const addonData = normalizeAddonDates({
       name,
       description,
       price: Number(price),
@@ -168,18 +184,38 @@ export async function POST(request: NextRequest) {
       isActive: isActive !== undefined ? isActive : true,
       icon: icon || undefined,
       features: features || [],
-      assignedUserIds: [], // New field to track which users have access
+      billingType: billingType || "one_time",
+      customDuration: billingType === "custom" ? customDuration : undefined,
+      assignedUserIds: Array.isArray(assignedUserIds) && assignedUserIds.length > 0 ? assignedUserIds : [],
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: decoded.userId,
-    }
+    })
 
     const result = await db.collection("addons").insertOne(addonData)
     const addonId = result.insertedId
 
     // Assign addon to users if specified
-    if (assignToAll) {
-      // Get all user IDs (excluding admin)
+    if (Array.isArray(assignedUserIds) && assignedUserIds.length > 0) {
+      const validUserIds = assignedUserIds.filter((id: string) => ObjectId.isValid(id)).map((id: string) => new ObjectId(id))
+
+      if (validUserIds.length > 0) {
+        // Update users with purchased addon
+        await db.collection("users").updateMany(
+          { _id: { $in: validUserIds } },
+          {
+            $addToSet: {
+              purchasedAddons: {
+                addonId: addonId,
+                purchasedAt: new Date(),
+                price: addonData.price,
+              },
+            },
+          },
+        )
+      }
+    } else if (assignToAll) {
+      // Get all user IDs (excluding admin) if assignToAll is true
       const allUsers = await db.collection("users").find({ email: { $ne: "admin@buzzfiling.com" } }).project({ _id: 1 }).toArray()
       const allUserIds = allUsers.map((u) => u._id)
 
@@ -288,6 +324,8 @@ export async function PUT(request: NextRequest) {
     if (updateFields.isActive !== undefined) updateData.isActive = updateFields.isActive
     if (updateFields.icon !== undefined) updateData.icon = updateFields.icon
     if (updateFields.features !== undefined) updateData.features = updateFields.features
+    if (updateFields.billingType !== undefined) updateData.billingType = updateFields.billingType
+    if (updateFields.customDuration !== undefined) updateData.customDuration = updateFields.customDuration
 
     const result = await db
       .collection("addons")
@@ -297,6 +335,9 @@ export async function PUT(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Addon not found" }, { status: 404 })
     }
 
+    // Normalize dates in response
+    const normalizedResult = normalizeAddonDates(result)
+
     broadcast("addon_updated", {
       id: result._id.toString(),
       name: result.name,
@@ -305,7 +346,7 @@ export async function PUT(request: NextRequest) {
 
     const response = NextResponse.json({
       success: true,
-      data: { addon: { ...result, id: result._id.toString(), _id: undefined } },
+      data: { addon: { ...normalizedResult, id: normalizedResult._id.toString(), _id: undefined } },
       message: "Addon updated successfully",
     })
     addSecurityHeaders(response)

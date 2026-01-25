@@ -35,6 +35,8 @@ interface Addon {
   icon?: string
   features?: string[]
   assignedUserIds?: string[]
+  billingType?: "one_time" | "recurring_monthly" | "recurring_quarterly" | "recurring_annual" | "custom"
+  customDuration?: string
 }
 
 interface User {
@@ -114,8 +116,16 @@ export default function AdminAddonsPage() {
       const url = editingAddon ? `/api/addons/${editingAddon.id}` : "/api/addons"
       
       const bodyData: any = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        category: formData.category,
+        isActive: formData.isActive,
+        icon: formData.icon,
         features: formData.features.split(", ").filter(Boolean),
+        billingType: formData.billingType,
+        customDuration: formData.customDuration,
+        assignedUserIds: assignToAllUsers ? [] : Array.from(selectedUserIds),
       }
 
       const body = JSON.stringify(bodyData)
@@ -131,91 +141,27 @@ export default function AdminAddonsPage() {
 
       if (response.ok) {
         const data = await response.json()
-        const addonId = data.data?.addon?.id || editingAddon?.id
         
-        if (!editingAddon) {
-          // New addon created - now assign to users if selected
-          setIsAssigning(true)
-          try {
-            const assignmentBody = JSON.stringify({
-              addonId,
-              assignToAll: assignToAllUsers,
-              userIds: assignToAllUsers ? [] : Array.from(selectedUserIds),
-            })
-
-            const assignResponse = await fetch("/api/addon-assignments", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: assignmentBody,
-            })
-
-            if (assignResponse.ok) {
-              toast({
-                title: "Success",
-                description: "Addon created and assigned successfully",
-              })
-            } else {
-              toast({
-                title: "Partial Success",
-                description: "Addon created but assignment failed. You can assign users later.",
-              })
-            }
-          } catch (assignError) {
-            toast({
-              title: "Partial Success",
-              description: "Addon created but assignment failed. You can assign users later.",
-            })
-          } finally {
-            setIsAssigning(false)
-          }
-          
-          setIsDialogOpen(false)
-          await loadAddons()
-        } else {
-          // Existing addon updated
-          setIsAssigning(true)
-          try {
-            const assignmentBody = JSON.stringify({
-              addonId,
-              assignToAll: assignToAllUsers,
-              userIds: assignToAllUsers ? [] : Array.from(selectedUserIds),
-            })
-
-            await fetch("/api/addon-assignments", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: assignmentBody,
-            })
-
-            toast({
-              title: "Success",
-              description: "Addon updated successfully",
-            })
-          } catch (assignError) {
-            toast({
-              title: "Success",
-              description: "Addon updated but assignment failed. You can assign users later.",
-            })
-          } finally {
-            setIsAssigning(false)
-          }
-          
-          setIsDialogOpen(false)
-          await loadAddons()
-        }
+        toast({
+          title: "Success",
+          description: editingAddon ? "Addon updated successfully" : "Addon created successfully",
+        })
+        
+        setIsDialogOpen(false)
+        await loadAddons()
       } else {
-        throw new Error("Failed to save addon")
+        const error = await response.json()
+        toast({
+          title: "Error",
+          description: error.error || "Failed to save addon",
+          variant: "destructive",
+        })
       }
     } catch (error) {
+      console.error("[v0] Error saving addon:", error)
       toast({
         title: "Error",
-        description: "Failed to save addon",
+        description: error instanceof Error ? error.message : "Failed to save addon",
         variant: "destructive",
       })
     } finally {
@@ -300,18 +246,29 @@ export default function AdminAddonsPage() {
         isActive: addon.isActive,
         icon: addon.icon || "",
         features: addon.features?.join(", ") || "",
+        billingType: addon.billingType || "one_time",
+        customDuration: addon.customDuration || "",
       })
       setShowAssignmentInDialog(true)
-      // Check if addon is assigned to all users
-      const isAssignedToAll = addon.assignedUserIds && addon.assignedUserIds.length === 0
-      setAssignToAllUsers(isAssignedToAll)
+      // Check if addon has specific assigned users (if length > 0, specific users are assigned)
+      const hasSpecificUsers = addon.assignedUserIds && addon.assignedUserIds.length > 0
+      setAssignToAllUsers(hasSpecificUsers)
       setUserSearchQuery("")
       
       // Load users first
       loadUsers().then((loadedUsers) => {
         // Then pre-populate selectedUserIds with currently assigned users
-        if (addon.assignedUserIds && addon.assignedUserIds.length > 0) {
-          setSelectedUserIds(new Set(addon.assignedUserIds))
+        if (hasSpecificUsers) {
+          const assignedIds = addon.assignedUserIds.map((id: any) => 
+            typeof id === 'object' ? id.toString() : id
+          )
+          setSelectedUserIds(new Set(assignedIds))
+          // Also populate currentlyAssignedUsers with user details
+          const assignedUserDetails = loadedUsers.filter((u: any) => {
+            const userId = u.id || u._id?.toString?.() || u._id
+            return assignedIds.includes(typeof userId === 'object' ? userId.toString() : userId)
+          })
+          setCurrentlyAssignedUsers(assignedUserDetails)
         } else {
           setCurrentlyAssignedUsers([])
           setSelectedUserIds(new Set())
@@ -327,6 +284,8 @@ export default function AdminAddonsPage() {
         isActive: true,
         icon: "",
         features: "",
+        billingType: "one_time",
+        customDuration: "",
       })
       setShowAssignmentInDialog(false)
       setNewlyCreatedAddonId(null)
@@ -521,6 +480,8 @@ export default function AdminAddonsPage() {
     isActive: true,
     icon: "",
     features: "",
+    billingType: "one_time" as Addon["billingType"],
+    customDuration: "",
   })
 
   if (isLoading) {
@@ -575,6 +536,17 @@ export default function AdminAddonsPage() {
                       <span className="text-sm text-slate-600">Active</span>
                       <Switch checked={addon.isActive} onCheckedChange={() => handleToggleActive(addon)} />
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {addon.billingType === "one_time" && "One Time"}
+                      {addon.billingType === "recurring_monthly" && "Monthly"}
+                      {addon.billingType === "recurring_quarterly" && "Quarterly"}
+                      {addon.billingType === "recurring_annual" && "Annual"}
+                      {addon.billingType === "custom" && `${addon.customDuration} days`}
+                      {!addon.billingType && "One Time"}
+                    </Badge>
                   </div>
 
                   {addon.features && addon.features.length > 0 && (
@@ -702,6 +674,43 @@ export default function AdminAddonsPage() {
                 <p className="text-xs text-slate-500">Separate each feature with a comma</p>
               </div>
 
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="billingType">Billing Type</Label>
+                  <Select
+                    value={formData.billingType || "one_time"}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, billingType: value as Addon["billingType"] })
+                    }}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select billing type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="one_time">One Time</SelectItem>
+                      <SelectItem value="recurring_monthly">Recurring Monthly</SelectItem>
+                      <SelectItem value="recurring_quarterly">Recurring Quarterly (3 Months)</SelectItem>
+                      <SelectItem value="recurring_annual">Recurring Annual</SelectItem>
+                      <SelectItem value="custom">Custom Duration</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.billingType === "custom" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="customDuration">Custom Duration (days)</Label>
+                    <Input
+                      id="customDuration"
+                      type="number"
+                      value={formData.customDuration}
+                      onChange={(e) => setFormData({ ...formData, customDuration: e.target.value })}
+                      placeholder="e.g., 30"
+                      min="1"
+                    />
+                  </div>
+                )}
+              </div>
+
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-slate-50 rounded-lg gap-3">
                 <div>
                   <Label htmlFor="isActive" className="text-sm font-medium">
@@ -721,19 +730,23 @@ export default function AdminAddonsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <Label className="text-sm font-medium">
-                      Assign to Users
+                      Assign to Specific Users
                     </Label>
-                    <p className="text-xs text-slate-600 mt-1">Assign this addon to users now or later</p>
+                    <p className="text-xs text-slate-600 mt-1">Toggle ON to assign to specific users, OFF to assign to all users</p>
                   </div>
                   <Switch
                     checked={assignToAllUsers}
                     onCheckedChange={(checked) => {
                       setAssignToAllUsers(checked)
+                      if (!checked) {
+                        setSelectedUserIds(new Set())
+                        setCurrentlyAssignedUsers([])
+                      }
                     }}
                   />
                 </div>
 
-                {assignToAllUsers && (
+                {!assignToAllUsers && (
                   <div className="space-y-3 pt-3 border-t border-slate-200">
                     <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 bg-white">
                       <span className="text-sm font-medium block text-slate-700">All users will have access to this addon</span>
@@ -741,8 +754,21 @@ export default function AdminAddonsPage() {
                   </div>
                 )}
 
-                {!assignToAllUsers && (
+                {assignToAllUsers && (
                   <div className="space-y-3">
+                    {currentlyAssignedUsers && currentlyAssignedUsers.length > 0 && editingAddon && (
+                      <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
+                        <p className="text-sm font-medium text-blue-900 mb-2">Currently Assigned To:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {currentlyAssignedUsers.map((user: any) => (
+                            <Badge key={user.id || user._id} variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300">
+                              {user.name || user.email}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <Label className="text-sm font-medium">
                         Select Users ({selectedUserIds.size} of {users.length})
