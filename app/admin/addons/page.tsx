@@ -735,9 +735,9 @@ export default function AdminAddonsPage() {
                     <p className="text-xs text-slate-600 mt-1">Toggle ON to assign to specific users, OFF to assign to all users</p>
                   </div>
                   <Switch
-                    checked={!assignToAllUsers}
+                    checked={assignToAllUsers}
                     onCheckedChange={(checked) => {
-                      setAssignToAllUsers(!checked)
+                      setAssignToAllUsers(checked)
                       if (!checked) {
                         setSelectedUserIds(new Set())
                         setCurrentlyAssignedUsers([])
