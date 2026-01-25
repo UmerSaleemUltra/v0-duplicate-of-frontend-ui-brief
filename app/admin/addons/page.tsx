@@ -313,8 +313,8 @@ export default function AdminAddonsPage() {
         customDuration: addon.customDuration || "",
       })
       setShowAssignmentInDialog(true)
-      // Check if addon is assigned to all users
-      const isAssignedToAll = addon.assignedUserIds && addon.assignedUserIds.length === 0
+      // Check if addon is assigned to all users (empty assignedUserIds means all users)
+      const isAssignedToAll = !addon.assignedUserIds || addon.assignedUserIds.length === 0
       setAssignToAllUsers(isAssignedToAll)
       setUserSearchQuery("")
       
@@ -736,10 +736,12 @@ export default function AdminAddonsPage() {
                   <Label htmlFor="billingType">Billing Type</Label>
                   <Select
                     value={formData.billingType || "one_time"}
-                    onValueChange={(value) => setFormData({ ...formData, billingType: value as Addon["billingType"] })}
+                    onValueChange={(value) => {
+                      setFormData({ ...formData, billingType: value as Addon["billingType"] })
+                    }}
                   >
                     <SelectTrigger>
-                      <SelectValue />
+                      <SelectValue placeholder="Select billing type" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="one_time">One Time</SelectItem>
@@ -785,19 +787,23 @@ export default function AdminAddonsPage() {
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                   <div>
                     <Label className="text-sm font-medium">
-                      Assign to Users
+                      Assign to Specific Users
                     </Label>
-                    <p className="text-xs text-slate-600 mt-1">Assign this addon to users now or later</p>
+                    <p className="text-xs text-slate-600 mt-1">Toggle ON to assign to specific users, OFF to assign to all users</p>
                   </div>
                   <Switch
-                    checked={assignToAllUsers}
+                    checked={!assignToAllUsers}
                     onCheckedChange={(checked) => {
-                      setAssignToAllUsers(checked)
+                      setAssignToAllUsers(!checked)
+                      if (!checked) {
+                        setSelectedUserIds(new Set())
+                        setCurrentlyAssignedUsers([])
+                      }
                     }}
                   />
                 </div>
 
-                {assignToAllUsers && (
+                {!assignToAllUsers && (
                   <div className="space-y-3 pt-3 border-t border-slate-200">
                     <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 bg-white">
                       <span className="text-sm font-medium block text-slate-700">All users will have access to this addon</span>
@@ -805,7 +811,7 @@ export default function AdminAddonsPage() {
                   </div>
                 )}
 
-                {!assignToAllUsers && (
+                {assignToAllUsers && (
                   <div className="space-y-3">
                     {currentlyAssignedUsers.length > 0 && editingAddon && (
                       <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
