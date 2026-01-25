@@ -116,8 +116,15 @@ export default function AdminAddonsPage() {
       const url = editingAddon ? `/api/addons/${editingAddon.id}` : "/api/addons"
       
       const bodyData: any = {
-        ...formData,
+        name: formData.name,
+        description: formData.description,
+        price: formData.price,
+        category: formData.category,
+        isActive: formData.isActive,
+        icon: formData.icon,
         features: formData.features.split(", ").filter(Boolean),
+        billingType: formData.billingType,
+        customDuration: formData.customDuration,
       }
 
       const body = JSON.stringify(bodyData)
@@ -316,6 +323,9 @@ export default function AdminAddonsPage() {
         // Then pre-populate selectedUserIds with currently assigned users
         if (addon.assignedUserIds && addon.assignedUserIds.length > 0) {
           setSelectedUserIds(new Set(addon.assignedUserIds))
+          // Also populate currentlyAssignedUsers with user details
+          const assignedUserDetails = loadedUsers.filter((u) => addon.assignedUserIds?.includes(u.id))
+          setCurrentlyAssignedUsers(assignedUserDetails)
         } else {
           setCurrentlyAssignedUsers([])
           setSelectedUserIds(new Set())
@@ -797,6 +807,19 @@ export default function AdminAddonsPage() {
 
                 {!assignToAllUsers && (
                   <div className="space-y-3">
+                    {currentlyAssignedUsers.length > 0 && editingAddon && (
+                      <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
+                        <p className="text-sm font-medium text-blue-900 mb-2">Currently Assigned To:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {currentlyAssignedUsers.map((user) => (
+                            <Badge key={user.id} variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300">
+                              {user.name || user.email}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <Label className="text-sm font-medium">
                         Select Users ({selectedUserIds.size} of {users.length})
