@@ -168,30 +168,6 @@ export default function AdminAddonsPage() {
       setIsSaving(false)
     }
   }
-            toast({
-              title: "Success",
-              description: "Addon updated but assignment failed. You can assign users later.",
-            })
-          } finally {
-            setIsAssigning(false)
-          }
-          
-          setIsDialogOpen(false)
-          await loadAddons()
-        }
-      } else {
-        throw new Error("Failed to save addon")
-      }
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to save addon",
-        variant: "destructive",
-      })
-    } finally {
-      setIsSaving(false)
-    }
-  }
 
   useEffect(() => {
     loadAddons()
