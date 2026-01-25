@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, price, category, isActive, icon, features, userIds, assignToAll, billingType, customDuration } = body
+    const { name, description, price, category, isActive, icon, features, userIds, assignToAll, billingType, customDuration, assignedUserIds } = body
 
     if (!name || !description || price === undefined) {
       return NextResponse.json(
@@ -186,7 +186,7 @@ export async function POST(request: NextRequest) {
       features: features || [],
       billingType: billingType || "one_time",
       customDuration: billingType === "custom" ? customDuration : undefined,
-      assignedUserIds: [],
+      assignedUserIds: Array.isArray(assignedUserIds) && assignedUserIds.length > 0 ? assignedUserIds : [],
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: decoded.userId,
@@ -196,8 +196,26 @@ export async function POST(request: NextRequest) {
     const addonId = result.insertedId
 
     // Assign addon to users if specified
-    if (assignToAll) {
-      // Get all user IDs (excluding admin)
+    if (Array.isArray(assignedUserIds) && assignedUserIds.length > 0) {
+      const validUserIds = assignedUserIds.filter((id: string) => ObjectId.isValid(id)).map((id: string) => new ObjectId(id))
+
+      if (validUserIds.length > 0) {
+        // Update users with purchased addon
+        await db.collection("users").updateMany(
+          { _id: { $in: validUserIds } },
+          {
+            $addToSet: {
+              purchasedAddons: {
+                addonId: addonId,
+                purchasedAt: new Date(),
+                price: addonData.price,
+              },
+            },
+          },
+        )
+      }
+    } else if (assignToAll) {
+      // Get all user IDs (excluding admin) if assignToAll is true
       const allUsers = await db.collection("users").find({ email: { $ne: "admin@buzzfiling.com" } }).project({ _id: 1 }).toArray()
       const allUserIds = allUsers.map((u) => u._id)
 

@@ -53,7 +53,7 @@ export const PUT = requireAuth(async (request: NextRequest, user, { params }: { 
     const { db } = await connectDB()
     const addonsCollection = db.collection("addons")
 
-    const updateData: Record<string, string | number | boolean | string[]> = {
+    const updateData: Record<string, string | number | boolean | string[] | null> = {
       updatedAt: new Date().toISOString(),
     }
 
@@ -75,6 +75,9 @@ export const PUT = requireAuth(async (request: NextRequest, user, { params }: { 
     if (body.isActive !== undefined) updateData.isActive = body.isActive
     if (body.features !== undefined) updateData.features = body.features
     if (body.icon !== undefined) updateData.icon = body.icon
+    if (body.billingType !== undefined) updateData.billingType = body.billingType
+    if (body.customDuration !== undefined) updateData.customDuration = body.customDuration || null
+    if (body.assignedUserIds !== undefined) updateData.assignedUserIds = body.assignedUserIds
 
     const result = await addonsCollection.findOneAndUpdate(
       { _id: new ObjectId(id) },

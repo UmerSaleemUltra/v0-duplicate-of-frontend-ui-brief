@@ -125,6 +125,7 @@ export default function AdminAddonsPage() {
         features: formData.features.split(", ").filter(Boolean),
         billingType: formData.billingType,
         customDuration: formData.customDuration,
+        assignedUserIds: assignToAllUsers ? [] : Array.from(selectedUserIds),
       }
 
       const body = JSON.stringify(bodyData)
@@ -140,73 +141,33 @@ export default function AdminAddonsPage() {
 
       if (response.ok) {
         const data = await response.json()
-        const addonId = data.data?.addon?.id || editingAddon?.id
         
-        if (!editingAddon) {
-          // New addon created - now assign to users if selected
-          setIsAssigning(true)
-          try {
-            const assignmentBody = JSON.stringify({
-              addonId,
-              assignToAll: assignToAllUsers,
-              userIds: assignToAllUsers ? [] : Array.from(selectedUserIds),
-            })
-
-            const assignResponse = await fetch("/api/addon-assignments", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: assignmentBody,
-            })
-
-            if (assignResponse.ok) {
-              toast({
-                title: "Success",
-                description: "Addon created and assigned successfully",
-              })
-            } else {
-              toast({
-                title: "Partial Success",
-                description: "Addon created but assignment failed. You can assign users later.",
-              })
-            }
-          } catch (assignError) {
-            toast({
-              title: "Partial Success",
-              description: "Addon created but assignment failed. You can assign users later.",
-            })
-          } finally {
-            setIsAssigning(false)
-          }
-          
-          setIsDialogOpen(false)
-          await loadAddons()
-        } else {
-          // Existing addon updated
-          setIsAssigning(true)
-          try {
-            const assignmentBody = JSON.stringify({
-              addonId,
-              assignToAll: assignToAllUsers,
-              userIds: assignToAllUsers ? [] : Array.from(selectedUserIds),
-            })
-
-            await fetch("/api/addon-assignments", {
-              method: "POST",
-              headers: {
-                "Content-Type": "application/json",
-                Authorization: `Bearer ${token}`,
-              },
-              body: assignmentBody,
-            })
-
-            toast({
-              title: "Success",
-              description: "Addon updated successfully",
-            })
-          } catch (assignError) {
+        toast({
+          title: "Success",
+          description: editingAddon ? "Addon updated successfully" : "Addon created successfully",
+        })
+        
+        setIsDialogOpen(false)
+        await loadAddons()
+      } else {
+        const error = await response.json()
+        toast({
+          title: "Error",
+          description: error.error || "Failed to save addon",
+          variant: "destructive",
+        })
+      }
+    } catch (error) {
+      console.error("[v0] Error saving addon:", error)
+      toast({
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to save addon",
+        variant: "destructive",
+      })
+    } finally {
+      setIsSaving(false)
+    }
+  }
             toast({
               title: "Success",
               description: "Addon updated but assignment failed. You can assign users later.",
