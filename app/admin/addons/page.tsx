@@ -250,15 +250,15 @@ export default function AdminAddonsPage() {
         customDuration: addon.customDuration || "",
       })
       setShowAssignmentInDialog(true)
-      // Check if addon is assigned to all users (empty assignedUserIds means all users)
-      const isAssignedToAll = !addon.assignedUserIds || addon.assignedUserIds.length === 0
-      setAssignToAllUsers(isAssignedToAll)
+      // Check if addon has specific assigned users (if length > 0, specific users are assigned)
+      const hasSpecificUsers = addon.assignedUserIds && addon.assignedUserIds.length > 0
+      setAssignToAllUsers(hasSpecificUsers)
       setUserSearchQuery("")
       
       // Load users first
       loadUsers().then((loadedUsers) => {
         // Then pre-populate selectedUserIds with currently assigned users
-        if (addon.assignedUserIds && addon.assignedUserIds.length > 0) {
+        if (hasSpecificUsers) {
           const assignedIds = addon.assignedUserIds.map((id: any) => 
             typeof id === 'object' ? id.toString() : id
           )
@@ -756,12 +756,12 @@ export default function AdminAddonsPage() {
 
                 {assignToAllUsers && (
                   <div className="space-y-3">
-                    {currentlyAssignedUsers.length > 0 && editingAddon && (
+                    {currentlyAssignedUsers && currentlyAssignedUsers.length > 0 && editingAddon && (
                       <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
                         <p className="text-sm font-medium text-blue-900 mb-2">Currently Assigned To:</p>
                         <div className="flex flex-wrap gap-2">
-                          {currentlyAssignedUsers.map((user) => (
-                            <Badge key={user.id} variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300">
+                          {currentlyAssignedUsers.map((user: any) => (
+                            <Badge key={user.id || user._id} variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300">
                               {user.name || user.email}
                             </Badge>
                           ))}
