@@ -259,9 +259,15 @@ export default function AdminAddonsPage() {
       loadUsers().then((loadedUsers) => {
         // Then pre-populate selectedUserIds with currently assigned users
         if (addon.assignedUserIds && addon.assignedUserIds.length > 0) {
-          setSelectedUserIds(new Set(addon.assignedUserIds))
+          const assignedIds = addon.assignedUserIds.map((id: any) => 
+            typeof id === 'object' ? id.toString() : id
+          )
+          setSelectedUserIds(new Set(assignedIds))
           // Also populate currentlyAssignedUsers with user details
-          const assignedUserDetails = loadedUsers.filter((u) => addon.assignedUserIds?.includes(u.id))
+          const assignedUserDetails = loadedUsers.filter((u: any) => {
+            const userId = u.id || u._id?.toString?.() || u._id
+            return assignedIds.includes(typeof userId === 'object' ? userId.toString() : userId)
+          })
           setCurrentlyAssignedUsers(assignedUserDetails)
         } else {
           setCurrentlyAssignedUsers([])
