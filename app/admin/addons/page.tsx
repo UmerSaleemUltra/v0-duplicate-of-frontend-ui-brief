@@ -35,6 +35,8 @@ interface Addon {
   icon?: string
   features?: string[]
   assignedUserIds?: string[]
+  billingType?: "one_time" | "recurring_monthly" | "recurring_quarterly" | "recurring_annual" | "custom"
+  customDuration?: string
 }
 
 interface User {
@@ -300,6 +302,8 @@ export default function AdminAddonsPage() {
         isActive: addon.isActive,
         icon: addon.icon || "",
         features: addon.features?.join(", ") || "",
+        billingType: addon.billingType || "one_time",
+        customDuration: addon.customDuration || "",
       })
       setShowAssignmentInDialog(true)
       // Check if addon is assigned to all users
@@ -327,6 +331,8 @@ export default function AdminAddonsPage() {
         isActive: true,
         icon: "",
         features: "",
+        billingType: "one_time",
+        customDuration: "",
       })
       setShowAssignmentInDialog(false)
       setNewlyCreatedAddonId(null)
@@ -521,6 +527,8 @@ export default function AdminAddonsPage() {
     isActive: true,
     icon: "",
     features: "",
+    billingType: "one_time" as Addon["billingType"],
+    customDuration: "",
   })
 
   if (isLoading) {
@@ -575,6 +583,17 @@ export default function AdminAddonsPage() {
                       <span className="text-sm text-slate-600">Active</span>
                       <Switch checked={addon.isActive} onCheckedChange={() => handleToggleActive(addon)} />
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-2">
+                    <Badge variant="outline" className="text-xs">
+                      {addon.billingType === "one_time" && "One Time"}
+                      {addon.billingType === "recurring_monthly" && "Monthly"}
+                      {addon.billingType === "recurring_quarterly" && "Quarterly"}
+                      {addon.billingType === "recurring_annual" && "Annual"}
+                      {addon.billingType === "custom" && `${addon.customDuration} days`}
+                      {!addon.billingType && "One Time"}
+                    </Badge>
                   </div>
 
                   {addon.features && addon.features.length > 0 && (
@@ -700,6 +719,41 @@ export default function AdminAddonsPage() {
                   rows={2}
                 />
                 <p className="text-xs text-slate-500">Separate each feature with a comma</p>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="billingType">Billing Type</Label>
+                  <Select
+                    value={formData.billingType || "one_time"}
+                    onValueChange={(value) => setFormData({ ...formData, billingType: value as Addon["billingType"] })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="one_time">One Time</SelectItem>
+                      <SelectItem value="recurring_monthly">Recurring Monthly</SelectItem>
+                      <SelectItem value="recurring_quarterly">Recurring Quarterly (3 Months)</SelectItem>
+                      <SelectItem value="recurring_annual">Recurring Annual</SelectItem>
+                      <SelectItem value="custom">Custom Duration</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.billingType === "custom" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="customDuration">Custom Duration (days)</Label>
+                    <Input
+                      id="customDuration"
+                      type="number"
+                      value={formData.customDuration}
+                      onChange={(e) => setFormData({ ...formData, customDuration: e.target.value })}
+                      placeholder="e.g., 30"
+                      min="1"
+                    />
+                  </div>
+                )}
               </div>
 
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-slate-50 rounded-lg gap-3">

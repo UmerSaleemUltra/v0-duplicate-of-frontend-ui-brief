@@ -45,6 +45,8 @@ export async function GET(request: NextRequest) {
           isActive: 1,
           icon: 1,
           features: 1,
+          billingType: 1,
+          customDuration: 1,
           assignedUserIds: 1,
           createdAt: 1,
         })
@@ -90,6 +92,8 @@ export async function GET(request: NextRequest) {
             isActive: 1,
             icon: 1,
             features: 1,
+            billingType: 1,
+            customDuration: 1,
             assignedUserIds: 1,
             createdAt: 1,
           })
@@ -138,7 +142,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { name, description, price, category, isActive, icon, features, userIds, assignToAll } = body
+    const { name, description, price, category, isActive, icon, features, userIds, assignToAll, billingType, customDuration } = body
 
     if (!name || !description || price === undefined) {
       return NextResponse.json(
@@ -168,7 +172,9 @@ export async function POST(request: NextRequest) {
       isActive: isActive !== undefined ? isActive : true,
       icon: icon || undefined,
       features: features || [],
-      assignedUserIds: [], // New field to track which users have access
+      billingType: billingType || "one_time",
+      customDuration: billingType === "custom" ? customDuration : undefined,
+      assignedUserIds: [],
       createdAt: new Date(),
       updatedAt: new Date(),
       createdBy: decoded.userId,
@@ -288,6 +294,8 @@ export async function PUT(request: NextRequest) {
     if (updateFields.isActive !== undefined) updateData.isActive = updateFields.isActive
     if (updateFields.icon !== undefined) updateData.icon = updateFields.icon
     if (updateFields.features !== undefined) updateData.features = updateFields.features
+    if (updateFields.billingType !== undefined) updateData.billingType = updateFields.billingType
+    if (updateFields.customDuration !== undefined) updateData.customDuration = updateFields.customDuration
 
     const result = await db
       .collection("addons")

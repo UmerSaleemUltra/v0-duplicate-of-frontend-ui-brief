@@ -14,11 +14,16 @@ import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { AddonsSkeleton } from "@/components/client/addons-skeleton"
 
+interface AddonWithBilling extends Addon {
+  billingType?: "one_time" | "recurring_monthly" | "recurring_quarterly" | "recurring_annual" | "custom"
+  customDuration?: string
+}
+
 export default function ClientAddonsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard()
   const router = useRouter()
   const { selectedCompanyId } = useSelectedCompany()
-  const [addons, setAddons] = useState<Addon[]>([])
+  const [addons, setAddons] = useState<AddonWithBilling[]>([])
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [hasAdvancePackage, setHasAdvancePackage] = useState(false)
   const [isLoadingAddons, setIsLoadingAddons] = useState(true)
@@ -99,11 +104,20 @@ export default function ClientAddonsPage() {
     return addonName.toLowerCase().includes("reseller") || addonName.toLowerCase().includes("resale")
   }
 
-  const isAddonDisabled = (addon: Addon) => {
+  const isAddonDisabled = (addon: AddonWithBilling) => {
     return hasAdvancePackage && isResellerCertificate(addon.name)
   }
 
-  const handleBuyAddon = (addonId: string, addon: Addon) => {
+  const getBillingTypeLabel = (addon: AddonWithBilling) => {
+    if (addon.billingType === "one_time") return "one-time"
+    if (addon.billingType === "recurring_monthly") return "monthly"
+    if (addon.billingType === "recurring_quarterly") return "quarterly"
+    if (addon.billingType === "recurring_annual") return "annually"
+    if (addon.billingType === "custom") return `every ${addon.customDuration} days`
+    return "one-time"
+  }
+
+  const handleBuyAddon = (addonId: string, addon: AddonWithBilling) => {
     if (isAddonDisabled(addon)) {
       return
     }
@@ -174,11 +188,11 @@ export default function ClientAddonsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-slate-500" />
-                      <span className="text-3xl font-bold text-slate-900">${addon.price}</span>
-                      <span className="text-sm text-slate-500">one-time</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-slate-500" />
+                    <span className="text-3xl font-bold text-slate-900">${addon.price}</span>
+                    <span className="text-sm text-slate-500">{getBillingTypeLabel(addon)}</span>
+                  </div>
 
                     {addon.features && Array.isArray(addon.features) && addon.features.length > 0 && (
                       <div className="space-y-2 pt-2 border-t">
