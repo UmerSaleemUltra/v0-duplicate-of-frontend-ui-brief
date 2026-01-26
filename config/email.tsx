@@ -1,16 +1,16 @@
 import nodemailer from "nodemailer"
 
 const EMAIL_CONFIG = {
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
+  host: process.env.SMTP_HOST || "smtp.secureserver.net",
+  port: parseInt(process.env.SMTP_PORT || "465"),
+  secure: process.env.SMTP_SECURE !== "false", // true for 465, false for 587
   auth: {
-    user: process.env.EMAIL_USER || "us800750@gmail.com",
-    pass: process.env.EMAIL_PASS || "pbjsifufaairgniq",
+    user: process.env.EMAIL_USER || "hello@buzzfiling.com",
+    pass: process.env.EMAIL_PASS || "@Buzz2899",
   },
 }
 
-const SENDER_EMAIL = process.env.SENDER_EMAIL || "us800750@gmail.com"
+const SENDER_EMAIL = process.env.SENDER_EMAIL || "hello@buzzfiling.com"
 const SENDER_NAME = "BuzzFiling LLC Formation"
 
 const transporter = nodemailer.createTransport(EMAIL_CONFIG)

@@ -24,7 +24,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    const email = emailTemplates.addonPurchaseConfirmation(name, addonDetails)
+    // Extract the first addon details from the array
+    const addon = addonDetails[0]
+    if (!addon || !addon.name || !addon.price) {
+      return NextResponse.json({ error: "Invalid addon details format" }, { status: 400 })
+    }
+
+    const email = emailTemplates.addonPurchaseConfirmation(name, addon.name, addon.price)
 
     const result = await sendEmail({
       to,
