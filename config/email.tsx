@@ -12,7 +12,7 @@ const EMAIL_CONFIG = {
 }
 
 const SENDER_EMAIL = process.env.SENDER_EMAIL || "hello@buzzfiling.com"
-const SENDER_NAME = "BuzzFiling LLC Formation"
+const SENDER_NAME = "Buzz Filing"
 
 const transporter = nodemailer.createTransport(EMAIL_CONFIG)
 
