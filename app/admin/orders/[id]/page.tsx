@@ -1230,7 +1230,7 @@ export default function OrderDetailPage() {
 
     setDeleting(true)
     try {
-      const token = localStorage.getItem("token")
+      const token = authService.getToken()
       if (!token) throw new Error("No authentication token")
 
       console.log("[v0] Sending delete request to API", {

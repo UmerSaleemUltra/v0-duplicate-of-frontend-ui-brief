@@ -63,7 +63,7 @@ export function NoCompanyState() {
           </p>
 
           <Button
-            onClick={() => router.push("/client/addons/checkout")}
+            onClick={() => router.push("/checkout")}
             size="lg"
             className="w-full sm:w-auto bg-red-600 hover:bg-red-700 text-white gap-2 shadow-lg px-6 sm:px-8 py-2 sm:py-2.5 text-sm sm:text-base"
           >
