@@ -298,8 +298,108 @@ export default function OrdersPage() {
     setCompanyModalOpen(true)
   }
 
-  const handleDeleteOrder = (orderId: string) => {
-    // Placeholder for delete functionality
+  const handleDeleteOrder = async (orderId: string) => {
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        toast({
+          title: "Error",
+          description: "Authentication token not found",
+          variant: "destructive",
+        })
+        return
+      }
+
+      // Find the order to get company ID
+      const order = filteredOrders.find((o: any) => o.id === orderId)
+      if (!order) {
+        toast({
+          title: "Error",
+          description: "Order not found",
+          variant: "destructive",
+        })
+        return
+      }
+
+      const response = await fetch(`/api/orders/${orderId}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.error || "Failed to delete order")
+      }
+
+      toast({
+        title: "Success",
+        description: "Order deleted successfully",
+      })
+
+      // Reload the orders list
+      const timestamp = Date.now()
+      const [usersResponse, companiesResponse] = await Promise.all([
+        fetch(`https://www.buzzfiling.com/api/users?_t=${timestamp}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
+        }),
+        fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
+        }),
+      ])
+
+      const usersData = await usersResponse.json()
+      const companiesData = await companiesResponse.json()
+
+      const allUsers = usersData.data || usersData || []
+      const allCompanies = companiesData.data || companiesData || []
+
+      const allOrdersData = allCompanies.flatMap((company: any) => {
+        const companyOrders = company.orders || []
+        return companyOrders.map((order: any) => ({
+          ...order,
+          companyId: company.id,
+          companyName: company.name,
+          state: company.state,
+          packageType: order.packageType || company.packageType || "N/A",
+        }))
+      })
+
+      const ordersWithDetails = allOrdersData.map((order: any) => {
+        const company = allCompanies.find((c: any) => c.id === order.companyId)
+        const user = allUsers.find((u: any) => String(u.id) === String(company?.userId))
+
+        return {
+          ...order,
+          customerName: user?.name || company?.members?.[0]?.name || "Unknown",
+          customerEmail: user?.email || "N/A",
+          userId: company?.userId,
+        }
+      })
+
+      const sortedOrders = ordersWithDetails.sort(
+        (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
+      )
+
+      setCompanies(allCompanies)
+      setOrders(sortedOrders)
+      setFilteredOrders(sortedOrders)
+    } catch (error: any) {
+      console.error("[v0] Delete error:", error)
+      toast({
+        title: "Error",
+        description: error.message || "Failed to delete order",
+        variant: "destructive",
+      })
+    }
   }
 
   return (
