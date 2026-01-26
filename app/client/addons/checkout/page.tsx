@@ -224,7 +224,7 @@ function AddonCheckoutContent() {
                 {
                   serviceId: addon.id,
                   name: addon.name,
-                  price: addon.price,
+                  price: `$${addon.price.toFixed(2)}`,
                 },
               ],
               paymentMethod: "whatsapp",
