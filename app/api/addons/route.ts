@@ -81,14 +81,15 @@ export async function GET(request: NextRequest) {
         // Query addons where:
         // 1. Addon is in user's purchasedAddons array, OR
         // 2. User ID is in addon's assignedUserIds array, OR
-        // 3. Addon is assigned to all users (empty assignedUserIds means assigned to all)
+        // 3. Addon is assigned to all users (empty or non-existent assignedUserIds means assigned to all)
         addons = await db
           .collection("addons")
           .find({
             $or: [
               { _id: { $in: userAddonIds } },
               { assignedUserIds: new ObjectId(decoded.userId) },
-              { assignedUserIds: { $size: 0 }, isActive: true }
+              { assignedUserIds: { $exists: false }, isActive: true },
+              { assignedUserIds: [], isActive: true }
             ],
             isActive: true
           })

@@ -283,17 +283,15 @@ function AddonCheckoutContent() {
   const whatsappPaymentForm = useMemo(() => {
     if (paymentMethod !== "whatsapp") return null
 
-    const handlePhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-      const value = event.target.value || ""
-      // Trim and store the phone number as string
-      setWhatsappPhoneNumber(value.trim())
-      console.log("[v0] Phone number updated:", value.trim())
-    }
+      const handlePhoneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const value = event.target.value || ""
+        // Trim and store the phone number as string
+        setWhatsappPhoneNumber(value.trim())
+      }
 
     const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
       const file = event.target.files?.[0]
       if (file) {
-        console.log("[v0] Receipt file selected:", file.name, "Size:", file.size, "Type:", file.type)
         setWhatsappReceiptFile(file)
       }
     }
@@ -379,7 +377,6 @@ function AddonCheckoutContent() {
               size="sm"
               onClick={() => {
                 setWhatsappReceiptFile(null)
-                console.log("[v0] Receipt file removed")
               }}
               className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
             >
