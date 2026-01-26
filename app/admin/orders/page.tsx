@@ -310,8 +310,8 @@ export default function OrdersPage() {
         return
       }
 
-      // Find the order to get company ID
-      const order = filteredOrders.find((o: any) => o.id === orderId)
+      // Find the order to get company ID - search in full orders array, not filtered
+      const order = orders.find((o: any) => o.id === orderId)
       if (!order) {
         toast({
           title: "Error",
