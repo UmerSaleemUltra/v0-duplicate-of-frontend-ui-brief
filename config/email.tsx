@@ -3,7 +3,7 @@ import nodemailer from "nodemailer"
 const EMAIL_CONFIG = {
   host: process.env.SMTP_HOST || "smtp.secureserver.net",
   port: parseInt(process.env.SMTP_PORT || "465"),
-  secure: process.env.SMTP_SECURE !== "false", // true for 465, false for 587
+  secure: process.env.SMTP_SECURE !== "true", // true for 465, false for 587
   auth: {
     user: process.env.EMAIL_USER || "hello@buzzfiling.com",
     pass: process.env.EMAIL_PASS || "@Buzz2899",
