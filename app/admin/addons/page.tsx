@@ -830,7 +830,7 @@ export default function AdminAddonsPage() {
                       )}
                     </div>
 
-                    <div className="border border-slate-200 rounded-lg max-h-48 overflow-y-auto bg-white">
+                    <div className={`border border-slate-200 rounded-lg ${filteredUsers.length > 20 ? 'max-h-72' : 'max-h-48'} overflow-y-auto bg-white`}>
                       {isLoadingUsers ? (
                         <div className="flex items-center justify-center py-8">
                           <Spinner className="w-6 h-6" />
@@ -844,7 +844,7 @@ export default function AdminAddonsPage() {
                         </div>
                       ) : (
                         <div className="divide-y divide-slate-100">
-                          {filteredUsers.map((user) => (
+                          {filteredUsers.slice(0, 100).map((user) => (
                             <div
                               key={user.id}
                               onClick={() => handleUserToggle(user.id)}
@@ -880,7 +880,8 @@ export default function AdminAddonsPage() {
 
                     {filteredUsers.length > 0 && (
                       <p className="text-xs text-slate-500">
-                        Showing {filteredUsers.length} of {users.length} users
+                        Showing {Math.min(filteredUsers.length, 100)} of {users.length} users
+                        {filteredUsers.length > 100 && " (Use search to narrow down the list)"}
                       </p>
                     )}
                   </div>
