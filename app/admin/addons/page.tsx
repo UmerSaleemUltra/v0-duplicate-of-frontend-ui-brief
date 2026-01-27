@@ -52,7 +52,7 @@ export default function AdminAddonsPage() {
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [assignToAllUsers, setAssignToAllUsers] = useState(false)
+  const [assignToAllUsers, setAssignToAllUsers] = useState(true)
   const [isAssigning, setIsAssigning] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
@@ -732,18 +732,19 @@ export default function AdminAddonsPage() {
               <div className="space-y-4 p-4 border border-slate-200 rounded-lg bg-slate-50">
                 <Label className="text-sm font-medium">User Access</Label>
                 <Select
-                  value={assignToAllUsers ? "all" : selectedUserIds.size > 0 ? "specific" : "none"}
+                  value={assignToAllUsers && selectedUserIds.size === 0 ? "all" : assignToAllUsers ? "specific" : "none"}
                   onValueChange={(value) => {
                     if (value === "all") {
-                      setAssignToAllUsers(false)
+                      setAssignToAllUsers(true)
                       setSelectedUserIds(new Set())
                       setCurrentlyAssignedUsers([])
+                      setUserSearchQuery("")
                     } else if (value === "specific") {
                       setAssignToAllUsers(true)
                       setUserSearchQuery("")
                       loadUsers()
                     } else {
-                      setAssignToAllUsers(true)
+                      setAssignToAllUsers(false)
                       setSelectedUserIds(new Set())
                       setCurrentlyAssignedUsers([])
                     }
