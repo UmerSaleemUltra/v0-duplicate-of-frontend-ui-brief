@@ -52,7 +52,7 @@ export default function AdminAddonsPage() {
   const [editingAddon, setEditingAddon] = useState<Addon | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [assignToAllUsers, setAssignToAllUsers] = useState(false)
+  const [assignToAllUsers, setAssignToAllUsers] = useState(true)
   const [isAssigning, setIsAssigning] = useState(false)
   const [users, setUsers] = useState<User[]>([])
   const [selectedUserIds, setSelectedUserIds] = useState<Set<string>>(new Set())
@@ -220,8 +220,10 @@ export default function AdminAddonsPage() {
       if (response.ok) {
         const data = await response.json()
         const usersList = data.data?.users || data.data || []
-        // Filter out admin@buzzfiling.com
-        const filteredUsers = usersList.filter((user: any) => user.email !== "admin@buzzfiling.com")
+        // Filter out admin@buzzfiling.com and admin role users
+        const filteredUsers = usersList.filter((user: any) => 
+          user.email !== "admin@buzzfiling.com" && user.role !== "admin"
+        )
         setUsers(filteredUsers)
         return filteredUsers
       } else {
@@ -726,37 +728,46 @@ export default function AdminAddonsPage() {
                 />
               </div>
 
-              {/* Assignment Section - Always Show */}
+              {/* Assignment Section - Dropdown Based */}
               <div className="space-y-4 p-4 border border-slate-200 rounded-lg bg-slate-50">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                  <div>
-                    <Label className="text-sm font-medium">
-                      Assign to Specific Users
-                    </Label>
-                    <p className="text-xs text-slate-600 mt-1">Toggle ON to assign to specific users, OFF to assign to all users</p>
-                  </div>
-                  <Switch
-                    checked={assignToAllUsers}
-                    onCheckedChange={(checked) => {
-                      setAssignToAllUsers(checked)
-                      if (!checked) {
-                        setSelectedUserIds(new Set())
-                        setCurrentlyAssignedUsers([])
-                      }
-                    }}
-                  />
-                </div>
+                <Label className="text-sm font-medium">User Access</Label>
+                <Select
+                  value={assignToAllUsers && selectedUserIds.size === 0 ? "all" : assignToAllUsers ? "specific" : "none"}
+                  onValueChange={(value) => {
+                    if (value === "all") {
+                      setAssignToAllUsers(true)
+                      setSelectedUserIds(new Set())
+                      setCurrentlyAssignedUsers([])
+                      setUserSearchQuery("")
+                    } else if (value === "specific") {
+                      setAssignToAllUsers(true)
+                      setUserSearchQuery("")
+                      loadUsers()
+                    } else {
+                      setAssignToAllUsers(false)
+                      setSelectedUserIds(new Set())
+                      setCurrentlyAssignedUsers([])
+                    }
+                  }}
+                >
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">Assign to All Users</SelectItem>
+                    <SelectItem value="specific">Search & Add Specific Users</SelectItem>
+                    <SelectItem value="none">No Access (Edit Only)</SelectItem>
+                  </SelectContent>
+                </Select>
 
-                {!assignToAllUsers && (
-                  <div className="space-y-3 pt-3 border-t border-slate-200">
-                    <div className="flex items-start gap-3 p-3 rounded-lg border border-slate-200 bg-white">
-                      <span className="text-sm font-medium block text-slate-700">All users will have access to this addon</span>
-                    </div>
+                {assignToAllUsers && selectedUserIds.size === 0 && (
+                  <div className="flex items-start gap-3 p-3 rounded-lg border border-green-200 bg-green-50">
+                    <span className="text-sm font-medium text-green-900">All non-admin users will have access to this addon</span>
                   </div>
                 )}
 
-                {assignToAllUsers && (
-                  <div className="space-y-3">
+                {assignToAllUsers && selectedUserIds.size > 0 && (
+                  <div className="space-y-3 pt-3 border-t border-slate-200">
                     {currentlyAssignedUsers && currentlyAssignedUsers.length > 0 && editingAddon && (
                       <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
                         <p className="text-sm font-medium text-blue-900 mb-2">Currently Assigned To:</p>
@@ -785,20 +796,6 @@ export default function AdminAddonsPage() {
                         >
                           <Check className="w-3 h-3 mr-1" />
                           Select All
-                        </Button>
-                        <Button
-                          type="button"
-                          className="text-xs bg-[#880000] hover:bg-[#660000] text-white"
-                          size="sm"
-                          onClick={() => {
-                            // Set to assign to ALL users (empty assignedUserIds)
-                            setAssignToAllUsers(false)
-                            setSelectedUserIds(new Set())
-                            setCurrentlyAssignedUsers([])
-                          }}
-                        >
-                          <Check className="w-3 h-3 mr-1" />
-                          Assign All Users
                         </Button>
                         <Button
                           type="button"
@@ -833,7 +830,7 @@ export default function AdminAddonsPage() {
                       )}
                     </div>
 
-                    <div className="border border-slate-200 rounded-lg max-h-48 overflow-y-auto bg-white">
+                    <div className={`border border-slate-200 rounded-lg ${filteredUsers.length > 20 ? 'max-h-72' : 'max-h-48'} overflow-y-auto bg-white`}>
                       {isLoadingUsers ? (
                         <div className="flex items-center justify-center py-8">
                           <Spinner className="w-6 h-6" />
@@ -847,7 +844,7 @@ export default function AdminAddonsPage() {
                         </div>
                       ) : (
                         <div className="divide-y divide-slate-100">
-                          {filteredUsers.map((user) => (
+                          {filteredUsers.slice(0, 100).map((user) => (
                             <div
                               key={user.id}
                               onClick={() => handleUserToggle(user.id)}
@@ -883,7 +880,8 @@ export default function AdminAddonsPage() {
 
                     {filteredUsers.length > 0 && (
                       <p className="text-xs text-slate-500">
-                        Showing {filteredUsers.length} of {users.length} users
+                        Showing {Math.min(filteredUsers.length, 100)} of {users.length} users
+                        {filteredUsers.length > 100 && " (Use search to narrow down the list)"}
                       </p>
                     )}
                   </div>

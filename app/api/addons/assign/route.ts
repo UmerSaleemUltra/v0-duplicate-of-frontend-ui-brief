@@ -36,7 +36,12 @@ export async function POST(request: NextRequest) {
 
     if (assignToAll) {
       // Get all user IDs (excluding admin)
-      const allUsers = await db.collection("users").find({ email: { $ne: "admin@buzzfiling.com" } }).project({ _id: 1 }).toArray()
+      const allUsers = await db.collection("users").find({ 
+        $and: [
+          { email: { $ne: "admin@buzzfiling.com" } },
+          { role: { $ne: "admin" } }
+        ]
+      }).project({ _id: 1 }).toArray()
       const allUserIds = allUsers.map((u) => u._id)
 
       // Update addon with all user IDs (or empty array to indicate assigned to all)
@@ -47,7 +52,12 @@ export async function POST(request: NextRequest) {
 
       // Assign to all users
       updateResult = await db.collection("users").updateMany(
-        { email: { $ne: "admin@buzzfiling.com" } },
+        { 
+          $and: [
+            { email: { $ne: "admin@buzzfiling.com" } },
+            { role: { $ne: "admin" } }
+          ]
+        },
         {
           $addToSet: {
             purchasedAddons: {
