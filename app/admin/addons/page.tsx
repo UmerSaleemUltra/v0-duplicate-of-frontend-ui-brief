@@ -43,6 +43,7 @@ interface User {
   id: string
   email: string
   name?: string
+  companyNames?: string[]
 }
 
 export default function AdminAddonsPage() {
@@ -210,7 +211,7 @@ export default function AdminAddonsPage() {
       setIsLoadingUsers(true)
       const token = authService.getToken()
 
-      const response = await fetch("/api/users", {
+      const response = await fetch("/api/users?includeCompanies=true", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -218,7 +219,7 @@ export default function AdminAddonsPage() {
 
       if (response.ok) {
         const data = await response.json()
-        const usersList = data.data?.users || data.users || data.data || []
+        const usersList = data.data?.users || data.data || []
         // Filter out admin@buzzfiling.com
         const filteredUsers = usersList.filter((user: any) => user.email !== "admin@buzzfiling.com")
         setUsers(filteredUsers)
@@ -773,7 +774,7 @@ export default function AdminAddonsPage() {
                       <Label className="text-sm font-medium">
                         Select Users ({selectedUserIds.size} of {users.length})
                       </Label>
-                      <div className="flex gap-2">
+                      <div className="flex gap-2 flex-wrap">
                         <Button
                           type="button"
                           variant="outline"
@@ -784,6 +785,20 @@ export default function AdminAddonsPage() {
                         >
                           <Check className="w-3 h-3 mr-1" />
                           Select All
+                        </Button>
+                        <Button
+                          type="button"
+                          className="text-xs bg-[#880000] hover:bg-[#660000] text-white"
+                          size="sm"
+                          onClick={() => {
+                            // Set to assign to ALL users (empty assignedUserIds)
+                            setAssignToAllUsers(false)
+                            setSelectedUserIds(new Set())
+                            setCurrentlyAssignedUsers([])
+                          }}
+                        >
+                          <Check className="w-3 h-3 mr-1" />
+                          Assign All Users
                         </Button>
                         <Button
                           type="button"
@@ -841,7 +856,7 @@ export default function AdminAddonsPage() {
                               }`}
                             >
                               <div
-                                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors ${
+                                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-colors flex-shrink-0 ${
                                   selectedUserIds.has(user.id)
                                     ? "bg-[#880000] border-[#880000]"
                                     : "border-slate-300"
@@ -854,6 +869,11 @@ export default function AdminAddonsPage() {
                                   {user.name || "No Name"}
                                 </p>
                                 <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                                {user.companyNames && user.companyNames.length > 0 && (
+                                  <p className="text-xs text-[#880000] font-medium truncate">
+                                    {user.companyNames.join(", ")}
+                                  </p>
+                                )}
                               </div>
                             </div>
                           ))}

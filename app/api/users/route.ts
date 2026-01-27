@@ -20,6 +20,8 @@ export async function GET(req: NextRequest) {
     }
 
     const { db } = await connectDB()
+    const { searchParams } = new URL(req.url)
+    const includeCompanies = searchParams.get("includeCompanies") === "true"
 
     const users = await db
       .collection("users")
@@ -38,9 +40,7 @@ export async function GET(req: NextRequest) {
       .limit(1000) // Increased limit for larger customer bases
       .toArray()
 
-    console.log("[v0] Fetched users:", users.length)
-
-    const result = {
+    let result: any = {
       success: true,
       data: users.map((user) => ({
         id: user._id.toString(),
@@ -53,6 +53,34 @@ export async function GET(req: NextRequest) {
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       })),
+    }
+
+    // If includeCompanies is requested, fetch associated companies for each user
+    if (includeCompanies) {
+      const companies = await db
+        .collection("companies")
+        .find({})
+        .project({
+          userId: 1,
+          name: 1,
+        })
+        .toArray()
+
+      // Create a map of userId -> companies for efficient lookup
+      const companiesByUserId = new Map<string, string[]>()
+      companies.forEach((company) => {
+        const userId = company.userId.toString()
+        if (!companiesByUserId.has(userId)) {
+          companiesByUserId.set(userId, [])
+        }
+        companiesByUserId.get(userId)!.push(company.name)
+      })
+
+      // Enrich user data with company names
+      result.data = result.data.map((user: any) => ({
+        ...user,
+        companyNames: companiesByUserId.get(user.id) || [],
+      }))
     }
 
     const response = NextResponse.json(result)
