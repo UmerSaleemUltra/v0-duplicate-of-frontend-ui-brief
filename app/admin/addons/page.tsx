@@ -252,19 +252,19 @@ export default function AdminAddonsPage() {
         billingType: addon.billingType || "one_time",
         customDuration: addon.customDuration || "",
       })
-      setShowAssignmentInDialog(true)
       // Check if addon has specific assigned users (if length > 0, specific users are assigned)
       const hasSpecificUsers = addon.assignedUserIds && addon.assignedUserIds.length > 0
-      setAssignToAllUsers(hasSpecificUsers)
+      setShowAssignmentInDialog(true)
       setUserSearchQuery("")
       
       // Load users first
       loadUsers().then((loadedUsers) => {
         // Then pre-populate selectedUserIds with currently assigned users
         if (hasSpecificUsers) {
-          const assignedIds = addon.assignedUserIds.map((id: any) => 
+          const assignedIds = addon.assignedUserIds!.map((id: any) => 
             typeof id === 'object' ? id.toString() : id
           )
+          // Set state so user selection shows these users
           setSelectedUserIds(new Set(assignedIds))
           // Also populate currentlyAssignedUsers with user details
           const assignedUserDetails = loadedUsers.filter((u: any) => {
@@ -272,9 +272,11 @@ export default function AdminAddonsPage() {
             return assignedIds.includes(typeof userId === 'object' ? userId.toString() : userId)
           })
           setCurrentlyAssignedUsers(assignedUserDetails)
+          setAssignToAllUsers(false) // Set to false so specific user selection is active
         } else {
           setCurrentlyAssignedUsers([])
           setSelectedUserIds(new Set())
+          setAssignToAllUsers(true) // Set to true for assign all users
         }
       })
     } else {
@@ -293,7 +295,7 @@ export default function AdminAddonsPage() {
       setShowAssignmentInDialog(false)
       setNewlyCreatedAddonId(null)
       setSelectedUserIds(new Set())
-      setAssignToAllUsers(false)
+      setAssignToAllUsers(true) // Default to assign all for new addons
       setCurrentlyAssignedUsers([])
       // Load users when opening new addon dialog
       loadUsers()
@@ -306,7 +308,8 @@ export default function AdminAddonsPage() {
     const query = userSearchQuery.toLowerCase()
     return (
       user.email.toLowerCase().includes(query) ||
-      (user.name && user.name.toLowerCase().includes(query))
+      (user.name && user.name.toLowerCase().includes(query)) ||
+      (user.companyNames && user.companyNames.some(name => name.toLowerCase().includes(query)))
     )
   })
 
@@ -714,73 +717,85 @@ export default function AdminAddonsPage() {
                 )}
               </div>
 
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-slate-50 rounded-lg gap-3">
-                <div>
-                  <Label htmlFor="isActive" className="text-sm font-medium">
-                    Active Status
-                  </Label>
-                  <p className="text-xs text-slate-600 mt-1">Make this addon available to clients</p>
-                </div>
-                <Switch
-                  id="isActive"
-                  checked={formData.isActive}
-                  onCheckedChange={(checked) => setFormData({ ...formData, isActive: checked })}
-                />
-              </div>
-
-              {/* Assignment Section - Dropdown Based */}
+              {/* Assignment Section - Two Clear Options */}
               <div className="space-y-4 p-4 border border-slate-200 rounded-lg bg-slate-50">
-                <Label className="text-sm font-medium">User Access</Label>
-                <Select
-                  value={assignToAllUsers && selectedUserIds.size === 0 ? "all" : assignToAllUsers ? "specific" : "none"}
-                  onValueChange={(value) => {
-                    if (value === "all") {
-                      setAssignToAllUsers(true)
-                      setSelectedUserIds(new Set())
-                      setCurrentlyAssignedUsers([])
-                      setUserSearchQuery("")
-                    } else if (value === "specific") {
-                      setAssignToAllUsers(true)
-                      setUserSearchQuery("")
-                      loadUsers()
-                    } else {
-                      setAssignToAllUsers(false)
-                      setSelectedUserIds(new Set())
-                      setCurrentlyAssignedUsers([])
-                    }
-                  }}
+                <Label className="text-sm font-medium">User Assignment</Label>
+                <p className="text-xs text-slate-600 mb-3">Choose how to assign this addon to users (admin users are excluded)</p>
+                
+                {/* Option 1: Assign to All Users */}
+                <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                  assignToAllUsers && selectedUserIds.size === 0
+                    ? "border-[#880000] bg-red-50"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+                onClick={() => {
+                  setAssignToAllUsers(true)
+                  setSelectedUserIds(new Set())
+                  setCurrentlyAssignedUsers([])
+                  setUserSearchQuery("")
+                }}
                 >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Assign to All Users</SelectItem>
-                    <SelectItem value="specific">Search & Add Specific Users</SelectItem>
-                    <SelectItem value="none">No Access (Edit Only)</SelectItem>
-                  </SelectContent>
-                </Select>
+                  <div className="flex items-start gap-3">
+                    <div className={`w-5 h-5 rounded border-2 mt-0.5 flex items-center justify-center flex-shrink-0 ${
+                      assignToAllUsers && selectedUserIds.size === 0
+                        ? "bg-[#880000] border-[#880000]"
+                        : "border-slate-300"
+                    }`}>
+                      {assignToAllUsers && selectedUserIds.size === 0 && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900">Assign to All Users</p>
+                      <p className="text-xs text-slate-600 mt-1">Every non-admin user will have access to this addon</p>
+                    </div>
+                  </div>
+                </div>
 
-                {assignToAllUsers && selectedUserIds.size === 0 && (
-                  <div className="flex items-start gap-3 p-3 rounded-lg border border-green-200 bg-green-50">
-                    <span className="text-sm font-medium text-green-900">All non-admin users will have access to this addon</span>
+                {/* Option 2: Select Specific Users */}
+                <div className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                  selectedUserIds.size > 0
+                    ? "border-[#880000] bg-red-50"
+                    : "border-slate-200 hover:border-slate-300"
+                }`}
+                onClick={() => {
+                  if (selectedUserIds.size === 0) {
+                    setAssignToAllUsers(false)
+                    loadUsers()
+                  }
+                }}
+                >
+                  <div className="flex items-start gap-3">
+                    <div className={`w-5 h-5 rounded border-2 mt-0.5 flex items-center justify-center flex-shrink-0 ${
+                      selectedUserIds.size > 0
+                        ? "bg-[#880000] border-[#880000]"
+                        : "border-slate-300"
+                    }`}>
+                      {selectedUserIds.size > 0 && <Check className="w-3 h-3 text-white" />}
+                    </div>
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-slate-900">Select Specific Users</p>
+                      <p className="text-xs text-slate-600 mt-1">Choose individual users from the list below ({selectedUserIds.size} selected)</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Currently Assigned Users (when editing) */}
+                {editingAddon && currentlyAssignedUsers && currentlyAssignedUsers.length > 0 && (
+                  <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
+                    <p className="text-sm font-medium text-blue-900 mb-2">Currently Assigned To:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {currentlyAssignedUsers.map((user: any) => (
+                        <Badge key={user.id || user._id} variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300">
+                          <span className="font-medium">{user.name || "No Name"}</span>
+                          <span className="text-blue-600 ml-1">({user.email})</span>
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
                 )}
 
-                {assignToAllUsers && selectedUserIds.size > 0 && (
+                {/* User Selection List (when option 2 is selected) */}
+                {selectedUserIds.size >= 0 && (
                   <div className="space-y-3 pt-3 border-t border-slate-200">
-                    {currentlyAssignedUsers && currentlyAssignedUsers.length > 0 && editingAddon && (
-                      <div className="p-3 rounded-lg border border-blue-200 bg-blue-50">
-                        <p className="text-sm font-medium text-blue-900 mb-2">Currently Assigned To:</p>
-                        <div className="flex flex-wrap gap-2">
-                          {currentlyAssignedUsers.map((user: any) => (
-                            <Badge key={user.id || user._id} variant="secondary" className="bg-blue-100 text-blue-800 border-blue-300">
-                              {user.name || user.email}
-                            </Badge>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                    
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                       <Label className="text-sm font-medium">
                         Select Users ({selectedUserIds.size} of {users.length})
@@ -814,7 +829,7 @@ export default function AdminAddonsPage() {
                     <div className="relative">
                       <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                       <Input
-                        placeholder="Search users by name or email..."
+                        placeholder="Search by name, email, or company..."
                         value={userSearchQuery}
                         onChange={(e) => setUserSearchQuery(e.target.value)}
                         className="pl-9"
@@ -862,12 +877,14 @@ export default function AdminAddonsPage() {
                                 {selectedUserIds.has(user.id) && <Check className="w-3 h-3 text-white" />}
                               </div>
                               <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium text-slate-900 truncate">
+                                <p className="text-sm font-medium text-slate-900">
                                   {user.name || "No Name"}
                                 </p>
-                                <p className="text-xs text-slate-500 truncate">{user.email}</p>
+                                <p className="text-xs text-slate-500">
+                                  {user.email}
+                                </p>
                                 {user.companyNames && user.companyNames.length > 0 && (
-                                  <p className="text-xs text-[#880000] font-medium truncate">
+                                  <p className="text-xs text-[#880000] font-medium">
                                     {user.companyNames.join(", ")}
                                   </p>
                                 )}
@@ -878,17 +895,17 @@ export default function AdminAddonsPage() {
                       )}
                     </div>
 
-                    {filteredUsers.length > 0 && (
+                    {selectedUserIds.size > 0 && filteredUsers.length > 0 && (
                       <p className="text-xs text-slate-500">
                         Showing {Math.min(filteredUsers.length, 100)} of {users.length} users
-                        {filteredUsers.length > 100 && " (Use search to narrow down the list)"}
+                        {filteredUsers.length > 100 && " (Use search to narrow down)"}
                       </p>
                     )}
                   </div>
                 )}
               </div>
 
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between p-4 bg-slate-50 rounded-lg gap-3">
                 <div>
                   <Label htmlFor="isActive" className="text-sm font-medium">
                     Active Status
