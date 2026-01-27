@@ -308,7 +308,8 @@ export default function AdminAddonsPage() {
     const query = userSearchQuery.toLowerCase()
     return (
       user.email.toLowerCase().includes(query) ||
-      (user.name && user.name.toLowerCase().includes(query))
+      (user.name && user.name.toLowerCase().includes(query)) ||
+      (user.companyNames && user.companyNames.some(name => name.toLowerCase().includes(query)))
     )
   })
 
@@ -805,7 +806,7 @@ export default function AdminAddonsPage() {
                           variant="outline"
                           size="sm"
                           onClick={handleSelectAllFiltered}
-                          disabled={filteredUsers.length === 0 || selectedUserIds.size === 0}
+                          disabled={filteredUsers.length === 0}
                           className="text-xs"
                         >
                           <Check className="w-3 h-3 mr-1" />
@@ -832,7 +833,6 @@ export default function AdminAddonsPage() {
                         value={userSearchQuery}
                         onChange={(e) => setUserSearchQuery(e.target.value)}
                         className="pl-9"
-                        disabled={selectedUserIds.size === 0}
                       />
                       {userSearchQuery && (
                         <button
@@ -850,10 +850,6 @@ export default function AdminAddonsPage() {
                         <div className="flex items-center justify-center py-8">
                           <Spinner className="w-6 h-6" />
                           <span className="ml-2 text-sm text-slate-600">Loading users...</span>
-                        </div>
-                      ) : selectedUserIds.size === 0 ? (
-                        <div className="py-8 text-center">
-                          <p className="text-sm text-slate-600">Select "Specific Users" option above to add users</p>
                         </div>
                       ) : filteredUsers.length === 0 ? (
                         <div className="py-8 text-center">
