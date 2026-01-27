@@ -103,6 +103,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           },
           customMilestones: company.customMilestones || [],
           purchasedAddons: company.purchasedAddons || [],
+          addons: company.addons || [],
+          selectedAddons: company.selectedAddons || [],
           orders: enrichedOrders,
           revenue: company.revenue || 0,
           lastOrderDate: company.lastOrderDate || null,
