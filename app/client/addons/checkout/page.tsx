@@ -29,7 +29,6 @@ function AddonCheckoutContent() {
 
   const [whatsappPhoneNumber, setWhatsappPhoneNumber] = useState("")
   const [whatsappReceiptFile, setWhatsappReceiptFile] = useState<File | null>(null)
-  const [notes, setNotes] = useState("")
 
   useEffect(() => {
     const fetchAddon = async () => {
@@ -127,25 +126,7 @@ function AddonCheckoutContent() {
       if (!hasPhone && !hasFile) {
         toast({
           title: "Required Information Missing",
-          description: "Please add your phone number and/or upload a payment receipt to continue.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      if (!hasPhone) {
-        toast({
-          title: "Phone Number Required",
-          description: "Please add your WhatsApp phone number.",
-          variant: "destructive",
-        })
-        return
-      }
-
-      if (!hasFile) {
-        toast({
-          title: "Receipt Required",
-          description: "Please upload a payment receipt.",
+          description: "Please provide either your phone number or upload a payment receipt to continue.",
           variant: "destructive",
         })
         return
@@ -176,11 +157,6 @@ function AddonCheckoutContent() {
       // Only append receipt file if it exists
       if (whatsappReceiptFile) {
         formData.append("receiptFile", whatsappReceiptFile)
-      }
-
-      // Append notes if provided
-      if (notes.trim()) {
-        formData.append("notes", notes.trim())
       }
 
       // Submit WhatsApp payment
@@ -320,88 +296,6 @@ function AddonCheckoutContent() {
           </div>
         </div>
 
-        <div className="space-y-2">
-          <Label htmlFor="whatsappPhone" className="flex items-center gap-2">
-            <Phone className="w-4 h-4" />
-            WhatsApp Phone Number
-          </Label>
-          <Input
-            id="whatsappPhone"
-            type="tel"
-            placeholder="Enter your WhatsApp phone number (e.g., +1234567890)"
-            value={whatsappPhoneNumber}
-            onChange={handlePhoneChange}
-          />
-          <p className="text-sm text-slate-600">
-            We'll use this number to confirm your payment
-          </p>
-        </div>
-
-        <div className="space-y-2">
-          <Label htmlFor="receipt" className="flex items-center gap-2">
-            <Upload className="w-4 h-4" />
-            Upload Payment Receipt
-          </Label>
-          <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-green-500 transition-colors">
-            <input
-              id="receipt"
-              type="file"
-              accept="image/*,.pdf"
-              onChange={handleFileChange}
-              className="hidden"
-            />
-            <label
-              htmlFor="receipt"
-              className="cursor-pointer block"
-            >
-              <Upload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-              <p className="text-sm font-medium text-slate-700 mb-1">
-                {whatsappReceiptFile ? whatsappReceiptFile.name : "Click to upload receipt"}
-              </p>
-              <p className="text-xs text-slate-600">
-                PNG, JPG, GIF or PDF (max. 10MB)
-              </p>
-            </label>
-          </div>
-        </div>
-
-        {whatsappReceiptFile && (
-          <div className="p-3 rounded-lg bg-slate-100 border border-slate-300 flex items-center justify-between">
-            <div className="flex items-center gap-2 flex-1">
-              <Upload className="w-4 h-4 text-slate-600" />
-              <span className="text-sm text-slate-700 break-all">{whatsappReceiptFile.name}</span>
-            </div>
-            <Button
-              type="button"
-              variant="ghost"
-              size="sm"
-              onClick={() => {
-                setWhatsappReceiptFile(null)
-              }}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50 ml-2"
-            >
-              Remove
-            </Button>
-          </div>
-        )}
-
-        <div className="space-y-2">
-          <Label htmlFor="notes" className="text-slate-700">
-            Additional Notes (Optional)
-          </Label>
-          <textarea
-            id="notes"
-            placeholder="Add any special instructions or notes about your payment..."
-            value={notes}
-            onChange={(e) => setNotes(e.target.value)}
-            className="w-full px-3 py-2 border border-slate-300 rounded-md bg-white text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none"
-            rows={3}
-          />
-          <p className="text-xs text-slate-600">
-            {notes.length}/500 characters
-          </p>
-        </div>
-
         <div className="p-4 rounded-lg bg-amber-50 border border-amber-200 flex items-start gap-3">
           <Shield className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
           <div className="text-sm">
@@ -441,7 +335,7 @@ function AddonCheckoutContent() {
         </div>
       </form>
     )
-  }, [paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, selectedCompanyId, handlePurchase, notes])
+    }, [paymentMethod, whatsappPhoneNumber, whatsappReceiptFile, isProcessing, addon, selectedCompanyId, handlePurchase])
 
   if (isLoading) {
     return (
@@ -529,7 +423,7 @@ function AddonCheckoutContent() {
                 <MessageCircle className="w-5 h-5 text-green-600" />
                 Payment Information
               </CardTitle>
-              <CardDescription>Enter your phone number and upload payment receipt</CardDescription>
+              <CardDescription>Enter your phone number or upload a payment receipt</CardDescription>
             </CardHeader>
             <CardContent>
               {whatsappPaymentForm}
