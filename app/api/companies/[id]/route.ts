@@ -38,41 +38,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
-    // Enrich purchased addons with payment details
-    let enrichedOrders = company.orders || []
-    if (enrichedOrders.length > 0 && enrichedOrders[0].purchasedAddons && enrichedOrders[0].purchasedAddons.length > 0) {
-      const enrichedPurchasedAddons = await Promise.all(
-        enrichedOrders[0].purchasedAddons.map(async (addon: any) => {
-          // Fetch payment details if paymentRecordId exists
-          if (addon.paymentRecordId) {
-            const paymentRecord = await db.collection("whatsapp_payments").findOne({
-              _id: ObjectId.isValid(addon.paymentRecordId) ? new ObjectId(addon.paymentRecordId) : addon.paymentRecordId,
-            })
-            return {
-              ...addon,
-              paymentDetails: paymentRecord
-                ? {
-                    phoneNumber: paymentRecord.phoneNumber,
-                    receiptUrl: paymentRecord.receiptUrl,
-                    paymentStatus: paymentRecord.status,
-                    paymentMethod: paymentRecord.paymentMethod || "whatsapp",
-                    paymentDate: paymentRecord.createdAt,
-                  }
-                : null,
-            }
-          }
-          return addon
-        }),
-      )
-      enrichedOrders = [
-        {
-          ...enrichedOrders[0],
-          purchasedAddons: enrichedPurchasedAddons,
-        },
-        ...enrichedOrders.slice(1),
-      ]
-    }
-
     return addSecurityHeaders(
       NextResponse.json({
         success: true,
@@ -103,9 +68,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           },
           customMilestones: company.customMilestones || [],
           purchasedAddons: company.purchasedAddons || [],
-          addons: company.addons || [],
-          selectedAddons: company.selectedAddons || [],
-          orders: enrichedOrders,
+          orders: company.orders || [],
           revenue: company.revenue || 0,
           lastOrderDate: company.lastOrderDate || null,
           ein: company.ein || null,

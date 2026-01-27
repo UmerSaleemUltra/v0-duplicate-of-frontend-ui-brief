@@ -157,7 +157,7 @@ export default function CompanyPage() {
             ein: selectedComp.ein || "Not yet",
             businessId: selectedComp.businessId || "Not Yet",
             selectedServices: selectedComp.services || [],
-            selectedAddons: selectedComp.selectedAddons || selectedComp.addons || [],
+            selectedAddons: selectedComp.addons || [],
             purchasedAddons: selectedComp.purchasedAddons || [],
             members: builtMembers,
             registeredAgent: selectedComp.registeredAgent,
@@ -172,7 +172,7 @@ export default function CompanyPage() {
             taxFilingDate: selectedComp.taxFilingDate,
             taxClassification: selectedComp.taxClassification || "Not Yet",
             annualReportFilingDate: selectedComp.annualReportFilingDate,
-            irsFilingDate: selectedComp.irsFilingDate,
+            irsFilingDate: selectedComp.irsFilingDate, // API returns as irsFilingDate
           })
 
           console.log(
@@ -484,87 +484,6 @@ export default function CompanyPage() {
                 <div className="text-xs sm:text-sm text-slate-600">Tax exempt purchasing for wholesale</div>
               </div>
               <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Active</Badge>
-            </div>
-          </div>
-        )}
-
-        {/* Purchased Add-ons */}
-        {((companyData.purchasedAddons && companyData.purchasedAddons.length > 0) ||
-          (companyData.selectedAddons && companyData.selectedAddons.length > 0)) && (
-          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-              <Package className="w-5 h-5" />
-              Add-ons
-            </h2>
-            <div className="space-y-3">
-              {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
-                <>
-                  <div className="text-sm font-medium text-slate-700 mb-2">Purchased Add-ons</div>
-                  {companyData.purchasedAddons.map((addon: any, index: number) => (
-                    <div key={`purchased-${index}`} className="border border-slate-200 rounded-lg p-3 sm:p-4">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-medium text-slate-900 text-sm sm:text-base">{addon.name || "Unknown Add-on"}</h3>
-                        <span className="text-slate-600 font-medium text-sm sm:text-base">${addon.price || 0}</span>
-                      </div>
-                      
-                      {addon.phoneNumber && (
-                        <p className="text-xs text-slate-600 mt-2">Phone: {addon.phoneNumber}</p>
-                      )}
-                      
-                      {addon.receiptUrl && (
-                        <a
-                          href={addon.receiptUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-blue-600 hover:underline block mt-1"
-                        >
-                          View Receipt
-                        </a>
-                      )}
-                      
-                      {addon.paymentStatus && (
-                        <div className="mt-2">
-                          <Badge
-                            className={
-                              addon.paymentStatus === "verified"
-                                ? "bg-emerald-50 text-emerald-700 border-emerald-200 text-xs"
-                                : "bg-yellow-50 text-yellow-700 border-yellow-200 text-xs"
-                            }
-                          >
-                            {addon.paymentStatus === "pending_verification" ? "Pending Verification" : addon.paymentStatus}
-                          </Badge>
-                        </div>
-                      )}
-                      
-                      {addon.purchasedAt && (
-                        <p className="text-xs text-slate-500 mt-2">
-                          Purchased: {new Date(addon.purchasedAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </p>
-                      )}
-                    </div>
-                  ))}
-                </>
-              )}
-              
-              {companyData.selectedAddons && companyData.selectedAddons.length > 0 && (
-                <>
-                  {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
-                    <div className="text-sm font-medium text-slate-700 mb-2 mt-4">Selected Add-ons</div>
-                  )}
-                  {companyData.selectedAddons.map((addon: any, index: number) => (
-                    <div key={`selected-${index}`} className="border border-slate-200 rounded-lg p-3 sm:p-4">
-                      <div className="flex justify-between items-start">
-                        <h3 className="font-medium text-slate-900 text-sm sm:text-base">{addon.name || "Unknown Add-on"}</h3>
-                        <span className="text-slate-600 font-medium text-sm sm:text-base">${addon.price || 0}</span>
-                      </div>
-                    </div>
-                  ))}
-                </>
-              )}
             </div>
           </div>
         )}
