@@ -144,6 +144,16 @@ export default function CompanyPage() {
             }
           }
 
+          // Aggregate purchased addons from orders array
+          const allPurchasedAddons = []
+          if (selectedComp.orders && Array.isArray(selectedComp.orders)) {
+            selectedComp.orders.forEach((order: any) => {
+              if (order.purchasedAddons && Array.isArray(order.purchasedAddons)) {
+                allPurchasedAddons.push(...order.purchasedAddons)
+              }
+            })
+          }
+
           setCompanyData({
             businessName: selectedComp.name || "Your Company",
             businessCategory: selectedComp.businessCategory || "Not yet",
@@ -158,7 +168,7 @@ export default function CompanyPage() {
             businessId: selectedComp.businessId || "Not Yet",
             selectedServices: selectedComp.services || [],
             selectedAddons: selectedComp.addons || [],
-            purchasedAddons: selectedComp.purchasedAddons || [],
+            purchasedAddons: allPurchasedAddons.length > 0 ? allPurchasedAddons : (selectedComp.purchasedAddons || []),
             members: builtMembers,
             registeredAgent: selectedComp.registeredAgent,
             businessAddress: selectedComp.businessAddress,
