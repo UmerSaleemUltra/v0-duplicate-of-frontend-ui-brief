@@ -488,6 +488,78 @@ export default function CompanyPage() {
           </div>
         )}
 
+        {/* Purchased Add-ons */}
+        {companyData.orders && companyData.orders[0]?.purchasedAddons && companyData.orders[0].purchasedAddons.length > 0 && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
+              <Package className="w-5 h-5" />
+              Purchased Add-ons
+            </h2>
+            <div className="space-y-3">
+              {companyData.orders[0].purchasedAddons.map((addon: any, index: number) => (
+                <div key={index} className="border border-slate-200 rounded-lg p-4 hover:bg-slate-50 transition-colors">
+                  <div className="flex justify-between items-start mb-2">
+                    <h3 className="font-medium text-slate-900">{addon.name || "Unknown Add-on"}</h3>
+                    <span className="text-slate-600 font-medium">${addon.price || 0}</span>
+                  </div>
+                  
+                  {addon.paymentDetails && (
+                    <div className="bg-slate-50 rounded p-3 mt-2 space-y-2 text-sm">
+                      <div className="flex items-center gap-2">
+                        <CreditCard className="h-4 w-4 text-[#880000]" />
+                        <span className="text-slate-700 font-medium">
+                          {addon.paymentDetails.paymentMethod === "whatsapp" ? "WhatsApp Payment" : "Payment"}
+                        </span>
+                      </div>
+                      
+                      {addon.paymentDetails.phoneNumber && (
+                        <div className="ml-6 text-slate-600">
+                          <span className="text-slate-500">Phone:</span> {addon.paymentDetails.phoneNumber}
+                        </div>
+                      )}
+                      
+                      {addon.paymentDetails.receiptUrl && (
+                        <a
+                          href={addon.paymentDetails.receiptUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="ml-6 text-blue-600 hover:underline flex items-center gap-1"
+                        >
+                          <ExternalLink className="h-3 w-3" />
+                          View Receipt
+                        </a>
+                      )}
+                      
+                      <div className="ml-6">
+                        <span className="text-slate-500">Status:</span>{" "}
+                        <Badge
+                          className={
+                            addon.paymentDetails.paymentStatus === "verified"
+                              ? "bg-emerald-50 text-emerald-700 border-emerald-200 ml-1"
+                              : "bg-yellow-50 text-yellow-700 border-yellow-200 ml-1"
+                          }
+                        >
+                          {addon.paymentDetails.paymentStatus === "pending_verification" ? "Pending Verification" : "Verified"}
+                        </Badge>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {addon.purchasedAt && (
+                    <p className="text-xs text-slate-500 mt-2">
+                      Purchased: {new Date(addon.purchasedAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Business Details */}
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
           <h2 className="text-base sm:text-lg font-semibold mb-4">Business Details</h2>

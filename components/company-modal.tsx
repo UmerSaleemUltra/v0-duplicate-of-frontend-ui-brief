@@ -622,11 +622,47 @@ export function CompanyModal({
                     <CardTitle className="text-lg">Selected Add-ons</CardTitle>
                   </CardHeader>
                   <CardContent>
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                       {order.selectedAddons.map((addon: any, index: number) => (
-                        <div key={index} className="flex justify-between items-center p-2 border rounded">
-                          <span className="font-medium">{addon.name || "Unknown Add-on"}</span>
-                          <span className="text-slate-600">${addon.price || 0}</span>
+                        <div key={index} className="border rounded p-3 space-y-2">
+                          <div className="flex justify-between items-start">
+                            <span className="font-medium">{addon.name || "Unknown Add-on"}</span>
+                            <span className="text-slate-600 font-medium">${addon.price || 0}</span>
+                          </div>
+                          {addon.paymentDetails && (
+                            <div className="bg-slate-50 p-2 rounded text-sm space-y-1">
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="h-4 w-4 text-slate-500" />
+                                <span className="text-slate-700">
+                                  {addon.paymentDetails.paymentMethod === "whatsapp" ? "WhatsApp Payment" : "Payment"}
+                                </span>
+                              </div>
+                              {addon.paymentDetails.phoneNumber && (
+                                <p className="text-slate-600 ml-6">Phone: {addon.paymentDetails.phoneNumber}</p>
+                              )}
+                              {addon.paymentDetails.receiptUrl && (
+                                <a
+                                  href={addon.paymentDetails.receiptUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:underline ml-6 flex items-center gap-1"
+                                >
+                                  <ExternalLink className="h-3 w-3" />
+                                  View Receipt
+                                </a>
+                              )}
+                              <p className="text-slate-600 ml-6">
+                                Status:{" "}
+                                <Badge variant={addon.paymentDetails.paymentStatus === "verified" ? "default" : "secondary"}>
+                                  {addon.paymentDetails.paymentStatus === "pending_verification"
+                                    ? "Pending Verification"
+                                    : addon.paymentDetails.paymentStatus === "verified"
+                                      ? "Verified"
+                                      : addon.paymentDetails.paymentStatus}
+                                </Badge>
+                              </p>
+                            </div>
+                          )}
                         </div>
                       ))}
                     </div>
