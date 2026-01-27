@@ -308,6 +308,47 @@ function AddonCheckoutContent() {
 
         <Separator />
 
+        <div className="space-y-4">
+          <Label htmlFor="whatsapp-phone" className="text-slate-700 flex items-center gap-2">
+            <Phone className="w-4 h-4" />
+            WhatsApp Phone Number (Optional)
+          </Label>
+          <Input
+            id="whatsapp-phone"
+            type="tel"
+            placeholder="Enter your WhatsApp phone number"
+            value={whatsappPhoneNumber}
+            onChange={handlePhoneChange}
+            className="bg-white"
+          />
+          <p className="text-xs text-slate-500">Include country code (e.g., +1234567890)</p>
+        </div>
+
+        <div className="space-y-4">
+          <Label htmlFor="receipt-file" className="text-slate-700 flex items-center gap-2">
+            <Upload className="w-4 h-4" />
+            Payment Receipt (Optional)
+          </Label>
+          <div className="relative">
+            <Input
+              id="receipt-file"
+              type="file"
+              accept="image/*,.pdf"
+              onChange={handleFileChange}
+              className="bg-white cursor-pointer"
+            />
+            {whatsappReceiptFile && (
+              <div className="text-sm text-green-600 mt-2 flex items-center gap-1">
+                <Check className="w-4 h-4" />
+                {whatsappReceiptFile.name}
+              </div>
+            )}
+          </div>
+          <p className="text-xs text-slate-500">Accepted: Images (PNG, JPG) or PDF</p>
+        </div>
+
+        <Separator />
+
         <div className="space-y-3">
           <div className="flex justify-between text-sm">
             <span className="text-slate-600">Subtotal</span>
