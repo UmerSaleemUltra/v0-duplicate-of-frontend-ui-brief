@@ -117,24 +117,6 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Create WhatsApp payment record
-    const paymentRecord = {
-      _id: new ObjectId(),
-      addonId: new ObjectId(addonId),
-      companyId: new ObjectId(companyId),
-      userId: new ObjectId(decoded.userId),
-      phoneNumber: phoneNumber || null,
-      receiptUrl: receiptUrl,
-      receiptFileName: receiptFile?.name || null,
-      paymentMethod: "whatsapp",
-      status: "pending_verification",
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    }
-
-    // Save payment record
-    const paymentResult = await db.collection("whatsapp_payments").insertOne(paymentRecord)
-
     // Also save to company orders if needed
     const existingOrder = company.orders?.[0]
     if (existingOrder) {
@@ -148,14 +130,11 @@ export async function POST(request: NextRequest) {
                 serviceId: addon._id.toString(),
                 name: addon.name,
                 price: addon.price,
-                paymentRecordId: paymentResult.insertedId.toString(),
-                paymentStatus: "pending_verification",
                 paymentDetails: {
                   phoneNumber: phoneNumber || null,
                   receiptUrl: receiptUrl,
                   receiptFileName: receiptFile?.name || null,
                   paymentMethod: "whatsapp",
-                  status: "pending_verification",
                   createdAt: new Date(),
                 },
                 purchasedAt: new Date(),
@@ -170,10 +149,8 @@ export async function POST(request: NextRequest) {
       success: true,
       message: "Payment details submitted successfully. We'll verify and process your order shortly.",
       data: {
-        paymentId: paymentResult.insertedId.toString(),
         phoneNumber: phoneNumber || null,
         receiptUrl: receiptUrl,
-        status: "pending_verification",
       },
     })
 
