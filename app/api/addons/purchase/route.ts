@@ -142,13 +142,20 @@ export async function POST(request: NextRequest) {
     
     // Get initial order revenue (package price + state filing fee)
     let initialOrderRevenue = 0
+    let packagePrice = 0
+    let stateFilingFee = 0
+    
     if (currentCompany.orders && Array.isArray(currentCompany.orders) && currentCompany.orders.length > 0) {
       const firstOrder = currentCompany.orders[0]
-      initialOrderRevenue = (firstOrder.pricing?.total || firstOrder.pricing?.subtotal || 0)
+      // Get pricing from either nested pricing object or flat fields
+      packagePrice = firstOrder.pricing?.packagePrice || firstOrder.packagePrice || 0
+      stateFilingFee = firstOrder.pricing?.stateFilingFee || firstOrder.stateFilingFee || 0
+      initialOrderRevenue = (firstOrder.pricing?.total || firstOrder.pricing?.subtotal || firstOrder.total || firstOrder.subtotal || 0)
     }
     
-    // Calculate new total revenue
-    const newTotalRevenue = initialOrderRevenue + newAddonsTotal
+    // Calculate new total revenue (package price + state filing fee + all addons)
+    const newSubtotal = packagePrice + stateFilingFee
+    const newTotalRevenue = newSubtotal + newAddonsTotal
 
     // SINGLE atomic update: add addon AND update pricing in one operation
     await db.collection("companies").updateOne(
@@ -160,21 +167,40 @@ export async function POST(request: NextRequest) {
         $set: {
           revenue: newTotalRevenue,
           "pricing.addonsTotal": newAddonsTotal,
+          "pricing.subtotal": newSubtotal,
           "pricing.total": newTotalRevenue,
           updatedAt: new Date().toISOString(),
         },
       },
     )
 
-    // Also save to company orders if needed (secondary update)
-    const existingOrder = currentCompany.orders?.[0]
-    if (existingOrder) {
+    // Update all orders with new addon pricing
+    const existingOrders = currentCompany.orders || []
+    if (existingOrders.length > 0) {
       await db.collection("companies").updateOne(
-        { _id: new ObjectId(companyId), "orders.0._id": existingOrder._id || { $exists: true } },
+        { _id: new ObjectId(companyId) },
+        {
+          $set: {
+            "orders.$[].pricing.addonsTotal": newAddonsTotal,
+            "orders.$[].pricing.subtotal": newSubtotal,
+            "orders.$[].pricing.total": newTotalRevenue,
+          },
+        },
+        {
+          arrayFilters: [],
+        },
+      )
+      
+      // Also add the addon to the purchasedAddons array in all orders if not already there
+      await db.collection("companies").updateOne(
+        { _id: new ObjectId(companyId) },
         {
           $push: {
-            "orders.0.purchasedAddons": newPurchasedAddon,
+            "orders.$[].purchasedAddons": newPurchasedAddon,
           },
+        },
+        {
+          arrayFilters: [],
         },
       )
     }

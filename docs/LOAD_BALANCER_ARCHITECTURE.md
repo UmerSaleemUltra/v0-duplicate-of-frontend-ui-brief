@@ -2,7 +2,7 @@
 
 ## System Architecture Diagram
 
-```
+\`\`\`
 ┌─────────────────────────────────────────────────────────────────┐
 │                         CLIENT REQUESTS                          │
 └──────────────────────────┬──────────────────────────────────────┘
@@ -57,13 +57,13 @@
               │    MongoDB      │
               │    Database     │
               └─────────────────┘
-```
+\`\`\`
 
 ## Request Flow
 
 ### 1. High Load Scenario (Request Gets Queued)
 
-```
+\`\`\`
 Request (POST /api/orders)
     ↓
 Load Check: 82% (> 80% threshold)
@@ -81,11 +81,11 @@ Background: Dequeue and process when capacity available
 Automatic retry (up to 3 times) if fails
     ↓
 Return result to client
-```
+\`\`\`
 
 ### 2. Normal Load Scenario (Immediate Processing)
 
-```
+\`\`\`
 Request (GET /api/products)
     ↓
 Load Check: 45% (< 80% threshold)
@@ -105,13 +105,13 @@ Query MongoDB
 Cache result with tags + TTL
     ↓
 Return result (+ cache headers)
-```
+\`\`\`
 
 ## Component Interaction
 
 ### Queue Manager ↔ Request Distributor
 
-```
+\`\`\`
 Request Distributor
     │
     └─→ Check current load
@@ -125,11 +125,11 @@ Request Distributor
             ├─ Assign priority
             ├─ Add to Redis
             └─ Track metrics
-```
+\`\`\`
 
 ### Connection Pool ↔ Advanced Cache
 
-```
+\`\`\`
 Database Request
     ├─→ Check Advanced Cache
     │   ├─ Check local cache (fast)
@@ -150,11 +150,11 @@ Database Request
         │
         └─→ Release connection
             └─ Decrement active count
-```
+\`\`\`
 
 ## Data Flow Example: User Lookup
 
-```
+\`\`\`
 API Call: GET /api/users/123
     │
     ├─ Step 1: Request Distribution
@@ -189,11 +189,11 @@ API Call: GET /api/users/123
 
 Next request for same user:
     └─ Local cache HIT → Return immediately (< 5ms)
-```
+\`\`\`
 
 ## Cache Invalidation Example
 
-```
+\`\`\`
 Update User: PATCH /api/users/123
     ├─ Request processes
     ├─ Database updated
@@ -214,11 +214,11 @@ Next request for same user:
     └─ Cache MISS (was invalidated)
     └─ Fresh database query
     └─ New cache entry created
-```
+\`\`\`
 
 ## Queue Processing Workflow
 
-```
+\`\`\`
 Request Queued (High Load)
     │
     ├─ Store in Redis: queue:3:request-id-123
@@ -254,11 +254,11 @@ If request fails:
     │  └─ ≥ 3: Mark as failed, record error
     │
     └─ Increment: stats:queue:failed
-```
+\`\`\`
 
 ## Connection Pool Health Management
 
-```
+\`\`\`
 Active Connection
     │
     ├─ Every 10 seconds
@@ -280,11 +280,11 @@ Active Connection
        └─ If none healthy
           └─ Create new connection
              └─ (Up to max pool size)
-```
+\`\`\`
 
 ## Circuit Breaker Pattern
 
-```
+\`\`\`
 Endpoint: /api/critical-operation
 
 Healthy State
@@ -311,11 +311,11 @@ After 1 minute (reset window)
     ├─ Circuit RESET
     ├─ Failures: 0
     └─ Resume serving requests
-```
+\`\`\`
 
 ## System Monitoring
 
-```
+\`\`\`
 Real-time Metrics Collection
     │
     ├─ Per Request
@@ -355,11 +355,11 @@ Available via:
     ├─ /api/lb/queue (REST)
     ├─ /api/lb/cache (REST)
     └─ Dashboard component
-```
+\`\`\`
 
 ## Deployment Architecture (Vercel)
 
-```
+\`\`\`
 ┌─────────────────────────────────────────┐
 │        Vercel Edge Network              │
 │  ┌───────────────────────────────────┐  │
@@ -392,7 +392,7 @@ Available via:
     │ └─ Metrics       │  │ ├─ Orders        │
     └──────────────────┘  │ └─ ...           │
                           └──────────────────┘
-```
+\`\`\`
 
 This architecture ensures:
 - ✅ Automatic scaling via Vercel

@@ -47,7 +47,7 @@ A comprehensive, production-ready load balancing suite for your Vercel-deployed 
 ## Files Created
 
 ### Core System Files
-```
+\`\`\`
 /lib/load-balancer/
 ├── index.ts                    # Main export hub
 ├── queue-manager.ts            # Request queue management
@@ -57,29 +57,29 @@ A comprehensive, production-ready load balancing suite for your Vercel-deployed 
 ├── enhanced-db.ts              # Database wrapper with pooling + caching
 ├── hooks.ts                    # React hooks for monitoring
 └── examples.ts                 # Integration examples
-```
+\`\`\`
 
 ### API Endpoints
-```
+\`\`\`
 /app/api/lb/
 ├── metrics/route.ts            # GET: System metrics
 ├── queue/route.ts              # GET/POST: Queue operations
 └── cache/route.ts              # GET/DELETE/POST: Cache management
-```
+\`\`\`
 
 ### UI Components
-```
+\`\`\`
 /components/
 └── load-balancer-dashboard.tsx # Admin dashboard component
-```
+\`\`\`
 
 ### Documentation
-```
+\`\`\`
 /docs/
 ├── LOAD_BALANCER.md            # Complete feature guide
 ├── LOAD_BALANCER_SETUP.md      # Setup and migration guide
 └── examples/                   # Usage examples
-```
+\`\`\`
 
 ## Key Features
 
@@ -110,15 +110,15 @@ A comprehensive, production-ready load balancing suite for your Vercel-deployed 
 ## Quick Integration
 
 ### 1. Import the Load Balancer
-```typescript
+\`\`\`typescript
 import { initializeLoadBalancer } from '@/lib/load-balancer'
 
 // Auto-initializes on app start
 await initializeLoadBalancer()
-```
+\`\`\`
 
 ### 2. Use Enhanced Database
-```typescript
+\`\`\`typescript
 import { enhancedDb } from '@/lib/load-balancer'
 
 const user = await enhancedDb.findOne('users', { id: userId }, {
@@ -126,10 +126,10 @@ const user = await enhancedDb.findOne('users', { id: userId }, {
   ttl: 3600000,
   tags: ['user', `user:${userId}`]
 })
-```
+\`\`\`
 
 ### 3. Wrap API Handlers (Optional)
-```typescript
+\`\`\`typescript
 import { withLoadBalancing } from '@/lib/load-balancer'
 
 const handler = async (req: NextRequest) => {
@@ -137,16 +137,16 @@ const handler = async (req: NextRequest) => {
 }
 
 export const GET = withLoadBalancing(handler)
-```
+\`\`\`
 
 ### 4. Monitor Performance
-```typescript
+\`\`\`typescript
 'use client'
 import { useLoadBalancerMetrics } from '@/lib/load-balancer/hooks'
 
 const { metrics } = useLoadBalancerMetrics()
 // Use metrics to display system health
-```
+\`\`\`
 
 ## API Endpoints
 
@@ -170,10 +170,10 @@ Returns comprehensive system health including:
 
 Required Upstash Redis variables (set in Vercel):
 
-```bash
+\`\`\`bash
 UPSTASH_REDIS_REST_URL=https://your-redis.upstash.io
 UPSTASH_REDIS_REST_TOKEN=your-token-here
-```
+\`\`\`
 
 No additional code changes needed - auto-initializes!
 
@@ -204,32 +204,32 @@ Access at `/admin/load-balancer` (requires auth):
 ## Common Use Cases
 
 ### 1. High-Traffic API Routes
-```typescript
+\`\`\`typescript
 const handler = async (req: NextRequest) => {
   // Auto-queued if system busy
   // Circuit breaker protection
 }
 export const POST = withLoadBalancing(handler)
-```
+\`\`\`
 
 ### 2. Database-Heavy Operations
-```typescript
+\`\`\`typescript
 // Uses connection pooling + caching
 const data = await enhancedDb.find('large_collection', query, {
   cache: true,
   tags: ['collection-name']
 })
-```
+\`\`\`
 
 ### 3. Frequently Accessed Data
-```typescript
+\`\`\`typescript
 // Cache with smart invalidation
 const product = await enhancedDb.findOne('products', { id }, {
   cache: true,
   ttl: 86400000, // 24 hours
   tags: ['products', `product:${id}`]
 })
-```
+\`\`\`
 
 ## Migration Path
 
