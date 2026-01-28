@@ -4,6 +4,7 @@ import { Bell, Check, FileText, Mail, Package, Receipt } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
+import { Tooltip, TooltipTrigger, TooltipContent } from "@/components/ui/tooltip"
 import { useState, useEffect } from "react"
 import type { Notification } from "@/lib/local-storage"
 import { authService } from "@/lib/auth"
@@ -170,45 +171,55 @@ export function NotificationDropdown() {
             </div>
           ) : (
             notifications.map((notification) => (
-              <div
-                key={notification.id}
-                className={`p-3 sm:p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200 ${
-                  !notification.read && !notification.isRead ? "bg-blue-50/50" : ""
-                }`}
-              >
-                <div className="flex items-start gap-2 sm:gap-3">
+              <Tooltip key={notification.id}>
+                <TooltipTrigger asChild>
                   <div
-                    className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-                      !notification.read && !notification.isRead
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white"
-                        : "bg-slate-100 text-slate-600"
+                    className={`p-3 sm:p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200 cursor-help ${
+                      !notification.read && !notification.isRead ? "bg-blue-50/50" : ""
                     }`}
                   >
-                    {getNotificationIcon(notification.type)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-start justify-between gap-2 mb-1">
-                      <h4 className="font-semibold text-xs sm:text-sm text-slate-900 line-clamp-1">
-                        {notification.title}
-                      </h4>
+                    <div className="flex items-start gap-2 sm:gap-3">
+                      <div
+                        className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                          !notification.read && !notification.isRead
+                            ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white"
+                            : "bg-slate-100 text-slate-600"
+                        }`}
+                      >
+                        {getNotificationIcon(notification.type)}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-start justify-between gap-2 mb-1">
+                          <h4 className="font-semibold text-xs sm:text-sm text-slate-900 line-clamp-1">
+                            {notification.title}
+                          </h4>
+                        </div>
+                        <p className="text-xs sm:text-sm text-slate-600 mb-2 line-clamp-2">{notification.message || (notification as any).description}</p>
+                        <div className="flex items-center justify-between gap-2">
+                          <span className="text-xs text-slate-500 truncate">{formatTime(notification.createdAt)}</span>
+                          {!notification.read && !notification.isRead && (
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => markAsRead(notification.id)}
+                              className="h-6 text-xs text-[#ff0d13] hover:text-[#cc0a0f] whitespace-nowrap"
+                            >
+                              Mark as read
+                            </Button>
+                          )}
+                        </div>
+                      </div>
                     </div>
-                    <p className="text-xs sm:text-sm text-slate-600 mb-2 line-clamp-2">{notification.message || (notification as any).description}</p>
-                    <div className="flex items-center justify-between gap-2">
-                      <span className="text-xs text-slate-500 truncate">{formatTime(notification.createdAt)}</span>
-                      {!notification.read && !notification.isRead && (
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => markAsRead(notification.id)}
-                          className="h-6 text-xs text-[#ff0d13] hover:text-[#cc0a0f] whitespace-nowrap"
-                        >
-                          Mark as read
-                        </Button>
-                      )}
-                    </div>
                   </div>
-                </div>
-              </div>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="max-w-xs">
+                  <div className="space-y-1">
+                    <p className="font-semibold text-sm">{notification.title}</p>
+                    <p className="text-xs text-balance">{notification.message || (notification as any).description}</p>
+                    <p className="text-xs opacity-75">{formatTime(notification.createdAt)}</p>
+                  </div>
+                </TooltipContent>
+              </Tooltip>
             ))
           )}
         </div>
