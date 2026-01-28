@@ -18,7 +18,7 @@ The load balancer auto-initializes on app startup. It's triggered when `/lib/loa
 
 Add to your main layout or app initialization:
 
-```typescript
+\`\`\`typescript
 // app/layout.tsx
 import { initializeLoadBalancer } from '@/lib/load-balancer'
 
@@ -32,13 +32,13 @@ export default async function RootLayout() {
     </html>
   )
 }
-```
+\`\`\`
 
 ### Step 3: Use in Your API Routes
 
 Replace your existing database calls:
 
-```typescript
+\`\`\`typescript
 // Before
 import { getDatabase } from '@/lib/db'
 const db = await getDatabase()
@@ -51,14 +51,14 @@ const user = await enhancedDb.findOne('users', { id: userId }, {
   ttl: 3600000,
   tags: ['user', `user:${userId}`]
 })
-```
+\`\`\`
 
 ## Migration Guide
 
 ### Converting Existing Routes
 
 **Old Pattern:**
-```typescript
+\`\`\`typescript
 import { connectDB } from '@/config/database'
 
 export async function GET(req: NextRequest) {
@@ -66,10 +66,10 @@ export async function GET(req: NextRequest) {
   const data = await db.collection('products').find({}).toArray()
   return NextResponse.json(data)
 }
-```
+\`\`\`
 
 **New Pattern:**
-```typescript
+\`\`\`typescript
 import { enhancedDb, withLoadBalancing } from '@/lib/load-balancer'
 
 const handler = async (req: NextRequest) => {
@@ -82,7 +82,7 @@ const handler = async (req: NextRequest) => {
 }
 
 export const GET = withLoadBalancing(handler)
-```
+\`\`\`
 
 ## Configuration
 
@@ -90,7 +90,7 @@ export const GET = withLoadBalancing(handler)
 
 Create a configuration file:
 
-```typescript
+\`\`\`typescript
 // lib/load-balancer/config.ts
 export const LB_CONFIG = {
   // Queue settings
@@ -111,11 +111,11 @@ export const LB_CONFIG = {
   circuitBreakerFailureThreshold: 5,
   circuitBreakerWindow: 60000, // 1 minute
 }
-```
+\`\`\`
 
 ### Advanced Cache Configuration
 
-```typescript
+\`\`\`typescript
 import { AdvancedCache } from '@/lib/load-balancer/advanced-cache'
 
 const cache = new AdvancedCache({
@@ -123,7 +123,7 @@ const cache = new AdvancedCache({
   maxLocalSize: 2000,
   useRedis: true
 })
-```
+\`\`\`
 
 ## Monitoring
 
@@ -131,18 +131,18 @@ const cache = new AdvancedCache({
 
 1. Create an admin route:
 
-```typescript
+\`\`\`typescript
 // app/admin/load-balancer/page.tsx
 import LoadBalancerDashboard from '@/components/load-balancer-dashboard'
 
 export default function AdminPage() {
   return <LoadBalancerDashboard />
 }
-```
+\`\`\`
 
 2. Add authentication (e.g., with middleware):
 
-```typescript
+\`\`\`typescript
 // middleware.ts
 import { NextRequest, NextResponse } from 'next/server'
 
@@ -152,13 +152,13 @@ export function middleware(request: NextRequest) {
     // Add auth check here
   }
 }
-```
+\`\`\`
 
 ### API Metrics Endpoints
 
 All metrics are available via REST API:
 
-```bash
+\`\`\`bash
 # Get all metrics
 curl https://your-app.vercel.app/api/lb/metrics
 
@@ -167,13 +167,13 @@ curl https://your-app.vercel.app/api/lb/queue
 
 # Get cache stats
 curl https://your-app.vercel.app/api/lb/cache
-```
+\`\`\`
 
 ### Client-Side Monitoring
 
 Use hooks in your components:
 
-```typescript
+\`\`\`typescript
 'use client'
 
 import { useLoadBalancerMetrics } from '@/lib/load-balancer/hooks'
@@ -191,13 +191,13 @@ export function StatusBar() {
     </div>
   )
 }
-```
+\`\`\`
 
 ## Cache Strategies
 
 ### Strategy 1: User-Specific Data
 
-```typescript
+\`\`\`typescript
 const user = await enhancedDb.findOne('users', { id: userId }, {
   cache: true,
   ttl: 3600000, // 1 hour
@@ -206,11 +206,11 @@ const user = await enhancedDb.findOne('users', { id: userId }, {
 
 // Invalidate when user updates
 await advancedCache.invalidateByTag(`user:${userId}`)
-```
+\`\`\`
 
 ### Strategy 2: Public Data
 
-```typescript
+\`\`\`typescript
 const products = await enhancedDb.find('products', {}, {
   cache: true,
   ttl: 86400000, // 24 hours
@@ -219,17 +219,17 @@ const products = await enhancedDb.find('products', {}, {
 
 // Invalidate entire catalog on product change
 await advancedCache.invalidateByTag('products')
-```
+\`\`\`
 
 ### Strategy 3: Time-Critical Data
 
-```typescript
+\`\`\`typescript
 const stats = await enhancedDb.findOne('stats', { metric: 'sales' }, {
   cache: true,
   ttl: 60000, // 1 minute - refresh frequently
   tags: ['stats', 'sales']
 })
-```
+\`\`\`
 
 ## Performance Tuning
 
@@ -245,7 +245,7 @@ const stats = await enhancedDb.findOne('stats', { metric: 'sales' }, {
 ### Optimization Tips
 
 1. **Batch Operations**
-```typescript
+\`\`\`typescript
 // Bad: N+1 queries
 for (const id of userIds) {
   const user = await enhancedDb.findOne('users', { id })
@@ -253,10 +253,10 @@ for (const id of userIds) {
 
 // Good: Single batched query
 const users = await enhancedDb.find('users', { id: { $in: userIds } })
-```
+\`\`\`
 
 2. **Smart Caching**
-```typescript
+\`\`\`typescript
 // Cache lists with lower TTL
 const list = await enhancedDb.find('products', {}, {
   cache: true,
@@ -268,10 +268,10 @@ const detail = await enhancedDb.findOne('products', { id }, {
   cache: true,
   ttl: 3600000 // 1 hour
 })
-```
+\`\`\`
 
 3. **Tag Organization**
-```typescript
+\`\`\`typescript
 // Use consistent tag patterns
 tags: [
   'products',           // For product list cache
@@ -280,7 +280,7 @@ tags: [
   'products:featured',  // For featured products
   'public'              // For public caches
 ]
-```
+\`\`\`
 
 ## Troubleshooting
 
@@ -293,10 +293,10 @@ tags: [
 2. Verify environment variables are set
 3. Check `/api/lb/metrics` for queue status
 
-```bash
+\`\`\`bash
 # Verify connection
 curl https://your-app.vercel.app/api/lb/queue
-```
+\`\`\`
 
 ### High Memory Usage
 
@@ -307,10 +307,10 @@ curl https://your-app.vercel.app/api/lb/queue
 2. Lower TTL values
 3. Check for unused cache tags
 
-```bash
+\`\`\`bash
 # Clear cache immediately
 curl -X DELETE https://your-app.vercel.app/api/lb/cache
-```
+\`\`\`
 
 ### Database Connection Errors
 
@@ -321,10 +321,10 @@ curl -X DELETE https://your-app.vercel.app/api/lb/cache
 2. Check connection pooling stats
 3. Review connection limits
 
-```bash
+\`\`\`bash
 # Check pool stats
 curl https://your-app.vercel.app/api/lb/metrics | jq '.health.checks.database'
-```
+\`\`\`
 
 ### Circuit Breaker Tripping
 
@@ -350,7 +350,7 @@ curl https://your-app.vercel.app/api/lb/metrics | jq '.health.checks.database'
 
 ### Product Catalog
 
-```typescript
+\`\`\`typescript
 // Fetch with caching
 const products = await enhancedDb.find('products', { active: true }, {
   cache: true,
@@ -364,11 +364,11 @@ await enhancedDb.updateOne('products', { id }, updates, [
   `product:${id}`,
   'product-list' // Invalidate list too
 ])
-```
+\`\`\`
 
 ### User Profiles
 
-```typescript
+\`\`\`typescript
 // Get user profile
 const user = await enhancedDb.findOne('users', { id: userId }, {
   cache: true,
@@ -380,18 +380,18 @@ const user = await enhancedDb.findOne('users', { id: userId }, {
 await enhancedDb.updateOne('users', { id: userId }, updates, [
   `user:${userId}` // Invalidate just this user
 ])
-```
+\`\`\`
 
 ### Frequently Changing Data
 
-```typescript
+\`\`\`typescript
 // Real-time stats
 const stats = await enhancedDb.findOne('stats', { id: 'daily' }, {
   cache: true,
   ttl: 60000, // 1 minute only
   tags: ['stats', 'dashboard']
 })
-```
+\`\`\`
 
 ## Next Steps
 

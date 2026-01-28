@@ -62,10 +62,10 @@ This comprehensive load balancing suite optimizes your Vercel-deployed Next.js a
 
 Ensure you have Upstash Redis set up in your Vercel project:
 
-```bash
+\`\`\`bash
 vercel env add UPSTASH_REDIS_REST_URL
 vercel env add UPSTASH_REDIS_REST_TOKEN
-```
+\`\`\`
 
 ### Usage
 
@@ -73,7 +73,7 @@ vercel env add UPSTASH_REDIS_REST_TOKEN
 
 Instead of direct MongoDB access, use the enhanced wrapper:
 
-```typescript
+\`\`\`typescript
 import { enhancedDb } from '@/lib/load-balancer/enhanced-db'
 
 // Find one with cache
@@ -88,11 +88,11 @@ const id = await enhancedDb.insertOne('users', userData, ['users', 'user-list'])
 
 // Update with cache invalidation
 await enhancedDb.updateOne('users', { id }, updates, ['users', `user:${id}`])
-```
+\`\`\`
 
 #### 2. Use Caching in API Routes
 
-```typescript
+\`\`\`typescript
 import { advancedCache } from '@/lib/load-balancer'
 
 export async function GET(req: NextRequest) {
@@ -114,13 +114,13 @@ export async function GET(req: NextRequest) {
   
   return NextResponse.json(products)
 }
-```
+\`\`\`
 
 #### 3. Monitor Load Balancer
 
 Access the dashboard or metrics endpoints:
 
-```bash
+\`\`\`bash
 # Get all metrics
 curl https://your-app.vercel.app/api/lb/metrics
 
@@ -137,25 +137,25 @@ curl -X DELETE https://your-app.vercel.app/api/lb/cache
 curl -X POST https://your-app.vercel.app/api/lb/cache \
   -H "Content-Type: application/json" \
   -d '{"tag": "products"}'
-```
+\`\`\`
 
 #### 4. Use Dashboard Component
 
 Add to an admin page:
 
-```typescript
+\`\`\`typescript
 import LoadBalancerDashboard from '@/components/load-balancer-dashboard'
 
 export default function AdminPage() {
   return <LoadBalancerDashboard />
 }
-```
+\`\`\`
 
 #### 5. Use Client Hooks
 
 Monitor metrics in your components:
 
-```typescript
+\`\`\`typescript
 'use client'
 
 import { useLoadBalancerMetrics, useCacheStats, useQueueStatus } from '@/lib/load-balancer/hooks'
@@ -173,7 +173,7 @@ export function MyComponent() {
     </div>
   )
 }
-```
+\`\`\`
 
 ## API Endpoints
 
@@ -196,7 +196,7 @@ Get cache stats, clear all cache, or invalidate by tag.
 
 ## Environment Variables
 
-```bash
+\`\`\`bash
 # Required for distributed queue and caching
 UPSTASH_REDIS_REST_URL=https://your-upstash-redis.upstash.io
 UPSTASH_REDIS_REST_TOKEN=your-token
@@ -204,7 +204,7 @@ UPSTASH_REDIS_REST_TOKEN=your-token
 # MongoDB
 MONGODB_URI=mongodb+srv://...
 MONGODB_DB=your_database
-```
+\`\`\`
 
 ## Troubleshooting
 
@@ -227,7 +227,7 @@ MONGODB_DB=your_database
 
 ## Architecture Diagram
 
-```
+\`\`\`
 Request → Load Balancer → Distribute → Queue (if busy)
            ↓
       Monitor Load → Decision
@@ -239,4 +239,4 @@ Request → Load Balancer → Distribute → Queue (if busy)
       Connection Pool
       ↓
       MongoDB
-```
+\`\`\`

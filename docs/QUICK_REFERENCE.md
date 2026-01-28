@@ -2,7 +2,7 @@
 
 ## 📋 File Structure
 
-```
+\`\`\`
 /lib/load-balancer/
 ├── index.ts                 # Main exports
 ├── queue-manager.ts         # Request queueing (Upstash Redis)
@@ -22,11 +22,11 @@
 ├── LOAD_BALANCER.md              # Feature guide
 ├── LOAD_BALANCER_SETUP.md        # Setup guide
 └── LOAD_BALANCER_ARCHITECTURE.md # Architecture
-```
+\`\`\`
 
 ## 🚀 Quick Start (60 seconds)
 
-```bash
+\`\`\`bash
 # 1. Set environment variables in Vercel
 UPSTASH_REDIS_REST_URL=...
 UPSTASH_REDIS_REST_TOKEN=...
@@ -47,19 +47,19 @@ const handler = async (req) => {
 }
 
 export const GET = withLoadBalancing(handler)
-```
+\`\`\`
 
 ## 💾 Database Access
 
 ### Old Way (Don't use)
-```typescript
+\`\`\`typescript
 import { connectDB } from '@/config/database'
 const { db } = await connectDB()
 const user = await db.collection('users').findOne({ id })
-```
+\`\`\`
 
 ### New Way (Use this)
-```typescript
+\`\`\`typescript
 import { enhancedDb } from '@/lib/load-balancer'
 
 const user = await enhancedDb.findOne('users', { id }, {
@@ -67,12 +67,12 @@ const user = await enhancedDb.findOne('users', { id }, {
   ttl: 3600000,
   tags: ['user', `user:${id}`]
 })
-```
+\`\`\`
 
 ## 📊 Available Methods
 
 ### enhancedDb Methods
-```typescript
+\`\`\`typescript
 // Read operations (with optional caching)
 await enhancedDb.findOne(collection, query, options)
 await enhancedDb.find(collection, query, options)
@@ -90,10 +90,10 @@ await enhancedDb.deleteOne(collection, query, invalidateTags)
   limit?: number,           // For find()
   skip?: number             // For find()
 }
-```
+\`\`\`
 
 ### Queue Manager
-```typescript
+\`\`\`typescript
 import { queueManager } from '@/lib/load-balancer'
 
 // Enqueue request
@@ -120,10 +120,10 @@ const request = await queueManager.dequeue(priority)
 
 // Mark request complete
 await queueManager.markComplete(requestId, waitTimeMs)
-```
+\`\`\`
 
 ### Advanced Cache
-```typescript
+\`\`\`typescript
 import { advancedCache } from '@/lib/load-balancer'
 
 // Get
@@ -152,12 +152,12 @@ advancedCache.getStats()
 //   redisEnabled: true,
 //   tagCount: 12
 // }
-```
+\`\`\`
 
 ## 🔌 API Endpoints
 
 ### Metrics
-```bash
+\`\`\`bash
 # Get all metrics
 curl https://your-app.vercel.app/api/lb/metrics
 
@@ -174,19 +174,19 @@ curl https://your-app.vercel.app/api/lb/metrics
   },
   "metrics": {...}
 }
-```
+\`\`\`
 
 ### Queue
-```bash
+\`\`\`bash
 # Get queue status
 curl https://your-app.vercel.app/api/lb/queue
 
 # Process next request
 curl -X POST https://your-app.vercel.app/api/lb/queue
-```
+\`\`\`
 
 ### Cache
-```bash
+\`\`\`bash
 # Get cache stats
 curl https://your-app.vercel.app/api/lb/cache
 
@@ -197,11 +197,11 @@ curl -X DELETE https://your-app.vercel.app/api/lb/cache
 curl -X POST https://your-app.vercel.app/api/lb/cache \
   -H "Content-Type: application/json" \
   -d '{"tag": "products"}'
-```
+\`\`\`
 
 ## 🪝 React Hooks
 
-```typescript
+\`\`\`typescript
 'use client'
 import {
   useLoadBalancerMetrics,
@@ -223,12 +223,12 @@ function MyComponent() {
     </div>
   )
 }
-```
+\`\`\`
 
 ## ⚙️ Configuration
 
 ### Default Values
-```typescript
+\`\`\`typescript
 // Queue
 maxRetries: 3
 retryBackoffMs: exponential (2^n)
@@ -246,10 +246,10 @@ maxLocalCacheSize: 1000 entries
 loadThreshold: 0.8 (80%)
 circuitBreakerFailureThreshold: 5
 circuitBreakerWindow: 60000 ms (1 minute)
-```
+\`\`\`
 
 ### Customize
-```typescript
+\`\`\`typescript
 // Create custom cache instance
 import { AdvancedCache } from '@/lib/load-balancer/advanced-cache'
 
@@ -258,30 +258,30 @@ const customCache = new AdvancedCache({
   maxLocalSize: 2000,     // Bigger cache
   useRedis: true
 })
-```
+\`\`\`
 
 ## 🎯 Common Patterns
 
 ### Product Listing
-```typescript
+\`\`\`typescript
 const products = await enhancedDb.find('products', {}, {
   cache: true,
   ttl: 3600000,
   tags: ['products', 'product-list']
 })
-```
+\`\`\`
 
 ### User Profile
-```typescript
+\`\`\`typescript
 const user = await enhancedDb.findOne('users', { id: userId }, {
   cache: true,
   ttl: 1800000,  // 30 min
   tags: ['user', `user:${userId}`]
 })
-```
+\`\`\`
 
 ### High-Priority Operation (Payment)
-```typescript
+\`\`\`typescript
 const id = await queueManager.enqueue({
   endpoint: '/api/orders',
   method: 'POST',
@@ -289,10 +289,10 @@ const id = await queueManager.enqueue({
   maxRetries: 5,
   data: orderData
 })
-```
+\`\`\`
 
 ### Cache Invalidation on Update
-```typescript
+\`\`\`typescript
 await enhancedDb.updateOne(
   'products',
   { id: productId },
@@ -300,20 +300,20 @@ await enhancedDb.updateOne(
   ['products', `product:${productId}`, 'product-list']
 )
 // All related caches automatically invalidated
-```
+\`\`\`
 
 ## 📈 Monitoring
 
 ### Check Health
-```typescript
+\`\`\`typescript
 // Get metrics programmatically
 const response = await fetch('/api/lb/metrics')
 const data = await response.json()
 console.log(data.health.status) // 'healthy', 'degraded', or 'unhealthy'
-```
+\`\`\`
 
 ### Alerts (Recommended)
-```typescript
+\`\`\`typescript
 // High cache usage
 if (cacheStats.utilizationPercent > 90) {
   // Alert
@@ -328,7 +328,7 @@ if (queueStats.pending > 20) {
 if (metrics.health.status !== 'healthy') {
   // Alert
 }
-```
+\`\`\`
 
 ## 🆘 Troubleshooting
 
