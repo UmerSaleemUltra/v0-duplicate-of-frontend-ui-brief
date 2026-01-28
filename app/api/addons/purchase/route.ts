@@ -158,10 +158,26 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update revenue - add addon price to existing revenue
+    // Calculate total revenue from all purchased addons
     const updatedCompany = await db.collection("companies").findOne({ _id: new ObjectId(companyId) })
-    const currentRevenue = updatedCompany.revenue || 0
-    const newRevenue = currentRevenue + (addon.price || 0)
+    
+    // Calculate addon revenue from purchasedAddons array
+    let totalAddonRevenue = 0
+    if (updatedCompany.purchasedAddons && Array.isArray(updatedCompany.purchasedAddons)) {
+      totalAddonRevenue = updatedCompany.purchasedAddons.reduce((sum: number, addon: any) => {
+        return sum + (addon.price || 0)
+      }, 0)
+    }
+    
+    // Get initial order revenue (package price + state filing fee)
+    let initialOrderRevenue = 0
+    if (updatedCompany.orders && Array.isArray(updatedCompany.orders) && updatedCompany.orders.length > 0) {
+      const firstOrder = updatedCompany.orders[0]
+      initialOrderRevenue = (firstOrder.pricing?.total || firstOrder.pricing?.subtotal || 0)
+    }
+    
+    // Total revenue = initial order + all addons
+    const newRevenue = initialOrderRevenue + totalAddonRevenue
 
     await db.collection("companies").updateOne(
       { _id: new ObjectId(companyId) },

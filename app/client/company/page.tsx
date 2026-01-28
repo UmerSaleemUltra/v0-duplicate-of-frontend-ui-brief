@@ -144,15 +144,37 @@ export default function CompanyPage() {
             }
           }
 
-          // Aggregate purchased addons from orders array
-          const allPurchasedAddons = []
+          // Aggregate purchased addons from both sources: company level and orders array
+          let allPurchasedAddons = []
+          
+          // Include addons from company's purchasedAddons array (root level)
+          if (selectedComp.purchasedAddons && Array.isArray(selectedComp.purchasedAddons)) {
+            allPurchasedAddons.push(...selectedComp.purchasedAddons)
+          }
+          
+          // Also check orders array for redundancy
           if (selectedComp.orders && Array.isArray(selectedComp.orders)) {
             selectedComp.orders.forEach((order: any) => {
               if (order.purchasedAddons && Array.isArray(order.purchasedAddons)) {
-                allPurchasedAddons.push(...order.purchasedAddons)
+                // Only add if not already in list (avoid duplicates)
+                order.purchasedAddons.forEach((addon: any) => {
+                  const isDuplicate = allPurchasedAddons.some(
+                    (existing: any) => 
+                      existing.serviceId === addon.serviceId && 
+                      existing.purchasedAt === addon.purchasedAt
+                  )
+                  if (!isDuplicate) {
+                    allPurchasedAddons.push(addon)
+                  }
+                })
               }
             })
           }
+          
+          // Calculate total addons cost
+          const totalAddonsCost = allPurchasedAddons.reduce((sum: number, addon: any) => {
+            return sum + (addon.price || 0)
+          }, 0)
 
           setCompanyData({
             businessName: selectedComp.name || "Your Company",
@@ -183,6 +205,8 @@ export default function CompanyPage() {
             taxClassification: selectedComp.taxClassification || "Not Yet",
             annualReportFilingDate: selectedComp.annualReportFilingDate,
             irsFilingDate: selectedComp.irsFilingDate, // API returns as irsFilingDate
+            totalAddonsCost: totalAddonsCost,
+            revenue: selectedComp.revenue || 0,
           })
 
           console.log(
@@ -823,6 +847,36 @@ export default function CompanyPage() {
                 ) : (
                   <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet Assigned</Badge>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Pricing Summary */}
+        {(companyData.revenue || companyData.totalAddonsCost) && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+            <div className="flex items-center gap-3 mb-6">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                <DollarSign className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+              </div>
+              <h2 className="text-base sm:text-lg font-semibold">Pricing Summary</h2>
+            </div>
+            
+            <div className="space-y-3 sm:space-y-4">
+              {/* Purchased Addons */}
+              {companyData.totalAddonsCost > 0 && (
+                <>
+                  <div className="flex justify-between items-center p-3 bg-slate-50 rounded-lg">
+                    <span className="text-slate-600 text-sm sm:text-base">Purchased Add-ons ({companyData.purchasedAddons?.length || 0})</span>
+                    <span className="font-medium text-slate-900 text-sm sm:text-base">${companyData.totalAddonsCost.toFixed(2)}</span>
+                  </div>
+                </>
+              )}
+              
+              {/* Total Revenue */}
+              <div className="flex justify-between items-center p-3 sm:p-4 bg-gradient-to-r from-[#880000]/5 to-[#ff0d13]/5 border border-[#ff0d13]/20 rounded-lg">
+                <span className="font-semibold text-slate-900 text-sm sm:text-base">Total Revenue</span>
+                <span className="font-bold text-[#ff0d13] text-base sm:text-lg">${companyData.revenue?.toFixed(2) || '0.00'}</span>
               </div>
             </div>
           </div>
