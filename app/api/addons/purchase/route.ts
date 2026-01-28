@@ -189,7 +189,7 @@ export async function POST(request: NextRequest) {
         userId: userIdForNotification,
         companyId: new ObjectId(companyId),
         type: "addon_purchased",
-        title: "✅ Add-on Purchased",
+        title: "Add-on Purchased",
         description: "You have successfully purchased a new add-on. It's now available in your dashboard.",
         read: false,
         actionUrl: `/client/company`,
