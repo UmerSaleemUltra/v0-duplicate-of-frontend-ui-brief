@@ -88,41 +88,57 @@ export async function GET(req: NextRequest) {
 
     const result = {
       success: true,
-      data: companies.map((company) => ({
-        id: company._id.toString(),
-        userId: company.userId,
-        name: company.name,
-        type: company.type,
-        state: company.state,
-        status: company.status,
-        companyStatus: company.companyStatus || "pending",
-        registeredAgentStatus: company.registeredAgentStatus || "pending",
-        businessAddressStatus: company.businessAddressStatus || "pending",
-        serviceStatus: company.serviceStatus || "pending",
-        ein: company.ein,
-        itin: company.itin,
-        businessId: company.businessId,
-        formationDate: company.formationDate,
-        purchasedAddons: company.purchasedAddons || [],
-        orders: company.orders || [], // Include orders array
-        revenue: company.revenue || 0, // Include revenue
-        lastOrderDate: company.lastOrderDate || null, // Include last order date
-        milestones: company.milestones || {}, // Include milestones
-        customMilestones: company.customMilestones || [], // Include custom milestones
-        registeredAgent: company.registeredAgent || null,
-        mailingAddress: company.mailingAddress || null,
-        address: company.address || {},
-        members: company.members || [],
-        businessCategory: company.businessCategory || "",
-        businessDescription: company.businessDescription || "",
-        businessWebsite: company.businessWebsite || "",
-        packageType: company.packageType || "basic",
-        taxClassification: company.taxClassification || "Not Yet",
-        annualReportFilingDate: company.annualReportFilingDate || null,
-        irsFilingDate: company.irsFilingDate || null,
-        createdAt: company.createdAt,
-        updatedAt: company.updatedAt,
-      })),
+      data: companies.map((company) => {
+        // Calculate revenue: base order total + purchased addons total (only after custom milestone completion)
+        let calculatedRevenue = company.revenue || 0
+        const baseOrderTotal = company.orders?.[0]?.pricing?.total || 0
+        const addonsTotal = (company.purchasedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0)
+        
+        // If custom milestones are completed, include addons in revenue
+        const hasCompletedMilestones = (company.customMilestones || []).some((m: any) => m.completed)
+        if (hasCompletedMilestones && addonsTotal > 0) {
+          calculatedRevenue = baseOrderTotal + addonsTotal
+        } else if (!hasCompletedMilestones && addonsTotal > 0) {
+          // If no custom milestones exist yet, only count base order
+          calculatedRevenue = baseOrderTotal
+        }
+
+        return {
+          id: company._id.toString(),
+          userId: company.userId,
+          name: company.name,
+          type: company.type,
+          state: company.state,
+          status: company.status,
+          companyStatus: company.companyStatus || "pending",
+          registeredAgentStatus: company.registeredAgentStatus || "pending",
+          businessAddressStatus: company.businessAddressStatus || "pending",
+          serviceStatus: company.serviceStatus || "pending",
+          ein: company.ein,
+          itin: company.itin,
+          businessId: company.businessId,
+          formationDate: company.formationDate,
+          purchasedAddons: company.purchasedAddons || [],
+          orders: company.orders || [], // Include orders array
+          revenue: calculatedRevenue, // Include calculated revenue
+          lastOrderDate: company.lastOrderDate || null, // Include last order date
+          milestones: company.milestones || {}, // Include milestones
+          customMilestones: company.customMilestones || [], // Include custom milestones
+          registeredAgent: company.registeredAgent || null,
+          mailingAddress: company.mailingAddress || null,
+          address: company.address || {},
+          members: company.members || [],
+          businessCategory: company.businessCategory || "",
+          businessDescription: company.businessDescription || "",
+          businessWebsite: company.businessWebsite || "",
+          packageType: company.packageType || "basic",
+          taxClassification: company.taxClassification || "Not Yet",
+          annualReportFilingDate: company.annualReportFilingDate || null,
+          irsFilingDate: company.irsFilingDate || null,
+          createdAt: company.createdAt,
+          updatedAt: company.updatedAt,
+        }
+      }),
     }
 
     return addSecurityHeaders(NextResponse.json(result))
