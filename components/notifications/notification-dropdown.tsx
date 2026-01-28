@@ -11,6 +11,19 @@ import { authService } from "@/lib/auth"
 import { ApiClient } from "@/lib/api-client"
 import { useSelectedCompany } from "@/lib/company-context"
 
+const useIsMobile = () => {
+  const [isMobile, setIsMobile] = useState(false)
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 640)
+    checkMobile()
+    window.addEventListener("resize", checkMobile)
+    return () => window.removeEventListener("resize", checkMobile)
+  }, [])
+
+  return isMobile
+}
+
 const getNotificationIcon = (type: string) => {
   switch (type) {
     case "document":
@@ -35,6 +48,7 @@ export function NotificationDropdown() {
   const [loading, setLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const { selectedCompany } = useSelectedCompany()
+  const isMobile = useIsMobile()
 
   const loadNotifications = async () => {
     try {
@@ -171,12 +185,12 @@ export function NotificationDropdown() {
             </div>
           ) : (
             notifications.map((notification) => (
-              <Tooltip key={notification.id}>
+              <Tooltip key={notification.id} delayDuration={isMobile ? 300 : 200}>
                 <TooltipTrigger asChild>
                   <div
-                    className={`p-3 sm:p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200 cursor-help ${
-                      !notification.read && !notification.isRead ? "bg-blue-50/50" : ""
-                    }`}
+                    className={`p-3 sm:p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200 ${
+                      isMobile ? "cursor-default" : "cursor-help"
+                    } ${!notification.read && !notification.isRead ? "bg-blue-50/50" : ""}`}
                   >
                     <div className="flex items-start gap-2 sm:gap-3">
                       <div
@@ -212,7 +226,10 @@ export function NotificationDropdown() {
                     </div>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs">
+                <TooltipContent 
+                  side={isMobile ? "bottom" : "left"} 
+                  className={`${isMobile ? "max-w-[80vw] sm:max-w-xs" : "max-w-xs"}`}
+                >
                   <div className="space-y-1">
                     <p className="font-semibold text-sm">{notification.title}</p>
                     <p className="text-xs text-balance">{notification.message || (notification as any).description}</p>
