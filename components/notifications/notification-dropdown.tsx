@@ -188,9 +188,7 @@ export function NotificationDropdown() {
               <Tooltip key={notification.id} delayDuration={isMobile ? 300 : 200}>
                 <TooltipTrigger asChild>
                   <div
-                    className={`p-3 sm:p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200 ${
-                      isMobile ? "cursor-default" : "cursor-help"
-                    } ${!notification.read && !notification.isRead ? "bg-blue-50/50" : ""}`}
+                    className={`p-3 sm:p-4 border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200 cursor-default ${!notification.read && !notification.isRead ? "bg-blue-50/50" : ""}`}
                   >
                     <div className="flex items-start gap-2 sm:gap-3 min-w-0">
                       <div

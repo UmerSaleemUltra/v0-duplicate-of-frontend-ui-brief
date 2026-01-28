@@ -132,65 +132,51 @@ export async function POST(request: NextRequest) {
       purchasedAt: new Date(),
     }
 
-    // Update company's purchasedAddons array at root level
+    // Get current company state BEFORE updating
+    const currentCompany = await db.collection("companies").findOne({ _id: new ObjectId(companyId) })
+    
+    // Calculate what the new addon total will be
+    const currentAddons = currentCompany.purchasedAddons || []
+    const newAddonsTotal = currentAddons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) + (addon.price || 0)
+    
+    // Get initial order revenue (package price + state filing fee)
+    let initialOrderRevenue = 0
+    if (currentCompany.orders && Array.isArray(currentCompany.orders) && currentCompany.orders.length > 0) {
+      const firstOrder = currentCompany.orders[0]
+      initialOrderRevenue = (firstOrder.pricing?.total || firstOrder.pricing?.subtotal || 0)
+    }
+    
+    // Calculate new total revenue
+    const newTotalRevenue = initialOrderRevenue + newAddonsTotal
+
+    // SINGLE atomic update: add addon AND update pricing in one operation
     await db.collection("companies").updateOne(
       { _id: new ObjectId(companyId) },
       {
         $push: {
           purchasedAddons: newPurchasedAddon,
         },
-      },
-    )
-
-    // Also save to company orders if needed
-    const existingOrder = company.orders?.[0]
-    if (existingOrder) {
-      await db.collection("companies").updateOne(
-        { _id: new ObjectId(companyId) },
-        {
-          $set: {
-            "orders.0.purchasedAddons": [
-              ...(existingOrder.purchasedAddons || []),
-              newPurchasedAddon,
-            ],
-          },
-        },
-      )
-    }
-
-    // Calculate total revenue from all purchased addons
-    const updatedCompany = await db.collection("companies").findOne({ _id: new ObjectId(companyId) })
-    
-    // Calculate addon revenue from purchasedAddons array
-    let totalAddonRevenue = 0
-    if (updatedCompany.purchasedAddons && Array.isArray(updatedCompany.purchasedAddons)) {
-      totalAddonRevenue = updatedCompany.purchasedAddons.reduce((sum: number, addon: any) => {
-        return sum + (addon.price || 0)
-      }, 0)
-    }
-    
-    // Get initial order revenue (package price + state filing fee)
-    let initialOrderRevenue = 0
-    if (updatedCompany.orders && Array.isArray(updatedCompany.orders) && updatedCompany.orders.length > 0) {
-      const firstOrder = updatedCompany.orders[0]
-      initialOrderRevenue = (firstOrder.pricing?.total || firstOrder.pricing?.subtotal || 0)
-    }
-    
-    // Total revenue = initial order + all addons
-    const newRevenue = initialOrderRevenue + totalAddonRevenue
-
-    // Update both revenue and pricing.addonsTotal in database
-    await db.collection("companies").updateOne(
-      { _id: new ObjectId(companyId) },
-      {
         $set: {
-          revenue: newRevenue,
-          "pricing.addonsTotal": totalAddonRevenue,
-          "pricing.total": initialOrderRevenue + totalAddonRevenue,
+          revenue: newTotalRevenue,
+          "pricing.addonsTotal": newAddonsTotal,
+          "pricing.total": newTotalRevenue,
           updatedAt: new Date().toISOString(),
         },
       },
     )
+
+    // Also save to company orders if needed (secondary update)
+    const existingOrder = currentCompany.orders?.[0]
+    if (existingOrder) {
+      await db.collection("companies").updateOne(
+        { _id: new ObjectId(companyId), "orders.0._id": existingOrder._id || { $exists: true } },
+        {
+          $push: {
+            "orders.0.purchasedAddons": newPurchasedAddon,
+          },
+        },
+      )
+    }
 
     // Create notification for addon purchase
     try {
