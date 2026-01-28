@@ -144,15 +144,37 @@ export default function CompanyPage() {
             }
           }
 
-          // Aggregate purchased addons from orders array
-          const allPurchasedAddons = []
+          // Aggregate purchased addons from both sources: company level and orders array
+          let allPurchasedAddons = []
+          
+          // Include addons from company's purchasedAddons array (root level)
+          if (selectedComp.purchasedAddons && Array.isArray(selectedComp.purchasedAddons)) {
+            allPurchasedAddons.push(...selectedComp.purchasedAddons)
+          }
+          
+          // Also check orders array for redundancy
           if (selectedComp.orders && Array.isArray(selectedComp.orders)) {
             selectedComp.orders.forEach((order: any) => {
               if (order.purchasedAddons && Array.isArray(order.purchasedAddons)) {
-                allPurchasedAddons.push(...order.purchasedAddons)
+                // Only add if not already in list (avoid duplicates)
+                order.purchasedAddons.forEach((addon: any) => {
+                  const isDuplicate = allPurchasedAddons.some(
+                    (existing: any) => 
+                      existing.serviceId === addon.serviceId && 
+                      existing.purchasedAt === addon.purchasedAt
+                  )
+                  if (!isDuplicate) {
+                    allPurchasedAddons.push(addon)
+                  }
+                })
               }
             })
           }
+          
+          // Calculate total addons cost
+          const totalAddonsCost = allPurchasedAddons.reduce((sum: number, addon: any) => {
+            return sum + (addon.price || 0)
+          }, 0)
 
           setCompanyData({
             businessName: selectedComp.name || "Your Company",
@@ -183,6 +205,8 @@ export default function CompanyPage() {
             taxClassification: selectedComp.taxClassification || "Not Yet",
             annualReportFilingDate: selectedComp.annualReportFilingDate,
             irsFilingDate: selectedComp.irsFilingDate, // API returns as irsFilingDate
+            totalAddonsCost: totalAddonsCost,
+            revenue: selectedComp.revenue || 0,
           })
 
           console.log(
