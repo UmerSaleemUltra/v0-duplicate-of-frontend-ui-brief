@@ -47,7 +47,7 @@ export function NotificationDropdown() {
   const [notifications, setNotifications] = useState<Notification[]>([])
   const [loading, setLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
-  const { selectedCompany } = useSelectedCompany()
+  const { selectedCompanyId } = useSelectedCompany()
   const isMobile = useIsMobile()
 
   const loadNotifications = async () => {
@@ -60,20 +60,20 @@ export function NotificationDropdown() {
         return
       }
 
-      console.log("[v0] Loading notifications for user:", currentUser.id, "company:", selectedCompany?.name || "none")
+      console.log("[v0] Loading notifications for user:", currentUser.id, "company:", selectedCompanyId || "none")
 
       const response = await ApiClient.notifications.getAll(token)
 
       let userNotifications = (response.data || []).filter((n: any) => n.userId === currentUser.id)
 
-      if (selectedCompany?.id) {
+      if (selectedCompanyId) {
         userNotifications = userNotifications.filter((n: any) => {
           const notificationCompanyId = n.metadata?.companyId || n.companyId
-          return notificationCompanyId === selectedCompany.id
+          return notificationCompanyId === selectedCompanyId
         })
         console.log(
           "[v0] Filtered notifications for company:",
-          selectedCompany.name,
+          selectedCompanyId,
           "count:",
           userNotifications.length,
         )
@@ -95,7 +95,7 @@ export function NotificationDropdown() {
     const interval = setInterval(loadNotifications, 30000)
 
     return () => clearInterval(interval)
-  }, [selectedCompany])
+  }, [selectedCompanyId])
 
   const unreadCount = notifications.filter((n) => !n.read && !n.isRead).length
 
@@ -161,7 +161,7 @@ export function NotificationDropdown() {
           )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0">
+      <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] sm:w-96 p-0 max-w-[calc(100vw-2rem)]">
         {/* Header */}
         <div className="flex items-center justify-between p-3 sm:p-4 border-b border-slate-200">
           <div>
@@ -169,7 +169,7 @@ export function NotificationDropdown() {
             {unreadCount > 0 && <p className="text-xs text-slate-600">{unreadCount} unread</p>}
           </div>
           {notifications.length > 0 && unreadCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-8 text-xs px-2 sm:px-3">
+            <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-8 text-xs px-2 sm:px-3 flex-shrink-0">
               <Check className="w-3 h-3 sm:mr-1" />
               <span className="hidden sm:inline">Mark all read</span>
             </Button>
@@ -192,7 +192,7 @@ export function NotificationDropdown() {
                       isMobile ? "cursor-default" : "cursor-help"
                     } ${!notification.read && !notification.isRead ? "bg-blue-50/50" : ""}`}
                   >
-                    <div className="flex items-start gap-2 sm:gap-3">
+                    <div className="flex items-start gap-2 sm:gap-3 min-w-0">
                       <div
                         className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
                           !notification.read && !notification.isRead
@@ -203,20 +203,23 @@ export function NotificationDropdown() {
                         {getNotificationIcon(notification.type)}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-start justify-between gap-2 mb-1">
-                          <h4 className="font-semibold text-xs sm:text-sm text-slate-900 line-clamp-1">
+                        <div className="flex items-start justify-between gap-2 mb-1 min-w-0">
+                          <h4 className="font-semibold text-xs sm:text-sm text-slate-900 line-clamp-1 min-w-0">
                             {notification.title}
                           </h4>
                         </div>
                         <p className="text-xs sm:text-sm text-slate-600 mb-2 line-clamp-2">{notification.message || (notification as any).description}</p>
-                        <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center justify-between gap-2 flex-wrap">
                           <span className="text-xs text-slate-500 truncate">{formatTime(notification.createdAt)}</span>
                           {!notification.read && !notification.isRead && (
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => markAsRead(notification.id)}
-                              className="h-6 text-xs text-[#ff0d13] hover:text-[#cc0a0f] whitespace-nowrap"
+                              onClick={(e) => {
+                                e.stopPropagation()
+                                markAsRead(notification.id)
+                              }}
+                              className="h-6 text-xs text-[#ff0d13] hover:text-[#cc0a0f] whitespace-nowrap flex-shrink-0"
                             >
                               Mark as read
                             </Button>
@@ -226,16 +229,18 @@ export function NotificationDropdown() {
                     </div>
                   </div>
                 </TooltipTrigger>
-                <TooltipContent 
-                  side={isMobile ? "bottom" : "left"} 
-                  className={`${isMobile ? "max-w-[80vw] sm:max-w-xs" : "max-w-xs"}`}
-                >
-                  <div className="space-y-1">
-                    <p className="font-semibold text-sm">{notification.title}</p>
-                    <p className="text-xs text-balance">{notification.message || (notification as any).description}</p>
-                    <p className="text-xs opacity-75">{formatTime(notification.createdAt)}</p>
-                  </div>
-                </TooltipContent>
+                {!isMobile && (
+                  <TooltipContent 
+                    side="left" 
+                    className="max-w-xs"
+                  >
+                    <div className="space-y-1">
+                      <p className="font-semibold text-sm">{notification.title}</p>
+                      <p className="text-xs text-balance">{notification.message || (notification as any).description}</p>
+                      <p className="text-xs opacity-75">{formatTime(notification.createdAt)}</p>
+                    </div>
+                  </TooltipContent>
+                )}
               </Tooltip>
             ))
           )}

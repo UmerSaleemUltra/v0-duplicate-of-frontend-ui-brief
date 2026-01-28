@@ -88,6 +88,7 @@ export default function ClientDashboard() {
     if (!selectedCompanyId) {
       console.log("[v0] No company selected, showing no-company state")
       setHasNoCompanies(true)
+      setIsLoadingData(false)
       return
     }
 
@@ -98,6 +99,7 @@ export default function ClientDashboard() {
     }
 
     if (dataLoaded && selectedCompanyId === lastLoadedCompanyId) {
+      console.log("[v0] Data already loaded for company:", selectedCompanyId)
       return
     }
 
