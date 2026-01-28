@@ -189,9 +189,9 @@ export async function POST(request: NextRequest) {
         companyId: new ObjectId(companyId),
         type: "addon_purchased",
         title: "✅ Add-on Purchased",
-        description: "You have successfully purchased a new add-on. It's now available in your dashboard.",
+        description: `You have successfully purchased ${addon.name}. It's now available in your dashboard.`,
         read: false,
-        actionUrl: `/client/addons`,
+        actionUrl: `/client/company`,
         metadata: {
           companyId: companyId,
           addonId: addonId,
@@ -199,6 +199,7 @@ export async function POST(request: NextRequest) {
           price: addon.price,
         },
         createdAt: new Date().toISOString(),
+        isRead: false,
       }
 
       const notificationResult = await db.collection("notifications").insertOne(newNotification)
