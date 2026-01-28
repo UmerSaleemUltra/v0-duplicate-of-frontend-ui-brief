@@ -158,28 +158,20 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update revenue if custom milestone is completed
+    // Update revenue - add addon price to existing revenue
     const updatedCompany = await db.collection("companies").findOne({ _id: new ObjectId(companyId) })
-    let newRevenue = updatedCompany.revenue || 0
+    const currentRevenue = updatedCompany.revenue || 0
+    const newRevenue = currentRevenue + (addon.price || 0)
 
-    // Calculate revenue from all purchased addons after custom milestone completion
-    if (updatedCompany.customMilestones && updatedCompany.customMilestones.length > 0) {
-      const completedMilestones = updatedCompany.customMilestones.filter((m: any) => m.completed)
-      if (completedMilestones.length > 0) {
-        newRevenue = (updatedCompany.orders?.[0]?.pricing?.total || 0) + 
-          (updatedCompany.purchasedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0)
-        
-        await db.collection("companies").updateOne(
-          { _id: new ObjectId(companyId) },
-          {
-            $set: {
-              revenue: newRevenue,
-              updatedAt: new Date().toISOString(),
-            },
-          },
-        )
-      }
-    }
+    await db.collection("companies").updateOne(
+      { _id: new ObjectId(companyId) },
+      {
+        $set: {
+          revenue: newRevenue,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    )
 
     // Create notification for addon purchase
     try {

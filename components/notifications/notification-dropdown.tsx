@@ -18,6 +18,8 @@ const getNotificationIcon = (type: string) => {
       return <Mail className="w-4 h-4" />
     case "order":
       return <Package className="w-4 h-4" />
+    case "addon_purchased":
+      return <Package className="w-4 h-4" />
     case "invoice":
       return <Receipt className="w-4 h-4" />
     case "milestone":
@@ -190,7 +192,7 @@ export function NotificationDropdown() {
                         {notification.title}
                       </h4>
                     </div>
-                    <p className="text-xs sm:text-sm text-slate-600 mb-2 line-clamp-2">{notification.message}</p>
+                    <p className="text-xs sm:text-sm text-slate-600 mb-2 line-clamp-2">{notification.message || (notification as any).description}</p>
                     <div className="flex items-center justify-between gap-2">
                       <span className="text-xs text-slate-500 truncate">{formatTime(notification.createdAt)}</span>
                       {!notification.read && !notification.isRead && (
