@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
     const { db } = await connectDB()
 
-    const [orderStats, activeCompanies, pendingOrders] = await Promise.all([
+    const [orderStats, companyStats, activeCompanies, pendingOrders] = await Promise.all([
       db
         .collection("orders")
         .aggregate([
@@ -33,11 +33,24 @@ export async function GET(req: NextRequest) {
           },
         ])
         .toArray(),
+      db
+        .collection("companies")
+        .aggregate([
+          {
+            $group: {
+              _id: null,
+              totalCompanyRevenue: { $sum: "$revenue" },
+            },
+          },
+        ])
+        .toArray(),
       db.collection("companies").countDocuments({ status: "active" }),
       db.collection("orders").countDocuments({ status: "pending" }),
     ])
 
-    const totalRevenue = orderStats[0]?.totalRevenue || 0
+    const orderRevenue = orderStats[0]?.totalRevenue || 0
+    const companyRevenue = companyStats[0]?.totalCompanyRevenue || 0
+    const totalRevenue = orderRevenue + companyRevenue
     const totalOrders = orderStats[0]?.totalOrders || 0
 
     const stats = {
