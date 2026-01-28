@@ -815,9 +815,6 @@ export default function CompanyPage() {
                     <div>
                       <p className="font-medium text-slate-900 text-sm sm:text-base">{addon.name}</p>
                     </div>
-                    {addon.price && (
-                      <span className="font-semibold text-slate-900 text-sm sm:text-base">${typeof addon.price === 'number' ? addon.price.toFixed(2) : addon.price}</span>
-                    )}
                   </div>
                   {index < companyData.purchasedAddons.length - 1 && <div className="border-t border-slate-200" />}
                 </div>
