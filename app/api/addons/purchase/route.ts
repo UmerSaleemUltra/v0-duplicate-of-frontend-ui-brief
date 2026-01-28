@@ -117,6 +117,31 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Save purchased addon to company's purchasedAddons array
+    const newPurchasedAddon = {
+      serviceId: addon._id.toString(),
+      name: addon.name,
+      price: addon.price,
+      paymentDetails: {
+        phoneNumber: phoneNumber || null,
+        receiptUrl: receiptUrl,
+        receiptFileName: receiptFile?.name || null,
+        paymentMethod: "whatsapp",
+        createdAt: new Date(),
+      },
+      purchasedAt: new Date(),
+    }
+
+    // Update company's purchasedAddons array at root level
+    await db.collection("companies").updateOne(
+      { _id: new ObjectId(companyId) },
+      {
+        $push: {
+          purchasedAddons: newPurchasedAddon,
+        },
+      },
+    )
+
     // Also save to company orders if needed
     const existingOrder = company.orders?.[0]
     if (existingOrder) {
@@ -126,23 +151,34 @@ export async function POST(request: NextRequest) {
           $set: {
             "orders.0.purchasedAddons": [
               ...(existingOrder.purchasedAddons || []),
-              {
-                serviceId: addon._id.toString(),
-                name: addon.name,
-                price: addon.price,
-                paymentDetails: {
-                  phoneNumber: phoneNumber || null,
-                  receiptUrl: receiptUrl,
-                  receiptFileName: receiptFile?.name || null,
-                  paymentMethod: "whatsapp",
-                  createdAt: new Date(),
-                },
-                purchasedAt: new Date(),
-              },
+              newPurchasedAddon,
             ],
           },
         },
       )
+    }
+
+    // Update revenue if custom milestone is completed
+    const updatedCompany = await db.collection("companies").findOne({ _id: new ObjectId(companyId) })
+    let newRevenue = updatedCompany.revenue || 0
+
+    // Calculate revenue from all purchased addons after custom milestone completion
+    if (updatedCompany.customMilestones && updatedCompany.customMilestones.length > 0) {
+      const completedMilestones = updatedCompany.customMilestones.filter((m: any) => m.completed)
+      if (completedMilestones.length > 0) {
+        newRevenue = (updatedCompany.orders?.[0]?.pricing?.total || 0) + 
+          (updatedCompany.purchasedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0)
+        
+        await db.collection("companies").updateOne(
+          { _id: new ObjectId(companyId) },
+          {
+            $set: {
+              revenue: newRevenue,
+              updatedAt: new Date().toISOString(),
+            },
+          },
+        )
+      }
     }
 
     const response = NextResponse.json({

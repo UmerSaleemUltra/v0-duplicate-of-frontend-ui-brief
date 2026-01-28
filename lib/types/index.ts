@@ -127,7 +127,19 @@ export interface Company {
   }>
 
   // Addons - fetched (F)
-  purchasedAddons?: string[] // (F)
+  purchasedAddons?: Array<{
+    serviceId: string
+    name: string
+    price: number
+    paymentDetails?: {
+      phoneNumber?: string | null
+      receiptUrl?: string | null
+      receiptFileName?: string | null
+      paymentMethod?: string
+      createdAt?: string | Date
+    }
+    purchasedAt?: string | Date
+  }> // (F) - List of purchased addons with pricing and payment details
 
   orders?: Order[]
   revenue?: number
