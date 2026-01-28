@@ -221,8 +221,8 @@ function AddonCheckoutContent() {
             body: JSON.stringify({
               userId: user.id,
               type: "addon_purchased",
-              title: "Add-on Purchase Submitted",
-              message: `Payment for ${addon.name} has been submitted. We'll verify and process it shortly.`,
+              title: "✅ Add-on Purchased",
+              message: "You have successfully purchased a new add-on. It's now available in your dashboard.",
               actionUrl: "/client/company",
               metadata: {
                 companyId: selectedCompanyId,
