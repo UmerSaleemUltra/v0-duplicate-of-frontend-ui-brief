@@ -804,8 +804,7 @@ export default function CompanyPage() {
         {/* Purchased Add-ons */}
         {companyData.purchasedAddons && companyData.purchasedAddons.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4 flex items-center gap-2">
-              <Package className="w-5 h-5" />
+            <h2 className="text-base sm:text-lg font-semibold mb-4">
               Purchased Add-ons
             </h2>
             <div className="space-y-3">
@@ -816,7 +815,6 @@ export default function CompanyPage() {
                       <p className="font-medium text-slate-900 text-sm sm:text-base">{addon.name}</p>
                     </div>
                   </div>
-                  {index < companyData.purchasedAddons.length - 1 && <div className="border-t border-slate-200" />}
                 </div>
               ))}
               {orderDetails?.pricing?.addonsTotal > 0 && (
