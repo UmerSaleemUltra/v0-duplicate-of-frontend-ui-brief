@@ -5,6 +5,7 @@ import { connectDB } from "@/config/database"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { blobStorage } from "@/config/storage"
+import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 
 export async function POST(request: NextRequest) {
   try {
@@ -204,6 +205,14 @@ export async function POST(request: NextRequest) {
 
       const notificationResult = await db.collection("notifications").insertOne(newNotification)
       console.log("[v0] Addon purchase notification created:", notificationResult.insertedId)
+      
+      // Broadcast notification to all connected clients
+      broadcastUpdate("notifications", "created", {
+        id: notificationResult.insertedId.toString(),
+        ...newNotification,
+      })
+      
+      console.log("[v0] Notification broadcast sent")
     } catch (notificationError) {
       console.error("[v0] Failed to create notification:", notificationError)
       // Continue anyway - notification failure shouldn't block the purchase

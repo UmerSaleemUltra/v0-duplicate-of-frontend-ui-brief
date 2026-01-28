@@ -81,7 +81,13 @@ export function NotificationDropdown() {
         console.log("[v0] No company selected, showing all notifications:", userNotifications.length)
       }
 
-      setNotifications(userNotifications)
+      // Normalize notification structure - handle both 'message' and 'description' fields
+      const normalizedNotifications = userNotifications.map((n: any) => ({
+        ...n,
+        message: n.message || n.description,
+      }))
+
+      setNotifications(normalizedNotifications)
       setLoading(false)
     } catch (error) {
       console.error("[v0] Error loading notifications:", error)
@@ -92,7 +98,36 @@ export function NotificationDropdown() {
   useEffect(() => {
     loadNotifications()
 
-    const interval = setInterval(loadNotifications, 30000)
+    // Poll notifications more frequently
+    const interval = setInterval(loadNotifications, 5000)
+
+    // Also listen for real-time updates via SSE
+    const currentUser = authService.getCurrentUser()
+    const token = authService.getToken()
+
+    if (currentUser && token) {
+      const eventSource = new EventSource(`/api/realtime/sse?userId=${currentUser.id}&token=${token}`)
+
+      eventSource.addEventListener("notification_created", (event) => {
+        console.log("[v0] New notification received via SSE:", event.data)
+        loadNotifications()
+      })
+
+      eventSource.addEventListener("notifications_updated", (event) => {
+        console.log("[v0] Notifications updated via SSE:", event.data)
+        loadNotifications()
+      })
+
+      eventSource.onerror = () => {
+        console.log("[v0] SSE connection closed, will use polling")
+        eventSource.close()
+      }
+
+      return () => {
+        clearInterval(interval)
+        eventSource.close()
+      }
+    }
 
     return () => clearInterval(interval)
   }, [selectedCompanyId])
