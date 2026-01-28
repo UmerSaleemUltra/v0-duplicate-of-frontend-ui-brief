@@ -179,11 +179,14 @@ export async function POST(request: NextRequest) {
     // Total revenue = initial order + all addons
     const newRevenue = initialOrderRevenue + totalAddonRevenue
 
+    // Update both revenue and pricing.addonsTotal in database
     await db.collection("companies").updateOne(
       { _id: new ObjectId(companyId) },
       {
         $set: {
           revenue: newRevenue,
+          "pricing.addonsTotal": totalAddonRevenue,
+          "pricing.total": initialOrderRevenue + totalAddonRevenue,
           updatedAt: new Date().toISOString(),
         },
       },
