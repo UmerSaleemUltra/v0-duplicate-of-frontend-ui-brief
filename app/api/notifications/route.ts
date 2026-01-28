@@ -79,9 +79,23 @@ export async function POST(req: NextRequest) {
           NextResponse.json({ error: "You can only create system notifications for yourself" }, { status: 403 }),
         )
       }
+    } else if (type === "addon_purchased") {
+      // Allow users to create addon_purchased notifications for their own addons
+      const userIdStr = decoded.userId instanceof Object && "_id" in decoded.userId 
+        ? (decoded.userId as any)._id.toString() 
+        : decoded.userId.toString()
+      const targetUserIdStr = userId instanceof Object && "_id" in userId 
+        ? (userId as any)._id.toString() 
+        : userId.toString()
+      
+      if (userIdStr !== targetUserIdStr && decoded.role !== "admin") {
+        return addSecurityHeaders(
+          NextResponse.json({ error: "You can only create notifications for yourself" }, { status: 403 }),
+        )
+      }
     } else if (decoded.role !== "admin") {
       return addSecurityHeaders(
-        NextResponse.json({ error: "Only admins can create non-system notifications" }, { status: 403 }),
+        NextResponse.json({ error: "Only admins can create this type of notification" }, { status: 403 }),
       )
     }
 
