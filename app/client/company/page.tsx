@@ -810,16 +810,13 @@ export default function CompanyPage() {
             </h2>
             <div className="space-y-3">
               {companyData.purchasedAddons.map((addon: any, index: number) => (
-                <div key={index}>
+                <div key={addon.serviceId || index}>
                   <div className="flex justify-between items-center py-3 px-3 sm:px-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
                     <div>
                       <p className="font-medium text-slate-900 text-sm sm:text-base">{addon.name}</p>
-                      {addon.serviceId && (
-                        <p className="text-xs text-slate-500 mt-1">ID: {addon.serviceId}</p>
-                      )}
                     </div>
                     {addon.price && (
-                      <span className="font-semibold text-slate-900 text-sm sm:text-base">${addon.price.toFixed(2)}</span>
+                      <span className="font-semibold text-slate-900 text-sm sm:text-base">${typeof addon.price === 'number' ? addon.price.toFixed(2) : addon.price}</span>
                     )}
                   </div>
                   {index < companyData.purchasedAddons.length - 1 && <div className="border-t border-slate-200" />}
