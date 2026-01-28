@@ -181,6 +181,27 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Create notification for addon purchase
+    const notificationMessage = `Addon "${addon.name}" purchased for $${addon.price}. Awaiting payment verification.`
+    const newNotification = {
+      userId: new ObjectId(decoded.userId),
+      companyId: new ObjectId(companyId),
+      type: "addon_purchased",
+      title: "Addon Purchase",
+      message: notificationMessage,
+      read: false,
+      actionUrl: `/client/addons`,
+      metadata: {
+        companyId: companyId,
+        addonId: addonId,
+        addonName: addon.name,
+        price: addon.price,
+      },
+      createdAt: new Date().toISOString(),
+    }
+
+    await db.collection("notifications").insertOne(newNotification)
+
     const response = NextResponse.json({
       success: true,
       message: "Payment details submitted successfully. We'll verify and process your order shortly.",
