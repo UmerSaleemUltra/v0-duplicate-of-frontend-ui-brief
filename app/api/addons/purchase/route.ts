@@ -182,7 +182,6 @@ export async function POST(request: NextRequest) {
     }
 
     // Create notification for addon purchase
-    const notificationMessage = `Addon "${addon.name}" purchased for $${addon.price}. Awaiting payment verification.`
     try {
       const userIdForNotification = decoded.userId instanceof ObjectId 
         ? decoded.userId 
@@ -192,8 +191,8 @@ export async function POST(request: NextRequest) {
         userId: userIdForNotification,
         companyId: new ObjectId(companyId),
         type: "addon_purchased",
-        title: "Addon Purchase",
-        message: notificationMessage,
+        title: "✅ Add-on Purchased",
+        description: "You have successfully purchased a new add-on. It's now available in your dashboard.",
         read: false,
         actionUrl: `/client/addons`,
         metadata: {
@@ -206,7 +205,7 @@ export async function POST(request: NextRequest) {
       }
 
       const notificationResult = await db.collection("notifications").insertOne(newNotification)
-      console.log("[v0] Notification created successfully:", notificationResult.insertedId)
+      console.log("[v0] Addon purchase notification created:", notificationResult.insertedId)
     } catch (notificationError) {
       console.error("[v0] Failed to create notification:", notificationError)
       // Continue anyway - notification failure shouldn't block the purchase
