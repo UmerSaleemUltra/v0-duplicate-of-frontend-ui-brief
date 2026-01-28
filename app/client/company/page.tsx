@@ -811,7 +811,7 @@ export default function CompanyPage() {
             <div className="space-y-3">
               {companyData.purchasedAddons.map((addon: any, index: number) => (
                 <div key={addon.serviceId || index}>
-                  <div className="flex justify-between items-center py-3 px-3 sm:px-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-colors">
+                  <div className="flex justify-between items-center py-3 px-3 sm:px-4">
                     <div>
                       <p className="font-medium text-slate-900 text-sm sm:text-base">{addon.name}</p>
                     </div>
