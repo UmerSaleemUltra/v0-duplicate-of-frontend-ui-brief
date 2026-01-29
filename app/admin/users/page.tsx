@@ -1,21 +1,28 @@
 "use client"
 
+import { CardContent } from "@/components/ui/card"
+import { CardTitle } from "@/components/ui/card"
+import { CardHeader } from "@/components/ui/card"
+import { Card } from "@/components/ui/card"
 import { useState, useEffect } from "react"
-import { Search, Edit, Key, LogIn } from "lucide-react"
+import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn, Users, UserCheck, Clock, ShoppingCart, DollarSign } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
 import { useToast } from "@/hooks/use-toast"
 import { authService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
-import type { User } from "@/lib/types"
+import type { User, Company, Order } from "@/lib/types"
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [users, setUsers] = useState<User[]>([])
+  const [companies, setCompanies] = useState<Company[]>([])
+  const [orders, setOrders] = useState<Order[]>([])
   const [selectedUser, setSelectedUser] = useState<User | null>(null)
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [passwordModalOpen, setPasswordModalOpen] = useState(false)
@@ -32,18 +39,43 @@ export default function UsersPage() {
   const loadData = async () => {
     try {
       setLoading(true)
+
       const token = authService.getToken()
 
-      if (!token) return
+      if (!token) {
+        return
+      }
 
-      const usersRes = await fetch("/api/users", {
-        headers: { Authorization: `Bearer ${token}` },
-      })
+      const [usersRes, companiesRes] = await Promise.all([
+        fetch("/api/users", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+        fetch("/api/companies", {
+          headers: { Authorization: `Bearer ${token}` },
+        }),
+      ])
 
       if (usersRes.ok) {
         const usersData = await usersRes.json()
         const allUsers = usersData.data || usersData.users || []
         setUsers(allUsers.filter((u: User) => u.role === "client"))
+      }
+
+      if (companiesRes.ok) {
+        const companiesData = await companiesRes.json()
+        const allCompanies = companiesData.data || companiesData.companies || []
+        setCompanies(allCompanies)
+
+        const extractedOrders = allCompanies.flatMap((company: any) => {
+          const companyOrders = company.orders || []
+          return companyOrders.map((order: any) => ({
+            ...order,
+            companyId: company.id,
+            userId: company.userId,
+          }))
+        })
+
+        setOrders(extractedOrders)
       }
     } catch (error) {
       toast({
@@ -56,16 +88,18 @@ export default function UsersPage() {
     }
   }
 
-  const filteredUsers = users.filter((user) => {
-    const matchesSearch =
-      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      user.email.toLowerCase().includes(searchQuery.toLowerCase())
-    return matchesSearch
-  })
+  const getUserCompanies = (userId: string) => {
+    if (!Array.isArray(companies)) return []
+    return companies.filter((c) => {
+      return normalizeId(c.userId) === normalizeId(userId)
+    })
+  }
 
-  const handleEditUser = (user: User) => {
-    setSelectedUser(user)
-    setEditModalOpen(true)
+  const getUserOrders = (userId: string) => {
+    if (!Array.isArray(orders)) return []
+    return orders.filter((o) => {
+      return normalizeId(o.userId) === normalizeId(userId)
+    })
   }
 
   const handleUpdateUser = async (updates: Partial<User>) => {
@@ -115,7 +149,6 @@ export default function UsersPage() {
         throw new Error(errorData.message || "Update failed")
       }
     } catch (error) {
-      console.log("[v0] User update error:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update user",
@@ -301,187 +334,32 @@ export default function UsersPage() {
     return emailRegex.test(email)
   }
 
+  const normalizeId = (id: any) => {
+    if (!id) return ""
+    return id.toString()
+  }
+
+  const filteredUsers = users.filter((user) => {
+    const matchesSearch =
+      user.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      user.email.toLowerCase().includes(searchQuery.toLowerCase())
+    return matchesSearch
+  })
+
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user)
+    setEditModalOpen(true)
+  }
+
   if (loading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
-        <p className="text-muted-foreground">Loading users...</p>
+        <div className="text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
+          <p className="text-muted-foreground">Loading users...</p>
+        </div>
       </div>
     )
-  }
-
-  return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Users</h1>
-        <p className="text-sm text-muted-foreground mt-1">Manage and view all users</p>
-      </div>
-
-      <div className="flex gap-2">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            placeholder="Search users by name or email..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
-      </div>
-
-      <div className="border border-border rounded-lg overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="w-full">
-            <thead className="bg-muted/50 border-b border-border">
-              <tr>
-                <th className="text-left p-4 font-semibold text-sm">Name</th>
-                <th className="text-left p-4 font-semibold text-sm">Email</th>
-                <th className="text-left p-4 font-semibold text-sm">Status</th>
-                <th className="text-left p-4 font-semibold text-sm">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {filteredUsers.length === 0 ? (
-                <tr>
-                  <td colSpan={4} className="p-8 text-center text-muted-foreground text-sm">
-                    No users found
-                  </td>
-                </tr>
-              ) : (
-                filteredUsers.map((user) => (
-                  <tr key={user.id} className="border-b border-border hover:bg-muted/30 transition-colors">
-                    <td className="p-4">
-                      <p className="font-medium text-foreground">{user.name}</p>
-                    </td>
-                    <td className="p-4">
-                      <p className="text-sm text-muted-foreground">{user.email}</p>
-                    </td>
-                    <td className="p-4">
-                      <Badge
-                        variant={user.status === "active" ? "default" : "outline"}
-                        className="text-xs"
-                      >
-                        {user.status}
-                      </Badge>
-                    </td>
-                    <td className="p-4">
-                      <div className="flex gap-1">
-                        <Link href={`/admin/users/${user.id}`}>
-                          <Button size="sm" variant="ghost">
-                            View
-                          </Button>
-                        </Link>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleEditUser(user)}
-                          title="Edit"
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleOpenPasswordModal(user)}
-                          title="Change Password"
-                        >
-                          <Key className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => handleLoginAsUser(user)}
-                          title="Login as User"
-                        >
-                          <LogIn className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Edit User</DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>Name</Label>
-                <Input
-                  value={selectedUser.name}
-                  onChange={(e) => setSelectedUser({ ...selectedUser, name: e.target.value })}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Email</Label>
-                <Input
-                  value={selectedUser.email}
-                  onChange={(e) => setSelectedUser({ ...selectedUser, email: e.target.value })}
-                />
-              </div>
-              <div className="flex gap-2 justify-end pt-4">
-                <Button variant="outline" onClick={() => setEditModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button
-                  onClick={() => {
-                    handleUpdateUser({
-                      name: selectedUser.name,
-                      email: selectedUser.email,
-                    })
-                  }}
-                >
-                  Save Changes
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-
-      <Dialog open={passwordModalOpen} onOpenChange={setPasswordModalOpen}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Change Password</DialogTitle>
-          </DialogHeader>
-          {selectedUser && (
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label>New Password</Label>
-                <Input
-                  type="password"
-                  value={newPassword}
-                  onChange={(e) => setNewPassword(e.target.value)}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label>Confirm Password</Label>
-                <Input
-                  type="password"
-                  value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
-                />
-              </div>
-              <div className="flex gap-2 justify-end pt-4">
-                <Button variant="outline" onClick={() => setPasswordModalOpen(false)}>
-                  Cancel
-                </Button>
-                <Button onClick={handleChangePassword}>
-                  Update Password
-                </Button>
-              </div>
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
-    </div>
-  )
   }
 
   return (
