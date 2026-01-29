@@ -368,83 +368,83 @@ export default function UsersPage() {
     <div className="space-y-8">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold text-slate-900">
+          <h1 className="text-3xl font-semibold text-foreground">
             User Management
           </h1>
-          <p className="text-slate-600 mt-1">Manage users, companies, and access control</p>
+          <p className="text-muted-foreground mt-1">Manage users, companies, and access control</p>
         </div>
       </div>
 
       <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-white border-slate-200">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Users</CardTitle>
-            <Users className="h-4 w-4 text-slate-600" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Users</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-slate-900">{users.length}</div>
+            <div className="text-2xl font-semibold text-foreground">{users.length}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-slate-200">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Companies</CardTitle>
-            <Building2 className="h-4 w-4 text-slate-600" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Companies</CardTitle>
+            <Building2 className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-slate-900">{companies.length}</div>
+            <div className="text-2xl font-semibold text-foreground">{companies.length}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-slate-200">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
-            <ShoppingCart className="h-4 w-4 text-slate-600" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Orders</CardTitle>
+            <ShoppingCart className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-slate-900">{orders.length}</div>
+            <div className="text-2xl font-semibold text-foreground">{orders.length}</div>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-slate-200">
+        <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-slate-600" />
+            <CardTitle className="text-sm font-medium text-muted-foreground">Total Revenue</CardTitle>
+            <DollarSign className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-semibold text-slate-900">
+            <div className="text-2xl font-semibold text-foreground">
               {orders.reduce((sum, order) => sum + (order.pricing?.total || order.amount || order.total || 0), 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
             </div>
           </CardContent>
         </Card>
       </div>
 
-      <Card className="bg-white border-slate-200">
+      <Card>
         <CardContent className="pt-6">
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Search users by name or email..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-11 border-slate-300"
+              className="pl-10 h-11"
             />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="bg-white border-slate-200">
+      <Card>
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-slate-50 border-b border-slate-200">
+              <thead className="bg-muted border-b border-border">
                 <tr>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700">User</th>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Email</th>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Status</th>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Companies</th>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Orders</th>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700">Actions</th>
+                  <th className="text-left p-4 font-semibold text-sm text-foreground">User</th>
+                  <th className="text-left p-4 font-semibold text-sm text-foreground">Email</th>
+                  <th className="text-left p-4 font-semibold text-sm text-foreground">Status</th>
+                  <th className="text-left p-4 font-semibold text-sm text-foreground">Companies</th>
+                  <th className="text-left p-4 font-semibold text-sm text-foreground">Orders</th>
+                  <th className="text-left p-4 font-semibold text-sm text-foreground">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -460,15 +460,15 @@ export default function UsersPage() {
                     const userOrders = getUserOrders(user.id)
 
                     return (
-                      <tr key={user.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-all">
+                      <tr key={user.id} className="border-b border-border hover:bg-muted/50 transition-all">
                         <td className="p-4">
                           <div>
-                            <p className="font-semibold text-slate-900">{user.name}</p>
-                            <p className="text-sm text-slate-500">{user.phone || "No phone"}</p>
+                            <p className="font-semibold text-foreground">{user.name}</p>
+                            <p className="text-sm text-muted-foreground">{user.phone || "No phone"}</p>
                           </div>
                         </td>
                         <td className="p-4">
-                          <span className="text-sm text-slate-700">{user.email}</span>
+                          <span className="text-sm text-foreground">{user.email}</span>
                         </td>
                         <td className="p-4">
                           <Badge
@@ -484,31 +484,31 @@ export default function UsersPage() {
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-blue-50 flex items-center justify-center">
-                              <Building2 className="h-4 w-4 text-blue-600" />
+                            <div className="h-8 w-8 rounded-lg bg-opacity-10 flex items-center justify-center" style={{ backgroundColor: 'var(--brand-light)' }}>
+                              <Building2 className="h-4 w-4" style={{ color: 'var(--brand)' }} />
                             </div>
-                            <span className="text-sm font-medium">{userCompanies.length}</span>
+                            <span className="text-sm font-medium text-slate-900">{userCompanies.length}</span>
                           </div>
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-purple-50 flex items-center justify-center">
-                              <FileText className="h-4 w-4 text-purple-600" />
+                            <div className="h-8 w-8 rounded-lg bg-opacity-10 flex items-center justify-center" style={{ backgroundColor: 'var(--brand-secondary)' }}>
+                              <FileText className="h-4 w-4" style={{ color: 'var(--brand-secondary)' }} />
                             </div>
-                            <span className="text-sm font-medium">{userOrders.length}</span>
+                            <span className="text-sm font-medium text-slate-900">{userOrders.length}</span>
                           </div>
                         </td>
                         <td className="p-4">
                           <div className="flex gap-2">
                             <Link href={`/admin/users/${user.id}`}>
-                              <Button size="sm" variant="ghost" className="h-9 px-3 hover:bg-slate-100">
+                              <Button size="sm" variant="ghost" className="h-9 px-3">
                                 View
                               </Button>
                             </Link>
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-9 w-9 p-0 hover:bg-slate-100"
+                              className="h-9 w-9 p-0"
                               onClick={() => handleEditUser(user)}
                             >
                               <Edit className="h-4 w-4" />
@@ -516,7 +516,7 @@ export default function UsersPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-9 w-9 p-0 hover:bg-slate-100"
+                              className="h-9 w-9 p-0"
                               onClick={() => handleOpenPasswordModal(user)}
                               title="Change Password"
                             >
@@ -525,7 +525,7 @@ export default function UsersPage() {
                             <Button
                               size="sm"
                               variant="ghost"
-                              className="h-9 w-9 p-0 hover:bg-slate-100"
+                              className="h-9 w-9 p-0"
                               onClick={() => handleLoginAsUser(user)}
                               title="Login as User"
                             >
