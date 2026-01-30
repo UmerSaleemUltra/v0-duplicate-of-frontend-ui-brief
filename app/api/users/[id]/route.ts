@@ -48,8 +48,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         name: user.name,
         phone: user.phone || null,
         role: user.role,
-        accountStatus: user.accountStatus || "active",
-        emailVerified: user.emailVerified || false,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
@@ -93,7 +91,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const body = await req.json()
-    const { name, phone, email, password, accountStatus } = body
+    const { name, phone, email, password } = body
 
     if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
@@ -107,10 +105,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (name) updateData.name = name
     if (phone) updateData.phone = phone
     if (email) updateData.email = email
-
-    if (accountStatus && decoded.role === "admin") {
-      updateData.accountStatus = accountStatus
-    }
 
     if (password) {
       if (password.length < 6) {
@@ -133,7 +127,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       id: result._id.toString(),
       email: result.email,
       name: result.name,
-      accountStatus: result.accountStatus,
     })
 
     const response = NextResponse.json({
@@ -144,7 +137,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         name: result.name,
         phone: result.phone,
         role: result.role,
-        accountStatus: result.accountStatus,
       },
     })
     addSecurityHeaders(response)

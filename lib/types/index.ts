@@ -10,7 +10,6 @@ export interface User {
   email: string
   name: string
   phone?: string
-  emailVerified: boolean
   role: "client" | "admin"
   createdAt: string
   updatedAt: string

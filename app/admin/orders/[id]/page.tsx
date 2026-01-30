@@ -2231,12 +2231,6 @@ export default function OrderDetailPage() {
                     <p className="text-xs text-slate-600 mb-1">Phone Number</p>
                     <p className="text-sm font-medium text-slate-900">{customer?.phone || "N/A"}</p>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Account Status</p>
-                    <Badge variant={user?.accountStatus === "active" ? "default" : "secondary"}>
-                      {user?.accountStatus || "Incomplete"}
-                    </Badge>
-                  </div>
                 </div>
               )}
             </CardContent>
