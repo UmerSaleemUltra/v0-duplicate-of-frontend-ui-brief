@@ -125,48 +125,6 @@ export const metadata: Metadata = {
         },
         availableLanguage: ["English", "Urdu"],
         email: "us8637@gmail.com",
-              price: "149",
-              priceCurrency: "USD",
-              availability: "https://schema.org/InStock",
-              url: "https://www.buzzfiling.com/checkout",
-            },
-            {
-              "@type": "Offer",
-              itemOffered: {
-                "@type": "Service",
-                name: "Professional Package - Complete Setup",
-                description:
-                  "Complete US LLC formation with EIN, BOI filing, registered agent, virtual mailroom, and priority support",
-                provider: {
-                  "@type": "Organization",
-                  name: "BuzzFiling",
-                },
-              },
-              price: "299",
-              priceCurrency: "USD",
-              availability: "https://schema.org/InStock",
-              url: "https://www.buzzfiling.com/checkout",
-            },
-            {
-              "@type": "Offer",
-              itemOffered: {
-                "@type": "Service",
-                name: "Premium Package - Full Service",
-                description:
-                  "Premium US LLC formation with EIN, ITIN, BOI filing, registered agent, virtual mailroom, bank account setup assistance, and dedicated support",
-                provider: {
-                  "@type": "Organization",
-                  name: "BuzzFiling",
-                },
-              },
-              price: "448",
-              priceCurrency: "USD",
-              availability: "https://schema.org/InStock",
-              url: "https://www.buzzfiling.com/checkout",
-            },
-          ],
-        },
-      },
       {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
