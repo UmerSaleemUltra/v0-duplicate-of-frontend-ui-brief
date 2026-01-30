@@ -28,7 +28,7 @@ Located at: `/lib/notification-service.ts`
 
 #### Key Methods:
 
-```typescript
+\`\`\`typescript
 // Check if browser supports notifications
 NotificationService.isSupported(): boolean
 
@@ -46,7 +46,7 @@ await NotificationService.success(title, message, duration)
 await NotificationService.error(title, message, requiresInteraction)
 await NotificationService.warning(title, message, duration)
 await NotificationService.info(title, message, duration)
-```
+\`\`\`
 
 ### 4. Admin Notifications Page
 Located at: `/app/admin/notifications/page.tsx`
@@ -63,7 +63,7 @@ Features:
 
 ### In Components
 
-```typescript
+\`\`\`typescript
 import { NotificationService } from "@/lib/notification-service"
 
 // Check support
@@ -76,7 +76,7 @@ if (NotificationService.isSupported()) {
     await NotificationService.success("Success", "Operation completed!", 3000)
   }
 }
-```
+\`\`\`
 
 ### Sending Notifications from Admin
 
@@ -96,17 +96,17 @@ if (NotificationService.isSupported()) {
 **POST** `/api/admin/notifications/send`
 
 Request:
-```json
+\`\`\`json
 {
   "title": "Order Confirmed",
   "message": "Your order has been confirmed",
   "type": "success",
   "userId": "user123" // optional
 }
-```
+\`\`\`
 
 Response:
-```json
+\`\`\`json
 {
   "success": true,
   "notification": {
@@ -118,13 +118,13 @@ Response:
     "read": false
   }
 }
-```
+\`\`\`
 
 ### Get Notifications
 **GET** `/api/admin/notifications/send`
 
 Response:
-```json
+\`\`\`json
 {
   "success": true,
   "notifications": [
@@ -138,7 +138,7 @@ Response:
     }
   ]
 }
-```
+\`\`\`
 
 ## Browser Support
 
@@ -153,7 +153,7 @@ Response:
 
 ## Permission Flow
 
-```
+\`\`\`
 User Visits App
     ↓
 Check Permission Status
@@ -168,11 +168,11 @@ Check Permission Status
     User accepts/denies
          ↓
     Status updates to "granted" or "denied"
-```
+\`\`\`
 
 ## Notification Options
 
-```typescript
+\`\`\`typescript
 interface NotificationOptions {
   title: string              // Required: Notification title
   message: string            // Required: Notification content
@@ -184,38 +184,38 @@ interface NotificationOptions {
   tag?: string               // Optional: Notification tag for grouping
   requiresInteraction?: boolean  // Optional: Force user to interact
 }
-```
+\`\`\`
 
 ## Example Usage in Different Scenarios
 
 ### Success Notification
-```typescript
+\`\`\`typescript
 await NotificationService.success(
   "Order Confirmed",
   "Your order #12345 has been confirmed and will be shipped soon",
   4000
 )
-```
+\`\`\`
 
 ### Error Notification
-```typescript
+\`\`\`typescript
 await NotificationService.error(
   "Payment Failed",
   "Your payment could not be processed. Please try again."
 )
-```
+\`\`\`
 
 ### Warning Notification
-```typescript
+\`\`\`typescript
 await NotificationService.warning(
   "Low Balance",
   "Your account balance is running low",
   5000
 )
-```
+\`\`\`
 
 ### Custom Notification
-```typescript
+\`\`\`typescript
 await NotificationService.show({
   title: "New Message",
   message: "You have a new message from support",
@@ -224,7 +224,7 @@ await NotificationService.show({
   requiresInteraction: false,
   tag: "messages"
 })
-```
+\`\`\`
 
 ## Security Considerations
 

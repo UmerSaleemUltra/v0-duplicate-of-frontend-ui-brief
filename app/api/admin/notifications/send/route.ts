@@ -1,17 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
-import { authService } from "@/lib/auth-server"
+import { verifyAuth } from "@/lib/auth-server"
 
 export async function POST(req: NextRequest) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1]
-    if (!token) {
+    // Verify authentication
+    const authResult = await verifyAuth(req)
+    if (!authResult.authenticated) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = await authService.verifyToken(token)
-    if (!user || user.role !== "admin") {
+    if (authResult.user?.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
+
+    const user = authResult.user
 
     const { title, message, userId, type = "info" } = await req.json()
 
@@ -56,13 +58,13 @@ function getIconForType(type: string): string {
 
 export async function GET(req: NextRequest) {
   try {
-    const token = req.headers.get("authorization")?.split(" ")[1]
-    if (!token) {
+    // Verify authentication
+    const authResult = await verifyAuth(req)
+    if (!authResult.authenticated) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const user = await authService.verifyToken(token)
-    if (!user || user.role !== "admin") {
+    if (authResult.user?.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
