@@ -146,7 +146,7 @@ export function formatDate(date: string | Date | null | undefined, options?: Int
 
     return dateObj.toLocaleDateString("en-US", defaultOptions)
   } catch (error) {
-    console.error("[v0] Error formatting date:", error)
+    console.error("[BuzzFiling] Error formatting date:", error)
     return "N/A"
   }
 }

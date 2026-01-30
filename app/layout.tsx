@@ -144,7 +144,7 @@ export const metadata = {
     "X-DNS-Prefetch-Control": "on",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   },
-    generator: 'v0.app'
+    generator: 'BuzzFiling'
 }
 
 export const viewport = {
