@@ -205,25 +205,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               image: "https://www.buzzfiling.com/images/buzzfiling-logo.png",
               description:
                 "BuzzFiling is Pakistan's premier US business formation service, helping entrepreneurs establish US LLCs and Corporations with comprehensive support including EIN, registered agent, business address, and compliance services.",
-              priceRange: "$149 - $448",
-              address: {
-                "@type": "PostalAddress",
-                addressCountry: "PK",
-                addressLocality: "Karachi",
-              },
-              geo: {
-                "@type": "GeoCoordinates",
-                latitude: "24.8607",
-                longitude: "66.9910",
-              },
-              contactPoint: {
-                "@type": "ContactPoint",
-                telephone: "+92-300-0000000",
-                contactType: "Customer Service",
-                email: "support@buzzfiling.com",
-                availableLanguage: ["English", "Urdu"],
-                areaServed: "PK",
-              },
               sameAs: [
                 "https://facebook.com/buzzfiling",
                 "https://twitter.com/buzzfiling",
@@ -272,11 +253,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   },
                 ],
               },
-              founder: {
-                "@type": "Person",
-                name: "BuzzFiling Team",
-              },
-              foundingDate: "2020",
               slogan: "Pakistan's #1 US Business Formation Service",
               knowsAbout: [
                 "US LLC Formation",
@@ -290,41 +266,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           }}
         />
 
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              "@context": "https://schema.org",
-              "@type": "FAQPage",
-              mainEntity: [
-                {
-                  "@type": "Question",
-                  name: "How long does it take to form a US LLC from Pakistan?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "BuzzFiling forms your US LLC in approximately 4 weeks, including EIN application, registered agent setup, and all necessary documentation.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "What services are included in BuzzFiling's LLC formation package?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Our package includes state filing, EIN application, registered agent service for one year, business address, compliance support, and dedicated customer service.",
-                  },
-                },
-                {
-                  "@type": "Question",
-                  name: "Can Pakistani citizens form a US LLC?",
-                  acceptedAnswer: {
-                    "@type": "Answer",
-                    text: "Yes! Pakistani citizens and residents can legally form a US LLC. BuzzFiling specializes in helping Pakistani entrepreneurs establish their US business presence.",
-                  },
-                },
-              ],
-            }),
-          }}
-        />
+
 
         <script
           type="application/ld+json"
