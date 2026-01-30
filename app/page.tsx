@@ -17,7 +17,7 @@ import type { Metadata } from "next"
 export const metadata: Metadata = {
   title: "BuzzFiling | Top LLC Formation Company in Karachi, Pakistan | US Business Registration",
   description:
-    "BuzzFiling is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Get your US business registered with EIN, ITIN, registered agent, and full compliance support. Trusted by 700+ Pakistani entrepreneurs. Packages from $149-$448.",
+    "BuzzFiling is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Get your US business registered with EIN, ITIN, registered agent, and full compliance support. Trusted by 700+ Pakistani entrepreneurs.",
   keywords: [
     "BuzzFiling",
     "BuzzFiling services",
@@ -74,7 +74,7 @@ export const metadata: Metadata = {
     site: "@buzzfiling",
     creator: "@buzzfiling",
     title: "BuzzFiling | Top LLC Formation Company in Karachi",
-    description: "Pakistan's #1 US LLC formation service. 700+ satisfied clients. Packages from $149-$448.",
+    description: "Pakistan's #1 US LLC formation service. 700+ satisfied clients.",
     images: ["https://www.buzzfiling.com/images/buzz-filing-logo.png"],
   },
   robots: {
@@ -105,7 +105,6 @@ export const metadata: Metadata = {
         image: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
         description:
           "BuzzFiling is Pakistan's leading US LLC and C-Corp formation service provider, helping Pakistani entrepreneurs register their US businesses with complete EIN, ITIN, and compliance support.",
-        priceRange: "$149 - $448",
         aggregateRating: {
           "@type": "AggregateRating",
           ratingValue: "4.9",
@@ -126,27 +125,6 @@ export const metadata: Metadata = {
         },
         availableLanguage: ["English", "Urdu"],
         email: "us8637@gmail.com",
-        sameAs: [
-          "https://www.facebook.com/buzzfiling",
-          "https://www.linkedin.com/company/buzzfiling",
-          "https://www.instagram.com/buzzfiling",
-        ],
-        hasOfferCatalog: {
-          "@type": "OfferCatalog",
-          name: "US Business Formation Services",
-          itemListElement: [
-            {
-              "@type": "Offer",
-              itemOffered: {
-                "@type": "Service",
-                name: "Starter Package - LLC Formation",
-                description:
-                  "Basic US LLC formation with state filing, registered agent for 1 year, and operating agreement",
-                provider: {
-                  "@type": "Organization",
-                  name: "BuzzFiling",
-                },
-              },
               price: "149",
               priceCurrency: "USD",
               availability: "https://schema.org/InStock",
@@ -188,44 +166,6 @@ export const metadata: Metadata = {
             },
           ],
         },
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "FAQPage",
-        mainEntity: [
-          {
-            "@type": "Question",
-            name: "How long does US LLC formation take from Pakistan?",
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: "The entire US LLC formation process typically takes 2-4 weeks from Pakistan. This includes state filing, EIN application, and all necessary documentation. BuzzFiling handles the entire process for you with full support.",
-            },
-          },
-          {
-            "@type": "Question",
-            name: "What documents do I need to register a US LLC from Pakistan?",
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: "To register a US LLC from Pakistan, you need a valid passport, proof of address, and business details. BuzzFiling guides you through the entire documentation process and helps prepare all necessary paperwork.",
-            },
-          },
-          {
-            "@type": "Question",
-            name: "Can Pakistani citizens open a US LLC?",
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: "Yes, Pakistani citizens can easily open a US LLC. There are no citizenship requirements for LLC formation in most US states. BuzzFiling specializes in helping Pakistani entrepreneurs register their US businesses with full compliance support.",
-            },
-          },
-          {
-            "@type": "Question",
-            name: "What is included in BuzzFiling packages?",
-            acceptedAnswer: {
-              "@type": "Answer",
-              text: "BuzzFiling packages include state filing, registered agent service, EIN application, operating agreement, BOI compliance filing, virtual mailroom, and dedicated support. Premium packages also include ITIN application and bank account setup assistance.",
-            },
-          },
-        ],
       },
       {
         "@context": "https://schema.org",
