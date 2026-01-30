@@ -124,7 +124,7 @@ export const metadata: Metadata = {
           name: "Pakistan",
         },
         availableLanguage: ["English", "Urdu"],
-        email: "us8637@gmail.com",
+      },
       {
         "@context": "https://schema.org",
         "@type": "BreadcrumbList",
