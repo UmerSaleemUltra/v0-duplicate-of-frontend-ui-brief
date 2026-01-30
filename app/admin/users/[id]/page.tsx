@@ -357,7 +357,7 @@ export default function UserDetailPage() {
           <CardTitle className="text-xl font-semibold">User Information</CardTitle>
         </CardHeader>
         <CardContent className="space-y-6 p-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
               <p className="font-semibold text-lg text-slate-900">{user.name}</p>
@@ -369,19 +369,6 @@ export default function UserDetailPage() {
             <div className="space-y-2">
               <Label className="text-sm font-medium text-muted-foreground">Phone Number</Label>
               <p className="font-semibold text-lg text-slate-900">{user.phone || "Not provided"}</p>
-            </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">Account Status</Label>
-              <Badge
-                variant="outline"
-                className={
-                  user.status === "active"
-                    ? "bg-green-50 text-green-700 border-green-200 font-medium px-3 py-1"
-                    : "bg-amber-50 text-amber-700 border-amber-200 font-medium px-3 py-1"
-                }
-              >
-                {user.status}
-              </Badge>
             </div>
           </div>
 
