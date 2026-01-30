@@ -52,8 +52,6 @@ export async function POST(request: NextRequest) {
       phone: sanitizedPhone,
       password: hashedPassword,
       role: "client" as const,
-      accountStatus: "active" as const,
-      emailVerified: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }

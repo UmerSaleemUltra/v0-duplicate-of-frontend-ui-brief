@@ -31,8 +31,6 @@ export async function GET(req: NextRequest) {
         name: 1,
         phone: 1,
         role: 1,
-        accountStatus: 1,
-        emailVerified: 1,
         createdAt: 1,
         updatedAt: 1,
       })
@@ -48,8 +46,6 @@ export async function GET(req: NextRequest) {
         name: user.name,
         phone: user.phone || null,
         role: user.role,
-        accountStatus: user.accountStatus || "active",
-        emailVerified: user.emailVerified || false,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       })),
@@ -154,8 +150,6 @@ export async function POST(req: NextRequest) {
       phone: phone || null,
       password: hashedPassword,
       role: role || "client",
-      accountStatus: "active", // Added missing accountStatus field
-      emailVerified: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }

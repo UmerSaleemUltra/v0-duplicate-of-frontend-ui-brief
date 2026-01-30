@@ -94,7 +94,6 @@ export default function CustomersPage() {
           companies: userCompanies,
           orders: userOrders.length,
           totalSpent: `$${totalSpent}`,
-          status: user.accountStatus || "active",
           joinDate: new Date(user.createdAt).toLocaleDateString(),
         }
       })

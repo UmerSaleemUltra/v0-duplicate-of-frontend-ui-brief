@@ -43,8 +43,6 @@ async function createAdmin() {
       phone: "+1234567890",
       password: hashedPassword,
       role: "admin",
-      accountStatus: "active",
-      emailVerified: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }

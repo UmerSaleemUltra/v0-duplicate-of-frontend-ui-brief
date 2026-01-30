@@ -439,7 +439,6 @@ export default function UsersPage() {
                 <tr>
                   <th className="text-left p-4 font-semibold text-sm text-foreground">User</th>
                   <th className="text-left p-4 font-semibold text-sm text-foreground">Email</th>
-                  <th className="text-left p-4 font-semibold text-sm text-foreground">Status</th>
                   <th className="text-left p-4 font-semibold text-sm text-foreground">Companies</th>
                   <th className="text-left p-4 font-semibold text-sm text-foreground">Orders</th>
                   <th className="text-left p-4 font-semibold text-sm text-foreground">Actions</th>
@@ -448,7 +447,7 @@ export default function UsersPage() {
               <tbody>
                 {filteredUsers.length === 0 ? (
                   <tr>
-                    <td colSpan={6} className="p-8 text-center text-muted-foreground">
+                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
                       No users found
                     </td>
                   </tr>
@@ -467,18 +466,6 @@ export default function UsersPage() {
                         </td>
                         <td className="p-4">
                           <span className="text-sm text-foreground">{user.email}</span>
-                        </td>
-                        <td className="p-4">
-                          <Badge
-                            variant="outline"
-                            className={
-                              user.status === "active"
-                                ? "bg-green-50 text-green-700 border-green-200 font-medium"
-                                : "bg-amber-50 text-amber-700 border-amber-200 font-medium"
-                            }
-                          >
-                            {user.status}
-                          </Badge>
                         </td>
                         <td className="p-4">
                           <div className="flex items-center gap-2">
@@ -569,22 +556,6 @@ export default function UsersPage() {
                   value={selectedUser.phone || ""}
                   onChange={(e) => setSelectedUser({ ...selectedUser, phone: e.target.value })}
                 />
-              </div>
-              <div className="space-y-2">
-                <Label>Status</Label>
-                <Select
-                  value={selectedUser.status}
-                  onValueChange={(value: any) => setSelectedUser({ ...selectedUser, status: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
-                    <SelectItem value="pending">Pending</SelectItem>
-                  </SelectContent>
-                </Select>
               </div>
               <div className="flex justify-end gap-2 pt-4">
                 <Button variant="outline" onClick={() => setEditModalOpen(false)}>
