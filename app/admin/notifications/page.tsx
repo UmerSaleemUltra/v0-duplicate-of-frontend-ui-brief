@@ -29,6 +29,7 @@ import {
   CheckCircle2,
 } from "lucide-react"
 import { NotificationService } from "@/lib/notification-service"
+import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
 
 interface Notification {
@@ -77,7 +78,13 @@ export default function AdminNotificationsPage() {
   const loadNotifications = async () => {
     setIsLoading(true)
     try {
-      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
+      const token = authService.getToken()
+      
+      if (!token) {
+        toast.error("Not authenticated. Please log in again.")
+        return
+      }
+
       const response = await fetch("/api/admin/notifications/send", {
         headers: {
           Authorization: `Bearer ${token}`,
@@ -96,6 +103,10 @@ export default function AdminNotificationsPage() {
           read: notifs.length - unreadCount,
           unread: unreadCount,
         })
+      } else if (response.status === 401) {
+        toast.error("Not authenticated. Please log in again.")
+      } else {
+        toast.error("Failed to load notifications")
       }
     } catch (error) {
       console.error("Error loading notifications:", error)
@@ -134,7 +145,13 @@ export default function AdminNotificationsPage() {
     setIsSending(true)
 
     try {
-      const token = localStorage.getItem("authToken") || sessionStorage.getItem("authToken")
+      const token = authService.getToken()
+
+      if (!token) {
+        toast.error("Not authenticated. Please log in again.")
+        setIsSending(false)
+        return
+      }
 
       // Send to server
       const response = await fetch("/api/admin/notifications/send", {
@@ -152,6 +169,9 @@ export default function AdminNotificationsPage() {
       })
 
       if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error("Not authenticated. Please log in again.")
+        }
         throw new Error("Failed to send notification")
       }
 
@@ -177,7 +197,7 @@ export default function AdminNotificationsPage() {
       await loadNotifications()
     } catch (error) {
       console.error("Error sending notification:", error)
-      toast.error("Failed to send notification")
+      toast.error(error instanceof Error ? error.message : "Failed to send notification")
     } finally {
       setIsSending(false)
     }
