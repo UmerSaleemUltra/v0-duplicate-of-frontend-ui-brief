@@ -1853,35 +1853,35 @@ export default function OrderDetailPage() {
   return (
     <div className="space-y-6 pb-10">
       {/* Header with Order ID */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 bg-white border border-slate-200 rounded-xl p-6">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" onClick={() => router.push("/admin/orders")} className="h-10 w-10 p-0">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 bg-white border border-slate-200 rounded-xl p-4 sm:p-6">
+        <div className="flex items-center gap-3 min-w-0">
+          <Button variant="outline" onClick={() => router.push("/admin/orders")} className="h-10 w-10 p-0 flex-shrink-0">
             <ArrowLeft className="w-4 h-4" />
           </Button>
-          <div>
-            <p className="text-sm text-slate-500">Order ID</p>
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-[#880000] to-[#cc0000] bg-clip-text text-transparent font-mono">
+          <div className="min-w-0">
+            <p className="text-xs sm:text-sm text-slate-500">Order ID</p>
+            <h1 className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-[#880000] to-[#cc0000] bg-clip-text text-transparent font-mono truncate">
               #{order.id}
             </h1>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <Badge className={`${getStatusColor(order.status)} px-4 py-2 text-sm font-medium`}>
+        <div className="flex items-center gap-2 flex-wrap">
+          <Badge className={`${getStatusColor(order.status)} px-3 py-1 text-xs sm:text-sm font-medium flex-shrink-0`}>
             {getStatusIcon(order.status)}
             <span className="ml-2 capitalize">{order.status}</span>
           </Badge>
           {isOverdue && (
-            <Badge variant="destructive" className="px-3 py-1">
+            <Badge variant="destructive" className="px-2 sm:px-3 py-1 text-xs sm:text-sm flex-shrink-0">
               <AlertCircle className="w-3 h-3 mr-1" />
-              {weeksSinceOrder} weeks
+              {weeksSinceOrder}w
             </Badge>
           )}
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Main Content - Left Column */}
-        <div className="lg:col-span-2 space-y-6">
+        <div className="col-span-1 lg:col-span-2 space-y-6">
           {/* Customer Information */}
           <Card className="border-slate-200">
             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
@@ -1901,8 +1901,8 @@ export default function OrderDetailPage() {
             <CardContent className="pt-4">
               {editingCustomer ? (
                 <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="space-y-2 sm:col-span-1">
                       <Label>Customer Name</Label>
                       <Input
                         value={customerForm.name}
@@ -1910,7 +1910,7 @@ export default function OrderDetailPage() {
                         placeholder="Enter customer name"
                       />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 sm:col-span-1">
                       <Label>Email Address</Label>
                       <Input
                         type="email"
@@ -1919,7 +1919,7 @@ export default function OrderDetailPage() {
                         placeholder="Enter email"
                       />
                     </div>
-                    <div className="space-y-2">
+                    <div className="space-y-2 sm:col-span-1">
                       <Label>Phone Number</Label>
                       <Input
                         value={customerForm.phone}
@@ -1928,8 +1928,8 @@ export default function OrderDetailPage() {
                       />
                     </div>
                   </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button onClick={handleSaveCustomer} size="sm">
+                  <div className="flex flex-col sm:flex-row gap-2 pt-2">
+                    <Button onClick={handleSaveCustomer} size="sm" className="w-full sm:w-auto">
                       Save Changes
                     </Button>
                     <Button
@@ -1943,459 +1943,14 @@ export default function OrderDetailPage() {
                           phone: customer?.phone || "",
                         })
                       }}
+                      className="w-full sm:w-auto"
                     >
                       Cancel
                     </Button>
                   </div>
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-3 gap-4">
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
-                    <User className="w-4 h-4 text-slate-400" />
-                    <div>
-                      <p className="text-xs text-slate-500">Name</p>
-                      <p className="text-sm font-medium text-slate-900">{customer?.name || "N/A"}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
-                    <Mail className="w-4 h-4 text-slate-400" />
-                    <div>
-                      <p className="text-xs text-slate-500">Email</p>
-                      <p className="text-sm font-medium text-slate-900">{customer?.email || "N/A"}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-3 p-3 rounded-lg bg-slate-50">
-                    <Phone className="w-4 h-4 text-slate-400" />
-                    <div>
-                      <p className="text-xs text-slate-500">Phone</p>
-                      <p className="text-sm font-medium text-slate-900">{customer?.phone || "N/A"}</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Order Status Card */}
-          <Card className="border-slate-200">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/50">
-              <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                <Package className="w-5 h-5 text-slate-600" />
-                Order Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="flex items-center gap-4">
-                <Select value={newStatus} onValueChange={setNewStatus}>
-                  <SelectTrigger className="flex-1">
-                    <SelectValue placeholder="Select status" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="pending">Pending</SelectItem>
-                    <SelectItem value="processing">Processing</SelectItem>
-                    <SelectItem value="completed">Completed</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button
-                  onClick={handleStatusUpdate}
-                  disabled={statusUpdating || !newStatus || newStatus === order.status}
-                  className="bg-[#880000] hover:bg-[#660000]"
-                >
-                  {statusUpdating ? <Loader2 className="h-4 w-4 animate-spin" /> : "Update Status"}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Formation Progress */}
-          <Card className="border-slate-200">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/50">
-              <div className="flex items-center justify-between">
-                <div>
-                  <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                    <FileCheck className="w-5 h-5 text-slate-600" />
-                    Formation Progress
-                  </CardTitle>
-                  <p className="text-sm text-slate-500 mt-1">
-                    {completedDefaultMilestones}/{totalDefaultMilestones} milestones completed
-                  </p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="text-right">
-                    <span className="text-2xl font-bold text-[#880000]">{completionPercentage}%</span>
-                  </div>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent className="pt-4">
-              {/* Progress Bar */}
-              <div className="w-full bg-slate-200 rounded-full h-2 mb-4">
-                <div
-                  className="bg-gradient-to-r from-[#880000] to-[#cc0000] h-2 rounded-full transition-all duration-500"
-                  style={{ width: `${completionPercentage}%` }}
-                />
-              </div>
-
-              {/* Milestone Grid */}
-              <div className="grid sm:grid-cols-2 gap-3">
-                {[
-                  { key: "orderProcessed", label: "Order Processed", icon: Package },
-                  { key: "registeredAgentAssigned", label: "Registered Agent", icon: UserCheck },
-                  { key: "mailingAddressIssued", label: "Mailing Address", icon: Home },
-                  { key: "formationCompleted", label: "Formation Completed", icon: FileCheck },
-                  { key: "einProcessed", label: "EIN Processed", icon: Hash },
-                  { key: "boiReportFiled", label: "BOI Report Filed", icon: FileBarChart },
-                ].map(({ key, label, icon: Icon }) => (
-                  <div
-                    key={key}
-                    onClick={() => handleMilestoneToggle(key as keyof typeof milestones)}
-                    className={`flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all ${
-                      milestones[key as keyof typeof milestones]
-                        ? "bg-green-50 border-green-200"
-                        : "bg-slate-50 border-slate-200 hover:bg-slate-100"
-                    }`}
-                  >
-                    <div className="flex items-center gap-3">
-                      <Icon
-                        className={`w-4 h-4 ${milestones[key as keyof typeof milestones] ? "text-green-600" : "text-slate-400"}`}
-                      />
-                      <span
-                        className={`text-sm font-medium ${milestones[key as keyof typeof milestones] ? "text-slate-900" : "text-slate-600"}`}
-                      >
-                        {label}
-                      </span>
-                    </div>
-                    {milestones[key as keyof typeof milestones] ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    ) : (
-                      <Clock className="w-5 h-5 text-slate-300" />
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Custom Milestones */}
-              {company?.customMilestones && company.customMilestones.length > 0 && (
-                <div className="mt-4 pt-4 border-t border-slate-200">
-                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-3">Custom Milestones</p>
-                  <div className="space-y-2">
-                    {company.customMilestones.map((m: any) => (
-                      <div
-                        key={m.id}
-                        className={`flex items-center justify-between p-3 rounded-lg border ${
-                          m.completed ? "bg-green-50 border-green-200" : "bg-slate-50 border-slate-200"
-                        }`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileCheck className={`w-4 h-4 ${m.completed ? "text-green-600" : "text-slate-400"}`} />
-                          <span className={`text-sm font-medium ${m.completed ? "text-slate-900" : "text-slate-600"}`}>
-                            {m.title}
-                          </span>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleCustomMilestoneToggle(m.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            {m.completed ? (
-                              <CheckCircle2 className="w-5 h-5 text-green-600" />
-                            ) : (
-                              <Clock className="w-5 h-5 text-slate-400" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteCustomMilestone(m.id)}
-                            className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Company Information */}
-          <Card className="border-slate-200">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/50">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-slate-600" />
-                  Company Information
-                </CardTitle>
-                {!editingCompany && (
-                  <Button variant="ghost" size="sm" onClick={() => setEditingCompany(true)} className="h-8">
-                    <Edit3 className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent className="pt-4">
-              {editingCompany ? (
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                      <Label>Company Name</Label>
-                      <Input
-                        value={companyForm.name}
-                        onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
-                        placeholder="Enter company name"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>State</Label>
-                      <Input
-                        value={companyForm.state}
-                        onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })}
-                        placeholder="Enter state"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Business Category</Label>
-                      <Input
-                        value={companyForm.businessCategory}
-                        onChange={(e) => setCompanyForm({ ...companyForm, businessCategory: e.target.value })}
-                        placeholder="Enter business category"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label>Business Website</Label>
-                      <Input
-                        value={companyForm.businessWebsite}
-                        onChange={(e) => setCompanyForm({ ...companyForm, businessWebsite: e.target.value })}
-                        placeholder="Enter website URL"
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    <Label>Business Description</Label>
-                    <Textarea
-                      value={companyForm.businessDescription}
-                      onChange={(e) => setCompanyForm({ ...companyForm, businessDescription: e.target.value })}
-                      placeholder="Enter business description"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex gap-2 pt-2">
-                    <Button onClick={handleSaveCompany} size="sm">
-                      Save Changes
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditingCompany(false)
-                        setCompanyForm({
-                          name: company?.name || "",
-                          state: company?.state || "",
-                          businessCategory: company?.businessCategory || "",
-                          businessWebsite: company?.businessWebsite || "",
-                          businessDescription: company?.businessDescription || "",
-                        })
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <div className="p-3 rounded-lg bg-slate-50">
-                      <p className="text-xs text-slate-500">Company Name</p>
-                      <p className="text-sm font-medium text-slate-900">{company?.name || "N/A"}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50">
-                      <p className="text-xs text-slate-500">State of Formation</p>
-                      <p className="text-sm font-medium text-slate-900">{company?.state || "N/A"}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50">
-                      <p className="text-xs text-slate-500">Entity Type</p>
-                      <p className="text-sm font-medium text-slate-900">{company?.type || company?.entityType || "LLC"}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50">
-                      <p className="text-xs text-slate-500">Business Category</p>
-                      <p className="text-sm font-medium text-slate-900">{company?.businessCategory || "N/A"}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50">
-                      <p className="text-xs text-slate-500">Package Type</p>
-                      <Badge variant="outline" className="mt-1 text-xs capitalize">
-                        {company?.packageType || "Starter"}
-                      </Badge>
-                    </div>
-                    {company?.businessWebsite && (
-                      <div className="p-3 rounded-lg bg-slate-50">
-                        <p className="text-xs text-slate-500">Website</p>
-                        <a
-                          href={company.businessWebsite.startsWith("http") ? company.businessWebsite : `https://${company.businessWebsite}`}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
-                        >
-                          <Globe className="w-3 h-3" />
-                          {company.businessWebsite}
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                  {company?.businessDescription && (
-                    <div className="p-3 rounded-lg bg-slate-50">
-                      <p className="text-xs text-slate-500 mb-1">Business Description</p>
-                      <p className="text-sm text-slate-700">{company.businessDescription}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Business Owners / Members */}
-          {company?.members && company.members.length > 0 && (
-            <Card className="border-slate-200">
-              <CardHeader className="border-b border-slate-100 bg-slate-50/50">
-                <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                  <Users className="w-5 h-5 text-slate-600" />
-                  Business Owners / Members
-                  <Badge variant="secondary" className="ml-2">
-                    {company.members.length}
-                  </Badge>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="pt-4">
-                <div className="space-y-4">
-                  {company.members.map((member: any, index: number) => (
-                    <div
-                      key={member.id || index}
-                      className={`p-4 rounded-xl border-2 ${
-                        member.responsiblePerson
-                          ? "bg-gradient-to-br from-red-50 to-orange-50 border-red-200"
-                          : "bg-slate-50 border-slate-200"
-                      }`}
-                    >
-                      <div className="flex items-start justify-between mb-3">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                              member.responsiblePerson ? "bg-gradient-to-r from-[#880000] to-[#cc0000]" : "bg-slate-400"
-                            }`}
-                          >
-                            <User className="w-5 h-5 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-semibold text-slate-900">{member.name || "N/A"}</h3>
-                            {member.responsiblePerson && (
-                              <Badge className="mt-1 text-xs bg-gradient-to-r from-[#880000] to-[#cc0000] text-white border-0">
-                                <UserCheck className="w-3 h-3 mr-1" />
-                                Responsible Person
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="text-xs">
-                          Member #{index + 1}
-                        </Badge>
-                      </div>
-
-                      <div className="grid sm:grid-cols-2 gap-3">
-                        {member.email && (
-                          <div className="p-2 rounded-lg bg-white border border-slate-100">
-                            <p className="text-xs text-slate-500">Email</p>
-                            <p className="text-sm font-medium text-slate-900">{member.email}</p>
-                          </div>
-                        )}
-                        {member.phone && (
-                          <div className="p-2 rounded-lg bg-white border border-slate-100">
-                            <p className="text-xs text-slate-500">Phone</p>
-                            <p className="text-sm font-medium text-slate-900">{member.phone}</p>
-                          </div>
-                        )}
-                        {member.address && (
-                          <div className="sm:col-span-2 p-2 rounded-lg bg-white border border-slate-100">
-                            <p className="text-xs text-slate-500">Address</p>
-                            <p className="text-sm font-medium text-slate-900">
-                              {member.address}
-                              {member.city && `, ${member.city}`}
-                              {member.state && `, ${member.state}`}
-                              {member.zip && ` ${member.zip}`}
-                              {member.country && `, ${member.country}`}
-                            </p>
-                          </div>
-                        )}
-                        {member.ssn && (
-                          <div className="p-2 rounded-lg bg-white border border-slate-100">
-                            <p className="text-xs text-slate-500">SSN / ITIN</p>
-                            <p className="text-sm font-medium text-slate-900 font-mono">{member.ssn}</p>
-                          </div>
-                        )}
-                        {member.passportUrl && (
-                          <div className="p-2 rounded-lg bg-white border border-slate-100">
-                            <p className="text-xs text-slate-500 mb-1">Passport / ID</p>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => window.open(member.passportUrl, "_blank")}
-                              className="w-full h-8"
-                            >
-                              <FileText className="w-3 h-3 mr-1" />
-                              View Document
-                            </Button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Order & Pricing Details */}
-          <Card className="border-slate-200">
-            <CardHeader className="border-b border-slate-100 bg-slate-50/50">
-              <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
-                <DollarSign className="w-5 h-5 text-slate-600" />
-                Order & Pricing Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="pt-4">
-              <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-500 mb-1">Package Price</p>
-                  <p className="text-xl font-bold text-slate-900">
-                    ${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-500 mb-1">State Filing Fee</p>
-                  <p className="text-xl font-bold text-slate-900">
-                    ${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-500 mb-1">Add-ons Total</p>
-                  <p className="text-xl font-bold text-slate-900">
-                    ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
-                  </p>
-                </div>
-                <div className="p-4 rounded-lg bg-gradient-to-r from-[#880000] to-[#cc0000]">
-                  <p className="text-xs text-white/80 mb-1">Total Amount</p>
-                  <p className="text-2xl font-bold text-white">
-                    ${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}
-                  </p>
-                </div>
-              </div>
-
-              {/* Payment Info */}
-              <div className="mt-4 p-4 rounded-lg bg-slate-50 border border-slate-200">
-                <div className="grid sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   <div className="flex items-center gap-3">
                     <CreditCard className="w-5 h-5 text-slate-400" />
                     <div>
@@ -2674,9 +2229,9 @@ export default function OrderDetailPage() {
         </div>
 
         {/* Right Sidebar */}
-        <div className="space-y-6">
+        <div className="col-span-1 space-y-6">
           {/* Admin Actions */}
-          <Card className="border-slate-200 sticky top-6">
+          <Card className="border-slate-200 lg:sticky lg:top-6">
             <CardHeader className="border-b border-slate-100 bg-slate-50/50">
               <CardTitle className="text-base font-semibold text-slate-900 flex items-center gap-2">
                 <Settings className="w-5 h-5 text-slate-600" />
@@ -2684,63 +2239,63 @@ export default function OrderDetailPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4">
-              <div className="space-y-2">
+              <div className="space-y-2 max-h-[600px] overflow-y-auto">
                 <Button
                   onClick={() => setCustomMilestoneDialogOpen(true)}
                   variant="outline"
-                  className="w-full justify-start h-10"
+                  className="w-full justify-start h-10 text-sm"
                 >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Custom Milestone
+                  <Plus className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">Add Milestone</span>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-10"
+                  className="w-full justify-start h-10 text-sm"
                   onClick={() => setRegisteredAgentDialogOpen(true)}
                   disabled={agentUpdating || !company}
                 >
-                  <UserCheck className="w-4 h-4 mr-2" />
-                  {hasRegisteredAgent ? "Edit Registered Agent" : "Assign Registered Agent"}
+                  <UserCheck className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{hasRegisteredAgent ? "Edit Agent" : "Assign Agent"}</span>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-10"
+                  className="w-full justify-start h-10 text-sm"
                   onClick={() => setMailingAddressDialogOpen(true)}
                   disabled={addressUpdating || !company}
                 >
-                  <MapPin className="w-4 h-4 mr-2" />
-                  {hasMailingAddress ? "Edit Mailing Address" : "Assign Mailing Address"}
+                  <MapPin className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{hasMailingAddress ? "Edit Address" : "Assign Address"}</span>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-10"
+                  className="w-full justify-start h-10 text-sm"
                   onClick={() => setEinDialogOpen(true)}
                   disabled={einUpdating || !company}
                 >
-                  <Hash className="w-4 h-4 mr-2" />
-                  {hasEIN ? "Edit EIN" : "Assign EIN"}
+                  <Hash className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{hasEIN ? "Edit EIN" : "Assign EIN"}</span>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-10"
+                  className="w-full justify-start h-10 text-sm"
                   onClick={() => setBusinessIdDialogOpen(true)}
                   disabled={businessIdUpdating || !company}
                 >
-                  <Building2 className="w-4 h-4 mr-2" />
-                  {hasBusinessId ? "Edit Business ID" : "Assign Business ID"}
+                  <Building2 className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{hasBusinessId ? "Edit Business ID" : "Assign ID"}</span>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-10"
+                  className="w-full justify-start h-10 text-sm"
                   onClick={() => setItinDialogOpen(true)}
                   disabled={itinUpdating || !company}
                 >
-                  <FileBarChart className="w-4 h-4 mr-2" />
-                  {hasITIN ? "Edit ITIN" : "Assign ITIN"}
+                  <FileBarChart className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">{hasITIN ? "Edit ITIN" : "Assign ITIN"}</span>
                 </Button>
                 <Button
                   variant="outline"
-                  className="w-full justify-start h-10"
+                  className="w-full justify-start h-10 text-sm"
                   onClick={() => {
                     setTaxData({
                       taxClassification: company?.taxClassification || "",
@@ -2752,32 +2307,32 @@ export default function OrderDetailPage() {
                   }}
                   disabled={taxUpdating || !company}
                 >
-                  <FileText className="w-4 h-4 mr-2" />
-                  Tax Information
+                  <FileText className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">Tax Info</span>
                 </Button>
 
                 <Separator className="my-3" />
 
-                <Button variant="outline" className="w-full justify-start h-10" onClick={generateInvoice}>
-                  <Download className="w-4 h-4 mr-2" />
-                  Download Invoice
+                <Button variant="outline" className="w-full justify-start h-10 text-sm" onClick={generateInvoice}>
+                  <Download className="w-4 h-4 mr-2 flex-shrink-0" />
+                  <span className="truncate">Invoice</span>
                 </Button>
 
                 <Button
                   variant="destructive"
-                  className="w-full justify-start h-10"
+                  className="w-full justify-start h-10 text-sm"
                   onClick={() => setDeleteDialogOpen(true)}
                   disabled={deleting}
                 >
                   {deleting ? (
                     <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Deleting...
+                      <Loader2 className="h-4 w-4 mr-2 flex-shrink-0 animate-spin" />
+                      <span className="truncate">Deleting...</span>
                     </>
                   ) : (
                     <>
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Delete Order
+                      <Trash2 className="w-4 h-4 mr-2 flex-shrink-0" />
+                      <span className="truncate">Delete</span>
                     </>
                   )}
                 </Button>
