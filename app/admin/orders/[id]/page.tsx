@@ -1983,21 +1983,22 @@ export default function OrderDetailPage() {
                       </p>
                     </div>
                   </div>
+                  {order?.paymentInfo?.receiptUrl && (
+                    <div className="mt-3 pt-3 border-t border-slate-200">
+                      <a
+                        href={order.paymentInfo.receiptUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
+                      >
+                        <Receipt className="w-4 h-4" />
+                        View Payment Receipt
+                      </a>
+                    </div>
+                  )}
                 </div>
-                {order?.paymentInfo?.receiptUrl && (
-                  <div className="mt-3 pt-3 border-t border-slate-200">
-                    <a
-                      href={order.paymentInfo.receiptUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
-                    >
-                      <Receipt className="w-4 h-4" />
-                      View Payment Receipt
-                    </a>
-                  </div>
-                )}
-              </div>
+              )}
+            </div>
             </CardContent>
           </Card>
 
