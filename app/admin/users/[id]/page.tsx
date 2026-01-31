@@ -405,9 +405,16 @@ export default function UserDetailPage() {
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => router.push(`/admin/companies/${company.id}`)}
+                      onClick={() => {
+                        const firstOrder = company.orders?.[0]
+                        if (firstOrder) {
+                          router.push(`/admin/orders/${firstOrder.id}`)
+                        } else {
+                          router.push(`/admin/orders`)
+                        }
+                      }}
                     >
-                      View Company
+                      View Orders
                     </Button>
                   </div>
 
@@ -461,46 +468,6 @@ export default function UserDetailPage() {
               ))
             )}
           </div>
-        </CardContent>
-      </Card>
-
-      <Card>
-        <CardHeader>
-          <CardTitle>Orders ({userOrders.length})</CardTitle>
-        </CardHeader>
-        <CardContent>
-          {userOrders.length === 0 ? (
-            <p className="text-muted-foreground text-center py-4">No orders found for this user</p>
-          ) : (
-            <div className="space-y-3">
-              {userOrders.map((order) => (
-                <div
-                  key={order.id}
-                  className="flex items-center justify-between border rounded-lg p-4 hover:bg-accent transition-colors"
-                >
-                  <div className="space-y-1">
-                    <p className="font-semibold text-sm">{order.companyName || "Unknown Company"}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Order ID: {order.id?.substring(0, 8) || "N/A"}
-                    </p>
-                    {order.status && (
-                      <Badge
-                        variant="outline"
-                        className="text-xs mt-1"
-                      >
-                        {order.status}
-                      </Badge>
-                    )}
-                  </div>
-                  <Link href={`/admin/orders/${order.id}`}>
-                    <Button size="sm" variant="outline">
-                      View Order
-                    </Button>
-                  </Link>
-                </div>
-              ))}
-            </div>
-          )}
         </CardContent>
       </Card>
 
