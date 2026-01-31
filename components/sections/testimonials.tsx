@@ -2,6 +2,7 @@
 
 import * as React from "react"
 import { Star, BadgeCheck, Quote, Sparkles } from "lucide-react"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 
 /* ──────────────────────────────────────────────────────────────────────────────
    Types & Data
