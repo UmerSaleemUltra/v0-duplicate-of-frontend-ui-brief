@@ -7,12 +7,11 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import { Search, Mail, Phone, Eye, Trash2, MoreVertical, Building2 } from "lucide-react"
+import { Search, Mail, Phone, Eye, Trash2, MoreVertical } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
-import { CompanyModal } from "@/components/company-modal"
 import { toast } from "@/components/ui/use-toast"
 
 export default function CustomersPage() {
@@ -20,8 +19,6 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<any[]>([])
   const [filteredCustomers, setFilteredCustomers] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
-  const [companyModalOpen, setCompanyModalOpen] = useState(false)
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string>("")
   const router = useRouter()
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -159,33 +156,6 @@ export default function CustomersPage() {
       toast({
         title: "Error",
         description: "Failed to delete customer",
-        variant: "destructive",
-      })
-    }
-  }
-
-  const handleViewCompany = (customer: any, company?: any) => {
-    const companyToView = company || customer.companies[0]
-
-    let companyId: string | null = null
-
-    if (companyToView) {
-      if (typeof companyToView === "string") {
-        companyId = companyToView
-      } else if (companyToView.id) {
-        companyId = companyToView.id
-      } else if (companyToView._id) {
-        companyId = typeof companyToView._id === "string" ? companyToView._id : companyToView._id.toString()
-      }
-    }
-
-    if (companyId) {
-      setSelectedCompanyId(companyId)
-      setCompanyModalOpen(true)
-    } else {
-      toast({
-        title: "Error",
-        description: "Unable to load company details",
         variant: "destructive",
       })
     }
@@ -350,12 +320,6 @@ export default function CustomersPage() {
                             <Eye className="h-4 w-4 mr-2" />
                             View Profile
                           </DropdownMenuItem>
-                          {customer.companies && customer.companies.length > 0 && (
-                            <DropdownMenuItem onClick={() => handleViewCompany(customer, customer.companies[0])}>
-                              <Building2 className="h-4 w-4 mr-2" />
-                              View Company Details
-                            </DropdownMenuItem>
-                          )}
                           <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteCustomer(customer.id)}>
                             <Trash2 className="h-4 w-4 mr-2" />
                             Delete Customer
@@ -410,8 +374,6 @@ export default function CustomersPage() {
           )}
         </CardContent>
       </Card>
-
-      <CompanyModal open={companyModalOpen} onOpenChange={setCompanyModalOpen} companyId={selectedCompanyId} />
     </div>
   )
 }
