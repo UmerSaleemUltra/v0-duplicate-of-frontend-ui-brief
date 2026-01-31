@@ -2825,8 +2825,47 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
           </Card>
-        </div>
-      </div>
+
+          {/* Add-ons Card */}
+          <Card className="bg-white border-slate-200 shadow-sm">
+            <CardHeader>
+              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                <Package className="w-5 h-5" />
+                Add-ons
+              </CardTitle>
+              <p className="text-sm text-slate-600 mt-1">Selected services and add-ons</p>
+            </CardHeader>
+            <CardContent>
+              {order?.addons && order.addons.length > 0 ? (
+                <div className="space-y-3">
+                  {order.addons.map((addon: any, index: number) => (
+                    <div key={index} className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <div className="flex items-start justify-between">
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{addon.name || addon.title || addon}</p>
+                          {addon.price && (
+                            <p className="text-xs text-slate-600 mt-1">${addon.price.toFixed(2)}</p>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <div className="pt-3 border-t border-slate-200">
+                    <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
+                    <p className="text-lg font-bold text-slate-900">
+                      ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
+                    </p>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 rounded-lg bg-slate-50 border border-dashed border-slate-300">
+                  <p className="text-sm text-slate-600">No add-ons selected for this order</p>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Admin Actions Card */}
           <Card className="shadow-sm border-slate-200">
             <CardHeader className="bg-slate-50/50 border-b">
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -3080,6 +3119,113 @@ export default function OrderDetailPage() {
               </div>
             </CardContent>
           </Card>
+
+          {/* Registered Agent Address - Conditional Rendering */}
+          {company?.registeredAgent && company.registeredAgent.address && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <MapPin className="w-5 h-5" />
+                  Registered Agent Address
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                  <p className="text-sm font-medium text-slate-900">{company.registeredAgent.companyName}</p>
+                  <p className="text-sm text-slate-700">{company.registeredAgent.address}</p>
+                  {company.registeredAgent.city && (
+                    <p className="text-sm text-slate-700">
+                      {company.registeredAgent.city}
+                      {company.registeredAgent.state && `, ${company.registeredAgent.state}`}
+                      {company.registeredAgent.zipCode && ` ${company.registeredAgent.zipCode}`}
+                    </p>
+                  )}
+                  {company.registeredAgent.servicePeriod && (
+                    <p className="text-xs text-slate-600 mt-2">Service Period: {company.registeredAgent.servicePeriod}</p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Mailing Address - Conditional Rendering */}
+          {company?.mailingAddress && company.mailingAddress.address && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Home className="w-5 h-5" />
+                  Mailing Address
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                  <p className="text-sm font-medium text-slate-900">{company.mailingAddress.addressType || "Business Mailing Address"}</p>
+                  <p className="text-sm text-slate-700">{company.mailingAddress.address}</p>
+                  {company.mailingAddress.city && (
+                    <p className="text-sm text-slate-700">
+                      {company.mailingAddress.city}
+                      {company.mailingAddress.state && `, ${company.mailingAddress.state}`}
+                      {company.mailingAddress.zipCode && ` ${company.mailingAddress.zipCode}`}
+                    </p>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* EIN - Conditional Rendering */}
+          {hasEIN && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Hash className="w-5 h-5" />
+                  EIN
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <p className="text-xs text-slate-600 mb-1">Employer Identification Number</p>
+                  <p className="text-lg font-mono font-bold text-slate-900">{company?.ein}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Business ID - Conditional Rendering */}
+          {company?.businessId && company.businessId.trim() !== "" && !company.businessId.includes("PENDING") && company.businessId !== "BIZ-PENDING" && company.businessId !== "N/A" && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Business ID
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <p className="text-xs text-slate-600 mb-1">State Business License ID</p>
+                  <p className="text-lg font-mono font-bold text-slate-900">{company?.businessId}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* ITIN - Conditional Rendering */}
+          {company?.itin && company.itin.trim() !== "" && company.itin !== "N/A" && (
+            <Card className="bg-white border-slate-200 shadow-sm">
+              <CardHeader>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Hash className="w-5 h-4" />
+                  ITIN
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                  <p className="text-xs text-slate-600 mb-1">Individual Taxpayer Identification Number</p>
+                  <p className="text-lg font-mono font-bold text-slate-900">{company?.itin}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
       </div>
 
