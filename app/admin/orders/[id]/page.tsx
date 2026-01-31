@@ -2151,9 +2151,9 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-3 gap-6">
-        {/* Main Content - Left Column */}
-        <div className="lg:col-span-2 space-y-6">
+      <div className="grid lg:grid-cols-1 gap-6">
+        {/* Main Content - Full Width */}
+        <div className="space-y-6">
           {/* Customer Information Card */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
@@ -2826,10 +2826,7 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
         </div>
-
-        {/* Right Sidebar */}
-        <div className="space-y-6">
-          {/* Admin Actions Card */}
+      </div>
           <Card className="shadow-sm border-slate-200">
             <CardHeader className="bg-slate-50/50 border-b">
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
