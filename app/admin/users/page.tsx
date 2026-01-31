@@ -435,7 +435,7 @@ export default function UsersPage() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="bg-muted border-b border-border">
+              <thead className="border-b border-border">
                 <tr>
                   <th className="text-left p-4 font-semibold text-sm text-foreground">User</th>
                   <th className="text-left p-4 font-semibold text-sm text-foreground">Email</th>
