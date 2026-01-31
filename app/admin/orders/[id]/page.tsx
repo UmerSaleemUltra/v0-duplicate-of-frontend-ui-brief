@@ -1984,7 +1984,7 @@ export default function OrderDetailPage() {
                     </div>
                   </div>
                   {order?.paymentInfo?.receiptUrl && (
-                    <div className="mt-3 pt-3 border-t border-slate-200">
+                    <div className="col-span-full mt-3 pt-3 border-t border-slate-200">
                       <a
                         href={order.paymentInfo.receiptUrl}
                         target="_blank"
@@ -1998,7 +1998,6 @@ export default function OrderDetailPage() {
                   )}
                 </div>
               )}
-            </div>
             </CardContent>
           </Card>
 
