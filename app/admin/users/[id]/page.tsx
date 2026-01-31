@@ -340,42 +340,42 @@ export default function UserDetailPage() {
 
   return (
     <div className="space-y-6 p-4 md:p-6 lg:p-8">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" className="hover:bg-slate-100" onClick={() => router.back()}>
-          <ArrowLeft className="h-5 w-5" />
-        </Button>
+      <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-slate-900 to-slate-700 bg-clip-text text-transparent">
-            {user.name}
-          </h1>
-          <p className="text-muted-foreground mt-1">{user.email}</p>
+          <h1 className="text-2xl font-bold">{user.name}</h1>
+          <p className="text-sm text-muted-foreground">{user.email}</p>
         </div>
+        <Button variant="outline" size="sm" onClick={() => router.back()}>
+          <ArrowLeft className="h-4 w-4 mr-2" />
+          Back
+        </Button>
       </div>
 
-      <Card className="shadow-lg border-slate-200">
-        <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
-          <CardTitle className="text-xl font-semibold">User Information</CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle>User Information</CardTitle>
         </CardHeader>
-        <CardContent className="space-y-6 p-6">
+        <CardContent className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">Full Name</Label>
-              <p className="font-semibold text-lg text-slate-900">{user.name}</p>
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground">Full Name</Label>
+              <p className="text-sm font-semibold mt-1">{user.name}</p>
             </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">Email Address</Label>
-              <p className="font-semibold text-lg text-slate-900">{user.email}</p>
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground">Email Address</Label>
+              <p className="text-sm font-semibold mt-1">{user.email}</p>
             </div>
-            <div className="space-y-2">
-              <Label className="text-sm font-medium text-muted-foreground">Phone Number</Label>
-              <p className="font-semibold text-lg text-slate-900">{user.phone || "Not provided"}</p>
+            <div>
+              <Label className="text-xs font-medium text-muted-foreground">Phone Number</Label>
+              <p className="text-sm font-semibold mt-1">{user.phone || "Not provided"}</p>
             </div>
           </div>
 
-          <div className="pt-6 border-t">
+          <div className="pt-4 border-t">
             <Button
               onClick={() => setShowPasswordDialog(true)}
-              className="bg-gradient-to-r from-[#880000] to-[#ff0d13]"
+              variant="destructive"
+              size="sm"
             >
               <Lock className="h-4 w-4 mr-2" />
               Change Password
@@ -384,81 +384,76 @@ export default function UserDetailPage() {
         </CardContent>
       </Card>
 
-      <Card className="shadow-lg border-slate-200">
-        <CardHeader className="bg-gradient-to-r from-slate-50 to-slate-100 border-b">
-          <CardTitle className="text-xl font-semibold">Companies ({companies.length})</CardTitle>
+      <Card>
+        <CardHeader>
+          <CardTitle>Companies ({companies.length})</CardTitle>
         </CardHeader>
-        <CardContent className="p-6">
+        <CardContent>
           <div className="space-y-4">
             {companies.length === 0 ? (
               <p className="text-muted-foreground text-center py-8">No companies found for this user</p>
             ) : (
               companies.map((company) => (
-                <div
-                  key={company.id}
-                  className="border-2 border-slate-200 rounded-xl p-5 space-y-4 hover:border-slate-300 transition-colors bg-gradient-to-br from-white to-slate-50"
-                >
-                  <div className="flex items-center justify-between">
+                <div key={company.id} className="border rounded-lg p-4 space-y-4">
+                  <div className="flex items-start justify-between">
                     <div>
-                      <h3 className="font-bold text-lg text-slate-900">{company.name}</h3>
-                      <p className="text-sm text-slate-600 mt-1">
-                        {company.entityType} • {company.state}
+                      <h3 className="font-semibold">{company.name}</h3>
+                      <p className="text-sm text-muted-foreground">
+                        {company.state}
                       </p>
                     </div>
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="border-2 bg-transparent"
-                        onClick={() => router.push(`/admin/customers/${company.id}`)}
-                      >
-                        View Customer
-                      </Button>
-                    </div>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => router.push(`/admin/companies/${company.id}`)}
+                    >
+                      View Company
+                    </Button>
                   </div>
 
                   {editingCompany === company.id ? (
                     <div className="grid grid-cols-3 gap-4 pt-2">
                       <div className="space-y-2">
-                        <Label>EIN</Label>
+                        <Label className="text-xs">EIN</Label>
                         <Input
                           placeholder="XX-XXXXXXX"
                           value={companyEdits.ein || ""}
                           onChange={(e) => setCompanyEdits({ ...companyEdits, ein: e.target.value })}
+                          size={1}
                         />
-                        <p className="text-xs text-muted-foreground">Format: XX-XXXXXXX</p>
                       </div>
                       <div className="space-y-2">
-                        <Label>Business ID</Label>
+                        <Label className="text-xs">Business ID</Label>
                         <Input
                           placeholder="BIZ-XXXXXXXX"
                           value={companyEdits.businessId || ""}
                           onChange={(e) => setCompanyEdits({ ...companyEdits, businessId: e.target.value })}
+                          size={1}
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>ITIN</Label>
+                        <Label className="text-xs">ITIN</Label>
                         <Input
                           placeholder="9XX-XX-XXXX"
                           value={companyEdits.itin || ""}
                           onChange={(e) => setCompanyEdits({ ...companyEdits, itin: e.target.value })}
+                          size={1}
                         />
-                        <p className="text-xs text-muted-foreground">Format: 9XX-XX-XXXX</p>
                       </div>
                     </div>
                   ) : (
-                    <div className="grid grid-cols-3 gap-4 pt-2">
+                    <div className="grid grid-cols-3 gap-4 text-sm">
                       <div>
-                        <Label className="text-muted-foreground text-xs">EIN</Label>
-                        <p className="font-mono text-sm">{company.ein || "Not assigned"}</p>
+                        <Label className="text-xs text-muted-foreground">EIN</Label>
+                        <p className="font-mono">{company.ein || "—"}</p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground text-xs">Business ID</Label>
-                        <p className="font-mono text-sm">{company.businessId || "Not assigned"}</p>
+                        <Label className="text-xs text-muted-foreground">Business ID</Label>
+                        <p className="font-mono">{company.businessId || "—"}</p>
                       </div>
                       <div>
-                        <Label className="text-muted-foreground text-xs">ITIN</Label>
-                        <p className="font-mono text-sm">{company.itin || "Not assigned"}</p>
+                        <Label className="text-xs text-muted-foreground">ITIN</Label>
+                        <p className="font-mono">{company.itin || "—"}</p>
                       </div>
                     </div>
                   )}
@@ -470,40 +465,30 @@ export default function UserDetailPage() {
       </Card>
 
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 bg-gradient-to-br from-purple-50 to-purple-100">
-            <CardTitle className="text-base font-semibold">Total Orders</CardTitle>
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center">
-              <FileText className="h-5 w-5 text-white" />
-            </div>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Total Orders</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-purple-700 bg-clip-text text-transparent">
-              {userOrders.length}
-            </div>
+          <CardContent>
+            <p className="text-2xl font-bold">{userOrders.length}</p>
             <Link
               href="/admin/orders"
-              className="text-sm text-purple-600 hover:underline mt-2 inline-block font-medium"
+              className="text-sm text-blue-600 hover:underline mt-3 inline-block"
             >
               View all orders →
             </Link>
           </CardContent>
         </Card>
 
-        <Card className="shadow-lg border-slate-200 hover:shadow-xl transition-shadow">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-3 bg-gradient-to-br from-blue-50 to-blue-100">
-            <CardTitle className="text-base font-semibold">Total Documents</CardTitle>
-            <div className="h-10 w-10 rounded-lg bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center">
-              <Mail className="h-5 w-5 text-white" />
-            </div>
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-medium">Total Documents</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">
-              {userDocuments.length}
-            </div>
+          <CardContent>
+            <p className="text-2xl font-bold">{userDocuments.length}</p>
             <Link
               href="/admin/documents"
-              className="text-sm text-blue-600 hover:underline mt-2 inline-block font-medium"
+              className="text-sm text-blue-600 hover:underline mt-3 inline-block"
             >
               View all documents →
             </Link>
