@@ -6,11 +6,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Package, LogOut, Shield, Bell } from "lucide-react"
-import { Avatar, AvatarFallback } from "@/components/ui/avatar"
-import Image from "next/image"
-import { authService } from "@/lib/auth"
-import { useRouter } from "next/navigation"
+import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Package, LogOut, Shield } from "lucide-react"
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -20,7 +16,6 @@ const navigation = [
   { name: "Documents", href: "/admin/documents", icon: FileText },
   { name: "Mailroom", href: "/admin/mailroom", icon: Mail },
   { name: "Addons", href: "/admin/addons", icon: Package },
-  { name: "Notifications", href: "/admin/notifications", icon: Bell },
   { name: "Blog", href: "/admin/blog", icon: FileText },
   { name: "Security", href: "/admin/security", icon: Shield },
 ]
