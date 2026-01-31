@@ -457,7 +457,7 @@ export default function UsersPage() {
                     const userOrders = getUserOrders(user.id)
 
                     return (
-                      <tr key={user.id} className="border-b border-border hover:bg-muted/50 transition-all">
+                      <tr key={user.id} className="border-b border-border">
                         <td className="p-4">
                           <div>
                             <p className="font-semibold text-foreground">{user.name}</p>
