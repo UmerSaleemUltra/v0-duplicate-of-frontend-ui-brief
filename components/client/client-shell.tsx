@@ -25,7 +25,6 @@ import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
-import { NotificationDropdown } from "@/components/notifications/notification-dropdown"
 import { BusinessNameDisplay } from "@/components/ui/business-name-display"
 import { useSelectedCompany } from "@/lib/company-context"
 import { authService } from "@/lib/auth"
@@ -504,7 +503,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                 >
                   <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
                 </Button>
-                {pathname.includes("/client/dashboard") && <NotificationDropdown />}
                 <Button
                   variant="ghost"
                   size="icon"
