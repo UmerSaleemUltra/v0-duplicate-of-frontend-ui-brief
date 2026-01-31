@@ -473,7 +473,7 @@ export default function UserDetailPage() {
             <p className="text-2xl font-bold">{userOrders.length}</p>
             <Link
               href="/admin/orders"
-              className="text-sm text-blue-600 hover:underline mt-3 inline-block"
+              className="text-sm text-[#ff0d13] hover:underline mt-3 inline-block font-medium"
             >
               View all orders →
             </Link>
@@ -488,7 +488,7 @@ export default function UserDetailPage() {
             <p className="text-2xl font-bold">{userDocuments.length}</p>
             <Link
               href="/admin/documents"
-              className="text-sm text-blue-600 hover:underline mt-3 inline-block"
+              className="text-sm text-[#ff0d13] hover:underline mt-3 inline-block font-medium"
             >
               View all documents →
             </Link>
