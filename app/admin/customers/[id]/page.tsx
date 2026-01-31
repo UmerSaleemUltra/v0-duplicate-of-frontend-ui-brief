@@ -691,8 +691,54 @@ export default function CustomerDetailPage() {
         ))}
       </div>
 
-
-
+      {/* Orders Section */}
+      {orders.length > 0 && (
+        <div className="mt-8">
+          <h2 className="text-2xl font-bold text-slate-900 mb-4">Orders ({orders.length})</h2>
+          <div className="space-y-4">
+            {orders.map((order) => (
+              <Card key={order.id} className="bg-white border-slate-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="font-semibold text-slate-900">Order ID: {order.id}</h3>
+                        <Badge 
+                          variant={
+                            order.status === 'completed' ? 'default' : 
+                            order.status === 'pending' ? 'secondary' :
+                            order.status === 'failed' ? 'destructive' :
+                            'outline'
+                          }
+                          className="capitalize"
+                        >
+                          {order.status || 'unknown'}
+                        </Badge>
+                      </div>
+                      {order.pricing?.total && (
+                        <p className="text-sm text-slate-600">
+                          Amount: ${order.pricing.total.toFixed(2)}
+                        </p>
+                      )}
+                      {order.createdAt && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          Created: {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      )}
+                    </div>
+                    <Button 
+                      onClick={() => router.push(`/admin/orders/${order.id}`)}
+                      variant="outline"
+                    >
+                      View Order
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
       <Dialog open={taxDetailsModalOpen} onOpenChange={setTaxDetailsModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
