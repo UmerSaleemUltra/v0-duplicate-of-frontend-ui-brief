@@ -490,6 +490,18 @@ export default function UsersPage() {
                                 View
                               </Button>
                             </Link>
+                            {userOrders.length > 0 && (
+                              <Link href={`/admin/orders/${userOrders[0].id}`}>
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-9 w-9 p-0"
+                                  title="View First Order"
+                                >
+                                  <ShoppingCart className="h-4 w-4" />
+                                </Button>
+                              </Link>
+                            )}
                             <Button
                               size="sm"
                               variant="ghost"
