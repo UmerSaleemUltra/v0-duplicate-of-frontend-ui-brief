@@ -14,19 +14,19 @@ export const metadata = {
   metadataBase: new URL("https://www.buzzfiling.com"),
 
   title: {
-    default: "BuzzFiling | Top LLC Formation Company in Karachi, Pakistan | Best US Company Registration Services",
-    template: "%s | BuzzFiling",
+    default: "Buzz Filing | Top LLC Formation Company in Karachi, Pakistan | Best US Company Registration Services",
+    template: "%s | Buzz Filing",
   },
 
   description:
-    "BuzzFiling is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Best company registration services, ITIN & EIN assistance, registered agent, US business address, and compliance support for Pakistani and international entrepreneurs.",
+    "Buzz Filing is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Best company registration services, ITIN & EIN assistance, registered agent, US business address, and compliance support for Pakistani and international entrepreneurs.",
 
   keywords: [
     "Top LLC formation companies in Karachi",
     "Best company registration services in Pakistan",
     "Best ITIN & US LLC service providers in Karachi",
-    "BuzzFiling services",
-    "BuzzFiling Pakistan",
+    "Buzz Filing services",
+    "Buzz Filing Pakistan",
     "LLC registration Karachi Pakistan",
     "US business formation Pakistan",
     "EIN application service Karachi",
@@ -144,7 +144,7 @@ export const metadata = {
     "X-DNS-Prefetch-Control": "on",
     "Strict-Transport-Security": "max-age=31536000; includeSubDomains",
   },
-    generator: 'BuzzFiling'
+    generator: 'Buzz Filing'
 }
 
 export const viewport = {

@@ -15,13 +15,13 @@ import FAQSection from "@/components/sections/faq"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "BuzzFiling | Top LLC Formation Company in Karachi, Pakistan | US Business Registration",
+  title: "Buzz Filing | Top LLC Formation Company in Karachi, Pakistan | US Business Registration",
   description:
-    "BuzzFiling is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Get your US business registered with EIN, ITIN, registered agent, and full compliance support. Trusted by 700+ Pakistani entrepreneurs.",
+    "Buzz Filing is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Get your US business registered with EIN, ITIN, registered agent, and full compliance support. Trusted by 700+ Pakistani entrepreneurs.",
   keywords: [
-    "BuzzFiling",
-    "BuzzFiling services",
-    "BuzzFiling Pakistan",
+    "Buzz Filing",
+    "Buzz Filing services",
+    "Buzz Filing Pakistan",
     "Top LLC formation companies in Karachi",
     "Best company registration services in Pakistan",
     "Best ITIN & US LLC service providers in Karachi",
@@ -40,9 +40,9 @@ export const metadata: Metadata = {
     "virtual mailroom service",
     "US business bank account setup",
   ],
-  authors: [{ name: "BuzzFiling Team" }],
-  creator: "BuzzFiling",
-  publisher: "BuzzFiling",
+  authors: [{ name: "Buzz Filing Team" }],
+  creator: "Buzz Filing",
+  publisher: "Buzz Filing",
   formatDetection: {
     email: false,
     address: false,
@@ -56,8 +56,8 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://www.buzzfiling.com",
-    siteName: "BuzzFiling",
-    title: "BuzzFiling | Top LLC Formation Company in Karachi, Pakistan",
+    siteName: "Buzz Filing",
+    title: "Buzz Filing | Top LLC Formation Company in Karachi, Pakistan",
     description:
       "Pakistan's #1 US LLC and C-Corp formation service. Get your US business registered with EIN, ITIN, and full compliance support. Trusted by 700+ entrepreneurs.",
     images: [
@@ -65,7 +65,7 @@ export const metadata: Metadata = {
         url: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
         width: 1200,
         height: 630,
-        alt: "BuzzFiling - US LLC Formation Services",
+        alt: "Buzz Filing - US LLC Formation Services",
       },
     ],
   },
@@ -73,7 +73,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@buzzfiling",
     creator: "@buzzfiling",
-    title: "BuzzFiling | Top LLC Formation Company in Karachi",
+    title: "Buzz Filing | Top LLC Formation Company in Karachi",
     description: "Pakistan's #1 US LLC formation service. 700+ satisfied clients.",
     images: ["https://www.buzzfiling.com/images/buzz-filing-logo.png"],
   },
