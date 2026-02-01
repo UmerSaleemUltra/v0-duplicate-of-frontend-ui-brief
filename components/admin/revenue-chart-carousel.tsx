@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useCallback } from "react"
-import { ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight, TrendingUp, Calendar, BarChart3, LineChart as LineChartIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -15,6 +15,8 @@ import {
   Tooltip,
   Legend,
   ResponsiveContainer,
+  Area,
+  AreaChart,
 } from "recharts"
 
 interface RevenueData {
@@ -31,6 +33,7 @@ interface RevenueChartCarouselProps {
 
 export function RevenueChartCarousel({ orders, title = "Revenue Trend", description = "2-Year Revenue Analysis" }: RevenueChartCarouselProps) {
   const [viewType, setViewType] = useState<"month" | "day">("month")
+  const [chartType, setChartType] = useState<"line" | "area" | "bar">("line")
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date()
     return now
@@ -142,96 +145,151 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
   }, [chartData])
 
   return (
-    <Card className="bg-white border-slate-200 w-full">
-      <CardHeader className="space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            <CardTitle className="text-lg font-semibold text-slate-900">{title}</CardTitle>
-            <p className="text-sm text-slate-600 mt-1">{description}</p>
+    <Card className="bg-gradient-to-br from-white to-slate-50 border border-slate-200 shadow-lg w-full overflow-hidden">
+      <CardHeader className="bg-gradient-to-r from-slate-900 to-slate-800 text-white p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
+          <div className="flex-1">
+            <div className="flex items-center gap-3 mb-2">
+              <div className="p-2 bg-red-500 rounded-lg">
+                <TrendingUp className="w-5 h-5 text-white" />
+              </div>
+              <CardTitle className="text-2xl font-bold text-white">{title}</CardTitle>
+            </div>
+            <p className="text-sm text-slate-300">{description}</p>
           </div>
 
-          {/* View Type Selector */}
-          <div className="flex gap-2">
-            <Button
-              variant={viewType === "month" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewType("month")}
-              className="text-xs sm:text-sm"
-            >
-              24 Months
-            </Button>
-            <Button
-              variant={viewType === "day" ? "default" : "outline"}
-              size="sm"
-              onClick={() => setViewType("day")}
-              className="text-xs sm:text-sm"
-            >
-              Daily
-            </Button>
+          {/* Control Panel */}
+          <div className="flex flex-col gap-3">
+            {/* Period Toggle */}
+            <div className="flex gap-2 bg-slate-700 p-1 rounded-lg">
+              <Button
+                onClick={() => setViewType("month")}
+                variant="ghost"
+                size="sm"
+                className={`text-xs font-semibold transition-all px-3 py-1 rounded ${
+                  viewType === "month"
+                    ? "bg-red-600 text-white shadow-lg"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                24 Mo
+              </Button>
+              <Button
+                onClick={() => setViewType("day")}
+                variant="ghost"
+                size="sm"
+                className={`text-xs font-semibold transition-all px-3 py-1 rounded ${
+                  viewType === "day"
+                    ? "bg-red-600 text-white shadow-lg"
+                    : "text-slate-300 hover:text-white"
+                }`}
+              >
+                <Calendar className="w-3.5 h-3.5 mr-1.5" />
+                Daily
+              </Button>
+            </div>
+
+            {/* Chart Type Toggle */}
+            <div className="flex gap-2">
+              <Button
+                onClick={() => setChartType("line")}
+                variant="ghost"
+                size="sm"
+                className={`text-xs font-semibold transition-all px-2 py-1 rounded ${
+                  chartType === "line"
+                    ? "bg-red-600 text-white"
+                    : "bg-slate-700 text-slate-300 hover:text-white"
+                }`}
+                title="Line Chart"
+              >
+                <LineChartIcon className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={() => setChartType("area")}
+                variant="ghost"
+                size="sm"
+                className={`text-xs font-semibold transition-all px-2 py-1 rounded ${
+                  chartType === "area"
+                    ? "bg-red-600 text-white"
+                    : "bg-slate-700 text-slate-300 hover:text-white"
+                }`}
+                title="Area Chart"
+              >
+                <BarChart3 className="w-4 h-4" />
+              </Button>
+              <Button
+                onClick={() => setChartType("bar")}
+                variant="ghost"
+                size="sm"
+                className={`text-xs font-semibold transition-all px-2 py-1 rounded ${
+                  chartType === "bar"
+                    ? "bg-red-600 text-white"
+                    : "bg-slate-700 text-slate-300 hover:text-white"
+                }`}
+                title="Bar Chart"
+              >
+                <BarChart3 className="w-4 h-4 rotate-90" />
+              </Button>
+            </div>
           </div>
         </div>
 
-        {/* Date Navigation */}
+        {/* Date Navigation - Only show in daily view */}
         {viewType === "day" && (
-          <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center justify-center gap-4 pt-2 border-t border-slate-700">
             <Button
-              variant="outline"
-              size="sm"
               onClick={() => navigateMonth("prev")}
-              className="h-8 w-8 p-0"
-            >
-              <ChevronLeft className="h-4 w-4" />
-            </Button>
-
-            <span className="text-sm font-medium text-slate-700 text-center flex-1">{monthDisplay}</span>
-
-            <Button
-              variant="outline"
+              variant="ghost"
               size="sm"
-              onClick={() => navigateMonth("next")}
-              className="h-8 w-8 p-0"
+              className="h-8 w-8 p-0 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronLeft className="w-4 h-4" />
+            </Button>
+            <h3 className="text-sm font-semibold text-white min-w-fit">{monthDisplay}</h3>
+            <Button
+              onClick={() => navigateMonth("next")}
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
+            >
+              <ChevronRight className="w-4 h-4" />
             </Button>
           </div>
         )}
       </CardHeader>
 
-      <CardContent>
+      <CardContent className="p-6">
         {chartData.length === 0 ? (
           <div className="py-16 text-center">
             <p className="text-sm text-slate-500">No data available for this period</p>
           </div>
         ) : (
           <div className="w-full space-y-6">
-            {/* Chart Container with optimized rendering */}
-            <div className="w-full overflow-x-auto -mx-6 px-6">
-              <ResponsiveContainer width="100%" height={300} minWidth={500}>
-                {viewType === "month" ? (
-                  <LineChart
-                    data={chartData}
-                    margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-                  >
+            {/* Chart Container with enhanced styling */}
+            <div className="w-full bg-white p-4 rounded-lg border border-slate-100 overflow-x-auto">
+              <ResponsiveContainer width="100%" height={380} minWidth={500}>
+                {chartType === "line" ? (
+                  <LineChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ff0d13" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#ff0d13" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 12 }}
-                      stroke="#64748b"
-                      interval={Math.floor(chartData.length / 6)}
-                      angle={-45}
-                      textAnchor="end"
-                      height={60}
-                    />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#64748b" interval={Math.floor(chartData.length / 6)} />
                     <YAxis tick={{ fontSize: 12 }} stroke="#64748b" />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "#1e293b",
-                        border: "1px solid #475569",
+                        border: "2px solid #ff0d13",
                         borderRadius: "8px",
+                        boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
                       }}
-                      labelStyle={{ color: "#f1f5f9" }}
+                      labelStyle={{ color: "#f1f5f9", fontWeight: 600 }}
                       formatter={(value) => [`$${Number(value).toLocaleString()}`, "Revenue"]}
-                      cursor={{ stroke: "#ff0d13", strokeOpacity: 0.3 }}
+                      cursor={{ stroke: "#ff0d13", strokeOpacity: 0.5 }}
                     />
                     <Legend wrapperStyle={{ paddingTop: "20px" }} />
                     <Line
@@ -239,31 +297,56 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
                       dataKey="revenue"
                       stroke="#ff0d13"
                       dot={false}
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       isAnimationActive={false}
                       name="Revenue"
                     />
                   </LineChart>
-                ) : (
-                  <BarChart
-                    data={chartData}
-                    margin={{ top: 5, right: 30, left: 0, bottom: 5 }}
-                  >
+                ) : chartType === "area" ? (
+                  <AreaChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                    <defs>
+                      <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="5%" stopColor="#ff0d13" stopOpacity={0.3} />
+                        <stop offset="95%" stopColor="#ff0d13" stopOpacity={0} />
+                      </linearGradient>
+                    </defs>
                     <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 12 }}
-                      stroke="#64748b"
-                      interval={Math.floor(chartData.length / 12)}
-                    />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#64748b" interval={Math.floor(chartData.length / 6)} />
                     <YAxis tick={{ fontSize: 12 }} stroke="#64748b" />
                     <Tooltip
                       contentStyle={{
                         backgroundColor: "#1e293b",
-                        border: "1px solid #475569",
+                        border: "2px solid #ff0d13",
                         borderRadius: "8px",
+                        boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
                       }}
-                      labelStyle={{ color: "#f1f5f9" }}
+                      labelStyle={{ color: "#f1f5f9", fontWeight: 600 }}
+                      formatter={(value) => [`$${Number(value).toLocaleString()}`, "Revenue"]}
+                    />
+                    <Legend wrapperStyle={{ paddingTop: "20px" }} />
+                    <Area
+                      type="monotone"
+                      dataKey="revenue"
+                      stroke="#ff0d13"
+                      fillOpacity={1}
+                      fill="url(#colorRevenue)"
+                      isAnimationActive={false}
+                      name="Revenue"
+                    />
+                  </AreaChart>
+                ) : (
+                  <BarChart data={chartData} margin={{ top: 5, right: 30, left: 0, bottom: 5 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} stroke="#64748b" interval={Math.floor(chartData.length / 12)} />
+                    <YAxis tick={{ fontSize: 12 }} stroke="#64748b" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: "#1e293b",
+                        border: "2px solid #ff0d13",
+                        borderRadius: "8px",
+                        boxShadow: "0 10px 25px rgba(0,0,0,0.2)",
+                      }}
+                      labelStyle={{ color: "#f1f5f9", fontWeight: 600 }}
                       formatter={(value) => [`$${Number(value).toLocaleString()}`, "Revenue"]}
                       cursor={{ fill: "#ff0d13", fillOpacity: 0.1 }}
                     />
@@ -273,31 +356,57 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
                       fill="#ff0d13"
                       isAnimationActive={false}
                       name="Revenue"
-                      radius={[4, 4, 0, 0]}
+                      radius={[8, 8, 0, 0]}
                     />
                   </BarChart>
                 )}
               </ResponsiveContainer>
             </div>
 
-            {/* Summary Stats - optimized with memoized totals */}
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <p className="text-xs text-slate-600 mb-1">Total Revenue</p>
-                <p className="text-lg font-semibold text-slate-900">
+            {/* Detailed Statistics Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="p-4 bg-gradient-to-br from-red-50 via-red-50 to-orange-50 rounded-lg border border-red-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold text-red-700 uppercase tracking-wide">Total Revenue</p>
+                  <div className="w-8 h-8 bg-red-600 rounded-full flex items-center justify-center">
+                    <TrendingUp className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-red-900">
                   ${totals.totalRevenue.toLocaleString()}
                 </p>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <p className="text-xs text-slate-600 mb-1">Total Orders</p>
-                <p className="text-lg font-semibold text-slate-900">
+              <div className="p-4 bg-gradient-to-br from-blue-50 via-blue-50 to-cyan-50 rounded-lg border border-blue-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold text-blue-700 uppercase tracking-wide">Total Orders</p>
+                  <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                    <BarChart3 className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-blue-900">
                   {totals.totalOrders}
                 </p>
               </div>
-              <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
-                <p className="text-xs text-slate-600 mb-1">Avg Revenue</p>
-                <p className="text-lg font-semibold text-slate-900">
+              <div className="p-4 bg-gradient-to-br from-purple-50 via-purple-50 to-pink-50 rounded-lg border border-purple-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold text-purple-700 uppercase tracking-wide">Avg Revenue</p>
+                  <div className="w-8 h-8 bg-purple-600 rounded-full flex items-center justify-center">
+                    <LineChartIcon className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-purple-900">
                   ${totals.avgRevenue.toLocaleString()}
+                </p>
+              </div>
+              <div className="p-4 bg-gradient-to-br from-emerald-50 via-emerald-50 to-teal-50 rounded-lg border border-emerald-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-2">
+                  <p className="text-xs font-bold text-emerald-700 uppercase tracking-wide">Daily Average</p>
+                  <div className="w-8 h-8 bg-emerald-600 rounded-full flex items-center justify-center">
+                    <Calendar className="w-4 h-4 text-white" />
+                  </div>
+                </div>
+                <p className="text-2xl font-bold text-emerald-900">
+                  {(totals.totalOrders / (chartData.length || 1)).toFixed(1)}
                 </p>
               </div>
             </div>
