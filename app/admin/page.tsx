@@ -278,11 +278,11 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 bg-white">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-slate-600 mt-1">Welcome back! Here's your business overview.</p>
+      <div className="border-b border-gray-100 pb-6">
+        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
+        <p className="text-gray-500 text-sm mt-1">Welcome back! Here's your business overview.</p>
       </div>
 
       {/* Top Section: Chart and Stats */}
@@ -298,98 +298,96 @@ export default function AdminDashboard() {
 
         {/* Stats Cards - Right */}
         <div className="space-y-4">
-          <div className="grid grid-cols-1 gap-4">
-            {/* Total Companies */}
-            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
-              <CardContent className="p-6">
-                <div className="text-right">
-                  <p className="text-4xl font-bold text-slate-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
-                  <p className="text-sm text-slate-600 mt-2">Company</p>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Total Companies */}
+          <Card className="bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <p className="text-5xl font-bold text-gray-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
+                <p className="text-gray-500 text-sm mt-3 font-medium">Company</p>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Total Users */}
-            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
-              <CardContent className="p-6">
-                <div className="text-right">
-                  <p className="text-4xl font-bold text-slate-900">{stats.activeCustomers}</p>
-                  <p className="text-sm text-slate-600 mt-2">Users</p>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Total Users */}
+          <Card className="bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <p className="text-5xl font-bold text-gray-900">{stats.activeCustomers}</p>
+                <p className="text-gray-500 text-sm mt-3 font-medium">Users</p>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Total Documents */}
-            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
-              <CardContent className="p-6">
-                <div className="text-right">
-                  <p className="text-4xl font-bold text-slate-900">{stats.totalOrders}</p>
-                  <p className="text-sm text-slate-600 mt-2">Documents</p>
-                </div>
-              </CardContent>
-            </Card>
+          {/* Total Documents */}
+          <Card className="bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <p className="text-5xl font-bold text-gray-900">{stats.totalOrders}</p>
+                <p className="text-gray-500 text-sm mt-3 font-medium">Documents</p>
+              </div>
+            </CardContent>
+          </Card>
 
-            {/* Feedback */}
-            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
-              <CardContent className="p-6">
-                <div className="text-right">
-                  <p className="text-4xl font-bold text-slate-900">0</p>
-                  <p className="text-sm text-slate-600 mt-2">Feedback</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+          {/* Feedback */}
+          <Card className="bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+            <CardContent className="p-6">
+              <div className="text-center">
+                <p className="text-5xl font-bold text-gray-900">0</p>
+                <p className="text-gray-500 text-sm mt-3 font-medium">Feedback</p>
+              </div>
+            </CardContent>
+          </Card>
         </div>
       </div>
 
       {/* This Month and Last Month Summary */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* This Month So Far */}
-        <Card className="bg-white border-slate-200">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900">This Month So Far</CardTitle>
+        <Card className="bg-white border border-gray-200">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-gray-900">This Month So Far</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-6">
               {/* Current Month Stats */}
-              <div className="grid grid-cols-4 gap-4 text-center">
+              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                 <div>
-                  <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Sales</p>
-                  <p className="text-lg font-bold text-slate-900">${stats.monthlyRevenue.toLocaleString()}</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Sales</p>
+                  <p className="text-lg font-bold text-gray-900">${stats.monthlyRevenue.toLocaleString()}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Companies</p>
-                  <p className="text-lg font-bold text-slate-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Companies</p>
+                  <p className="text-lg font-bold text-gray-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Users</p>
-                  <p className="text-lg font-bold text-slate-900">{stats.activeCustomers}</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Users</p>
+                  <p className="text-lg font-bold text-gray-900">{stats.activeCustomers}</p>
                 </div>
                 <div>
-                  <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Documents</p>
-                  <p className="text-lg font-bold text-slate-900">{stats.totalOrders}</p>
+                  <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Documents</p>
+                  <p className="text-lg font-bold text-gray-900">{stats.totalOrders}</p>
                 </div>
               </div>
 
               {/* Last Month Summary */}
-              <div className="pt-6 border-t border-slate-200">
-                <p className="text-sm font-semibold text-slate-900 mb-4">Last Month Summary</p>
-                <div className="grid grid-cols-4 gap-4 text-center">
+              <div className="pt-4 border-t border-gray-100">
+                <p className="text-sm font-semibold text-gray-900 mb-4">Last Month Summary</p>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   <div>
-                    <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Sales</p>
-                    <p className="text-lg font-bold text-slate-900">$14,211</p>
+                    <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Sales</p>
+                    <p className="text-lg font-bold text-gray-900">$14,211</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Companies</p>
-                    <p className="text-lg font-bold text-slate-900">46</p>
+                    <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Companies</p>
+                    <p className="text-lg font-bold text-gray-900">46</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Users</p>
-                    <p className="text-lg font-bold text-slate-900">65</p>
+                    <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Users</p>
+                    <p className="text-lg font-bold text-gray-900">65</p>
                   </div>
                   <div>
-                    <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Documents</p>
-                    <p className="text-lg font-bold text-slate-900">142</p>
+                    <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Documents</p>
+                    <p className="text-lg font-bold text-gray-900">142</p>
                   </div>
                 </div>
               </div>
@@ -398,30 +396,30 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Recent Orders */}
-        <Card className="bg-white border-slate-200">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900">Recent Orders</CardTitle>
+        <Card className="bg-white border border-gray-200">
+          <CardHeader className="pb-4">
+            <CardTitle className="text-lg font-semibold text-gray-900">Recent Orders</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-3">
+            <div className="space-y-2">
               {orders.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No orders yet</p>
+                <p className="text-center text-gray-500 py-8 text-sm">No orders yet</p>
               ) : (
-                <div className="space-y-2">
-                  {orders.slice(0, 5).map((order) => (
+                <div className="space-y-1">
+                  {orders.slice(0, 4).map((order) => (
                     <div
                       key={order.id}
-                      className="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-slate-50 transition-colors"
+                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer border border-gray-100"
                       onClick={() => router.push(`/admin/orders/${order.id}`)}
                     >
-                      <ShoppingCart className="h-4 w-4 text-slate-400 flex-shrink-0" />
-                      <p className="text-sm text-slate-700 truncate flex-1">{order.companyName || "Unknown"}</p>
+                      <ShoppingCart className="h-4 w-4 text-gray-400 flex-shrink-0" />
+                      <p className="text-sm text-gray-700 truncate flex-1 font-medium">{order.companyName || "Unknown"}</p>
                     </div>
                   ))}
                 </div>
               )}
               <Button 
-                className="w-full bg-red-600 hover:bg-red-700 text-white rounded-full mt-4"
+                className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-lg mt-6 font-medium"
                 asChild
               >
                 <a href="/admin/orders">View All</a>
