@@ -76,7 +76,7 @@ export default function AdminDashboard() {
         const timestamp = Date.now()
         const [usersResponse, companiesResponse] = await Promise.all([
           ApiClient.users.getAll(token),
-          fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
+          fetch(`/api/companies?_t=${timestamp}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Cache-Control": "no-cache, no-store, must-revalidate",

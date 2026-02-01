@@ -119,14 +119,20 @@ export default function OrdersPage() {
         if (!token) return
 
         const timestamp = Date.now()
-        const [usersResponse, companiesResponse] = await Promise.all([
-          fetch(`https://www.buzzfiling.com/api/users?_t=${timestamp}`, {
+        const [usersResponse, companiesResponse, ordersResponse] = await Promise.all([
+          fetch(`/api/users?_t=${timestamp}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Cache-Control": "no-cache, no-store, must-revalidate",
             },
           }),
-          fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
+          fetch(`/api/companies?_t=${timestamp}`, {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Cache-Control": "no-cache, no-store, must-revalidate",
+            },
+          }),
+          fetch(`/api/orders?_t=${timestamp}`, {
             headers: {
               Authorization: `Bearer ${token}`,
               "Cache-Control": "no-cache, no-store, must-revalidate",
@@ -134,29 +140,50 @@ export default function OrdersPage() {
           }),
         ])
 
+        if (!usersResponse.ok || !companiesResponse.ok || !ordersResponse.ok) {
+          throw new Error("Failed to fetch data")
+        }
+
         const usersData = await usersResponse.json()
         const companiesData = await companiesResponse.json()
+        const ordersData = await ordersResponse.json()
 
         const allUsers = usersData.data || usersData || []
         const allCompanies = companiesData.data || companiesData || []
+        const apiOrders = ordersData.data || ordersData || []
 
-        const allOrders = allCompanies.flatMap((company: any) => {
-          const companyOrders = company.orders || []
-          return companyOrders.map((order: any) => ({
-            ...order,
-            companyId: company.id,
-            companyName: company.name,
-            state: company.state,
-            packageType: order.packageType || company.packageType || "N/A",
-          }))
-        })
+        // Use orders from API or fallback to extracting from companies
+        let allOrders = apiOrders.length > 0 
+          ? apiOrders 
+          : allCompanies.flatMap((company: any) => {
+              const companyOrders = company.orders || []
+              return companyOrders.map((order: any) => ({
+                ...order,
+                companyId: company.id,
+                companyName: company.name,
+                state: company.state,
+                packageType: order.packageType || company.packageType || "N/A",
+              }))
+            })
+
+        // Normalize order IDs and ensure required fields exist
+        allOrders = allOrders.map((order: any) => ({
+          ...order,
+          id: order.id || order._id,
+          companyId: order.companyId || order.companyId,
+        }))
 
         const ordersWithDetails = allOrders.map((order: any) => {
-          const company = allCompanies.find((c: any) => c.id === order.companyId)
-          const user = allUsers.find((u: any) => String(u.id) === String(company?.userId))
+          const company = allCompanies.find((c: any) => {
+            const companyId = c.id || c._id?.toString?.()
+            return String(companyId) === String(order.companyId)
+          })
+          const user = allUsers.find((u: any) => String(u.id || u._id) === String(company?.userId))
 
           return {
             ...order,
+            companyName: order.companyName || company?.name || "N/A",
+            state: order.state || company?.state || "N/A",
             customerName: user?.name || company?.members?.[0]?.name || "Unknown",
             customerEmail: user?.email || "N/A",
             userId: company?.userId,
@@ -341,14 +368,20 @@ export default function OrdersPage() {
 
       // Reload the orders list
       const timestamp = Date.now()
-      const [usersResponse, companiesResponse] = await Promise.all([
-        fetch(`https://www.buzzfiling.com/api/users?_t=${timestamp}`, {
+      const [usersResponse, companiesResponse, ordersResponse] = await Promise.all([
+        fetch(`/api/users?_t=${timestamp}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Cache-Control": "no-cache, no-store, must-revalidate",
           },
         }),
-        fetch(`https://www.buzzfiling.com/api/companies?_t=${timestamp}`, {
+        fetch(`/api/companies?_t=${timestamp}`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
+        }),
+        fetch(`/api/orders?_t=${timestamp}`, {
           headers: {
             Authorization: `Bearer ${token}`,
             "Cache-Control": "no-cache, no-store, must-revalidate",
