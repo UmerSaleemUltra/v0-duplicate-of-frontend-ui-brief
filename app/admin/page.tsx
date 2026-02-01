@@ -278,150 +278,130 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="min-h-screen bg-gray-50 p-8">
+    <div className="space-y-8">
       {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-600 text-sm mt-1">Welcome back! Here's your business overview.</p>
+      <div>
+        <h1 className="text-3xl font-semibold text-slate-900">Dashboard</h1>
+        <p className="text-slate-600 mt-1">Welcome back! Here's your business overview.</p>
       </div>
 
-      {/* Top Section: Chart and Stats Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Revenue Chart - Left (spans 2 columns) */}
-        <div className="lg:col-span-2">
-          <RevenueChartCarousel 
-            orders={orders.length > 0 ? orders : []} 
-            title="Revenue Over the Last 7 Months" 
-            description="Your monthly revenue trend"
-          />
-        </div>
+      {/* Stats Grid */}
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+        {statsData.map((stat, index) => {
+          const Icon = stat.icon
+          const TrendIcon = stat.trend === "up" ? ArrowUpRight : ArrowDownRight
+          const trendColor = stat.trend === "up" ? "text-green-600" : "text-red-600"
 
-        {/* Stats Cards Grid - Right (2x2) */}
-        <div className="grid grid-cols-2 gap-4">
-          {/* Total Companies */}
-          <Card className="bg-gray-100 border-0 rounded-lg">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <p className="text-4xl font-bold text-gray-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
-                <p className="text-gray-600 text-xs mt-3 font-medium">Company</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Total Users */}
-          <Card className="bg-gray-100 border-0 rounded-lg">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <p className="text-4xl font-bold text-gray-900">{stats.activeCustomers}</p>
-                <p className="text-gray-600 text-xs mt-3 font-medium">Users</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Total Documents */}
-          <Card className="bg-gray-100 border-0 rounded-lg">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <p className="text-4xl font-bold text-gray-900">{stats.totalOrders}</p>
-                <p className="text-gray-600 text-xs mt-3 font-medium">Documents</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Feedback */}
-          <Card className="bg-gray-100 border-0 rounded-lg">
-            <CardContent className="p-6">
-              <div className="text-center">
-                <p className="text-4xl font-bold text-gray-900">0</p>
-                <p className="text-gray-600 text-xs mt-3 font-medium">Feedback</p>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+          return (
+            <Card key={index}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-slate-600">{stat.name}</CardTitle>
+                <Icon className="h-4 w-4 text-slate-400" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-slate-900">{stat.value}</div>
+                <div className="flex items-center gap-2 mt-2">
+                  <TrendIcon className={`h-4 w-4 ${trendColor}`} />
+                  <p className={`text-xs font-medium ${trendColor}`}>{stat.change}</p>
+                  <p className="text-xs text-slate-500">{stat.subtitle}</p>
+                </div>
+              </CardContent>
+            </Card>
+          )
+        })}
       </div>
 
-      {/* Bottom Section: This Month & Recent Orders */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* This Month So Far */}
-        <Card className="bg-gray-100 border-0 rounded-lg">
-          <CardHeader className="pb-6 border-b border-gray-200">
-            <CardTitle className="text-base font-semibold text-gray-900">This Month So Far</CardTitle>
-          </CardHeader>
-          <CardContent className="pt-6">
-            <div className="grid grid-cols-4 gap-6">
-              <div>
-                <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Sales</p>
-                <p className="text-xl font-bold text-gray-900">${stats.monthlyRevenue.toLocaleString()}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Companies</p>
-                <p className="text-xl font-bold text-gray-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Users</p>
-                <p className="text-xl font-bold text-gray-900">{stats.activeCustomers}</p>
-              </div>
-              <div>
-                <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Documents</p>
-                <p className="text-xl font-bold text-gray-900">{stats.totalOrders}</p>
-              </div>
-            </div>
+      {/* Revenue Chart */}
+      <RevenueChartCarousel 
+        orders={orders.length > 0 ? orders : []} 
+        title="Revenue Over the Last 7 Months" 
+        description="Your monthly revenue trend"
+      />
 
-            {/* Last Month Summary */}
-            <div className="mt-8 pt-8 border-t border-gray-200">
-              <p className="text-sm font-semibold text-gray-900 mb-6">Last Month Summary</p>
-              <div className="grid grid-cols-4 gap-6">
-                <div>
-                  <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Sales</p>
-                  <p className="text-xl font-bold text-gray-900">$14,211</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Companies</p>
-                  <p className="text-xl font-bold text-gray-900">46</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Users</p>
-                  <p className="text-xl font-bold text-gray-900">65</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Documents</p>
-                  <p className="text-xl font-bold text-gray-900">142</p>
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-
+      {/* Bottom Section */}
+      <div className="grid gap-8 md:grid-cols-2">
         {/* Recent Orders */}
-        <Card className="bg-gray-100 border-0 rounded-lg">
-          <CardHeader className="pb-6 border-b border-gray-200">
-            <CardTitle className="text-base font-semibold text-gray-900">Recent Orders</CardTitle>
+        <Card>
+          <CardHeader>
+            <CardTitle>Recent Orders</CardTitle>
           </CardHeader>
-          <CardContent className="pt-6">
-            <div className="space-y-3">
+          <CardContent>
+            <div className="space-y-4">
               {orders.length === 0 ? (
-                <p className="text-center text-gray-600 py-12 text-sm">No orders yet</p>
+                <p className="text-center text-slate-500 py-8 text-sm">No orders yet</p>
               ) : (
                 <>
                   {orders.slice(0, 5).map((order) => (
                     <div
                       key={order.id}
-                      className="flex items-center gap-3 p-3 rounded hover:bg-gray-200 transition-colors cursor-pointer"
+                      className="flex items-center justify-between p-3 rounded-lg border border-slate-200 hover:bg-slate-50 cursor-pointer transition-colors"
                       onClick={() => router.push(`/admin/orders/${order.id}`)}
                     >
-                      <ShoppingCart className="h-4 w-4 text-gray-500 flex-shrink-0" />
-                      <p className="text-sm text-gray-900 truncate flex-1 font-medium">{order.companyName || "Unknown"}</p>
+                      <div className="flex items-center gap-3">
+                        <ShoppingCart className="h-4 w-4 text-slate-400" />
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{order.companyName || "Unknown"}</p>
+                          <p className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                        </div>
+                      </div>
                     </div>
                   ))}
                 </>
               )}
+              <Button 
+                className="w-full mt-4"
+                variant="outline"
+                asChild
+              >
+                <a href="/admin/orders">View All Orders</a>
+              </Button>
             </div>
-            <Button 
-              className="w-full bg-red-600 hover:bg-red-700 text-white rounded-full mt-6 font-semibold py-2.5"
-              asChild
-            >
-              <a href="/admin/orders">View All</a>
-            </Button>
+          </CardContent>
+        </Card>
+
+        {/* Summary */}
+        <Card>
+          <CardHeader>
+            <CardTitle>Summary</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              <div>
+                <h3 className="text-sm font-semibold text-slate-900 mb-4">This Month</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs text-slate-500 uppercase font-semibold">Sales</p>
+                    <p className="text-2xl font-bold text-slate-900">${stats.monthlyRevenue.toLocaleString()}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-slate-500 uppercase font-semibold">Orders</p>
+                    <p className="text-2xl font-bold text-slate-900">{orders.length}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-slate-500 uppercase font-semibold">Companies</p>
+                    <p className="text-2xl font-bold text-slate-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-slate-500 uppercase font-semibold">Users</p>
+                    <p className="text-2xl font-bold text-slate-900">{stats.activeCustomers}</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="pt-4 border-t border-slate-200">
+                <h3 className="text-sm font-semibold text-slate-900 mb-4">Last Month</h3>
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-1">
+                    <p className="text-xs text-slate-500 uppercase font-semibold">Sales</p>
+                    <p className="text-lg font-bold text-slate-900">$14,211</p>
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-slate-500 uppercase font-semibold">Orders</p>
+                    <p className="text-lg font-bold text-slate-900">24</p>
+                  </div>
+                </div>
+              </div>
+            </div>
           </CardContent>
         </Card>
       </div>
