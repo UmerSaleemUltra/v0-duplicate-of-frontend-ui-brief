@@ -281,135 +281,151 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       {/* Header */}
       <div>
-        <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900">Dashboard</h1>
-        <p className="text-sm sm:text-base text-slate-600 mt-1">Welcome back! Here's what's happening today.</p>
+        <h1 className="text-3xl font-semibold text-slate-900">Dashboard</h1>
+        <p className="text-slate-600 mt-1">Welcome back! Here's your business overview.</p>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
-        {statsData.map((stat) => (
-          <Card
-            key={stat.name}
-            className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg hover:border-primary/20"
-          >
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div>
-                <CardTitle className="text-xs sm:text-sm font-medium text-slate-600">{stat.name}</CardTitle>
-                <p className="text-xs text-slate-500 mt-1">{stat.subtitle}</p>
-              </div>
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
-                <stat.icon className="h-5 w-5 text-white" />
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-xl sm:text-2xl font-semibold text-slate-900">{stat.value}</div>
-              <div className="flex items-center text-xs mt-1">
-                {stat.trend === "up" ? (
-                  <ArrowUpRight className="h-3 w-3 text-primary mr-1" />
-                ) : (
-                  <ArrowDownRight className="h-3 w-3 text-slate-500 mr-1" />
-                )}
-                <span className={stat.trend === "up" ? "text-primary font-medium" : "text-slate-500"}>
-                  {stat.change}
-                </span>
-                <span className="text-slate-500 ml-1 hidden sm:inline">vs last period</span>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-
-      {/* Revenue Trend Chart */}
-      <RevenueChartCarousel 
-        orders={orders.length > 0 ? orders : []} 
-        title="Revenue Trend" 
-        description="View your revenue trends over the last 2 years with detailed daily or monthly breakdowns"
-      />
-
+      {/* Top Section: Chart and Stats */}
       <div className="grid gap-6 lg:grid-cols-3">
-        {/* Recent Orders */}
-        <Card className="lg:col-span-2 bg-white border-slate-200 transition-all duration-200 hover:shadow-lg">
+        {/* Revenue Chart - Left */}
+        <div className="lg:col-span-2">
+          <RevenueChartCarousel 
+            orders={orders.length > 0 ? orders : []} 
+            title="Revenue Over the Last 7 Months" 
+            description="Your monthly revenue trend"
+          />
+        </div>
+
+        {/* Stats Cards - Right */}
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4">
+            {/* Total Companies */}
+            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
+              <CardContent className="p-6">
+                <div className="text-right">
+                  <p className="text-4xl font-bold text-slate-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
+                  <p className="text-sm text-slate-600 mt-2">Company</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Users */}
+            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
+              <CardContent className="p-6">
+                <div className="text-right">
+                  <p className="text-4xl font-bold text-slate-900">{stats.activeCustomers}</p>
+                  <p className="text-sm text-slate-600 mt-2">Users</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Total Documents */}
+            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
+              <CardContent className="p-6">
+                <div className="text-right">
+                  <p className="text-4xl font-bold text-slate-900">{stats.totalOrders}</p>
+                  <p className="text-sm text-slate-600 mt-2">Documents</p>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Feedback */}
+            <Card className="bg-gradient-to-br from-slate-50 to-slate-100 border-slate-200">
+              <CardContent className="p-6">
+                <div className="text-right">
+                  <p className="text-4xl font-bold text-slate-900">0</p>
+                  <p className="text-sm text-slate-600 mt-2">Feedback</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </div>
+
+      {/* This Month and Last Month Summary */}
+      <div className="grid gap-6 lg:grid-cols-2">
+        {/* This Month So Far */}
+        <Card className="bg-white border-slate-200">
           <CardHeader>
-            <div className="flex items-center justify-between">
-              <CardTitle className="text-lg font-semibold text-slate-900">Recent Orders</CardTitle>
-              <Button variant="ghost" size="sm" className="h-10 transition-colors duration-200" asChild>
-                <a href="/admin/orders">View all</a>
-              </Button>
+            <CardTitle className="text-lg font-semibold text-slate-900">This Month So Far</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-6">
+              {/* Current Month Stats */}
+              <div className="grid grid-cols-4 gap-4 text-center">
+                <div>
+                  <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Sales</p>
+                  <p className="text-lg font-bold text-slate-900">${stats.monthlyRevenue.toLocaleString()}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Companies</p>
+                  <p className="text-lg font-bold text-slate-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Users</p>
+                  <p className="text-lg font-bold text-slate-900">{stats.activeCustomers}</p>
+                </div>
+                <div>
+                  <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Documents</p>
+                  <p className="text-lg font-bold text-slate-900">{stats.totalOrders}</p>
+                </div>
+              </div>
+
+              {/* Last Month Summary */}
+              <div className="pt-6 border-t border-slate-200">
+                <p className="text-sm font-semibold text-slate-900 mb-4">Last Month Summary</p>
+                <div className="grid grid-cols-4 gap-4 text-center">
+                  <div>
+                    <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Sales</p>
+                    <p className="text-lg font-bold text-slate-900">$14,211</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Companies</p>
+                    <p className="text-lg font-bold text-slate-900">46</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Users</p>
+                    <p className="text-lg font-bold text-slate-900">65</p>
+                  </div>
+                  <div>
+                    <p className="text-xs text-slate-500 uppercase font-semibold mb-2">Documents</p>
+                    <p className="text-lg font-bold text-slate-900">142</p>
+                  </div>
+                </div>
+              </div>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* Recent Orders */}
+        <Card className="bg-white border-slate-200">
+          <CardHeader>
+            <CardTitle className="text-lg font-semibold text-slate-900">Recent Orders</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="space-y-3">
               {orders.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">No orders yet</p>
               ) : (
-                orders.map((order) => (
-                  <div
-                    key={order.id}
-                    className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-primary/20 hover:shadow-md transition-all duration-200 cursor-pointer"
-                    onClick={() => router.push(`/admin/orders/${order.id}`)}
-                  >
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <p className="text-sm font-semibold text-slate-900">{order.id}</p>
-                        <Badge
-                          variant={
-                            order.status === "completed"
-                              ? "default"
-                              : order.status === "processing"
-                                ? "secondary"
-                                : "outline"
-                          }
-                          className="text-xs"
-                        >
-                          {order.status === "completed" && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                          {order.status === "processing" && <Clock className="h-3 w-3 mr-1" />}
-                          {order.status === "pending" && <AlertCircle className="h-3 w-3 mr-1" />}
-                          {order.status}
-                        </Badge>
-                      </div>
-                      <p className="text-sm text-slate-600">{order.userName || "Unknown"}</p>
-                      <p className="text-xs text-slate-500">
-                        {order.companyName || "Unknown"} • {order.state || "N/A"} • {order.packageType || "N/A"}
-                      </p>
+                <div className="space-y-2">
+                  {orders.slice(0, 5).map((order) => (
+                    <div
+                      key={order.id}
+                      className="flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-slate-50 transition-colors"
+                      onClick={() => router.push(`/admin/orders/${order.id}`)}
+                    >
+                      <ShoppingCart className="h-4 w-4 text-slate-400 flex-shrink-0" />
+                      <p className="text-sm text-slate-700 truncate flex-1">{order.companyName || "Unknown"}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-sm font-semibold text-slate-900">
-                        ${(order.pricing?.total || order.amount || order.total || 0).toLocaleString()}
-                      </p>
-                      <p className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</p>
-                    </div>
-                  </div>
-                ))
+                  ))}
+                </div>
               )}
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* State Breakdown */}
-        <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg">
-          <CardHeader>
-            <CardTitle className="text-lg font-semibold text-slate-900">Top States</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {stateBreakdown.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">No data yet</p>
-              ) : (
-                stateBreakdown.map((item) => (
-                  <div key={item.state}>
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-slate-700">{item.state}</span>
-                      <span className="text-sm text-slate-600">{item.count} companies</span>
-                    </div>
-                    <div className="w-full bg-slate-100 rounded-full h-2">
-                      <div
-                        className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-2 rounded-full transition-all duration-300"
-                        style={{ width: `${item.percentage}%` }}
-                      />
-                    </div>
-                  </div>
-                ))
-              )}
+              <Button 
+                className="w-full bg-red-600 hover:bg-red-700 text-white rounded-full mt-4"
+                asChild
+              >
+                <a href="/admin/orders">View All</a>
+              </Button>
             </div>
           </CardContent>
         </Card>
