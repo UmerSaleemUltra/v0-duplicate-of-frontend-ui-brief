@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { RevenueChartCarousel } from "@/components/admin/revenue-chart-carousel"
 import {
   DollarSign,
   ShoppingCart,
@@ -318,37 +319,12 @@ export default function AdminDashboard() {
         ))}
       </div>
 
-      {/* Revenue Trend */}
-      <Card className="bg-white border-slate-200">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-slate-900">Revenue Trend</CardTitle>
-          <p className="text-sm text-slate-600">Current month revenue from all orders (formations + add-ons)</p>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {monthlyData.length === 0 ? (
-              <p className="text-center text-muted-foreground py-8">No revenue data yet</p>
-            ) : (
-              monthlyData.map((data) => (
-                <div key={data.month}>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm font-medium text-slate-700">{data.month}</span>
-                    <span className="text-sm font-semibold text-slate-900">${data.revenue.toLocaleString()}</span>
-                  </div>
-                  <div className="w-full bg-slate-100 rounded-full h-2">
-                    <div
-                      className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-2 rounded-full transition-all duration-300"
-                      style={{
-                        width: data.revenue > 0 ? "100%" : "0%",
-                      }}
-                    />
-                  </div>
-                </div>
-              ))
-            )}
-          </div>
-        </CardContent>
-      </Card>
+      {/* Revenue Trend Chart */}
+      <RevenueChartCarousel 
+        orders={orders.length > 0 ? orders : []} 
+        title="Revenue Trend" 
+        description="View your revenue trends over the last 2 years with detailed daily or monthly breakdowns"
+      />
 
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Recent Orders */}
