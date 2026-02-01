@@ -278,16 +278,16 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="space-y-8 bg-white">
+    <div className="min-h-screen bg-gray-50 p-8">
       {/* Header */}
-      <div className="border-b border-gray-100 pb-6">
+      <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900">Dashboard</h1>
-        <p className="text-gray-500 text-sm mt-1">Welcome back! Here's your business overview.</p>
+        <p className="text-gray-600 text-sm mt-1">Welcome back! Here's your business overview.</p>
       </div>
 
-      {/* Top Section: Chart and Stats */}
-      <div className="grid gap-6 lg:grid-cols-3">
-        {/* Revenue Chart - Left */}
+      {/* Top Section: Chart and Stats Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
+        {/* Revenue Chart - Left (spans 2 columns) */}
         <div className="lg:col-span-2">
           <RevenueChartCarousel 
             orders={orders.length > 0 ? orders : []} 
@@ -296,99 +296,96 @@ export default function AdminDashboard() {
           />
         </div>
 
-        {/* Stats Cards - Right */}
-        <div className="space-y-4">
+        {/* Stats Cards Grid - Right (2x2) */}
+        <div className="grid grid-cols-2 gap-4">
           {/* Total Companies */}
-          <Card className="bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+          <Card className="bg-gray-100 border-0 rounded-lg">
             <CardContent className="p-6">
               <div className="text-center">
-                <p className="text-5xl font-bold text-gray-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
-                <p className="text-gray-500 text-sm mt-3 font-medium">Company</p>
+                <p className="text-4xl font-bold text-gray-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
+                <p className="text-gray-600 text-xs mt-3 font-medium">Company</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Total Users */}
-          <Card className="bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+          <Card className="bg-gray-100 border-0 rounded-lg">
             <CardContent className="p-6">
               <div className="text-center">
-                <p className="text-5xl font-bold text-gray-900">{stats.activeCustomers}</p>
-                <p className="text-gray-500 text-sm mt-3 font-medium">Users</p>
+                <p className="text-4xl font-bold text-gray-900">{stats.activeCustomers}</p>
+                <p className="text-gray-600 text-xs mt-3 font-medium">Users</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Total Documents */}
-          <Card className="bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+          <Card className="bg-gray-100 border-0 rounded-lg">
             <CardContent className="p-6">
               <div className="text-center">
-                <p className="text-5xl font-bold text-gray-900">{stats.totalOrders}</p>
-                <p className="text-gray-500 text-sm mt-3 font-medium">Documents</p>
+                <p className="text-4xl font-bold text-gray-900">{stats.totalOrders}</p>
+                <p className="text-gray-600 text-xs mt-3 font-medium">Documents</p>
               </div>
             </CardContent>
           </Card>
 
           {/* Feedback */}
-          <Card className="bg-white border border-gray-200 hover:border-gray-300 transition-colors">
+          <Card className="bg-gray-100 border-0 rounded-lg">
             <CardContent className="p-6">
               <div className="text-center">
-                <p className="text-5xl font-bold text-gray-900">0</p>
-                <p className="text-gray-500 text-sm mt-3 font-medium">Feedback</p>
+                <p className="text-4xl font-bold text-gray-900">0</p>
+                <p className="text-gray-600 text-xs mt-3 font-medium">Feedback</p>
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
 
-      {/* This Month and Last Month Summary */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      {/* Bottom Section: This Month & Recent Orders */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* This Month So Far */}
-        <Card className="bg-white border border-gray-200">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-gray-900">This Month So Far</CardTitle>
+        <Card className="bg-gray-100 border-0 rounded-lg">
+          <CardHeader className="pb-6 border-b border-gray-200">
+            <CardTitle className="text-base font-semibold text-gray-900">This Month So Far</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-6">
-              {/* Current Month Stats */}
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Sales</p>
-                  <p className="text-lg font-bold text-gray-900">${stats.monthlyRevenue.toLocaleString()}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Companies</p>
-                  <p className="text-lg font-bold text-gray-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Users</p>
-                  <p className="text-lg font-bold text-gray-900">{stats.activeCustomers}</p>
-                </div>
-                <div>
-                  <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Documents</p>
-                  <p className="text-lg font-bold text-gray-900">{stats.totalOrders}</p>
-                </div>
+          <CardContent className="pt-6">
+            <div className="grid grid-cols-4 gap-6">
+              <div>
+                <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Sales</p>
+                <p className="text-xl font-bold text-gray-900">${stats.monthlyRevenue.toLocaleString()}</p>
               </div>
+              <div>
+                <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Companies</p>
+                <p className="text-xl font-bold text-gray-900">{stateBreakdown.reduce((acc, item) => acc + item.count, 0)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Users</p>
+                <p className="text-xl font-bold text-gray-900">{stats.activeCustomers}</p>
+              </div>
+              <div>
+                <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Documents</p>
+                <p className="text-xl font-bold text-gray-900">{stats.totalOrders}</p>
+              </div>
+            </div>
 
-              {/* Last Month Summary */}
-              <div className="pt-4 border-t border-gray-100">
-                <p className="text-sm font-semibold text-gray-900 mb-4">Last Month Summary</p>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Sales</p>
-                    <p className="text-lg font-bold text-gray-900">$14,211</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Companies</p>
-                    <p className="text-lg font-bold text-gray-900">46</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Users</p>
-                    <p className="text-lg font-bold text-gray-900">65</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase font-semibold mb-2">Documents</p>
-                    <p className="text-lg font-bold text-gray-900">142</p>
-                  </div>
+            {/* Last Month Summary */}
+            <div className="mt-8 pt-8 border-t border-gray-200">
+              <p className="text-sm font-semibold text-gray-900 mb-6">Last Month Summary</p>
+              <div className="grid grid-cols-4 gap-6">
+                <div>
+                  <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Sales</p>
+                  <p className="text-xl font-bold text-gray-900">$14,211</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Companies</p>
+                  <p className="text-xl font-bold text-gray-900">46</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Users</p>
+                  <p className="text-xl font-bold text-gray-900">65</p>
+                </div>
+                <div>
+                  <p className="text-xs text-gray-600 uppercase font-semibold mb-2">Documents</p>
+                  <p className="text-xl font-bold text-gray-900">142</p>
                 </div>
               </div>
             </div>
@@ -396,35 +393,35 @@ export default function AdminDashboard() {
         </Card>
 
         {/* Recent Orders */}
-        <Card className="bg-white border border-gray-200">
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-semibold text-gray-900">Recent Orders</CardTitle>
+        <Card className="bg-gray-100 border-0 rounded-lg">
+          <CardHeader className="pb-6 border-b border-gray-200">
+            <CardTitle className="text-base font-semibold text-gray-900">Recent Orders</CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
+          <CardContent className="pt-6">
+            <div className="space-y-3">
               {orders.length === 0 ? (
-                <p className="text-center text-gray-500 py-8 text-sm">No orders yet</p>
+                <p className="text-center text-gray-600 py-12 text-sm">No orders yet</p>
               ) : (
-                <div className="space-y-1">
-                  {orders.slice(0, 4).map((order) => (
+                <>
+                  {orders.slice(0, 5).map((order) => (
                     <div
                       key={order.id}
-                      className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors cursor-pointer border border-gray-100"
+                      className="flex items-center gap-3 p-3 rounded hover:bg-gray-200 transition-colors cursor-pointer"
                       onClick={() => router.push(`/admin/orders/${order.id}`)}
                     >
-                      <ShoppingCart className="h-4 w-4 text-gray-400 flex-shrink-0" />
-                      <p className="text-sm text-gray-700 truncate flex-1 font-medium">{order.companyName || "Unknown"}</p>
+                      <ShoppingCart className="h-4 w-4 text-gray-500 flex-shrink-0" />
+                      <p className="text-sm text-gray-900 truncate flex-1 font-medium">{order.companyName || "Unknown"}</p>
                     </div>
                   ))}
-                </div>
+                </>
               )}
-              <Button 
-                className="w-full bg-gray-900 hover:bg-gray-800 text-white rounded-lg mt-6 font-medium"
-                asChild
-              >
-                <a href="/admin/orders">View All</a>
-              </Button>
             </div>
+            <Button 
+              className="w-full bg-red-600 hover:bg-red-700 text-white rounded-full mt-6 font-semibold py-2.5"
+              asChild
+            >
+              <a href="/admin/orders">View All</a>
+            </Button>
           </CardContent>
         </Card>
       </div>
