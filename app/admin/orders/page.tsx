@@ -148,9 +148,13 @@ export default function OrdersPage() {
         const companiesData = await companiesResponse.json()
         const ordersData = await ordersResponse.json()
 
+        console.log("[v0] Orders API Response:", ordersData)
+        
         const allUsers = usersData.data || usersData || []
         const allCompanies = companiesData.data || companiesData || []
         const apiOrders = ordersData.data || ordersData || []
+        
+        console.log("[v0] Loaded orders count:", apiOrders.length)
 
         // Use orders from API or fallback to extracting from companies
         let allOrders = apiOrders.length > 0 
@@ -159,12 +163,14 @@ export default function OrdersPage() {
               const companyOrders = company.orders || []
               return companyOrders.map((order: any) => ({
                 ...order,
-                companyId: company.id,
+                companyId: company.id || company._id,
                 companyName: company.name,
                 state: company.state,
                 packageType: order.packageType || company.packageType || "N/A",
               }))
             })
+        
+        console.log("[v0] All orders after merge:", allOrders.length)
 
         // Normalize order IDs and ensure required fields exist
         allOrders = allOrders.map((order: any) => ({
@@ -675,131 +681,129 @@ export default function OrdersPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-slate-900">All Orders ({filteredOrders.length})</CardTitle>
+      <Card className="bg-white border-slate-200 shadow-sm">
+        <CardHeader className="border-b border-slate-200">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold text-slate-900">Orders</CardTitle>
+            <Badge variant="secondary" className="text-sm">
+              {filteredOrders.length} total
+            </Badge>
+          </div>
         </CardHeader>
-        <CardContent>
-          {filteredOrders.length === 0 ? (
+        <CardContent className="pt-6">
+          {paginatedOrders.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-slate-600">No orders found</p>
-              <p className="text-sm text-slate-500 mt-2">
+              <ShoppingCart className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-600 font-medium">No orders found</p>
+              <p className="text-sm text-slate-500 mt-1">
                 {searchQuery || statusFilter !== "all" || stateFilter !== "all"
                   ? "Try adjusting your filters"
-                  : "Orders will appear here once customers complete checkout"}
+                  : "Orders will appear here when customers complete checkout"}
               </p>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto -mx-6">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Order ID</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Customer</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Company</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">State</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Package</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Amount</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Status</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Date</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Actions</th>
+                    <tr className="border-b border-slate-200 bg-slate-50">
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Order ID</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Customer</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Company</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">State</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Amount</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Status</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Date</th>
+                      <th className="text-center py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedOrders.map((order) => (
-                      <tr
-                        key={order.id}
-                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200"
-                      >
-                        <td className="py-4 px-4">
-                          <span className="text-sm font-medium text-slate-900 font-mono">{order.id}</span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div>
-                            <p className="text-sm font-medium text-slate-900">{order.customerName}</p>
-                            <p className="text-xs text-slate-500">{order.customerEmail}</p>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm text-slate-700">{order.companyName}</span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm text-slate-700">{order.state}</span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Badge variant="outline" className="text-xs capitalize">
-                            {order.packageType}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm font-semibold text-slate-900">
-                            ${order.pricing?.total || order.amount || order.total || 0}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Badge
-                            variant={
-                              order.status === "completed"
-                                ? "default"
-                                : order.status === "processing"
-                                  ? "secondary"
-                                  : "outline"
-                            }
-                            className="text-xs capitalize"
-                          >
-                            {order.status === "completed" && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                            {order.status === "processing" && <Clock className="h-3 w-3 mr-1" />}
-                            {order.status === "pending" && <AlertCircle className="h-3 w-3 mr-1" />}
-                            {order.status}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm text-slate-600">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => router.push(`/admin/orders/${order.id}`)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleViewCompanyDetails(order)}>
-                                <Building2 className="h-4 w-4 mr-2" />
-                                View Company
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                                onSelect={(e) => {
-                                  e.preventDefault()
-                                  handleDeleteOrder(order.id)
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete Order
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
+                    {paginatedOrders.map((order) => {
+                      const amount = order.pricing?.total || order.amount || order.total || 0
+                      const statusColor =
+                        order.status === "completed"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : order.status === "processing"
+                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            : "bg-amber-50 text-amber-700 border-amber-200"
+
+                      return (
+                        <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                          <td className="py-4 px-6">
+                            <code className="text-xs font-medium text-slate-900 bg-slate-100 px-2 py-1 rounded">
+                              {order.id?.substring(0, 8)}...
+                            </code>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div>
+                              <p className="text-sm font-medium text-slate-900">{order.customerName || "N/A"}</p>
+                              <p className="text-xs text-slate-500 truncate">{order.customerEmail || "N/A"}</p>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-sm text-slate-700">{order.companyName || "N/A"}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <Badge variant="outline" className="text-xs">
+                              {order.state || "N/A"}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-sm font-semibold text-slate-900">${amount.toLocaleString()}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <Badge className={`text-xs capitalize border ${statusColor}`}>
+                              {order.status || "pending"}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-sm text-slate-600">
+                              {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem onClick={() => router.push(`/admin/orders/${order.id}`)}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleViewCompanyDetails(order)}>
+                                  <Building2 className="h-4 w-4 mr-2" />
+                                  View Company
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                  onSelect={(e) => {
+                                    e.preventDefault()
+                                    handleDeleteOrder(order.id)
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
-                  <div className="text-sm text-slate-600">
-                    Showing {startIndex + 1} to {Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length}{" "}
-                    orders
-                  </div>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-slate-200">
+                  <p className="text-sm text-slate-600">
+                    Showing <span className="font-semibold">{startIndex + 1}</span> to{" "}
+                    <span className="font-semibold">{Math.min(endIndex, filteredOrders.length)}</span> of{" "}
+                    <span className="font-semibold">{filteredOrders.length}</span> orders
+                  </p>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -810,17 +814,15 @@ export default function OrdersPage() {
                       Previous
                     </Button>
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
                         <Button
                           key={page}
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(page)}
-                          className={
-                            currentPage === page
-                              ? "w-8 h-8 p-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                              : "w-8 h-8 p-0"
-                          }
+                          className={`w-8 h-8 p-0 ${
+                            currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""
+                          }`}
                         >
                           {page}
                         </Button>
