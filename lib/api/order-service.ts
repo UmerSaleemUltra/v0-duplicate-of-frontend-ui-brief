@@ -3,7 +3,12 @@ import { Order, Company } from "@/lib/types"
 
 /**
  * OrderService - Centralized order management logic
- * Handles fetching, creating, and transforming order data
+ * 
+ * IMPORTANT: Orders are embedded in the companies collection!
+ * - Each company has an `orders` array field
+ * - Orders are NOT stored in a separate collection
+ * 
+ * This service extracts orders from companies and provides a unified API.
  */
 
 export interface OrderServiceOptions {
@@ -13,122 +18,173 @@ export interface OrderServiceOptions {
 }
 
 /**
- * Get orders from database with optional filtering
+ * Extract orders from companies collection
+ * Orders are stored as an array field within each company document
  */
-export async function getOrdersFromDatabase(db: Db, options: OrderServiceOptions) {
+export async function getOrdersFromCompanies(db: Db, options: OrderServiceOptions) {
   const { userId, isAdmin = false, limit = 100 } = options
 
   const query = isAdmin && !userId ? {} : { userId }
 
-  const orders = await db
-    .collection("orders")
-    .find(query)
-    .sort({ createdAt: -1 })
-    .limit(limit)
-    .toArray()
-
-  return orders
-}
-
-/**
- * Transform database order to API response format
- */
-export function transformOrder(order: any) {
-  return {
-    id: order._id?.toString() || order.id,
-    userId: order.userId,
-    companyId: order.companyId,
-    companyName: order.companyName,
-    type: order.type,
-    status: order.status,
-    amount: order.amount,
-    total: order.total,
-    packagePrice: order.packagePrice,
-    stateFilingFee: order.stateFilingFee,
-    addonsTotal: order.addonsTotal,
-    paymentStatus: order.paymentStatus,
-    paymentMethod: order.paymentMethod,
-    items: order.items || [],
-    purchasedAddons: order.purchasedAddons || [],
-    createdAt: order.createdAt,
-    updatedAt: order.updatedAt,
-  }
-}
-
-/**
- * Convert company record to order record
- * This should only be used when displaying company data as orders (UI fallback)
- * NOT for creating actual orders in the database
- */
-export function companyToOrder(company: any, userId?: string) {
-  return {
-    _id: new ObjectId(),
-    userId: company.userId || userId,
-    companyId: company._id?.toString() || company.id,
-    companyName: company.name,
-    type: company.type || "Formation",
-    packageType: company.packageType || "Standard",
-    status: company.status || "active",
-    amount: company.revenue || 0,
-    total: company.revenue || 0,
-    packagePrice: company.packagePrice || 0,
-    stateFilingFee: company.stateFilingFee || 0,
-    addonsTotal: company.addonsTotal || 0,
-    paymentStatus: "completed",
-    paymentMethod: "N/A",
-    items: company.items || [],
-    purchasedAddons: company.purchasedAddons || [],
-    createdAt: company.createdAt || new Date().toISOString(),
-    updatedAt: company.updatedAt || new Date().toISOString(),
-  }
-}
-
-/**
- * Get companies for fallback order display
- */
-export async function getCompaniesForOrders(db: Db, options: OrderServiceOptions) {
-  const { userId, isAdmin = false, limit = 100 } = options
-
-  const query = isAdmin && !userId ? {} : { userId }
-
+  // Fetch companies with their embedded orders
   const companies = await db
     .collection("companies")
     .find(query)
     .limit(limit)
     .toArray()
 
-  return companies
+  // Extract and flatten orders from all companies
+  const allOrders: any[] = []
+
+  for (const company of companies) {
+    if (company.orders && Array.isArray(company.orders)) {
+      // Each order in the company's orders array
+      for (const order of company.orders) {
+        allOrders.push({
+          ...order,
+          _id: new ObjectId(order.id),
+          companyId: company._id?.toString() || company.id,
+          companyName: company.name,
+          userId: company.userId,
+          state: order.state || company.state,
+        })
+      }
+    }
+  }
+
+  // Sort by creation date descending
+  allOrders.sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime()
+    const dateB = new Date(b.createdAt).getTime()
+    return dateB - dateA
+  })
+
+  return allOrders
 }
 
 /**
- * Process orders - returns real orders or company-based fallback
- * @param db Database instance
- * @param options Configuration options
- * @returns Transformed order data ready for API response
+ * Transform database order to API response format
+ */
+export function transformOrder(order: any) {
+  const pricing = order.pricing || {}
+  
+  return {
+    id: order._id?.toString() || order.id,
+    userId: order.userId,
+    companyId: order.companyId,
+    companyName: order.companyName,
+    type: order.orderType || order.type || "Formation",
+    packageType: order.packageType || "Standard",
+    state: order.state || "N/A",
+    status: order.status || "pending",
+    amount: pricing.total || order.total || order.amount || 0,
+    total: pricing.total || order.total || 0,
+    packagePrice: pricing.packagePrice || 0,
+    stateFilingFee: pricing.stateFilingFee || 0,
+    addonsTotal: pricing.addonsTotal || 0,
+    subtotal: pricing.subtotal || 0,
+    paymentInfo: order.paymentInfo || {},
+    paymentStatus: order.paymentInfo?.status || "pending",
+    paymentMethod: order.paymentInfo?.method || "N/A",
+    items: order.selectedAddons || order.items || [],
+    purchasedAddons: order.purchasedAddons || [],
+    passportDocuments: order.passportDocuments || [],
+    createdAt: order.createdAt,
+    updatedAt: order.updatedAt,
+  }
+}
+
+/**
+ * Get all orders (from companies collection)
+ * This is the main entry point for fetching orders
  */
 export async function processOrders(db: Db, options: OrderServiceOptions) {
-  const { userId } = options
+  try {
+    console.log("[v0] Processing orders with options:", options)
+    
+    // Extract orders from companies collection
+    const orders = await getOrdersFromCompanies(db, options)
+    
+    console.log(`[v0] Found ${orders.length} orders from companies`)
 
-  // Step 1: Try to fetch real orders from database
-  const orders = await getOrdersFromDatabase(db, options)
+    if (orders.length === 0) {
+      console.log("[v0] No orders found in any companies")
+      return []
+    }
 
-  // Step 2: If orders exist, return them
-  if (orders.length > 0) {
-    console.log(`[v0] Found ${orders.length} orders in database`)
-    return orders.map(transformOrder)
+    // Transform orders to API response format
+    const transformedOrders = orders.map(transformOrder)
+    
+    console.log(`[v0] Transformed ${transformedOrders.length} orders for API response`)
+    
+    return transformedOrders
+  } catch (error) {
+    console.error("[v0] Error processing orders:", error)
+    throw error
   }
+}
 
-  // Step 3: If no orders, fallback to company data for display purposes
-  // This is NOT creating orders - just displaying company data in order format
-  console.log("[v0] No orders found, using company data for display fallback")
-  const companies = await getCompaniesForOrders(db, options)
+/**
+ * Get single order by ID
+ */
+export async function getOrderById(db: Db, orderId: string) {
+  try {
+    const companies = await db
+      .collection("companies")
+      .find({})
+      .toArray()
 
-  if (companies.length > 0) {
-    console.log(`[v0] Creating display orders from ${companies.length} companies`)
-    return companies.map((company) => transformOrder(companyToOrder(company, userId)))
+    for (const company of companies) {
+      if (company.orders && Array.isArray(company.orders)) {
+        const order = company.orders.find(
+          (o: any) => o.id === orderId || o._id?.toString() === orderId
+        )
+        
+        if (order) {
+          return transformOrder({
+            ...order,
+            companyId: company._id?.toString() || company.id,
+            companyName: company.name,
+            userId: company.userId,
+          })
+        }
+      }
+    }
+
+    return null
+  } catch (error) {
+    console.error("[v0] Error fetching order by ID:", error)
+    throw error
   }
+}
 
-  // Step 4: No data available
-  console.log("[v0] No orders or companies found")
-  return []
+/**
+ * Get orders for specific company
+ */
+export async function getCompanyOrders(db: Db, companyId: string) {
+  try {
+    const company = await db
+      .collection("companies")
+      .findOne({ _id: new ObjectId(companyId) })
+
+    if (!company) {
+      return []
+    }
+
+    if (!company.orders || !Array.isArray(company.orders)) {
+      return []
+    }
+
+    return company.orders.map((order: any) =>
+      transformOrder({
+        ...order,
+        companyId: company._id?.toString(),
+        companyName: company.name,
+        userId: company.userId,
+      })
+    )
+  } catch (error) {
+    console.error("[v0] Error fetching company orders:", error)
+    throw error
+  }
 }
