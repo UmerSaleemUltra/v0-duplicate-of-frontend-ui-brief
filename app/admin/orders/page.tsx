@@ -145,6 +145,8 @@ export default function OrdersPage() {
         const ordersData = await ordersResponse.json()
         
         const allUsers = usersData.data || usersData || []
+        const allCompanies = companiesData.data || companiesData || []
+        const apiOrders = ordersData.data || ordersData || []
 
         // Use orders from API or fallback to extracting from companies
         let allOrders = apiOrders.length > 0 
