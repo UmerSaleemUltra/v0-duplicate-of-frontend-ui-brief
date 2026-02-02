@@ -144,9 +144,21 @@ export default function OrdersPage() {
         const companiesData = await companiesResponse.json()
         const ordersData = await ordersResponse.json()
         
+        console.log("[v0] API responses:", {
+          users: usersData,
+          companies: companiesData,
+          orders: ordersData,
+        })
+
         const allUsers = usersData.data || usersData || []
         const allCompanies = companiesData.data || companiesData || []
-        const apiOrders = ordersData.data || ordersData || []
+        const apiOrders = ordersData.data || []
+
+        console.log("[v0] Extracted data:", {
+          usersCount: allUsers.length,
+          companiesCount: allCompanies.length,
+          apiOrdersCount: apiOrders.length,
+        })
 
         // Use orders from API or fallback to extracting from companies
         let allOrders = apiOrders.length > 0 
@@ -164,15 +176,23 @@ export default function OrdersPage() {
         allOrders = allOrders.map((order: any) => ({
           ...order,
           id: order.id || order._id,
-          companyId: order.companyId || order.companyId,
+          companyId: order.companyId,
         }))
 
+        console.log("[v0] Normalized orders:", allOrders.slice(0, 3))
+
         const ordersWithDetails = allOrders.map((order: any) => {
-          const company = allCompanies.find((c: any) => {
-            const companyId = c.id || c._id?.toString?.()
-            return String(companyId) === String(order.companyId)
-          })
+          // Simple lookup since both IDs are already strings
+          const company = allCompanies.find((c: any) => String(c.id) === String(order.companyId))
           const user = allUsers.find((u: any) => String(u.id || u._id) === String(company?.userId))
+
+          if (!company) {
+            console.log("[v0] WARNING: No company found for order:", {
+              orderId: order.id,
+              companyId: order.companyId,
+              availableCompanyIds: allCompanies.map((c: any) => c.id).slice(0, 5),
+            })
+          }
 
           return {
             ...order,
