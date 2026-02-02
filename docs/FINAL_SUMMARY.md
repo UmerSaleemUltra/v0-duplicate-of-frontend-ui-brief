@@ -2,7 +2,7 @@
 
 ## The Problem You Had ❌
 
-```
+\`\`\`
 Admin visits /admin/orders
          ↓
 No orders showing
@@ -10,7 +10,7 @@ No orders showing
 Even though companies exist
          ↓
 Confusing system with bugs
-```
+\`\`\`
 
 ## What Was Wrong
 
@@ -24,7 +24,7 @@ Confusing system with bugs
 
 ### Created 3 New Files
 
-```typescript
+\`\`\`typescript
 // 1. Service Layer - Centralized Logic
 /lib/api/order-service.ts
   ├── processOrders()         // Main orchestrator
@@ -42,11 +42,11 @@ Confusing system with bugs
 /app/admin/orders/page.tsx
   ├── Old: Complex fallback logic
   └── New: Just uses API data
-```
+\`\`\`
 
 ### Created 6 Documentation Files
 
-```
+\`\`\`
 /docs/
   ├── INDEX.md                  ← Navigation guide
   ├── SOLUTION_SUMMARY.md       ← Complete overview
@@ -55,11 +55,11 @@ Confusing system with bugs
   ├── SYSTEM_ARCHITECTURE.md    ← Visual diagrams
   ├── ORDERS_API_SYSTEM.md      ← Full API docs
   └── IMPLEMENTATION_DETAILS.md ← Code details
-```
+\`\`\`
 
 ## How It Works Now
 
-```
+\`\`\`
 User visits /admin/orders
          ↓
 Frontend calls /api/orders
@@ -73,12 +73,12 @@ Service checks for real orders
 Frontend displays whatever API returns
          ↓
 User sees orders (real or from companies)
-```
+\`\`\`
 
 ## What Changed
 
 ### Before (Buggy)
-```typescript
+\`\`\`typescript
 // API (60+ lines)
 const orders = db.collection("orders").find(query).toArray()
 if (orders.length === 0) {
@@ -94,10 +94,10 @@ if (apiOrders.length > 0) {
   // Duplicate fallback logic here
   // Same bug as API
 }
-```
+\`\`\`
 
 ### After (Clean)
-```typescript
+\`\`\`typescript
 // API (5 lines)
 const orderData = await processOrders(db, {
   userId: isAdmin ? undefined : decoded.userId,
@@ -117,20 +117,20 @@ async function processOrders(db, options) {
   const companies = await getCompaniesForOrders(db, options)
   return companies.map(c => companyToOrder(c)).map(transformOrder)
 }
-```
+\`\`\`
 
 ## Testing It Works
 
 ### Test 1: Visit Admin Page
-```
+\`\`\`
 1. Go to http://localhost:3000/admin/orders
 2. Should see 5 orders (companies as display orders)
 3. No console errors
 4. All data populated correctly
-```
+\`\`\`
 
 ### Test 2: Check API Directly
-```bash
+\`\`\`bash
 curl -H "Authorization: Bearer TOKEN" \
   http://localhost:3000/api/orders
 
@@ -139,16 +139,16 @@ curl -H "Authorization: Bearer TOKEN" \
   "success": true,
   "data": [ ... 5 orders ... ]
 }
-```
+\`\`\`
 
 ### Test 3: Check Logs
-```
+\`\`\`
 Open browser console (F12)
 Look for messages:
   [v0] Found X orders in database
   or
   [v0] Creating display orders from X companies
-```
+\`\`\`
 
 ## Benefits You Get
 
@@ -163,7 +163,7 @@ Look for messages:
 
 ## Files You Need to Know
 
-```
+\`\`\`
 Critical Files:
   /lib/api/order-service.ts       ← Brain of the system
   /app/api/orders/route.ts        ← API endpoint
@@ -175,7 +175,7 @@ Documentation:
   /docs/QUICK_START.md            ← Quick help
   /docs/ORDERS_API_SYSTEM.md      ← API reference
   /docs/IMPLEMENTATION_DETAILS.md ← Code reference
-```
+\`\`\`
 
 ## Quick Checklist
 
@@ -190,7 +190,7 @@ Documentation:
 
 ## If Orders Still Don't Show
 
-```
+\`\`\`
 1. Check: Is API returning data?
    curl /api/orders -H "Authorization: Bearer TOKEN"
    
@@ -202,7 +202,7 @@ Documentation:
    
 4. Check: Are you logged in as admin?
    Admin sees all, users see their own
-```
+\`\`\`
 
 ## Next Steps
 

@@ -26,18 +26,25 @@ export async function GET(req: NextRequest) {
 
     // Query companies collection - orders are embedded in each company
     const query = isAdmin ? {} : { userId: decoded.userId }
+    console.log("[v0] API Query - isAdmin:", isAdmin, "userId:", decoded.userId, "query:", query)
+    
     const companies = await db
       .collection("companies")
       .find(query)
       .limit(100)
       .toArray()
 
-    console.log(`[v0] Found ${companies.length} companies for user`)
+    console.log(`[v0] Found ${companies.length} companies for user`, { isAdmin, userId: decoded.userId })
 
     // Extract all orders from companies
     const allOrders: any[] = []
+    let companiesWithOrders = 0
+    let totalOrdersFound = 0
+    
     for (const company of companies) {
       if (company.orders && Array.isArray(company.orders)) {
+        companiesWithOrders++
+        totalOrdersFound += company.orders.length
         for (const order of company.orders) {
           allOrders.push({
             id: order.id,
@@ -63,7 +70,13 @@ export async function GET(req: NextRequest) {
     // Sort by creation date descending
     allOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
 
-    console.log(`[v0] Extracted ${allOrders.length} orders from companies`)
+    console.log(`[v0] Extracted ${allOrders.length} orders from ${companiesWithOrders}/${companies.length} companies`, {
+      totalCompanies: companies.length,
+      companiesWithOrders,
+      totalOrdersFound,
+      extractedOrders: allOrders.length,
+      companies: companies.map(c => ({ id: c._id, name: c.name, orderCount: c.orders?.length || 0 }))
+    })
 
     const result = {
       success: true,

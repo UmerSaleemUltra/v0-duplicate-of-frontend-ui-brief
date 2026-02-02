@@ -30,7 +30,7 @@ Orders weren't displaying in the admin dashboard even though companies existed. 
 ## Key Changes
 
 ### Before
-```typescript
+\`\`\`typescript
 // ❌ API - Basic query
 const orders = await db.collection("orders").find(query).toArray()
 return { data: orders }
@@ -41,10 +41,10 @@ if (apiOrders.length === 0) {
   // company.revenue > 0 condition filtered out valid data
   // Mixed data formats
 }
-```
+\`\`\`
 
 ### After
-```typescript
+\`\`\`typescript
 // ✅ API - Uses service with automatic fallback
 const orderData = await processOrders(db, { userId, isAdmin })
 return { success: true, data: orderData }
@@ -52,15 +52,15 @@ return { success: true, data: orderData }
 // ✅ Frontend - Simple usage
 const apiOrders = ordersResponse.data
 setOrders(apiOrders)  // That's it!
-```
+\`\`\`
 
 ## How to Test
 
 ### Test 1: Check API Directly
-```bash
+\`\`\`bash
 curl -H "Authorization: Bearer {token}" \
   http://localhost:3000/api/orders
-```
+\`\`\`
 
 **Expected**: Returns orders array (real orders if they exist, company-based otherwise)
 
@@ -80,25 +80,25 @@ curl -H "Authorization: Bearer {token}" \
 No configuration needed! The system works automatically:
 
 ### For Real Orders
-```
+\`\`\`
 Database has orders? → Use them
-```
+\`\`\`
 
 ### For Company Data as Orders
-```
+\`\`\`
 Database has no orders but has companies? → Convert companies to orders
-```
+\`\`\`
 
 ### For Empty Results
-```
+\`\`\`
 Neither orders nor companies? → Return empty array
-```
+\`\`\`
 
 ## Console Debugging
 
 Look for these logs to understand what's happening:
 
-```
+\`\`\`
 [v0] Found 3 orders in database
   → Real orders are being used ✓
 
@@ -108,7 +108,7 @@ Look for these logs to understand what's happening:
 
 [v0] No orders or companies found
   → System is working but no data exists ✓
-```
+\`\`\`
 
 ## Code Locations
 

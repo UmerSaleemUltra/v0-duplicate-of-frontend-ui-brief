@@ -100,7 +100,7 @@ Created 8 complete documentation files:
 ## 📁 Files Changed
 
 ### New Files Created
-```
+\`\`\`
 /lib/api/order-service.ts          ← Service layer (107 lines)
 
 /docs/
@@ -114,13 +114,13 @@ Created 8 complete documentation files:
   ├── ORDERS_API_SYSTEM.md         ← API docs
   ├── IMPLEMENTATION_DETAILS.md    ← Code details
   └── VISUAL_OVERVIEW.txt          ← Diagrams
-```
+\`\`\`
 
 ### Files Modified
-```
+\`\`\`
 /app/api/orders/route.ts           ← Simplified to use service
 /app/admin/orders/page.tsx         ← Simplified to use API data
-```
+\`\`\`
 
 ---
 
@@ -155,7 +155,7 @@ Created 8 complete documentation files:
 
 ## 📊 Architecture Summary
 
-```
+\`\`\`
 User Request
     ↓
 API Endpoint (/api/orders)
@@ -173,7 +173,7 @@ Frontend (Admin Page)
     ├─ Receive data
     ├─ Display in table
     └─ Done!
-```
+\`\`\`
 
 **Key**: Single source of truth (service layer) handles all logic
 
@@ -287,7 +287,7 @@ Frontend (Admin Page)
 
 ## 📊 System Status
 
-```
+\`\`\`
 ╔═════════════════════════════════════════╗
 ║  ✅ SYSTEM STATUS: PRODUCTION READY    ║
 ╠═════════════════════════════════════════╣
@@ -300,7 +300,7 @@ Frontend (Admin Page)
 ║  Maintenance: ✅ EASY                   ║
 ║  Deployment: ✅ READY                   ║
 ╚═════════════════════════════════════════╝
-```
+\`\`\`
 
 ---
 

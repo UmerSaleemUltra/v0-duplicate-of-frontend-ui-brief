@@ -13,7 +13,7 @@ This document describes the clean, production-ready system for managing orders a
 
 ### Data Flow
 
-```
+\`\`\`
 Database (Orders Collection)
     ↓
     └─→ API (/api/orders) → Service (order-service.ts) 
@@ -22,7 +22,7 @@ Database (Orders Collection)
     ↓
 Frontend (Admin Page)
     └─→ Uses API Response Directly
-```
+\`\`\`
 
 ## API Endpoints
 
@@ -30,12 +30,12 @@ Frontend (Admin Page)
 **Purpose**: Fetch all orders with automatic fallback to company data
 
 **Request**:
-```bash
+\`\`\`bash
 curl -H "Authorization: Bearer {token}" http://localhost:3000/api/orders
-```
+\`\`\`
 
 **Response** (Success):
-```json
+\`\`\`json
 {
   "success": true,
   "data": [
@@ -60,7 +60,7 @@ curl -H "Authorization: Bearer {token}" http://localhost:3000/api/orders
     }
   ]
 }
-```
+\`\`\`
 
 **Behavior**:
 - **Admin Users** (role === "admin"): See all orders (no userId filter)
@@ -68,20 +68,20 @@ curl -H "Authorization: Bearer {token}" http://localhost:3000/api/orders
 - **No Real Orders?** → Automatically uses companies as display orders
 
 **Response** (No Orders or Companies):
-```json
+\`\`\`json
 {
   "success": true,
   "data": []
 }
-```
+\`\`\`
 
 **Response** (Error):
-```json
+\`\`\`json
 {
   "error": "Failed to fetch orders",
   "status": 500
 }
-```
+\`\`\`
 
 ## Service Layer (`/lib/api/order-service.ts`)
 
@@ -90,81 +90,81 @@ curl -H "Authorization: Bearer {token}" http://localhost:3000/api/orders
 #### `processOrders(db, options)`
 **Main function** - Orchestrates the entire order fetching and transformation logic
 
-```typescript
+\`\`\`typescript
 const orderData = await processOrders(db, {
   userId: isAdmin ? undefined : decoded.userId,  // undefined for admins to see all
   isAdmin: true,
   limit: 100
 })
-```
+\`\`\`
 
 **Returns**: Array of transformed orders ready for API response
 
 #### `getOrdersFromDatabase(db, options)`
 Fetches real orders from the database
 
-```typescript
+\`\`\`typescript
 const orders = await getOrdersFromDatabase(db, {
   userId: "user123",
   isAdmin: false,
   limit: 50
 })
-```
+\`\`\`
 
 #### `companyToOrder(company, userId?)`
 Converts a company record to an order format for display
 
-```typescript
+\`\`\`typescript
 const order = companyToOrder(companyData, userId)
-```
+\`\`\`
 
 #### `transformOrder(order)`
 Normalizes any order record to API response format
 
-```typescript
+\`\`\`typescript
 const apiOrder = transformOrder(dbOrder)
-```
+\`\`\`
 
 ## How It Works
 
 ### Step 1: Fetch Real Orders
-```typescript
+\`\`\`typescript
 const orders = await getOrdersFromDatabase(db, {
   userId: adminOnly ? undefined : userId,
   isAdmin: adminOnly,
   limit: 100
 })
-```
+\`\`\`
 
 ### Step 2: If Orders Exist → Return Them
 If the database has real order records, they are transformed and returned immediately.
 
-```
+\`\`\`
 Found Orders in DB? → Transform & Return ✓
-```
+\`\`\`
 
 ### Step 3: If No Orders → Use Company Data as Fallback
 If no orders exist, the system fetches companies and converts them to order format for display.
 
-```
+\`\`\`
 No Orders in DB? → Fetch Companies → Convert to Orders → Return ✓
-```
+\`\`\`
 
 **Important**: This is NOT creating real orders in the database. It's just displaying company data in order format for the UI.
 
 ### Step 4: No Data → Return Empty Array
 If neither orders nor companies exist, return empty data.
 
-```
+\`\`\`
 No Orders or Companies? → Return [] ✓
-```
+\`\`\`
 
 ## Frontend Usage
 
 ### Admin Orders Page (`/app/admin/orders/page.tsx`)
 
 **Simple Data Flow**:
-```typescript
+\`\`\`typescript
 // 1. Fetch from API
 const ordersResponse = await fetch(`/api/orders?_t=${timestamp}`, {
   headers: { Authorization: `Bearer ${token}` }
@@ -183,7 +183,7 @@ const ordersWithDetails = apiOrders.map(order => ({
 
 // 4. Display
 return <OrdersTable orders={ordersWithDetails} />
-```
+\`\`\`
 
 **Key Points**:
 - Always use the API data directly
@@ -194,7 +194,7 @@ return <OrdersTable orders={ordersWithDetails} />
 ## Data Types
 
 ### Company Record
-```typescript
+\`\`\`typescript
 interface Company {
   id: string
   userId: string
@@ -208,10 +208,10 @@ interface Company {
   updatedAt?: string
   // ... other fields
 }
-```
+\`\`\`
 
 ### Order Record
-```typescript
+\`\`\`typescript
 interface Order {
   id: string
   userId: string
@@ -231,20 +231,20 @@ interface Order {
   createdAt: string
   updatedAt: string
 }
-```
+\`\`\`
 
 ## Authentication & Authorization
 
 ### Token Verification
-```typescript
+\`\`\`typescript
 const decoded = verifyToken(token)
 // decoded = { userId, role, ... }
-```
+\`\`\`
 
 ### Admin Check
-```typescript
+\`\`\`typescript
 const isAdmin = decoded.role === "admin"
-```
+\`\`\`
 
 ### Query Building
 - **Admin**: `{}` (see all records)
@@ -264,17 +264,17 @@ const isAdmin = decoded.role === "admin"
 ### Debug Logging
 
 Enable debug output:
-```typescript
+\`\`\`typescript
 console.log("[v0] Orders found:", orders.length)
 console.log("[v0] Creating display orders from X companies")
-```
+\`\`\`
 
 All API endpoints include `[v0]` prefixed console logs for debugging.
 
 ## Database Schema
 
 ### Orders Collection
-```javascript
+\`\`\`javascript
 {
   _id: ObjectId,
   userId: String,          // Required for user filtering
@@ -294,10 +294,10 @@ All API endpoints include `[v0]` prefixed console logs for debugging.
   createdAt: Date,
   updatedAt: Date
 }
-```
+\`\`\`
 
 ### Companies Collection
-```javascript
+\`\`\`javascript
 {
   _id: ObjectId,
   userId: String,          // Links to user
@@ -311,12 +311,12 @@ All API endpoints include `[v0]` prefixed console logs for debugging.
   updatedAt: Date
   // ... other fields
 }
-```
+\`\`\`
 
 ## Testing the System
 
 ### Test Case 1: Real Orders Exist
-```bash
+\`\`\`bash
 # Setup
 1. Create a company: POST /api/companies
 2. Create an order: POST /api/orders
@@ -325,10 +325,10 @@ All API endpoints include `[v0]` prefixed console logs for debugging.
 # Expected
 - Orders API returns the real order
 - Order data matches the created order
-```
+\`\`\`
 
 ### Test Case 2: No Orders, Companies Exist
-```bash
+\`\`\`bash
 # Setup
 1. Create a company: POST /api/companies
 2. Delete all orders (or start fresh)
@@ -337,10 +337,10 @@ All API endpoints include `[v0]` prefixed console logs for debugging.
 # Expected
 - Orders API returns company data converted to order format
 - No real orders in database, but companies displayed as orders
-```
+\`\`\`
 
 ### Test Case 3: Admin vs User Access
-```bash
+\`\`\`bash
 # Admin Request
 GET /api/orders -H "Authorization: Bearer {admin_token}"
 # Expected: All orders/companies
@@ -348,7 +348,7 @@ GET /api/orders -H "Authorization: Bearer {admin_token}"
 # User Request
 GET /api/orders -H "Authorization: Bearer {user_token}"
 # Expected: Only user's orders/companies
-```
+\`\`\`
 
 ## Troubleshooting
 
@@ -373,19 +373,19 @@ GET /api/orders -H "Authorization: Bearer {user_token}"
 ### From Old System to New System
 
 **Old**: Separate logic in API and frontend
-```typescript
+\`\`\`typescript
 // Old: API didn't handle fallback
 // Old: Frontend had duplicate fallback logic
-```
+\`\`\`
 
 **New**: Centralized service
-```typescript
+\`\`\`typescript
 // New: Use processOrders() service
 const orderData = await processOrders(db, options)
 
 // New: Frontend just uses API response
 const orders = apiResponse.data
-```
+\`\`\`
 
 ### Steps
 1. ✓ Create `order-service.ts` utility
