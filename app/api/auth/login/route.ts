@@ -79,14 +79,14 @@ export async function POST(request: NextRequest) {
     const token = generateToken({
       userId: userId,
       email: user.email,
-      role: user.role,
+      role: user.role || "client", // Default to client if role is missing
     })
 
     const userResponse = {
       id: userId,
       email: user.email,
       name: user.name,
-      role: user.role,
+      role: user.role || "client", // Default to client if role is missing
       phone: user.phone || "",
       createdAt: user.createdAt,
     }

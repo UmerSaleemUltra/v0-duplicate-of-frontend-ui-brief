@@ -20,10 +20,20 @@ export async function GET(req: NextRequest) {
       return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
     }
 
-    const { db } = await connectDB()
-    const query = decoded.role === "admin" ? {} : { userId: decoded.userId }
+    console.log("[v0] Decoded token:", { userId: decoded.userId, role: decoded.role, type: typeof decoded.role })
 
+    const { db } = await connectDB()
+    // Admin check: use role field, default to "client" if undefined
+    const userRole = decoded.role || "client"
+    const isAdmin = userRole === "admin"
+    const query = isAdmin ? {} : { userId: decoded.userId }
+
+    console.log("[v0] Orders API - User role:", userRole, "Is Admin:", isAdmin, "Query:", query)
+    
     const orders = await db.collection("orders").find(query).sort({ createdAt: -1 }).limit(100).toArray()
+    
+    console.log("[v0] Orders found:", orders.length, "from database")
+    console.log("[v0] First order sample:", orders[0] || "No orders")
 
     const result = {
       success: true,
