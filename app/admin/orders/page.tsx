@@ -245,15 +245,6 @@ export default function OrdersPage() {
     }
   }, [isLoading, isAuthenticated, toast])
 
-  // Debug: log when paginatedOrders updates
-  useEffect(() => {
-    console.log("[v0] paginatedOrders:", paginatedOrders)
-    console.log("[v0] filteredOrders:", filteredOrders)
-    console.log("[v0] orders:", orders)
-    console.log("[v0] currentPage:", currentPage)
-    console.log("[v0] totalPages:", totalPages)
-  }, [paginatedOrders, filteredOrders, orders, currentPage, totalPages])
-
   useEffect(() => {
     let filtered = [...orders]
 
@@ -299,16 +290,24 @@ export default function OrdersPage() {
       )
     }
 
-    // Status filtering
-    if (statusFilter !== "all") {
-      filtered = filtered.filter((order) => order.status && order.status.toLowerCase() === statusFilter.toLowerCase())
+    // Status filtering - only apply if not "all"
+    if (statusFilter && statusFilter !== "all") {
+      filtered = filtered.filter((order) => {
+        const orderStatus = order.status || order.orderStatus || order.paymentStatus || ""
+        return orderStatus.toLowerCase() === statusFilter.toLowerCase()
+      })
     }
 
-    // State filtering
-    if (stateFilter !== "all") {
-      filtered = filtered.filter((order) => order.state && order.state.toLowerCase() === stateFilter.toLowerCase())
+    // State filtering - only apply if not "all"
+    if (stateFilter && stateFilter !== "all") {
+      filtered = filtered.filter((order) => {
+        const orderState = order.state || ""
+        return orderState.toLowerCase() === stateFilter.toLowerCase()
+      })
     }
 
+    console.log("[v0] Before filter - orders:", orders.length, "After filtering - result:", filtered.length)
+    console.log("[v0] Filters: statusFilter=", statusFilter, "stateFilter=", stateFilter, "dateFilter=", dateFilter)
     setFilteredOrders(filtered)
     setCurrentPage(1) // Reset to first page when filters change
     console.log("[v0] Filtered orders count:", filtered.length, "Total orders:", orders.length)
