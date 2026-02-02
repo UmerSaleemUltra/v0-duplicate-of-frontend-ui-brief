@@ -22,7 +22,7 @@ import {
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area, Legend } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -481,54 +481,34 @@ export default function AdminDashboard() {
             <h3 className="text-lg md:text-xl font-bold text-slate-900">Top States</h3>
             <p className="text-xs md:text-sm text-slate-700 mt-1">Companies by location</p>
           </div>
-          
-          {/* Bar Chart */}
-          <div className="w-full h-80">
-            <ResponsiveContainer width="100%" height="100%">
-              <BarChart data={stateBreakdown} margin={{ top: 20, right: 30, left: 0, bottom: 60 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.2)" />
-                <XAxis 
-                  dataKey="state" 
-                  stroke="rgba(55,65,81,0.7)" 
-                  tick={{ fontSize: 12 }}
-                  angle={-45}
-                  textAnchor="end"
-                  height={100}
-                />
-                <YAxis 
-                  stroke="rgba(55,65,81,0.7)" 
-                  tick={{ fontSize: 12 }}
-                  label={{ value: 'Companies', angle: -90, position: 'insideLeft' }}
-                />
-                <Tooltip 
-                  contentStyle={{
-                    backgroundColor: "rgba(255,255,255,0.95)",
-                    border: "1px solid rgba(100,116,139,0.3)",
-                    borderRadius: "12px"
-                  }}
-                  formatter={(value) => [`${value} companies`, 'Count']}
-                  labelFormatter={(label) => `${label}`}
-                />
-                <Bar 
-                  dataKey="count" 
-                  fill="#880000" 
-                  radius={[8, 8, 0, 0]}
-                  name="Companies"
-                />
-              </BarChart>
-            </ResponsiveContainer>
+          <div className="space-y-2 md:space-y-3">
+            {(showAllStates ? stateBreakdown : stateBreakdown.slice(0, 4)).map((state, index) => (
+              <div key={index} className="flex items-center justify-between p-3 md:p-4 rounded-lg md:rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:bg-white/80 transition-all duration-300">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-900 text-sm md:text-base">{state.state}</p>
+                  <p className="text-xs text-slate-600 mt-1">{state.count} {state.count === 1 ? 'company' : 'companies'}</p>
+                </div>
+                <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 ml-2">
+                  <div className="w-16 md:w-24 bg-white/40 rounded-full h-2">
+                    <div 
+                      className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-2 rounded-full transition-all"
+                      style={{width: `${state.percentage}%`}}
+                    ></div>
+                  </div>
+                  <span className="text-xs md:text-sm font-semibold text-slate-900 min-w-8 text-right">{state.percentage}%</span>
+                </div>
+              </div>
+            ))}
+            {stateBreakdown.length > 4 && (
+              <Button 
+                variant="outline"
+                className="w-full mt-3 md:mt-4 border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg md:rounded-xl text-sm md:text-base"
+                onClick={() => setShowAllStates(!showAllStates)}
+              >
+                {showAllStates ? "Show Less" : `View All (${stateBreakdown.length})`}
+              </Button>
+            )}
           </div>
-
-          {/* Show All States Button */}
-          {stateBreakdown.length > 4 && (
-            <Button 
-              variant="outline"
-              className="w-full mt-4 md:mt-6 border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg md:rounded-xl text-sm md:text-base"
-              onClick={() => setShowAllStates(!showAllStates)}
-            >
-              {showAllStates ? "Show Top 4" : `View All (${stateBreakdown.length})`}
-            </Button>
-          )}
         </div>
       </div>
     </div>
