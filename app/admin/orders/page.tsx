@@ -152,10 +152,11 @@ export default function OrdersPage() {
           : allCompanies.flatMap((company: any) => {
               const companyOrders = company.orders || []
               return companyOrders.map((order: any) => ({
-              ...order,
-              id: order.id || order._id,
-              companyId: order.companyId || order.companyId,
-            }))
+                ...order,
+                id: order.id || order._id,
+                companyId: order.companyId || order.companyId,
+              }))
+            })
 
         // Normalize order IDs and ensure required fields exist
         allOrders = allOrders.map((order: any) => ({
