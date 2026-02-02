@@ -152,49 +152,11 @@ export default function OrdersPage() {
         const allCompanies = Array.isArray(companiesData.data) ? companiesData.data : (Array.isArray(companiesData) ? companiesData : [])
         const apiOrders = Array.isArray(ordersData.data) ? ordersData.data : (Array.isArray(ordersData) ? ordersData : [])
         
-        console.log("[v0] Extracted data:", { usersCount: allUsers.length, companiesCount: allCompanies.length, ordersCount: apiOrders.length })
+        console.log("[v0] Data loaded - Users:", allUsers.length, "Companies:", allCompanies.length, "Orders:", apiOrders.length)
 
-        // Use orders from API or fallback to extracting from companies
-        let allOrders: any[] = []
-        
-        if (apiOrders.length > 0) {
-          allOrders = apiOrders
-        } else {
-          allOrders = allCompanies.flatMap((company: any) => {
-            const companyOrders = company.orders || []
-            
-            // If company has no orders, create a synthetic order from company data
-            // Always create synthetic orders for companies (not just those with revenue > 0)
-            if (companyOrders.length === 0) {
-              console.log("[v0] Creating synthetic order for company:", company.name, company)
-              return [{
-                id: company._id?.toString() || company.id,
-                orderType: company.type || "Formation",
-                packageType: company.packageType || "Standard",
-                state: company.state,
-                status: company.status || "Completed",
-                pricing: {
-                  total: company.revenue || 0,
-                },
-                createdAt: company.createdAt || new Date().toISOString(),
-                updatedAt: company.updatedAt || new Date().toISOString(),
-                companyId: company._id || company.id,
-                companyName: company.name,
-              }]
-            }
-            
-            return companyOrders.map((order: any) => ({
-              ...order,
-              companyId: company._id || company.id,
-              companyName: company.name,
-              state: company.state,
-              packageType: order.packageType || company.packageType || "N/A",
-            }))
-          })
-        }
-
-        // Normalize order IDs and ensure required fields exist
-        allOrders = allOrders.map((order: any) => ({
+        // API already handles fallback (returns company-based orders if no real orders exist)
+        // Just use the API response directly
+        const allOrders = apiOrders.map((order: any) => ({
           ...order,
           id: order.id || order._id,
           companyId: order.companyId,
