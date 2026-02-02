@@ -51,6 +51,9 @@ export async function GET(req: NextRequest) {
             userId: order.userId || company.userId,
             companyId: company._id?.toString(),
             companyName: company.name,
+            // Customer info - from order or company
+            customerName: order.ownerName || order.customerName || company.ownerName || "N/A",
+            customerEmail: order.ownerEmail || order.customerEmail || company.ownerEmail || "N/A",
             orderType: order.orderType,
             packageType: order.packageType,
             state: order.state,
