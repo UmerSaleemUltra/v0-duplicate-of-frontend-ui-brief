@@ -147,9 +147,10 @@ export default function OrdersPage() {
 
         console.log("[v0] Raw API responses:", { usersData, companiesData, ordersData })
 
-        const allUsers = usersData.data || usersData || []
-        const allCompanies = companiesData.data || companiesData || []
-        const apiOrders = ordersData.data || ordersData || []
+        // Properly extract data from API responses
+        const allUsers = Array.isArray(usersData.data) ? usersData.data : (Array.isArray(usersData) ? usersData : [])
+        const allCompanies = Array.isArray(companiesData.data) ? companiesData.data : (Array.isArray(companiesData) ? companiesData : [])
+        const apiOrders = Array.isArray(ordersData.data) ? ordersData.data : (Array.isArray(ordersData) ? ordersData : [])
         
         console.log("[v0] Extracted data:", { usersCount: allUsers.length, companiesCount: allCompanies.length, ordersCount: apiOrders.length })
 
@@ -410,9 +411,10 @@ export default function OrdersPage() {
       const companiesData = await companiesResponse.json()
       const ordersData = await ordersResponse.json()
 
-      const allUsers = usersData.data || usersData || []
-      const allCompanies = companiesData.data || companiesData || []
-      const apiOrders = ordersData.data || ordersData || []
+      // Properly extract data from API responses
+      const allUsers = Array.isArray(usersData.data) ? usersData.data : (Array.isArray(usersData) ? usersData : [])
+      const allCompanies = Array.isArray(companiesData.data) ? companiesData.data : (Array.isArray(companiesData) ? companiesData : [])
+      const apiOrders = Array.isArray(ordersData.data) ? ordersData.data : (Array.isArray(ordersData) ? ordersData : [])
 
       // Use orders from API or fallback to extracting from companies
       let allOrdersData = apiOrders.length > 0
