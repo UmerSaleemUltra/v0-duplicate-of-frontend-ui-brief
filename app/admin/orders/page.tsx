@@ -148,19 +148,33 @@ export default function OrdersPage() {
         const allCompanies = companiesData.data || companiesData || []
         const apiOrders = ordersData.data || ordersData || []
 
+        console.log("[v0] DEBUG: usersData structure:", { keys: Object.keys(usersData), length: allUsers.length })
+        console.log("[v0] DEBUG: companiesData structure:", { keys: Object.keys(companiesData), count: allCompanies.length })
+        console.log("[v0] DEBUG: ordersData structure:", { keys: Object.keys(ordersData), count: apiOrders.length })
+        console.log("[v0] DEBUG: First company data:", allCompanies[0])
+        console.log("[v0] DEBUG: First order from API:", apiOrders[0])
+
         // Use orders from API or fallback to extracting from companies
-        let allOrders = apiOrders.length > 0 
-          ? apiOrders 
-          : allCompanies.flatMap((company: any) => {
-              const companyOrders = company.orders || []
-              return companyOrders.map((order: any) => ({
-                ...order,
-                companyId: company.id,
-                companyName: company.name,
-                state: company.state,
-                packageType: order.packageType || company.packageType || "N/A",
-              }))
-            })
+        let allOrders: any[] = []
+        
+        if (apiOrders.length > 0) {
+          console.log("[v0] Using orders from API - found", apiOrders.length, "orders")
+          allOrders = apiOrders
+        } else {
+          console.log("[v0] API orders empty, extracting from companies")
+          allOrders = allCompanies.flatMap((company: any) => {
+            const companyOrders = company.orders || []
+            console.log(`[v0] Company ${company.name} has ${companyOrders.length} orders`, { companyId: company._id, orders: companyOrders })
+            return companyOrders.map((order: any) => ({
+              ...order,
+              companyId: company._id || company.id,
+              companyName: company.name,
+              state: company.state,
+              packageType: order.packageType || company.packageType || "N/A",
+            }))
+          })
+          console.log("[v0] Total extracted orders:", allOrders.length)
+        }
 
         // Normalize order IDs and ensure required fields exist
         allOrders = allOrders.map((order: any) => ({
@@ -168,12 +182,21 @@ export default function OrdersPage() {
           id: order.id || order._id,
           companyId: order.companyId,
         }))
+        
+        console.log("[v0] After normalization - total orders:", allOrders.length)
+        console.log("[v0] First normalized order:", allOrders[0])
 
         const ordersWithDetails = allOrders.map((order: any) => {
           const company = allCompanies.find((c: any) => {
             const companyId = String(c.id || c._id || "")
-            return companyId === String(order.companyId || "")
+            const orderCompanyId = String(order.companyId || "")
+            return companyId === orderCompanyId
           })
+          
+          if (!company) {
+            console.log("[v0] WARNING: Could not find company for order with companyId:", order.companyId)
+          }
+          
           const user = allUsers.find((u: any) => String(u.id || u._id) === String(company?.userId))
 
           return {
@@ -189,6 +212,19 @@ export default function OrdersPage() {
         const sortedOrders = ordersWithDetails.sort(
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
         )
+
+        console.log("[v0] Final sorted orders:", sortedOrders.length)
+        console.log("[v0] Total companies:", allCompanies.length)
+        
+        if (sortedOrders.length === 0 && allCompanies.length > 0) {
+          console.log("[v0] BUG DETECTED: Companies exist but no orders found!")
+          console.log("[v0] Companies sample:", allCompanies.slice(0, 2).map(c => ({
+            id: c._id,
+            name: c.name,
+            hasOrders: !!c.orders,
+            orderCount: c.orders?.length || 0
+          })))
+        }
 
         setCompanies(allCompanies)
         setOrders(sortedOrders)
