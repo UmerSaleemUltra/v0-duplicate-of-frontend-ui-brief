@@ -145,9 +145,13 @@ export default function OrdersPage() {
         const companiesData = await companiesResponse.json()
         const ordersData = await ordersResponse.json()
 
+        console.log("[v0] Raw API responses:", { usersData, companiesData, ordersData })
+
         const allUsers = usersData.data || usersData || []
         const allCompanies = companiesData.data || companiesData || []
         const apiOrders = ordersData.data || ordersData || []
+        
+        console.log("[v0] Extracted data:", { usersCount: allUsers.length, companiesCount: allCompanies.length, ordersCount: apiOrders.length })
 
         // Use orders from API or fallback to extracting from companies
         let allOrders: any[] = []
@@ -241,6 +245,15 @@ export default function OrdersPage() {
     }
   }, [isLoading, isAuthenticated, toast])
 
+  // Debug: log when paginatedOrders updates
+  useEffect(() => {
+    console.log("[v0] paginatedOrders:", paginatedOrders)
+    console.log("[v0] filteredOrders:", filteredOrders)
+    console.log("[v0] orders:", orders)
+    console.log("[v0] currentPage:", currentPage)
+    console.log("[v0] totalPages:", totalPages)
+  }, [paginatedOrders, filteredOrders, orders, currentPage, totalPages])
+
   useEffect(() => {
     let filtered = [...orders]
 
@@ -298,6 +311,7 @@ export default function OrdersPage() {
 
     setFilteredOrders(filtered)
     setCurrentPage(1) // Reset to first page when filters change
+    console.log("[v0] Filtered orders count:", filtered.length, "Total orders:", orders.length)
     setTotalRevenue(
       filtered.reduce((acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0), 0),
     )
@@ -308,6 +322,7 @@ export default function OrdersPage() {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
     const endIndex = startIndex + ITEMS_PER_PAGE
     const paginated = filteredOrders.slice(startIndex, endIndex)
+    console.log("[v0] Pagination - Page:", currentPage, "Start:", startIndex, "End:", endIndex, "Result count:", paginated.length)
     setPaginatedOrders(paginated)
     setStartIndex(startIndex)
     setEndIndex(endIndex)
