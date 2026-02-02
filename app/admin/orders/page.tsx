@@ -28,7 +28,7 @@ import { useAuthGuard } from "@/lib/use-auth-guard"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { CompanyModal } from "@/components/company-modal"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover" // Added Popover for date picker
+import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationPrevious, PaginationNext, PaginationEllipsis } from "@/components/ui/pagination"
 
 const US_STATES = [
   "Alabama",
@@ -93,10 +93,6 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("current-month")
-  const [customDateRange, setCustomDateRange] = useState<{ from: Date | null; to: Date | null }>({
-    from: null,
-    to: null,
-  })
   const [dateRangeLabel, setDateRangeLabel] = useState("This Month")
   const router = useRouter()
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
@@ -147,14 +143,8 @@ export default function OrdersPage() {
         const usersData = await usersResponse.json()
         const companiesData = await companiesResponse.json()
         const ordersData = await ordersResponse.json()
-
-        console.log("[v0] Orders API Response:", ordersData)
         
         const allUsers = usersData.data || usersData || []
-        const allCompanies = companiesData.data || companiesData || []
-        const apiOrders = ordersData.data || ordersData || []
-        
-        console.log("[v0] Loaded orders count:", apiOrders.length)
 
         // Use orders from API or fallback to extracting from companies
         let allOrders = apiOrders.length > 0 
@@ -162,15 +152,10 @@ export default function OrdersPage() {
           : allCompanies.flatMap((company: any) => {
               const companyOrders = company.orders || []
               return companyOrders.map((order: any) => ({
-                ...order,
-                companyId: company.id || company._id,
-                companyName: company.name,
-                state: company.state,
-                packageType: order.packageType || company.packageType || "N/A",
-              }))
-            })
-        
-        console.log("[v0] All orders after merge:", allOrders.length)
+              ...order,
+              id: order.id || order._id,
+              companyId: order.companyId || order.companyId,
+            }))
 
         // Normalize order IDs and ensure required fields exist
         allOrders = allOrders.map((order: any) => ({
@@ -296,7 +281,7 @@ export default function OrdersPage() {
       filtered.reduce((acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0), 0),
     )
     setTotalOrders(filtered.length)
-  }, [searchQuery, statusFilter, stateFilter, dateFilter, orders, customDateRange])
+  }, [searchQuery, statusFilter, stateFilter, dateFilter, orders])
 
   useEffect(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
@@ -311,15 +296,6 @@ export default function OrdersPage() {
   const handleDateRangeSelect = (range: string, label: string) => {
     setDateFilter(range)
     setDateRangeLabel(label)
-    if (range !== "custom") {
-      setCustomDateRange({ from: null, to: null })
-    }
-  }
-
-  const handleCustomDateRange = (from: Date, to: Date) => {
-    setCustomDateRange({ from, to })
-    setDateFilter("custom")
-    setDateRangeLabel(`${from.toLocaleDateString()} - ${to.toLocaleDateString()}`)
   }
 
   const handleExportOrders = () => {
@@ -505,179 +481,141 @@ export default function OrdersPage() {
 
       <Card className="bg-white border-slate-200">
         <CardContent className="pt-6">
-          <div className="space-y-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search by Order ID, Customer, Email, or Company..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 pr-10 h-11 border-slate-300 focus:border-red-500 focus:ring-red-500"
-              />
-              {searchQuery && (
-                <button
-                  onClick={() => setSearchQuery("")}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              )}
-            </div>
-
-            <div className="flex flex-wrap gap-3 items-center">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-slate-600" />
-                <span className="text-sm font-medium text-slate-700">Status:</span>
-                <div className="flex gap-2">
-                  <Button
-                    variant={statusFilter === "all" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setStatusFilter("all")}
-                    className={
-                      statusFilter === "all"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
-                    }
+            <div className="flex flex-col gap-4">
+              {/* Search Bar */}
+              <div className="relative">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
+                <Input
+                  placeholder="Search by Order ID, Customer, Email, or Company..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10 pr-10 h-11 border-slate-300 focus:border-red-500 focus:ring-red-500"
+                />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600"
                   >
-                    All
-                  </Button>
-                  <Button
-                    variant={statusFilter === "pending" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setStatusFilter("pending")}
-                    className={
-                      statusFilter === "pending"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
-                    }
-                  >
-                    <AlertCircle className="h-3 w-3 mr-1" />
-                    Pending
-                  </Button>
-                  <Button
-                    variant={statusFilter === "processing" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setStatusFilter("processing")}
-                    className={
-                      statusFilter === "processing"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
-                    }
-                  >
-                    <Clock className="h-3 w-3 mr-1" />
-                    Processing
-                  </Button>
-                  <Button
-                    variant={statusFilter === "completed" ? "default" : "outline"}
-                    size="sm"
-                    onClick={() => setStatusFilter("completed")}
-                    className={
-                      statusFilter === "completed"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
-                    }
-                  >
-                    <CheckCircle2 className="h-3 w-3 mr-1" />
-                    Completed
-                  </Button>
-                </div>
+                    <X className="h-4 w-4" />
+                  </button>
+                )}
               </div>
 
-              <div className="flex items-center gap-2">
-                <Calendar className="h-4 w-4 text-slate-600" />
-                <span className="text-sm font-medium text-slate-700">Period:</span>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+              {/* Filters - Responsive Grid */}
+              <div className="flex flex-col lg:flex-row gap-4 items-start lg:items-center flex-wrap">
+                {/* Status Filter */}
+                <div className="flex items-center gap-2 w-full lg:w-auto">
+                  <Filter className="h-4 w-4 text-slate-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-slate-700 whitespace-nowrap">Status:</span>
+                  <div className="flex gap-2 flex-wrap">
                     <Button
-                      variant="outline"
+                      variant={statusFilter === "all" ? "default" : "outline"}
                       size="sm"
-                      className="h-9 border-slate-300 hover:bg-slate-50 hover:border-slate-400 bg-transparent"
+                      onClick={() => setStatusFilter("all")}
+                      className={
+                        statusFilter === "all"
+                          ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                          : "hover:bg-slate-100"
+                      }
                     >
-                      {dateRangeLabel}
-                      <ChevronDown className="h-4 w-4 ml-2" />
+                      All
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="start" className="w-48">
-                    <DropdownMenuItem onClick={() => handleDateRangeSelect("current-month", "This Month")}>
-                      This Month
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDateRangeSelect("last-month", "Last Month")}>
-                      Last Month
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDateRangeSelect("last-3-months", "Last 3 Months")}>
-                      Last 3 Months
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={() => handleDateRangeSelect("all-time", "All Time")}>
-                      All Time
-                    </DropdownMenuItem>
-                    <div className="border-t my-1" />
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <Calendar className="h-3 w-3 mr-2" />
-                          Custom Range...
-                        </DropdownMenuItem>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-4" align="start">
-                        <div className="space-y-3">
-                          <div>
-                            <label className="text-sm font-medium text-slate-700">From Date</label>
-                            <Input
-                              type="date"
-                              onChange={(e) => {
-                                const from = new Date(e.target.value)
-                                if (customDateRange.to && from <= customDateRange.to) {
-                                  handleCustomDateRange(from, customDateRange.to)
-                                } else if (!customDateRange.to) {
-                                  setCustomDateRange({ ...customDateRange, from })
-                                }
-                              }}
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-slate-700">To Date</label>
-                            <Input
-                              type="date"
-                              onChange={(e) => {
-                                const to = new Date(e.target.value)
-                                if (customDateRange.from && to >= customDateRange.from) {
-                                  handleCustomDateRange(customDateRange.from, to)
-                                } else if (!customDateRange.from) {
-                                  setCustomDateRange({ ...customDateRange, to })
-                                }
-                              }}
-                              className="mt-1"
-                            />
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {(searchQuery || statusFilter !== "all" || stateFilter !== "all") && (
-                <div className="flex items-center gap-2 ml-auto">
-                  <Badge variant="secondary" className="text-xs">
-                    {filteredOrders.length} results
-                  </Badge>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSearchQuery("")
-                      setStatusFilter("all")
-                      setStateFilter("all")
-                    }}
-                    className="h-8 text-xs text-slate-600 hover:text-slate-900"
-                  >
-                    Clear filters
-                  </Button>
+                    <Button
+                      variant={statusFilter === "pending" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setStatusFilter("pending")}
+                      className={
+                        statusFilter === "pending"
+                          ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                          : "hover:bg-slate-100"
+                      }
+                    >
+                      <AlertCircle className="h-3 w-3 mr-1" />
+                      Pending
+                    </Button>
+                    <Button
+                      variant={statusFilter === "processing" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setStatusFilter("processing")}
+                      className={
+                        statusFilter === "processing"
+                          ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                          : "hover:bg-slate-100"
+                      }
+                    >
+                      <Clock className="h-3 w-3 mr-1" />
+                      Processing
+                    </Button>
+                    <Button
+                      variant={statusFilter === "completed" ? "default" : "outline"}
+                      size="sm"
+                      onClick={() => setStatusFilter("completed")}
+                      className={
+                        statusFilter === "completed"
+                          ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
+                          : "hover:bg-slate-100"
+                      }
+                    >
+                      <CheckCircle2 className="h-3 w-3 mr-1" />
+                      Completed
+                    </Button>
+                  </div>
                 </div>
-              )}
+
+                {/* Period/Date Filter */}
+                <div className="flex items-center gap-2 w-full lg:w-auto">
+                  <Calendar className="h-4 w-4 text-slate-600 flex-shrink-0" />
+                  <span className="text-sm font-medium text-slate-700 whitespace-nowrap">Period:</span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-9 border-slate-300 hover:bg-slate-50 hover:border-slate-400 bg-transparent"
+                      >
+                        {dateRangeLabel}
+                        <ChevronDown className="h-4 w-4 ml-2" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="start" className="w-48">
+                      <DropdownMenuItem onClick={() => handleDateRangeSelect("current-month", "This Month")}>
+                        This Month
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDateRangeSelect("last-month", "Last Month")}>
+                        Last Month
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDateRangeSelect("last-3-months", "Last 3 Months")}>
+                        Last 3 Months
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => handleDateRangeSelect("all-time", "All Time")}>
+                        All Time
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+
+                {/* Clear Filters Badge */}
+                {(searchQuery || statusFilter !== "all" || stateFilter !== "all") && (
+                  <div className="flex items-center gap-2 w-full lg:w-auto lg:ml-auto">
+                    <Badge variant="secondary" className="text-xs">
+                      {filteredOrders.length} results
+                    </Badge>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSearchQuery("")
+                        setStatusFilter("all")
+                        setStateFilter("all")
+                      }}
+                      className="h-8 text-xs text-slate-600 hover:text-slate-900"
+                    >
+                      Clear filters
+                    </Button>
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
         </CardContent>
       </Card>
 
@@ -798,45 +736,66 @@ export default function OrdersPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-slate-200">
-                  <p className="text-sm text-slate-600">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mt-6 pt-6 border-t border-slate-200">
+                  <p className="text-sm text-slate-600 whitespace-nowrap">
                     Showing <span className="font-semibold">{startIndex + 1}</span> to{" "}
                     <span className="font-semibold">{Math.min(endIndex, filteredOrders.length)}</span> of{" "}
                     <span className="font-semibold">{filteredOrders.length}</span> orders
                   </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                    >
-                      Previous
-                    </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
-                        <Button
-                          key={page}
-                          variant={currentPage === page ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setCurrentPage(page)}
-                          className={`w-8 h-8 p-0 ${
-                            currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""
-                          }`}
-                        >
-                          {page}
-                        </Button>
-                      ))}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                    >
-                      Next
-                    </Button>
-                  </div>
+                  <Pagination className="justify-center sm:justify-end">
+                    <PaginationContent className="gap-1">
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (currentPage > 1) setCurrentPage(currentPage - 1)
+                          }}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+
+                      {Array.from({ length: totalPages }, (_, i) => i + 1)
+                        .filter((page) => {
+                          if (totalPages <= 5) return true
+                          if (page === 1 || page === totalPages) return true
+                          if (page >= currentPage - 1 && page <= currentPage + 1) return true
+                          return false
+                        })
+                        .map((page, idx, arr) => {
+                          const prevPage = arr[idx - 1]
+                          const showEllipsis = prevPage && page - prevPage > 1
+
+                          return (
+                            <PaginationItem key={`page-${page}`}>
+                              {showEllipsis && <PaginationEllipsis />}
+                              <PaginationLink
+                                href="#"
+                                onClick={(e) => {
+                                  e.preventDefault()
+                                  setCurrentPage(page)
+                                }}
+                                isActive={currentPage === page}
+                                className={currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""}
+                              >
+                                {page}
+                              </PaginationLink>
+                            </PaginationItem>
+                          )
+                        })}
+
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={(e) => {
+                            e.preventDefault()
+                            if (currentPage < totalPages) setCurrentPage(currentPage + 1)
+                          }}
+                          className={currentPage === totalPages ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
                 </div>
               )}
             </>
