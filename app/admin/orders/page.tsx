@@ -187,6 +187,10 @@ export default function OrdersPage() {
         setCompanies(allCompanies)
         setOrders(sortedOrders)
         setFilteredOrders(sortedOrders)
+        
+        // Set initial paginated orders
+        const initialPaginated = sortedOrders.slice(0, ITEMS_PER_PAGE)
+        setPaginatedOrders(initialPaginated)
 
         const totalRev = sortedOrders.reduce(
           (acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0),
@@ -203,6 +207,8 @@ export default function OrdersPage() {
           companiesWithOrders: allCompanies.filter((c: any) => c.orders?.length > 0).length,
           totalEmbeddedOrders: allCompanies.reduce((sum, c: any) => sum + (c.orders?.length || 0), 0),
         })
+        
+        console.log("[v0] Initial orders loaded and set - Orders:", sortedOrders.length, "Paginated initial:", initialPaginated.length)
       } catch (error) {
         console.error("Error loading data:", error)
         toast({
@@ -291,10 +297,11 @@ export default function OrdersPage() {
   }, [searchQuery, statusFilter, stateFilter, dateFilter, orders])
 
   useEffect(() => {
+    console.log("[v0] Pagination useEffect triggered - currentPage:", currentPage, "filteredOrders.length:", filteredOrders.length)
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
     const endIndex = startIndex + ITEMS_PER_PAGE
     const paginated = filteredOrders.slice(startIndex, endIndex)
-    console.log("[v0] Pagination - Page:", currentPage, "Start:", startIndex, "End:", endIndex, "Result count:", paginated.length)
+    console.log("[v0] Pagination - Page:", currentPage, "Start:", startIndex, "End:", endIndex, "Result count:", paginated.length, "Items:", paginated)
     setPaginatedOrders(paginated)
     setStartIndex(startIndex)
     setEndIndex(endIndex)
