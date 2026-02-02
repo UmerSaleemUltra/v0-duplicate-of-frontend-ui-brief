@@ -28,6 +28,7 @@ import { useAuthGuard } from "@/lib/use-auth-guard"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { CompanyModal } from "@/components/company-modal"
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 
 
 const US_STATES = [
