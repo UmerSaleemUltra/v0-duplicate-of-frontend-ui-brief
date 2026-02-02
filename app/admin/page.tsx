@@ -510,10 +510,5 @@ export default function AdminDashboard() {
             )}
           </div>
         </div>
-            </Button>
-          )}
-        </div>
-      </div>
-    </div>
   )
 }
