@@ -21,28 +21,82 @@ export async function GET(req: NextRequest) {
     }
 
     const { db } = await connectDB()
+    const userIdObj = new ObjectId(decoded.userId)
     const query = decoded.role === "admin" ? {} : { userId: decoded.userId }
 
-    const orders = await db.collection("orders").find(query).sort({ createdAt: -1 }).limit(100).toArray()
+    // Fetch orders from standalone orders collection
+    const standAloneOrders = await db
+      .collection("orders")
+      .find(query)
+      .sort({ createdAt: -1 })
+      .limit(100)
+      .toArray()
+
+    // Fetch orders embedded in companies collection
+    let embeddedOrders: any[] = []
+    if (decoded.role === "admin") {
+      const companiesWithOrders = await db
+        .collection("companies")
+        .find({ orders: { $exists: true, $ne: [] } })
+        .project({ orders: 1, userId: 1, _id: 1 })
+        .toArray()
+
+      for (const company of companiesWithOrders) {
+        if (company.orders && Array.isArray(company.orders)) {
+          for (const order of company.orders) {
+            embeddedOrders.push({
+              ...order,
+              companyId: company._id.toString(),
+              userId: company.userId,
+            })
+          }
+        }
+      }
+    } else {
+      const userCompanies = await db
+        .collection("companies")
+        .find({ userId: decoded.userId, orders: { $exists: true, $ne: [] } })
+        .project({ orders: 1, _id: 1 })
+        .toArray()
+
+      for (const company of userCompanies) {
+        if (company.orders && Array.isArray(company.orders)) {
+          for (const order of company.orders) {
+            embeddedOrders.push({
+              ...order,
+              companyId: company._id.toString(),
+              userId: decoded.userId,
+            })
+          }
+        }
+      }
+    }
+
+    // Combine and sort all orders
+    const allOrders = [...standAloneOrders, ...embeddedOrders].sort((a, b) => {
+      const dateA = new Date(a.createdAt || 0).getTime()
+      const dateB = new Date(b.createdAt || 0).getTime()
+      return dateB - dateA
+    })
 
     const result = {
       success: true,
-      data: orders.map((order) => ({
-        id: order._id.toString(),
+      data: allOrders.slice(0, 100).map((order) => ({
+        id: order._id?.toString() || order.id,
         userId: order.userId,
         companyId: order.companyId,
         companyName: order.companyName,
-        type: order.type,
+        type: order.type || order.orderType,
         status: order.status,
-        amount: order.amount,
-        total: order.total,
-        packagePrice: order.packagePrice,
-        stateFilingFee: order.stateFilingFee,
-        addonsTotal: order.addonsTotal,
-        paymentStatus: order.paymentStatus,
-        paymentMethod: order.paymentMethod,
+        amount: order.amount || order.total,
+        total: order.total || order.amount,
+        packagePrice: order.packagePrice || order.pricing?.packagePrice,
+        stateFilingFee: order.stateFilingFee || order.pricing?.stateFilingFee,
+        addonsTotal: order.addonsTotal || order.pricing?.addonsTotal,
+        paymentStatus: order.paymentStatus || order.paymentInfo?.status,
+        paymentMethod: order.paymentMethod || order.paymentInfo?.method,
         items: order.items,
-        purchasedAddons: order.purchasedAddons,
+        purchasedAddons: order.purchasedAddons || order.selectedAddons,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
       })),
@@ -50,6 +104,7 @@ export async function GET(req: NextRequest) {
 
     return addSecurityHeaders(NextResponse.json(result))
   } catch (error) {
+    console.log("[v0] Error fetching orders:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 }))
   }
 }
