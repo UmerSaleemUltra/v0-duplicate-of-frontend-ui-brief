@@ -20,74 +20,59 @@ export async function GET(req: NextRequest) {
       return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
     }
 
-    console.log("[v0] Decoded token:", { userId: decoded.userId, role: decoded.role, type: typeof decoded.role })
-
     const { db } = await connectDB()
-    // Admin check: use role field, default to "client" if undefined
     const userRole = decoded.role || "client"
     const isAdmin = userRole === "admin"
+
+    // Query companies collection - orders are embedded in each company
     const query = isAdmin ? {} : { userId: decoded.userId }
+    const companies = await db
+      .collection("companies")
+      .find(query)
+      .limit(100)
+      .toArray()
 
-    console.log("[v0] Orders API - User role:", userRole, "Is Admin:", isAdmin, "Query:", query)
-    
-    const orders = await db.collection("orders").find(query).sort({ createdAt: -1 }).limit(100).toArray()
-    
-    console.log("[v0] Orders found:", orders.length, "from database")
-    console.log("[v0] First order sample:", orders[0] || "No orders")
+    console.log(`[v0] Found ${companies.length} companies for user`)
 
-    // If no orders found and user is admin, create synthetic orders from companies
-    let displayOrders = orders
-    if (displayOrders.length === 0 && isAdmin) {
-      console.log("[v0] No orders in collection, creating synthetic orders from companies")
-      const companies = await db.collection("companies").find({}).limit(100).toArray()
-      
-      displayOrders = companies.map((company: any) => ({
-        _id: new ObjectId(),
-        userId: company.userId || decoded.userId,
-        companyId: company._id?.toString() || company.id,
-        companyName: company.name,
-        type: company.type || "Formation",
-        packageType: company.packageType || "Standard",
-        status: company.status || "Completed",
-        amount: company.revenue || 0,
-        total: company.revenue || 0,
-        packagePrice: company.packagePrice || 0,
-        stateFilingFee: company.stateFilingFee || 0,
-        addonsTotal: company.addonsTotal || 0,
-        paymentStatus: "completed",
-        paymentMethod: "N/A",
-        items: company.items || [],
-        purchasedAddons: company.purchasedAddons || [],
-        createdAt: company.createdAt || new Date().toISOString(),
-        updatedAt: company.updatedAt || new Date().toISOString(),
-      }))
+    // Extract all orders from companies
+    const allOrders: any[] = []
+    for (const company of companies) {
+      if (company.orders && Array.isArray(company.orders)) {
+        for (const order of company.orders) {
+          allOrders.push({
+            id: order.id,
+            userId: order.userId || company.userId,
+            companyId: company._id?.toString(),
+            companyName: company.name,
+            orderType: order.orderType,
+            packageType: order.packageType,
+            state: order.state,
+            status: order.status,
+            pricing: order.pricing || {},
+            paymentInfo: order.paymentInfo || {},
+            selectedAddons: order.selectedAddons || [],
+            purchasedAddons: order.purchasedAddons || [],
+            passportDocuments: order.passportDocuments || [],
+            createdAt: order.createdAt,
+            updatedAt: order.updatedAt,
+          })
+        }
+      }
     }
+
+    // Sort by creation date descending
+    allOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+    console.log(`[v0] Extracted ${allOrders.length} orders from companies`)
 
     const result = {
       success: true,
-      data: displayOrders.map((order) => ({
-        id: order._id.toString(),
-        userId: order.userId,
-        companyId: order.companyId,
-        companyName: order.companyName,
-        type: order.type,
-        status: order.status,
-        amount: order.amount,
-        total: order.total,
-        packagePrice: order.packagePrice,
-        stateFilingFee: order.stateFilingFee,
-        addonsTotal: order.addonsTotal,
-        paymentStatus: order.paymentStatus,
-        paymentMethod: order.paymentMethod,
-        items: order.items,
-        purchasedAddons: order.purchasedAddons,
-        createdAt: order.createdAt,
-        updatedAt: order.updatedAt,
-      })),
+      data: allOrders,
     }
 
     return addSecurityHeaders(NextResponse.json(result))
   } catch (error) {
+    console.error("[v0] Orders API error:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 }))
   }
 }
@@ -110,6 +95,7 @@ export async function POST(req: NextRequest) {
     const {
       companyId,
       companyName,
+      orderType,
       type,
       amount,
       total,
@@ -117,67 +103,94 @@ export async function POST(req: NextRequest) {
       packageType,
       stateFilingFee,
       addonsTotal,
+      selectedAddons,
       items,
       purchasedAddons,
       paymentMethod,
       whatsappPhone,
       receiptUrl,
-      members,
+      state,
+      status,
+      pricing,
+      paymentInfo,
+      passportDocuments,
     } = body
 
-    if (!companyId || !companyName || !type || !amount) {
+    if (!companyId || !companyName || (!orderType && !type)) {
       return addSecurityHeaders(NextResponse.json({ error: "Missing required fields" }, { status: 400 }))
-    }
-
-    if (typeof amount !== "number" || amount <= 0) {
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid amount" }, { status: 400 }))
     }
 
     const { db } = await connectDB()
 
-    const company = await db.collection("companies").findOne({ _id: new ObjectId(companyId) })
+    // Fetch the company to verify it exists
+    const company = await db.collection("companies").findOne({ 
+      _id: ObjectId.isValid(companyId) ? new ObjectId(companyId) : companyId 
+    })
+    
     if (!company) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
     }
 
+    console.log("[v0] Creating order for company:", company.name)
+
+    // Create the new order to be embedded in the company
     const newOrder = {
+      id: new ObjectId().toString(),
       userId: decoded.userId,
-      companyId,
-      companyName,
-      type,
-      packageType: packageType || "starter",
-      status: "Order Proceeded",
-      amount,
-      total: total || amount,
-      packagePrice,
-      stateFilingFee,
-      addonsTotal,
-      paymentStatus: "pending",
-      paymentMethod: paymentMethod || "stripe",
-      paymentInfo: {
+      orderType: orderType || type || "Formation",
+      packageType: packageType || company.packageType || "starter",
+      state: state || company.state || "N/A",
+      status: status || "pending",
+      pricing: pricing || {
+        packagePrice: packagePrice || 0,
+        stateFilingFee: stateFilingFee || 0,
+        addonsTotal: addonsTotal || 0,
+        subtotal: (packagePrice || 0) + (stateFilingFee || 0),
+        total: total || amount || 0,
+      },
+      selectedAddons: selectedAddons || items || [],
+      paymentInfo: paymentInfo || {
         method: paymentMethod || "stripe",
         status: "pending",
         whatsappPhone: whatsappPhone || null,
         receiptUrl: receiptUrl || null,
         date: new Date().toISOString(),
       },
-      items: items || [],
       purchasedAddons: Array.isArray(purchasedAddons) ? purchasedAddons : [],
-      members: members || [],
+      passportDocuments: passportDocuments || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
-    const result = await db.collection("orders").insertOne(newOrder)
-    const orderId = result.insertedId.toString()
+    // Add order to the company's orders array
+    const updateResult = await db.collection("companies").findOneAndUpdate(
+      { _id: new ObjectId(company._id) },
+      {
+        $push: { orders: newOrder },
+        $set: { updatedAt: new Date().toISOString() },
+      },
+      { returnDocument: "after" }
+    )
 
-    const createdOrder = { id: orderId, ...newOrder }
+    if (!updateResult) {
+      return addSecurityHeaders(NextResponse.json({ error: "Failed to create order" }, { status: 500 }))
+    }
+
+    console.log("[v0] Order created successfully:", newOrder.id)
+
+    const createdOrder = { 
+      id: newOrder.id, 
+      companyId: company._id.toString(),
+      companyName: company.name,
+      ...newOrder 
+    }
 
     broadcastUpdate("orders", "created", createdOrder)
 
+    // Update company milestones
     try {
       await db.collection("companies").updateOne(
-        { _id: new ObjectId(companyId) },
+        { _id: new ObjectId(company._id) },
         {
           $set: {
             "customMilestones.0.completed": true,
@@ -187,20 +200,21 @@ export async function POST(req: NextRequest) {
         },
       )
     } catch (milestoneError) {
-      console.log("[v0] Failed to mark first milestone complete:", milestoneError)
+      console.log("[v0] Failed to mark milestone complete:", milestoneError)
     }
 
+    // Send confirmation email
     try {
       const user = await db
         .collection("users")
         .findOne({ _id: new ObjectId(decoded.userId) }, { projection: { name: 1, email: 1 } })
 
       if (user) {
-        const orderEmail = emailTemplates.orderConfirmation(user.name, orderId, {
+        const orderEmail = emailTemplates.orderConfirmation(user.name, newOrder.id, {
           companyName,
-          packageType: packageType || "Starter Package",
-          state: company?.state || "N/A",
-          total: total || amount,
+          packageType: newOrder.packageType,
+          state: newOrder.state,
+          total: newOrder.pricing.total,
         })
 
         await sendEmail({
@@ -215,26 +229,29 @@ export async function POST(req: NextRequest) {
       console.log("[v0] Email preparation failed (non-critical):", emailError)
     }
 
+    // Create notification
     try {
       await db.collection("notifications").insertOne({
         userId: decoded.userId,
-        companyId: companyId,
+        companyId: company._id.toString(),
         type: "order",
         title: "Order Placed Successfully!",
-        message: `Thank you for placing your trust in BuzzFiling! We've received your order for forming your U.S. ${type}, and our team is now processing it.`,
+        message: `Thank you for placing your trust in BuzzFiling! We've received your order for forming your U.S. ${newOrder.orderType}, and our team is now processing it.`,
         read: false,
         metadata: {
-          orderId: orderId,
-          companyId: companyId,
+          orderId: newOrder.id,
+          companyId: company._id.toString(),
           companyName: companyName,
-          orderType: type,
-          amount: total || amount,
+          orderType: newOrder.orderType,
+          amount: newOrder.pricing.total,
         },
         createdAt: new Date().toISOString(),
       })
 
       broadcastUpdate("notifications", "created", { userId: decoded.userId })
-    } catch (notificationError) {}
+    } catch (notificationError) {
+      console.log("[v0] Notification creation failed (non-critical):", notificationError)
+    }
 
     return addSecurityHeaders(
       NextResponse.json({
@@ -243,6 +260,7 @@ export async function POST(req: NextRequest) {
       }),
     )
   } catch (error) {
+    console.error("[v0] Order creation error:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to create order" }, { status: 500 }))
   }
 }
