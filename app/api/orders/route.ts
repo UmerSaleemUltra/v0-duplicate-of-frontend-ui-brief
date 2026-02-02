@@ -5,7 +5,6 @@ import { sendEmail, emailTemplates } from "@/config/email"
 import { ObjectId } from "mongodb"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
-import { processOrders } from "@/lib/api/order-service"
 
 export async function GET(req: NextRequest) {
   try {
@@ -25,16 +24,50 @@ export async function GET(req: NextRequest) {
     const userRole = decoded.role || "client"
     const isAdmin = userRole === "admin"
 
-    // Use centralized order service
-    const orderData = await processOrders(db, {
-      userId: isAdmin ? undefined : decoded.userId,
-      isAdmin,
-      limit: 100,
-    })
+    // Query companies collection - orders are embedded in each company
+    const query = isAdmin ? {} : { userId: decoded.userId }
+    const companies = await db
+      .collection("companies")
+      .find(query)
+      .limit(100)
+      .toArray()
+
+    console.log(`[v0] Found ${companies.length} companies for user`)
+
+    // Extract all orders from companies
+    const allOrders: any[] = []
+    for (const company of companies) {
+      if (company.orders && Array.isArray(company.orders)) {
+        for (const order of company.orders) {
+          allOrders.push({
+            id: order.id,
+            userId: order.userId || company.userId,
+            companyId: company._id?.toString(),
+            companyName: company.name,
+            orderType: order.orderType,
+            packageType: order.packageType,
+            state: order.state,
+            status: order.status,
+            pricing: order.pricing || {},
+            paymentInfo: order.paymentInfo || {},
+            selectedAddons: order.selectedAddons || [],
+            purchasedAddons: order.purchasedAddons || [],
+            passportDocuments: order.passportDocuments || [],
+            createdAt: order.createdAt,
+            updatedAt: order.updatedAt,
+          })
+        }
+      }
+    }
+
+    // Sort by creation date descending
+    allOrders.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+
+    console.log(`[v0] Extracted ${allOrders.length} orders from companies`)
 
     const result = {
       success: true,
-      data: orderData,
+      data: allOrders,
     }
 
     return addSecurityHeaders(NextResponse.json(result))
