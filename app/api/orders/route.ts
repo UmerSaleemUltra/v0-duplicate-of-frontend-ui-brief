@@ -79,6 +79,21 @@ export async function GET(req: NextRequest) {
       return dateB - dateA
     })
 
+    console.log("[v0] Orders API - Combined orders:", {
+      standAloneCount: standAloneOrders.length,
+      embeddedCount: embeddedOrders.length,
+      totalCount: allOrders.length,
+      userRole: decoded.role,
+    })
+    
+    if (allOrders.length > 0) {
+      console.log("[v0] Sample order:", {
+        id: allOrders[0]._id?.toString() || allOrders[0].id,
+        companyId: allOrders[0].companyId,
+        createdAt: allOrders[0].createdAt,
+      })
+    }
+
     const result = {
       success: true,
       data: allOrders.slice(0, 100).map((order) => ({
