@@ -193,7 +193,11 @@ export default function OrdersPage() {
         setPaginatedOrders(initialPaginated)
 
         const totalRev = sortedOrders.reduce(
-          (acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0),
+          (acc, order) => {
+            const amount = order.pricing?.total || order.amount || order.total || 0
+            console.log("[v0] Revenue calc - Order:", order.id, "pricing:", order.pricing, "amount:", order.amount, "total:", order.total, "calculated:", amount)
+            return acc + amount
+          },
           0,
         )
         setTotalRevenue(totalRev)
@@ -208,7 +212,7 @@ export default function OrdersPage() {
           totalEmbeddedOrders: allCompanies.reduce((sum, c: any) => sum + (c.orders?.length || 0), 0),
         })
         
-        console.log("[v0] Initial orders loaded and set - Orders:", sortedOrders.length, "Paginated initial:", initialPaginated.length)
+        console.log("[v0] Initial orders loaded and set - Orders:", sortedOrders.length, "Total Revenue:", totalRev, "Paginated initial:", initialPaginated.length)
       } catch (error) {
         console.error("Error loading data:", error)
         toast({

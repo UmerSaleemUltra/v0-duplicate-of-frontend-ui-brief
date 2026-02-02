@@ -78,7 +78,8 @@ export async function GET(req: NextRequest) {
       companiesWithOrders,
       totalOrdersFound,
       extractedOrders: allOrders.length,
-      companies: companies.map(c => ({ id: c._id, name: c.name, orderCount: c.orders?.length || 0 }))
+      companies: companies.map(c => ({ id: c._id, name: c.name, orderCount: c.orders?.length || 0 })),
+      sampleOrders: allOrders.slice(0, 2).map(o => ({ id: o.id, pricing: o.pricing, companyName: o.companyName }))
     })
 
     const result = {
