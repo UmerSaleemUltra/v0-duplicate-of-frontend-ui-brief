@@ -325,18 +325,18 @@ export default function AdminDashboard() {
           const trendColor = stat.trend === "up" ? "text-green-600" : "text-red-600"
 
           return (
-            <div key={index} className="backdrop-blur-xl bg-white/30 border border-white/20 rounded-2xl p-6 hover:bg-white/40 transition-all duration-300 shadow-xl">
+            <div key={index} className="backdrop-blur-md bg-white/50 border border-white/40 rounded-2xl p-6 hover:bg-white/60 transition-all duration-300 shadow-lg">
               <div className="flex flex-row items-center justify-between">
                 <div className="flex-1">
-                  <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide">{stat.name}</p>
+                  <p className="text-xs font-semibold text-slate-700 uppercase tracking-wide">{stat.name}</p>
                   <div className="text-3xl font-bold text-slate-900 mt-2">{stat.value}</div>
                   <div className="flex items-center gap-2 mt-3">
                     <TrendIcon className={`h-4 w-4 ${trendColor}`} />
                     <p className={`text-xs font-semibold ${trendColor}`}>{stat.change}</p>
-                    <p className="text-xs text-slate-500">{stat.subtitle}</p>
+                    <p className="text-xs text-slate-600">{stat.subtitle}</p>
                   </div>
                 </div>
-                <Icon className="h-8 w-8 text-slate-300 opacity-50" />
+                <Icon className="h-8 w-8 text-slate-400 opacity-60" />
               </div>
             </div>
           )
@@ -344,27 +344,27 @@ export default function AdminDashboard() {
       </div>
 
       {/* Revenue Chart Section with Year Navigation */}
-      <div className="backdrop-blur-xl bg-white/30 border border-white/20 rounded-2xl p-8 shadow-xl">
+      <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-2xl p-8 shadow-lg">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl font-bold text-slate-900">12-Month Revenue</h2>
-            <p className="text-slate-600 text-sm mt-1">Revenue analysis for {selectedYear}</p>
+            <p className="text-slate-700 text-sm mt-1">Revenue analysis for {selectedYear}</p>
           </div>
           <div className="flex items-center gap-2">
             <Button 
               variant="outline" 
               size="icon" 
               onClick={() => setSelectedYear(prev => prev - 1)}
-              className="rounded-full border-white/20 bg-white/20 hover:bg-white/40"
+              className="rounded-full border-white/40 bg-white/30 hover:bg-white/50 text-slate-900"
             >
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-lg font-semibold text-slate-900 px-4 py-2 bg-white/50 rounded-full min-w-20 text-center">{selectedYear}</span>
+            <span className="text-lg font-semibold text-slate-900 px-4 py-2 bg-white/60 rounded-full min-w-20 text-center">{selectedYear}</span>
             <Button 
               variant="outline" 
               size="icon" 
               onClick={() => setSelectedYear(prev => prev + 1)}
-              className="rounded-full border-white/20 bg-white/20 hover:bg-white/40"
+              className="rounded-full border-white/40 bg-white/30 hover:bg-white/50 text-slate-900"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
@@ -380,13 +380,13 @@ export default function AdminDashboard() {
                 <stop offset="95%" stopColor="#880000" stopOpacity={0}/>
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
-            <XAxis dataKey="month" stroke="rgba(100,116,139,0.6)" />
-            <YAxis stroke="rgba(100,116,139,0.6)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.2)" />
+            <XAxis dataKey="month" stroke="rgba(55,65,81,0.7)" />
+            <YAxis stroke="rgba(55,65,81,0.7)" />
             <Tooltip 
               contentStyle={{
-                backgroundColor: "rgba(255,255,255,0.9)",
-                border: "1px solid rgba(100,116,139,0.2)",
+                backgroundColor: "rgba(255,255,255,0.95)",
+                border: "1px solid rgba(100,116,139,0.3)",
                 borderRadius: "12px"
               }}
               formatter={(value) => `$${value.toLocaleString()}`}
@@ -399,10 +399,10 @@ export default function AdminDashboard() {
       {/* Bottom Section - Recent Orders and Top States */}
       <div className="grid gap-6 lg:grid-cols-2">
         {/* Recent Orders */}
-        <div className="backdrop-blur-xl bg-white/30 border border-white/20 rounded-2xl p-6 shadow-xl">
+        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-2xl p-6 shadow-lg">
           <div className="mb-6">
             <h3 className="text-xl font-bold text-slate-900">Recent Orders</h3>
-            <p className="text-slate-600 text-sm mt-1">Latest transactions</p>
+            <p className="text-slate-700 text-sm mt-1">Latest transactions</p>
           </div>
           <div className="space-y-3">
             {orders.length === 0 ? (
@@ -412,7 +412,7 @@ export default function AdminDashboard() {
                 {orders.slice(0, 4).map((order) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between p-4 rounded-xl backdrop-blur-sm bg-white/40 border border-white/20 hover:bg-white/60 cursor-pointer transition-all duration-300 group"
+                    className="flex items-center justify-between p-4 rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:bg-white/80 cursor-pointer transition-all duration-300 group"
                     onClick={() => router.push(`/admin/orders/${order.id}`)}
                   >
                     <div className="flex items-center gap-3">
@@ -421,10 +421,10 @@ export default function AdminDashboard() {
                       </div>
                       <div>
                         <p className="text-sm font-semibold text-slate-900 group-hover:text-[#880000] transition-colors">{order.companyName || "Unknown"}</p>
-                        <p className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                        <p className="text-xs text-slate-600">{new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <Badge className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0">+${order.pricing?.total || order.amount || 0}</Badge>
+                    <Badge className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0">+${(order.pricing?.total || order.amount || 0).toLocaleString()}</Badge>
                   </div>
                 ))}
               </>
@@ -439,20 +439,20 @@ export default function AdminDashboard() {
         </div>
 
         {/* Top States / Companies Breakdown */}
-        <div className="backdrop-blur-xl bg-white/30 border border-white/20 rounded-2xl p-6 shadow-xl">
+        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-2xl p-6 shadow-lg">
           <div className="mb-6">
             <h3 className="text-xl font-bold text-slate-900">Top States</h3>
-            <p className="text-slate-600 text-sm mt-1">Companies by location</p>
+            <p className="text-slate-700 text-sm mt-1">Companies by location</p>
           </div>
           <div className="space-y-3">
             {(showAllStates ? stateBreakdown : stateBreakdown.slice(0, 4)).map((state, index) => (
-              <div key={index} className="flex items-center justify-between p-4 rounded-xl backdrop-blur-sm bg-white/40 border border-white/20 hover:bg-white/60 transition-all duration-300">
+              <div key={index} className="flex items-center justify-between p-4 rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:bg-white/80 transition-all duration-300">
                 <div className="flex-1">
                   <p className="font-semibold text-slate-900">{state.state}</p>
-                  <p className="text-xs text-slate-500 mt-1">{state.count} companies</p>
+                  <p className="text-xs text-slate-600 mt-1">{state.count} {state.count === 1 ? 'company' : 'companies'}</p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-24 bg-white/30 rounded-full h-2">
+                  <div className="w-24 bg-white/40 rounded-full h-2">
                     <div 
                       className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-2 rounded-full transition-all"
                       style={{width: `${state.percentage}%`}}
@@ -465,7 +465,7 @@ export default function AdminDashboard() {
             {stateBreakdown.length > 4 && (
               <Button 
                 variant="outline"
-                className="w-full mt-4 border-white/20 bg-white/20 hover:bg-white/40 text-slate-900 rounded-xl"
+                className="w-full mt-4 border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-xl"
                 onClick={() => setShowAllStates(!showAllStates)}
               >
                 {showAllStates ? "Show Less" : `View All (${stateBreakdown.length})`}
