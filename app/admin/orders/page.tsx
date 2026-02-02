@@ -164,7 +164,9 @@ export default function OrdersPage() {
             const companyOrders = company.orders || []
             
             // If company has no orders, create a synthetic order from company data
-            if (companyOrders.length === 0 && company.revenue > 0) {
+            // Always create synthetic orders for companies (not just those with revenue > 0)
+            if (companyOrders.length === 0) {
+              console.log("[v0] Creating synthetic order for company:", company.name, company)
               return [{
                 id: company._id?.toString() || company.id,
                 orderType: company.type || "Formation",
