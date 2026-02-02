@@ -166,13 +166,13 @@ export default function OrdersPage() {
         allOrders = allOrders.map((order: any) => ({
           ...order,
           id: order.id || order._id,
-          companyId: order.companyId || order.companyId,
+          companyId: order.companyId,
         }))
 
         const ordersWithDetails = allOrders.map((order: any) => {
           const company = allCompanies.find((c: any) => {
-            const companyId = c.id || c._id?.toString?.()
-            return String(companyId) === String(order.companyId)
+            const companyId = String(c.id || c._id || "")
+            return companyId === String(order.companyId || "")
           })
           const user = allUsers.find((u: any) => String(u.id || u._id) === String(company?.userId))
 
@@ -368,27 +368,44 @@ export default function OrdersPage() {
 
       const usersData = await usersResponse.json()
       const companiesData = await companiesResponse.json()
+      const ordersData = await ordersResponse.json()
 
       const allUsers = usersData.data || usersData || []
       const allCompanies = companiesData.data || companiesData || []
+      const apiOrders = ordersData.data || ordersData || []
 
-      const allOrdersData = allCompanies.flatMap((company: any) => {
-        const companyOrders = company.orders || []
-        return companyOrders.map((order: any) => ({
-          ...order,
-          companyId: company.id,
-          companyName: company.name,
-          state: company.state,
-          packageType: order.packageType || company.packageType || "N/A",
-        }))
-      })
+      // Use orders from API or fallback to extracting from companies
+      let allOrdersData = apiOrders.length > 0
+        ? apiOrders
+        : allCompanies.flatMap((company: any) => {
+            const companyOrders = company.orders || []
+            return companyOrders.map((order: any) => ({
+              ...order,
+              companyId: company.id,
+              companyName: company.name,
+              state: company.state,
+              packageType: order.packageType || company.packageType || "N/A",
+            }))
+          })
+
+      // Normalize order IDs
+      allOrdersData = allOrdersData.map((order: any) => ({
+        ...order,
+        id: order.id || order._id,
+        companyId: order.companyId,
+      }))
 
       const ordersWithDetails = allOrdersData.map((order: any) => {
-        const company = allCompanies.find((c: any) => c.id === order.companyId)
-        const user = allUsers.find((u: any) => String(u.id) === String(company?.userId))
+        const company = allCompanies.find((c: any) => {
+          const companyId = String(c.id || c._id || "")
+          return companyId === String(order.companyId || "")
+        })
+        const user = allUsers.find((u: any) => String(u.id || u._id) === String(company?.userId))
 
         return {
           ...order,
+          companyName: order.companyName || company?.name || "N/A",
+          state: order.state || company?.state || "N/A",
           customerName: user?.name || company?.members?.[0]?.name || "Unknown",
           customerEmail: user?.email || "N/A",
           userId: company?.userId,
