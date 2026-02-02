@@ -330,17 +330,17 @@ export default function AdminDashboard() {
   ]
 
   return (
-    <div className="space-y-6 p-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-6 lg:p-8">
       {/* Header */}
       <div className="flex justify-between items-start">
         <div>
-          <h1 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">Dashboard</h1>
-          <p className="text-slate-600 mt-2">Welcome back! Here's your business overview.</p>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">Dashboard</h1>
+          <p className="text-sm md:text-base text-slate-600 mt-1 md:mt-2">Welcome back! Here's your business overview.</p>
         </div>
       </div>
 
       {/* Stats Grid - Glasmorphic with Enhanced Styling */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4">
         {statsData.map((stat, index) => {
           const Icon = stat.icon
           const TrendIcon = stat.trend === "up" ? ArrowUpRight : ArrowDownRight
@@ -352,7 +352,7 @@ export default function AdminDashboard() {
           return (
             <div 
               key={index} 
-              className="group relative overflow-hidden backdrop-blur-md bg-white/50 border border-white/40 rounded-2xl p-6 hover:bg-white/60 transition-all duration-300 shadow-lg hover:shadow-xl"
+              className="group relative overflow-hidden backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 hover:bg-white/60 transition-all duration-300 shadow-lg hover:shadow-xl"
             >
               {/* Background gradient accent */}
               <div className={`absolute -right-20 -top-20 w-40 h-40 bg-gradient-to-br ${bgGradient} rounded-full blur-3xl opacity-20 group-hover:opacity-30 transition-opacity`}></div>
@@ -360,17 +360,17 @@ export default function AdminDashboard() {
               <div className="relative flex flex-row items-center justify-between">
                 <div className="flex-1">
                   <p className="text-xs font-semibold text-slate-700 uppercase tracking-widest">{stat.name}</p>
-                  <div className="text-3xl font-bold text-slate-900 mt-3 font-display">{stat.value}</div>
-                  <div className="flex items-center gap-2 mt-4">
-                    <div className={`flex items-center gap-1 px-2 py-1 rounded-full ${stat.trend === "up" ? "bg-emerald-500/15" : "bg-red-500/15"}`}>
-                      <TrendIcon className={`h-3.5 w-3.5 ${trendColor}`} />
+                  <div className="text-2xl md:text-3xl font-bold text-slate-900 mt-2 md:mt-3 font-display">{stat.value}</div>
+                  <div className="flex flex-col md:flex-row md:items-center gap-1 md:gap-2 mt-2 md:mt-4">
+                    <div className={`flex items-center gap-1 px-2 py-1 rounded-full w-fit ${stat.trend === "up" ? "bg-emerald-500/15" : "bg-red-500/15"}`}>
+                      <TrendIcon className={`h-3 md:h-3.5 w-3 md:w-3.5 ${trendColor}`} />
                       <p className={`text-xs font-semibold ${trendColor}`}>{stat.change}</p>
                     </div>
                     <p className="text-xs text-slate-600">{stat.subtitle}</p>
                   </div>
                 </div>
-                <div className={`flex-shrink-0 p-3 rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 opacity-60 group-hover:opacity-100 transition-opacity`}>
-                  <Icon className="h-6 w-6 text-slate-700" />
+                <div className={`flex-shrink-0 p-2 md:p-3 rounded-lg md:rounded-xl bg-gradient-to-br from-slate-100 to-slate-50 opacity-60 group-hover:opacity-100 transition-opacity`}>
+                  <Icon className="h-5 md:h-6 w-5 md:w-6 text-slate-700" />
                 </div>
               </div>
             </div>
@@ -379,93 +379,95 @@ export default function AdminDashboard() {
       </div>
 
       {/* Revenue Chart Section with Year Navigation */}
-      <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-2xl p-8 shadow-lg">
-        <div className="flex items-center justify-between mb-8">
+      <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 lg:p-8 shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0 mb-6 md:mb-8">
           <div>
-            <h2 className="text-2xl font-bold text-slate-900">12-Month Revenue</h2>
-            <p className="text-slate-700 text-sm mt-1">Revenue analysis for {selectedYear}</p>
+            <h2 className="text-xl md:text-2xl font-bold text-slate-900">12-Month Revenue</h2>
+            <p className="text-xs md:text-sm text-slate-700 mt-1">Revenue analysis for {selectedYear}</p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 justify-start md:justify-end">
             <Button 
               variant="outline" 
               size="icon" 
               onClick={() => setSelectedYear(prev => prev - 1)}
-              className="rounded-full border-white/40 bg-white/30 hover:bg-white/50 text-slate-900"
+              className="rounded-full border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 h-8 w-8 md:h-10 md:w-10"
             >
-              <ChevronLeft className="h-4 w-4" />
+              <ChevronLeft className="h-3 md:h-4 w-3 md:w-4" />
             </Button>
-            <span className="text-lg font-semibold text-slate-900 px-4 py-2 bg-white/60 rounded-full min-w-20 text-center">{selectedYear}</span>
+            <span className="text-base md:text-lg font-semibold text-slate-900 px-3 md:px-4 py-1 md:py-2 bg-white/60 rounded-full min-w-16 md:min-w-20 text-center">{selectedYear}</span>
             <Button 
               variant="outline" 
               size="icon" 
               onClick={() => setSelectedYear(prev => prev + 1)}
-              className="rounded-full border-white/40 bg-white/30 hover:bg-white/50 text-slate-900"
+              className="rounded-full border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 h-8 w-8 md:h-10 md:w-10"
             >
-              <ChevronRight className="h-4 w-4" />
+              <ChevronRight className="h-3 md:h-4 w-3 md:w-4" />
             </Button>
           </div>
         </div>
 
-        {/* Chart */}
-        <ResponsiveContainer width="100%" height={350}>
-          <AreaChart data={chartData}>
-            <defs>
-              <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#880000" stopOpacity={0.8}/>
-                <stop offset="95%" stopColor="#880000" stopOpacity={0}/>
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.2)" />
-            <XAxis dataKey="month" stroke="rgba(55,65,81,0.7)" />
-            <YAxis stroke="rgba(55,65,81,0.7)" />
-            <Tooltip 
-              contentStyle={{
-                backgroundColor: "rgba(255,255,255,0.95)",
-                border: "1px solid rgba(100,116,139,0.3)",
-                borderRadius: "12px"
-              }}
-              formatter={(value) => `$${value.toLocaleString()}`}
-            />
-            <Area type="monotone" dataKey="revenue" stroke="#880000" fillOpacity={1} fill="url(#colorRevenue)" />
-          </AreaChart>
-        </ResponsiveContainer>
+        {/* Chart - Responsive Height */}
+        <div className="w-full overflow-x-auto">
+          <ResponsiveContainer width="100%" height={Math.max(250, window.innerWidth < 768 ? 250 : 350)}>
+            <AreaChart data={chartData} margin={{ top: 10, right: 10, left: 0, bottom: 10 }}>
+              <defs>
+                <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#880000" stopOpacity={0.8}/>
+                  <stop offset="95%" stopColor="#880000" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.2)" />
+              <XAxis dataKey="month" stroke="rgba(55,65,81,0.7)" tick={{ fontSize: 12 }} />
+              <YAxis stroke="rgba(55,65,81,0.7)" tick={{ fontSize: 12 }} />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: "rgba(255,255,255,0.95)",
+                  border: "1px solid rgba(100,116,139,0.3)",
+                  borderRadius: "12px"
+                }}
+                formatter={(value) => `$${value.toLocaleString()}`}
+              />
+              <Area type="monotone" dataKey="revenue" stroke="#880000" fillOpacity={1} fill="url(#colorRevenue)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
       {/* Bottom Section - Recent Orders and Top States */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
         {/* Recent Orders */}
-        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-2xl p-6 shadow-lg">
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-slate-900">Recent Orders</h3>
-            <p className="text-slate-700 text-sm mt-1">Latest transactions</p>
+        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-lg">
+          <div className="mb-4 md:mb-6">
+            <h3 className="text-lg md:text-xl font-bold text-slate-900">Recent Orders</h3>
+            <p className="text-xs md:text-sm text-slate-700 mt-1">Latest transactions</p>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             {orders.length === 0 ? (
-              <p className="text-center text-slate-500 py-8">No orders yet</p>
+              <p className="text-center text-slate-500 py-6 md:py-8 text-sm">No orders yet</p>
             ) : (
               <>
                 {orders.slice(0, 4).map((order) => (
                   <div
                     key={order.id}
-                    className="flex items-center justify-between p-4 rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:border-white/60 hover:bg-white/80 cursor-pointer transition-all duration-300 group hover:shadow-md"
+                    className="flex items-center justify-between p-3 md:p-4 rounded-lg md:rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:border-white/60 hover:bg-white/80 cursor-pointer transition-all duration-300 group hover:shadow-md"
                     onClick={() => router.push(`/admin/orders/${order.id}`)}
                   >
-                    <div className="flex items-center gap-3 flex-1">
-                      <div className="p-2 rounded-lg bg-gradient-to-br from-[#880000]/20 to-[#ff0d13]/10 group-hover:from-[#880000]/30 group-hover:to-[#ff0d13]/20 transition-all">
-                        <ShoppingCart className="h-5 w-5 text-[#880000]" />
+                    <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
+                      <div className="p-1.5 md:p-2 rounded-lg bg-gradient-to-br from-[#880000]/20 to-[#ff0d13]/10 group-hover:from-[#880000]/30 group-hover:to-[#ff0d13]/20 transition-all flex-shrink-0">
+                        <ShoppingCart className="h-4 md:h-5 w-4 md:w-5 text-[#880000]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-[#880000] transition-colors">{order.companyName || "Unknown"}</p>
+                        <p className="text-xs md:text-sm font-semibold text-slate-900 truncate group-hover:text-[#880000] transition-colors">{order.companyName || "Unknown"}</p>
                         <p className="text-xs text-slate-600">{new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
-                    <Badge className="flex-shrink-0 ml-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 whitespace-nowrap">+${(order.pricing?.total || order.amount || 0).toLocaleString()}</Badge>
+                    <Badge className="flex-shrink-0 ml-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 whitespace-nowrap text-xs md:text-sm">+${(order.pricing?.total || order.amount || 0).toLocaleString()}</Badge>
                   </div>
                 ))}
               </>
             )}
             <Button 
-              className="w-full mt-4 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 rounded-xl hover:shadow-lg transition-all"
+              className="w-full mt-3 md:mt-4 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 rounded-lg md:rounded-xl hover:shadow-lg transition-all text-sm md:text-base"
               asChild
             >
               <a href="/admin/orders">View All Orders</a>
@@ -474,33 +476,33 @@ export default function AdminDashboard() {
         </div>
 
         {/* Top States / Companies Breakdown */}
-        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-2xl p-6 shadow-lg">
-          <div className="mb-6">
-            <h3 className="text-xl font-bold text-slate-900">Top States</h3>
-            <p className="text-slate-700 text-sm mt-1">Companies by location</p>
+        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-lg">
+          <div className="mb-4 md:mb-6">
+            <h3 className="text-lg md:text-xl font-bold text-slate-900">Top States</h3>
+            <p className="text-xs md:text-sm text-slate-700 mt-1">Companies by location</p>
           </div>
-          <div className="space-y-3">
+          <div className="space-y-2 md:space-y-3">
             {(showAllStates ? stateBreakdown : stateBreakdown.slice(0, 4)).map((state, index) => (
-              <div key={index} className="flex items-center justify-between p-4 rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:bg-white/80 transition-all duration-300">
-                <div className="flex-1">
-                  <p className="font-semibold text-slate-900">{state.state}</p>
+              <div key={index} className="flex items-center justify-between p-3 md:p-4 rounded-lg md:rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:bg-white/80 transition-all duration-300">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-slate-900 text-sm md:text-base">{state.state}</p>
                   <p className="text-xs text-slate-600 mt-1">{state.count} {state.count === 1 ? 'company' : 'companies'}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <div className="w-24 bg-white/40 rounded-full h-2">
+                <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 ml-2">
+                  <div className="w-16 md:w-24 bg-white/40 rounded-full h-2">
                     <div 
                       className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-2 rounded-full transition-all"
                       style={{width: `${state.percentage}%`}}
                     ></div>
                   </div>
-                  <span className="text-sm font-semibold text-slate-900 min-w-10 text-right">{state.percentage}%</span>
+                  <span className="text-xs md:text-sm font-semibold text-slate-900 min-w-8 text-right">{state.percentage}%</span>
                 </div>
               </div>
             ))}
             {stateBreakdown.length > 4 && (
               <Button 
                 variant="outline"
-                className="w-full mt-4 border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-xl"
+                className="w-full mt-3 md:mt-4 border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg md:rounded-xl text-sm md:text-base"
                 onClick={() => setShowAllStates(!showAllStates)}
               >
                 {showAllStates ? "Show Less" : `View All (${stateBreakdown.length})`}
