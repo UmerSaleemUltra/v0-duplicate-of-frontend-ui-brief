@@ -121,7 +121,7 @@
 
 ## 🗂️ File Structure
 
-```
+\`\`\`
 /lib/api/
   └── order-service.ts          ← Service layer (107 lines)
 
@@ -139,7 +139,7 @@
   ├── ORDERS_API_SYSTEM.md       ← Complete API docs
   ├── IMPLEMENTATION_DETAILS.md  ← Code details
   └── INDEX.md                   ← This file
-```
+\`\`\`
 
 ---
 

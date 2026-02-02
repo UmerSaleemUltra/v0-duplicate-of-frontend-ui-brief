@@ -8,7 +8,7 @@ All orders are embedded within each company document as an array field called `o
 
 ## Data Model
 
-```
+\`\`\`
 companies collection
 ├── company1
 │   ├── _id: ObjectId
@@ -31,7 +31,7 @@ companies collection
 │   ├── purchasedAddons: array   ← Top-level addons
 │   ├── revenue: number
 │   └── ... other fields
-```
+\`\`\`
 
 ## API Strategy
 
@@ -84,7 +84,7 @@ companies collection
 
 ## Data Flow
 
-```
+\`\`\`
 Admin Request
     ↓
 GET /api/orders
@@ -106,36 +106,36 @@ transformOrder() for each order
 Return API response
     ↓
 [{ id, companyId, companyName, pricing, status, ... }, ...]
-```
+\`\`\`
 
 ## Example Usage
 
 ### Fetch All Orders (Admin)
-```javascript
+\`\`\`javascript
 const response = await fetch('/api/orders', {
   headers: { Authorization: 'Bearer token' }
 })
 const orders = await response.json()
 // orders.data = [order1, order2, order3, ...]
-```
+\`\`\`
 
 ### Fetch Company Orders
-```javascript
+\`\`\`javascript
 const response = await fetch('/api/companies/companyId/orders', {
   headers: { Authorization: 'Bearer token' }
 })
 const orders = await response.json()
 // orders = [company_order1, company_order2, ...]
-```
+\`\`\`
 
 ### Fetch Single Order
-```javascript
+\`\`\`javascript
 const response = await fetch('/api/orders/orderId', {
   headers: { Authorization: 'Bearer token' }
 })
 const order = await response.json()
 // order = { id, companyId, pricing, ... }
-```
+\`\`\`
 
 ## Important Notes
 

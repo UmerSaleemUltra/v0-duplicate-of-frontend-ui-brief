@@ -7,7 +7,7 @@
 
 ## 📁 Files Modified/Created
 
-```
+\`\`\`
 NEW:
   /lib/api/order-service.ts          ← Centralized order logic
   /docs/ORDERS_API_SYSTEM.md         ← Full system documentation
@@ -17,18 +17,18 @@ NEW:
 MODIFIED:
   /app/api/orders/route.ts           ← Now uses order service
   /app/admin/orders/page.tsx         ← Simplified data fetching
-```
+\`\`\`
 
 ## 🔧 How It Works
 
 ### 1. API Call
-```bash
+\`\`\`bash
 GET /api/orders
 Authorization: Bearer {token}
-```
+\`\`\`
 
 ### 2. Behind the Scenes
-```
+\`\`\`
 API receives request
   ↓
 Verifies token and role
@@ -40,23 +40,23 @@ Service tries to get real orders
   └─ Not found? → Get companies & convert them
   ↓
 Return data to frontend
-```
+\`\`\`
 
 ### 3. Frontend Displays
-```
+\`\`\`
 Admin page receives API response
   ↓
 Displays orders in table
   (Either real orders or companies-as-orders)
-```
+\`\`\`
 
 ## ✅ Testing
 
 ### Test 1: Check API
-```bash
+\`\`\`bash
 curl -H "Authorization: Bearer YOUR_TOKEN" \
   http://localhost:3000/api/orders | jq '.data'
-```
+\`\`\`
 
 **Expected Output**: Array of orders (real or converted from companies)
 
@@ -69,18 +69,18 @@ curl -H "Authorization: Bearer YOUR_TOKEN" \
 ### Test 3: Check Console Logs
 Open browser DevTools → Console
 Look for messages like:
-```
+\`\`\`
 [v0] Found 3 orders in database
-```
+\`\`\`
 or
-```
+\`\`\`
 [v0] Creating display orders from 5 companies
-```
+\`\`\`
 
 ## 📊 Data Structure
 
 Each order has this format:
-```json
+\`\`\`json
 {
   "id": "507f1f77bcf86cd799439011",
   "companyId": "507f1f77bcf86cd799439013",
@@ -91,7 +91,7 @@ Each order has this format:
   "total": 500,
   "createdAt": "2024-01-15T10:30:00Z"
 }
-```
+\`\`\`
 
 ## 🎯 Key Features
 
@@ -126,7 +126,7 @@ Each order has this format:
 
 ## 🔄 How Data Flows
 
-```
+\`\`\`
 You: GET /api/orders
   ↓
 API: Verify token
@@ -136,7 +136,7 @@ Service: Try to get real orders
   └─ NO → Get companies & convert ✓
   ↓
 Frontend: Display whatever we got
-```
+\`\`\`
 
 ## 💡 Key Points to Remember
 
@@ -149,29 +149,29 @@ Frontend: Display whatever we got
 ## 🚦 Common Workflows
 
 ### Workflow 1: Admin Views All Orders
-```
+\`\`\`
 1. Admin logs in
 2. Admin visits /admin/orders
 3. API returns all orders from database
 4. Page displays them
-```
+\`\`\`
 
 ### Workflow 2: Admin Views When No Orders Exist
-```
+\`\`\`
 1. Admin logs in
 2. Admin visits /admin/orders
 3. API finds no orders
 4. API gets companies and converts them
 5. Page displays companies as orders
-```
+\`\`\`
 
 ### Workflow 3: Regular User Views Their Orders
-```
+\`\`\`
 1. User logs in
 2. User visits /client/dashboard
 3. API returns only their orders
 4. Page displays them
-```
+\`\`\`
 
 ## 🎓 Learning Path
 
@@ -214,7 +214,7 @@ A: Use the POST endpoint or manually insert into orders collection.
 
 ## ✨ What's Improved
 
-```
+\`\`\`
 BEFORE                          AFTER
 ─────────────────────────────────────────────
 Fragmented logic        →       Centralized service
@@ -223,7 +223,7 @@ Duplicate code          →       Single source of truth
 Empty results possible  →       Always has data or []
 Hard to test            →       Easy to test
 Confusing flow          →       Clear flow
-```
+\`\`\`
 
 ---
 

@@ -21,40 +21,40 @@
 - Clear, well-documented transformations
 
 **Key Functions**:
-```typescript
+\`\`\`typescript
 processOrders()         // Main orchestrator
 getOrdersFromDatabase() // Fetch real orders
 getCompaniesForOrders() // Fetch companies for fallback
 companyToOrder()        // Convert company to order format
 transformOrder()        // Normalize any order to API format
-```
+\`\`\`
 
 ### Step 2: Updated Orders API
 📁 **File**: `/app/api/orders/route.ts` (Simplified)
 
 **Before** (messy):
-```typescript
+\`\`\`typescript
 // 60+ lines of complex logic
 // Duplicate transformations
 // Multiple conditional branches
 // Hard to understand flow
-```
+\`\`\`
 
 **After** (clean):
-```typescript
+\`\`\`typescript
 const orderData = await processOrders(db, {
   userId: isAdmin ? undefined : decoded.userId,
   isAdmin,
   limit: 100,
 })
 return { success: true, data: orderData }
-```
+\`\`\`
 
 ### Step 3: Simplified Admin Page
 📁 **File**: `/app/admin/orders/page.tsx` (Simplified)
 
 **Before** (buggy):
-```typescript
+\`\`\`typescript
 // Try to get orders
 if (apiOrders.length > 0) {
   // use orders
@@ -63,18 +63,18 @@ if (apiOrders.length > 0) {
   // Same logic as API (duplication)
   // bug: company.revenue > 0 filter
 }
-```
+\`\`\`
 
 **After** (clean):
-```typescript
+\`\`\`typescript
 // Just use API response - it handles everything!
 const apiOrders = ordersResponse.data
 setOrders(apiOrders)
-```
+\`\`\`
 
 ## Architecture
 
-```
+\`\`\`
 ┌─────────────────────────────────────────┐
 │  Admin Orders Page                      │
 │  (Just displays data from API)          │
@@ -99,12 +99,12 @@ setOrders(apiOrders)
     │ (Real) │        │(Fallback)
     └────────┘        └────────┘
       Database
-```
+\`\`\`
 
 ## How It Works
 
 ### When Orders Exist
-```
+\`\`\`
 API Request
   ↓
 Check database for orders
@@ -114,10 +114,10 @@ Transform them
   ↓
 Return to frontend
   ✓ Done!
-```
+\`\`\`
 
 ### When Orders Don't Exist
-```
+\`\`\`
 API Request
   ↓
 Check database for orders
@@ -130,7 +130,7 @@ Convert companies to orders
   ↓
 Return to frontend
   ✓ Done! (Data displayed, not stored)
-```
+\`\`\`
 
 ## What Changed
 
@@ -161,10 +161,10 @@ Return to frontend
 ## Testing Your Fix
 
 ### Test 1: API Response
-```bash
+\`\`\`bash
 curl -H "Authorization: Bearer TOKEN" \
   http://localhost:3000/api/orders | jq '.data | length'
-```
+\`\`\`
 Should return a number > 0 (5 for companies as display orders)
 
 ### Test 2: Admin Page
@@ -183,7 +183,7 @@ Should return a number > 0 (5 for companies as display orders)
 
 Enable console in browser (F12), look for:
 
-```
+\`\`\`
 [v0] Found 3 orders in database
   → Real orders are being used ✓
 
@@ -193,7 +193,7 @@ Enable console in browser (F12), look for:
 
 [v0] No orders or companies found
   → System working but no data ✓
-```
+\`\`\`
 
 ## Production Checklist ✅
 

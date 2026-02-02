@@ -4,7 +4,7 @@
 ## ┃                         SYSTEM OVERVIEW                            ┃
 ## ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛
 
-```
+\`\`\`
 ┌─────────────────────────────────────────────────────────────────────┐
 │                      ADMIN ORDERS PAGE                              │
 │              (/app/admin/orders/page.tsx)                          │
@@ -64,13 +64,13 @@
     │ (if they exist)  │  │ (for fallback)   │
     └──────────────────┘  └──────────────────┘
           MongoDB Database
-```
+\`\`\`
 
 ---
 
 ## 📊 Data Flow - Real Orders Scenario
 
-```
+\`\`\`
   Admin Request
        │
        ▼ (GET /api/orders)
@@ -92,13 +92,13 @@
     "success": true,
     "data": [order1, order2, order3]  ✓
   }
-```
+\`\`\`
 
 ---
 
 ## 📊 Data Flow - Fallback Scenario
 
-```
+\`\`\`
   Admin Request
        │
        ▼ (GET /api/orders)
@@ -122,13 +122,13 @@
     "success": true,
     "data": [comp1_as_order, ...]  ✓
   } (Display data, not DB records)
-```
+\`\`\`
 
 ---
 
 ## 🔄 Data Transformation
 
-```
+\`\`\`
 ┌──────────────────────────────────────────────────┐
 │  RAW COMPANY from MongoDB                        │
 │  {                                               │
@@ -193,13 +193,13 @@
 │    updatedAt: "2024-01-15T..."                   │
 │  } ✓ READY FOR FRONTEND                          │
 └──────────────────────────────────────────────────┘
-```
+\`\`\`
 
 ---
 
 ## 🎯 Component Responsibilities
 
-```
+\`\`\`
 ┌──────────────────────────┐
 │  Frontend / UI Layer     │
 │  - Display data          │
@@ -236,13 +236,13 @@
 │  - Collections           │
 │  - Documents             │
 └──────────────────────────┘
-```
+\`\`\`
 
 ---
 
 ## 🔐 Authentication & Authorization Flow
 
-```
+\`\`\`
 ┌────────────────────────────────────────┐
 │  User makes request with token         │
 │  GET /api/orders                       │
@@ -274,13 +274,13 @@
                  │
                  ▼
             Return data
-```
+\`\`\`
 
 ---
 
 ## 📈 Before vs After
 
-```
+\`\`\`
 ┌─────────────────────────────────────────────┐
 │  BEFORE (Buggy)                             │
 ├─────────────────────────────────────────────┤
@@ -326,13 +326,13 @@
 │  Result: ✓ Orders always showing            │
 │                                             │
 └─────────────────────────────────────────────┘
-```
+\`\`\`
 
 ---
 
 ## 🎯 Success Criteria ✓
 
-```
+\`\`\`
 ✓ Orders show in admin page
 ✓ No duplicate code
 ✓ Single source of truth
@@ -343,13 +343,13 @@
 ✓ Production ready
 ✓ Well documented
 ✓ Easy to maintain
-```
+\`\`\`
 
 ---
 
 ## 📚 Documentation Structure
 
-```
+\`\`\`
 ┌────────────────────────────────┐
 │  README.md                     │ ◄── START HERE
 │  (Navigation & overview)       │
@@ -375,13 +375,13 @@ BFO = BUG_FIX_ORDERS.md
 SUM = SOLUTION_SUMMARY.md
 OAS = ORDERS_API_SYSTEM.md
 IDX = INDEX.md
-```
+\`\`\`
 
 ---
 
 ## 🚀 Quick Status
 
-```
+\`\`\`
 ╔══════════════════════════════════════╗
 ║  SYSTEM STATUS: ✅ READY            ║
 ╠══════════════════════════════════════╣
@@ -392,7 +392,7 @@ IDX = INDEX.md
 ║  Production: ✓ READY                 ║
 ║  Maintenance: ✓ EASY                 ║
 ╚══════════════════════════════════════╝
-```
+\`\`\`
 
 ---
 

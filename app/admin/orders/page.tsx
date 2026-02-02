@@ -98,6 +98,8 @@ export default function OrdersPage() {
   const router = useRouter()
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompanyId, setSelectedCompanyId] = useState("")
+  const [debugInfo, setDebugInfo] = useState<any>(null)
+  const [showDebug, setShowDebug] = useState(false)
 
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 8
@@ -153,9 +155,6 @@ export default function OrdersPage() {
         const apiOrders = Array.isArray(ordersData.data) ? ordersData.data : (Array.isArray(ordersData) ? ordersData : [])
         
         console.log("[v0] Data loaded - Users:", allUsers.length, "Companies:", allCompanies.length, "Orders:", apiOrders.length)
-
-        // API already handles fallback (returns company-based orders if no real orders exist)
-        // Just use the API response directly
         const allOrders = apiOrders.map((order: any) => ({
           ...order,
           id: order.id || order._id,
@@ -195,6 +194,15 @@ export default function OrdersPage() {
         )
         setTotalRevenue(totalRev)
         setTotalOrders(sortedOrders.length)
+        
+        // Store debug info for display
+        setDebugInfo({
+          companiesCount: allCompanies.length,
+          ordersCount: apiOrders.length,
+          usersCount: allUsers.length,
+          companiesWithOrders: allCompanies.filter((c: any) => c.orders?.length > 0).length,
+          totalEmbeddedOrders: allCompanies.reduce((sum, c: any) => sum + (c.orders?.length || 0), 0),
+        })
       } catch (error) {
         console.error("Error loading data:", error)
         toast({
@@ -437,6 +445,30 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-8">
+      {/* Debug Info Banner */}
+      {debugInfo && (
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+          <div className="flex justify-between items-start">
+            <div className="text-sm space-y-1">
+              <p className="font-semibold text-blue-900">Debug Info</p>
+              <p className="text-blue-700">Companies: {debugInfo.companiesCount} | Orders API: {debugInfo.ordersCount} | Users: {debugInfo.usersCount}</p>
+              <p className="text-blue-700">Companies with orders: {debugInfo.companiesWithOrders} | Total embedded orders: {debugInfo.totalEmbeddedOrders}</p>
+            </div>
+            <button
+              onClick={() => setShowDebug(!showDebug)}
+              className="text-xs px-2 py-1 bg-blue-200 hover:bg-blue-300 rounded text-blue-900"
+            >
+              {showDebug ? "Hide" : "Details"}
+            </button>
+          </div>
+          {showDebug && (
+            <pre className="text-xs bg-white p-2 rounded mt-2 overflow-auto max-h-48">
+              {JSON.stringify(debugInfo, null, 2)}
+            </pre>
+          )}
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold text-slate-900">Orders & Companies</h1>

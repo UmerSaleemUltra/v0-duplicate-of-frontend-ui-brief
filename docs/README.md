@@ -126,19 +126,19 @@
 ## 🎓 Choose Your Path
 
 ### 👤 Path 1: I Just Want to Use It
-```
+\`\`\`
 FINAL_SUMMARY.md (5 min)
     ↓
 QUICK_START.md (10 min)
     ↓
 Test it in browser
-```
+\`\`\`
 **Total Time: 20 minutes**
 
 ---
 
 ### 👨‍💻 Path 2: I Want to Understand It
-```
+\`\`\`
 FINAL_SUMMARY.md (5 min)
     ↓
 SOLUTION_SUMMARY.md (15 min)
@@ -146,13 +146,13 @@ SOLUTION_SUMMARY.md (15 min)
 SYSTEM_ARCHITECTURE.md (15 min)
     ↓
 Look at /lib/api/order-service.ts
-```
+\`\`\`
 **Total Time: 45 minutes**
 
 ---
 
 ### 🔧 Path 3: I Need to Modify It
-```
+\`\`\`
 IMPLEMENTATION_DETAILS.md (30 min)
     ↓
 ORDERS_API_SYSTEM.md (20 min)
@@ -162,13 +162,13 @@ Study the code files
 Make changes
     ↓
 Test thoroughly
-```
+\`\`\`
 **Total Time: 2-3 hours**
 
 ---
 
 ### 🐛 Path 4: I Need to Debug It
-```
+\`\`\`
 QUICK_START.md (10 min)
     ↓
 SYSTEM_ARCHITECTURE.md (15 min)
@@ -176,7 +176,7 @@ SYSTEM_ARCHITECTURE.md (15 min)
 Enable console logs
     ↓
 Trace execution
-```
+\`\`\`
 **Total Time: 30-45 minutes**
 
 ---
@@ -185,30 +185,30 @@ Trace execution
 
 ### Service Layer
 **File**: `/lib/api/order-service.ts`
-```typescript
+\`\`\`typescript
 // Main functions
 processOrders()              // Orchestrator
 getOrdersFromDatabase()      // Fetch real orders
 getCompaniesForOrders()      // Fetch companies fallback
 companyToOrder()             // Convert company to order
 transformOrder()             // Normalize order format
-```
+\`\`\`
 
 ### API Endpoint
 **File**: `/app/api/orders/route.ts`
-```typescript
+\`\`\`typescript
 // GET - Fetch all orders (with fallback)
 // POST - Create new orders
 // Uses processOrders() service
-```
+\`\`\`
 
 ### Admin Page
 **File**: `/app/admin/orders/page.tsx`
-```typescript
+\`\`\`typescript
 // Display orders in table
 // Fetch from API
 // No duplicate logic
-```
+\`\`\`
 
 ---
 
@@ -256,7 +256,7 @@ transformOrder()             // Normalize order format
 
 ## 🔗 Document Relationships
 
-```
+\`\`\`
 FINAL_SUMMARY.md (Start here!)
     ├── QUICK_START.md (For users)
     ├── SOLUTION_SUMMARY.md (For overview)
@@ -266,7 +266,7 @@ FINAL_SUMMARY.md (Start here!)
         ├── ORDERS_API_SYSTEM.md (API reference)
         ├── IMPLEMENTATION_DETAILS.md (Code level)
         └── INDEX.md (Navigation)
-```
+\`\`\`
 
 ---
 

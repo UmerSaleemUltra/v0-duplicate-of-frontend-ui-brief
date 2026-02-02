@@ -2,7 +2,7 @@
 
 ## Clean Orders & Companies System
 
-```
+\`\`\`
 ┌─────────────────────────────────────────────────────────────────┐
 │                     ADMIN ORDERS PAGE                           │
 │                  (/app/admin/orders/page.tsx)                   │
@@ -45,13 +45,13 @@
     │ (if they exist)      │ │ (fallback source)    │
     └──────────────────────┘ └──────────────────────┘
          Database (MongoDB)
-```
+\`\`\`
 
 ## Data Flow Examples
 
 ### Scenario 1: Real Orders Exist ✓
 
-```
+\`\`\`
 ┌──────────────┐
 │  GET /api/   │
 │  orders      │
@@ -73,11 +73,11 @@
 │   data: [order1, order2, order3] │
 │ }                                │
 └──────────────────────────────────┘
-```
+\`\`\`
 
 ### Scenario 2: No Real Orders, Use Companies ✓
 
-```
+\`\`\`
 ┌──────────────┐
 │  GET /api/   │
 │  orders      │
@@ -101,11 +101,11 @@
 │   data: [company1_as_order, ...] │
 │ } (Display data, not DB records) │
 └──────────────────────────────────┘
-```
+\`\`\`
 
 ### Scenario 3: No Data At All ✓
 
-```
+\`\`\`
 ┌──────────────┐
 │  GET /api/   │
 │  orders      │
@@ -128,11 +128,11 @@
 │   data: []                       │
 │ }                                │
 └──────────────────────────────────┘
-```
+\`\`\`
 
 ## Service Functions
 
-```typescript
+\`\`\`typescript
 // Main orchestrator
 processOrders(db, options)
   ├─→ getOrdersFromDatabase()
@@ -144,11 +144,11 @@ processOrders(db, options)
   ├─→ companyToOrder() [for each company]
   │    └─→ Converts company to order format
   └─→ Returns final data array
-```
+\`\`\`
 
 ## Debugging Flow
 
-```
+\`\`\`
 Orders not showing?
       │
       ├─→ Check API response
@@ -168,33 +168,33 @@ Orders not showing?
       └─→ Check authentication
           └─→ Is token valid?
           └─→ Does user have correct role?
-```
+\`\`\`
 
 ## Key Improvements
 
 ### Before (Buggy) ✗
-```
+\`\`\`
 Frontend: Orders not showing
   ├─ API returns empty when no orders
   ├─ Frontend tries to use orders.orders
   ├─ Different condition checks in frontend
   ├─ company.revenue > 0 filters out valid data
   └─ Result: Blank page or errors
-```
+\`\`\`
 
 ### After (Clean) ✓
-```
+\`\`\`
 Frontend: Orders always showing
   ├─ API always returns usable data
   ├─ Service handles all transformations
   ├─ Consistent data structure
   ├─ No filters that hide data
   └─ Result: Complete order list displayed
-```
+\`\`\`
 
 ## Component Responsibilities
 
-```
+\`\`\`
 ┌─ API Layer ─────────────────────────────────┐
 │ Responsibility: Route handling              │
 │ - Verify authentication                     │
@@ -218,11 +218,11 @@ Frontend: Orders always showing
 │ - Handle UI interactions                    │
 │ - No data transformation                    │
 └─────────────────────────────────────────────┘
-```
+\`\`\`
 
 ## Configuration Options
 
-```typescript
+\`\`\`typescript
 interface OrderServiceOptions {
   userId?: string      // Undefined = admin (see all)
   isAdmin?: boolean    // Admin access flag
@@ -234,11 +234,11 @@ interface OrderServiceOptions {
 
 // User - See only their data
 { userId: "user123", isAdmin: false, limit: 100 }
-```
+\`\`\`
 
 ## Data Transformation Pipeline
 
-```
+\`\`\`
 Raw Company:
 {
   _id: ObjectId,
@@ -278,7 +278,7 @@ Transform Order:
   ...
   ← API Response Format Ready
 }
-```
+\`\`\`
 
 ## Success Criteria ✓
 

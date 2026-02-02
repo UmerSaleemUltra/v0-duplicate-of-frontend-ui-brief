@@ -7,7 +7,7 @@
 **Purpose**: Centralize all order/company logic in one reusable module
 
 **Structure**:
-```typescript
+\`\`\`typescript
 // Export configuration type
 interface OrderServiceOptions {
   userId?: string      // undefined = admin sees all
@@ -21,10 +21,10 @@ export async function getOrdersFromDatabase() // Fetch real orders
 export async function companyToOrder()     // Convert company to order
 export async function transformOrder()     // Normalize order format
 export async function getCompaniesForOrders() // Fetch companies
-```
+\`\`\`
 
 **Key Logic**:
-```typescript
+\`\`\`typescript
 async function processOrders(db, options) {
   // Step 1: Try real orders
   const orders = await getOrdersFromDatabase(db, options)
@@ -43,12 +43,12 @@ async function processOrders(db, options) {
   // Step 3: No data
   return []
 }
-```
+\`\`\`
 
 ### 2. API Endpoint (`/app/api/orders/route.ts`)
 
 **GET Method** (Simplified):
-```typescript
+\`\`\`typescript
 export async function GET(req: NextRequest) {
   // 1. Verify token
   const decoded = verifyToken(token)
@@ -69,7 +69,7 @@ export async function GET(req: NextRequest) {
     data: orderData,
   })
 }
-```
+\`\`\`
 
 **POST Method** (Unchanged):
 - Creates new orders
@@ -80,7 +80,7 @@ export async function GET(req: NextRequest) {
 ### 3. Admin Page (`/app/admin/orders/page.tsx`)
 
 **Data Fetching** (Simplified):
-```typescript
+\`\`\`typescript
 // Extract from API
 const apiOrders = ordersResponse.json().data
 
@@ -100,12 +100,12 @@ const ordersWithDetails = allOrders.map((order: any) => ({
 
 // Display
 setOrders(ordersWithDetails)
-```
+\`\`\`
 
 ## 🔄 Data Transformation Pipeline
 
 ### Company → Order Transformation
-```typescript
+\`\`\`typescript
 // Input: Company document
 {
   _id: ObjectId("507f1f77bcf86cd799439013"),
@@ -161,12 +161,12 @@ setOrders(ordersWithDetails)
 }
 
 // Output: Ready for API response ✓
-```
+\`\`\`
 
 ## 🗄️ Database Queries
 
 ### Query 1: Get Orders
-```typescript
+\`\`\`typescript
 const query = isAdmin ? {} : { userId }
 const orders = await db
   .collection("orders")
@@ -174,41 +174,41 @@ const orders = await db
   .sort({ createdAt: -1 })
   .limit(100)
   .toArray()
-```
+\`\`\`
 
 **Indexes Recommended**:
-```javascript
+\`\`\`javascript
 db.orders.createIndex({ userId: 1 })
 db.orders.createIndex({ createdAt: -1 })
 db.orders.createIndex({ companyId: 1 })
-```
+\`\`\`
 
 ### Query 2: Get Companies (Fallback)
-```typescript
+\`\`\`typescript
 const query = isAdmin ? {} : { userId }
 const companies = await db
   .collection("companies")
   .find(query)
   .limit(100)
   .toArray()
-```
+\`\`\`
 
 **Indexes Recommended**:
-```javascript
+\`\`\`javascript
 db.companies.createIndex({ userId: 1 })
 db.companies.createIndex({ createdAt: -1 })
-```
+\`\`\`
 
 ## 🔐 Authentication & Authorization
 
 ### Token Verification
-```typescript
+\`\`\`typescript
 const decoded = verifyToken(token)
 // Returns: { userId, role, ... }
-```
+\`\`\`
 
 ### Role-Based Access
-```typescript
+\`\`\`typescript
 const isAdmin = decoded.role === "admin"
 
 if (isAdmin) {
@@ -218,10 +218,10 @@ if (isAdmin) {
   // See only their orders
   query = { userId: decoded.userId }
 }
-```
+\`\`\`
 
 ### Admin Check in Service
-```typescript
+\`\`\`typescript
 // Service receives role info
 await processOrders(db, {
   userId: isAdmin ? undefined : decoded.userId,
@@ -234,12 +234,12 @@ if (isAdmin && !userId) {
 } else {
   query = { userId }  // Get user's only
 }
-```
+\`\`\`
 
 ## 📊 Response Formats
 
 ### Success Response
-```json
+\`\`\`json
 {
   "success": true,
   "data": [
@@ -256,28 +256,28 @@ if (isAdmin && !userId) {
     }
   ]
 }
-```
+\`\`\`
 
 ### Error Response
-```json
+\`\`\`json
 {
   "error": "Failed to fetch orders",
   "status": 500
 }
-```
+\`\`\`
 
 ### Empty Response
-```json
+\`\`\`json
 {
   "success": true,
   "data": []
 }
-```
+\`\`\`
 
 ## 🧪 Testing Scenarios
 
 ### Test Case 1: Admin Views All Orders
-```typescript
+\`\`\`typescript
 // Setup
 const token = adminToken
 const options = { isAdmin: true, limit: 100 }
@@ -285,10 +285,10 @@ const options = { isAdmin: true, limit: 100 }
 // Expected
 - Query: {} (no userId filter)
 - Result: All orders from all users
-```
+\`\`\`
 
 ### Test Case 2: User Views Their Orders
-```typescript
+\`\`\`typescript
 // Setup
 const token = userToken
 const options = { userId: "user123", isAdmin: false }
@@ -296,10 +296,10 @@ const options = { userId: "user123", isAdmin: false }
 // Expected
 - Query: { userId: "user123" }
 - Result: Only their orders
-```
+\`\`\`
 
 ### Test Case 3: Fallback to Companies
-```typescript
+\`\`\`typescript
 // Setup
 - No orders in collection
 - 5 companies exist
@@ -309,10 +309,10 @@ const options = { userId: "user123", isAdmin: false }
 - Queries companies collection
 - Converts companies to orders
 - Returns 5 orders (from companies)
-```
+\`\`\`
 
 ### Test Case 4: Empty Data
-```typescript
+\`\`\`typescript
 // Setup
 - No orders in collection
 - No companies in collection
@@ -320,32 +320,32 @@ const options = { userId: "user123", isAdmin: false }
 // Expected
 - Both queries fail
 - Returns empty array []
-```
+\`\`\`
 
 ## 🚨 Error Handling
 
 ### Missing Token
-```typescript
+\`\`\`typescript
 if (!token) {
   return NextResponse.json(
     { error: "Unauthorized" },
     { status: 401 }
   )
 }
-```
+\`\`\`
 
 ### Invalid Token
-```typescript
+\`\`\`typescript
 if (!decoded) {
   return NextResponse.json(
     { error: "Invalid token" },
     { status: 401 }
   )
 }
-```
+\`\`\`
 
 ### Database Error
-```typescript
+\`\`\`typescript
 try {
   // Operations
 } catch (error) {
@@ -355,35 +355,35 @@ try {
     { status: 500 }
   )
 }
-```
+\`\`\`
 
 ## 📝 Logging Strategy
 
 ### Info Level
-```typescript
+\`\`\`typescript
 console.log("[v0] Found 3 orders in database")
 console.log("[v0] Creating display orders from 5 companies")
 console.log("[v0] User role: admin, Is Admin: true")
-```
+\`\`\`
 
 ### Debug Level
-```typescript
+\`\`\`typescript
 console.log("[v0] Decoded token:", { userId, role })
 console.log("[v0] Query options:", { userId, isAdmin, limit })
 console.log("[v0] Orders count:", orders.length)
-```
+\`\`\`
 
 ### Error Level
-```typescript
+\`\`\`typescript
 console.error("[v0] Orders API error:", error)
 console.error("[v0] Token verification failed")
 console.error("[v0] Database connection failed")
-```
+\`\`\`
 
 ## 🔧 Configuration
 
 ### Service Options
-```typescript
+\`\`\`typescript
 interface OrderServiceOptions {
   userId?: string
   isAdmin?: boolean
@@ -403,29 +403,29 @@ interface OrderServiceOptions {
   isAdmin: false,
   limit: 50
 }
-```
+\`\`\`
 
 ### Environment Variables (if needed)
-```env
+\`\`\`env
 # .env.local
 MONGODB_URI=mongodb://localhost:27017
 DB_NAME=filings
 ORDERS_COLLECTION=orders
 COMPANIES_COLLECTION=companies
-```
+\`\`\`
 
 ## 🎯 Optimization Tips
 
 ### 1. Database Indexes
-```javascript
+\`\`\`javascript
 // Create these indexes for performance
 db.orders.createIndex({ userId: 1, createdAt: -1 })
 db.companies.createIndex({ userId: 1, createdAt: -1 })
 db.orders.createIndex({ companyId: 1 })
-```
+\`\`\`
 
 ### 2. Pagination
-```typescript
+\`\`\`typescript
 // Add pagination to processOrders
 const skip = (page - 1) * limit
 const orders = await collection
@@ -434,10 +434,10 @@ const orders = await collection
   .skip(skip)
   .limit(limit)
   .toArray()
-```
+\`\`\`
 
 ### 3. Caching
-```typescript
+\`\`\`typescript
 // Consider caching for frequently accessed data
 const cacheKey = `orders:${userId}`
 const cached = await cache.get(cacheKey)
@@ -446,15 +446,15 @@ if (cached) return cached
 const data = await processOrders(...)
 await cache.set(cacheKey, data, 300) // 5 min TTL
 return data
-```
+\`\`\`
 
 ### 4. Batch Operations
-```typescript
+\`\`\`typescript
 // Fetch users once, use multiple times
 const users = await db.collection("users")
   .find({ _id: { $in: userIds } })
   .toArray()
-```
+\`\`\`
 
 ## 📈 Scalability Considerations
 
