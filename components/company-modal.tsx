@@ -348,7 +348,55 @@ export function CompanyModal({
                   <p className="text-sm text-slate-600">Business ID</p>
                   <p className="font-mono font-medium">{company.businessId || "Not assigned"}</p>
                 </div>
+                {company.taxClassification && (
+                  <div>
+                    <p className="text-sm text-slate-600">Tax Classification</p>
+                    <p className="font-medium">{company.taxClassification}</p>
+                  </div>
+                )}
               </div>
+
+              {company.formationDate && (
+                <>
+                  <Separator className="my-4" />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-sm text-slate-600">Formation Date</p>
+                      <p className="font-medium">
+                        {new Date(company.formationDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    {company.irsFilingDate && (
+                      <div>
+                        <p className="text-sm text-slate-600">IRS Filing Date</p>
+                        <p className="font-medium">
+                          {new Date(company.irsFilingDate).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    )}
+                    {company.annualReportFilingDate && (
+                      <div>
+                        <p className="text-sm text-slate-600">Annual Report Filing Date</p>
+                        <p className="font-medium">
+                          {new Date(company.annualReportFilingDate).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
@@ -384,9 +432,175 @@ export function CompanyModal({
                     <Badge variant="outline">{company.registeredAgent.status || "Active"}</Badge>
                   </div>
                 </div>
+
+                {(company.registeredAgent.phone || company.registeredAgent.email || company.registeredAgent.servicePeriod || company.registeredAgent.expiryDate) && (
+                  <>
+                    <Separator className="my-4" />
+                    <div className="grid grid-cols-2 gap-4">
+                      {company.registeredAgent.phone && (
+                        <div>
+                          <p className="text-sm text-slate-600 flex items-center gap-1">
+                            <Phone className="h-3 w-3" /> Phone
+                          </p>
+                          <p className="font-medium">{company.registeredAgent.phone}</p>
+                        </div>
+                      )}
+                      {company.registeredAgent.email && (
+                        <div>
+                          <p className="text-sm text-slate-600 flex items-center gap-1">
+                            <Mail className="h-3 w-3" /> Email
+                          </p>
+                          <p className="font-medium">{company.registeredAgent.email}</p>
+                        </div>
+                      )}
+                      {company.registeredAgent.servicePeriod && (
+                        <div>
+                          <p className="text-sm text-slate-600">Service Period</p>
+                          <p className="font-medium">{company.registeredAgent.servicePeriod}</p>
+                        </div>
+                      )}
+                      {company.registeredAgent.expiryDate && (
+                        <div>
+                          <p className="text-sm text-slate-600">Expiry Date</p>
+                          <p className="font-medium">
+                            {new Date(company.registeredAgent.expiryDate).toLocaleDateString("en-US", {
+                              year: "numeric",
+                              month: "long",
+                              day: "numeric",
+                            })}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           )}
+
+          {/* Business Address */}
+          {company.businessAddress && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <MapPin className="h-5 w-5" />
+                  Business Address
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  {company.businessAddress.companyName && (
+                    <div className="col-span-2">
+                      <p className="text-sm text-slate-600">Company Name</p>
+                      <p className="font-medium">{company.businessAddress.companyName}</p>
+                    </div>
+                  )}
+                  <div className="col-span-2">
+                    <p className="text-sm text-slate-600">Address</p>
+                    <p className="font-medium">
+                      {formatAddress({
+                        street: company.businessAddress.street,
+                        city: company.businessAddress.city,
+                        state: company.businessAddress.state,
+                        zip: company.businessAddress.zip,
+                      })}
+                    </p>
+                  </div>
+                  {company.businessAddress.expiryDate && (
+                    <div>
+                      <p className="text-sm text-slate-600">Expiry Date</p>
+                      <p className="font-medium">
+                        {new Date(company.businessAddress.expiryDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  )}
+                  {company.businessAddress.status && (
+                    <div>
+                      <p className="text-sm text-slate-600">Status</p>
+                      <Badge variant="outline">{company.businessAddress.status}</Badge>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Status Information */}
+          {(company.companyStatus || company.registeredAgentStatus || company.businessAddressStatus || company.serviceStatus) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Status Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  {company.companyStatus && (
+                    <div>
+                      <p className="text-sm text-slate-600">Company Status</p>
+                      <Badge variant="outline" className="capitalize">
+                        {company.companyStatus}
+                      </Badge>
+                    </div>
+                  )}
+                  {company.registeredAgentStatus && (
+                    <div>
+                      <p className="text-sm text-slate-600">Registered Agent Status</p>
+                      <Badge variant="outline" className="capitalize">
+                        {company.registeredAgentStatus}
+                      </Badge>
+                    </div>
+                  )}
+                  {company.businessAddressStatus && (
+                    <div>
+                      <p className="text-sm text-slate-600">Business Address Status</p>
+                      <Badge variant="outline" className="capitalize">
+                        {company.businessAddressStatus}
+                      </Badge>
+                    </div>
+                  )}
+                  {company.serviceStatus && (
+                    <div>
+                      <p className="text-sm text-slate-600">Service Status</p>
+                      <Badge variant="outline" className="capitalize">
+                        {company.serviceStatus}
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Mailing Address */}
+          {company.mailingAddress && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Mailing Address</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <p className="font-medium flex items-start gap-2">
+                  <MapPin className="h-4 w-4 mt-1 text-slate-400" />
+                  {formatAddress(company.mailingAddress)}
+                </p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Notes */}
+          {company.notes && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <FileText className="h-5 w-5" />
+                  Notes
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-sm text-slate-700 whitespace-pre-wrap">{company.notes}</p>
+              </CardContent>
 
           {/* User Information Section */}
           {user && (
