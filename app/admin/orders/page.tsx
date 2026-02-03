@@ -108,7 +108,7 @@ export default function OrdersPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [startIndex, setStartIndex] = useState(0)
   const [endIndex, setEndIndex] = useState(0)
-  const [expandedOrderId, setExpandedOrderId] = useState<string | null>(null)
+  const [selectedOrder, setSelectedOrder] = useState<any>(null)
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -322,6 +322,7 @@ export default function OrdersPage() {
 
   const handleViewCompanyDetails = (order: any) => {
     setSelectedCompanyId(order.companyId)
+    setSelectedOrder(order)
     setCompanyModalOpen(true)
   }
 
@@ -683,174 +684,87 @@ export default function OrdersPage() {
                   </thead>
                   <tbody>
                     {paginatedOrders.map((order) => (
-                      <>
-                        <tr
-                          key={order.id}
-                          className="border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200"
-                        >
-                          <td className="py-4 px-4">
-                            <span className="text-sm font-medium text-slate-900 font-mono">{order.id}</span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div>
-                              <p className="text-sm font-medium text-slate-900">{order.customerName}</p>
-                              <p className="text-xs text-slate-500">ID: {order.userId}</p>
-                            </div>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-sm text-slate-700">{order.companyName}</span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-sm text-slate-700">{order.state}</span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <Badge variant="outline" className="text-xs capitalize">
-                              {order.packageType}
-                            </Badge>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-sm font-semibold text-slate-900">
-                              ${order.pricing?.total || order.amount || order.total || 0}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <Badge
-                              variant={
-                                order.status === "completed"
-                                  ? "default"
-                                  : order.status === "processing"
-                                    ? "secondary"
-                                    : "outline"
-                              }
-                              className="text-xs capitalize"
-                            >
-                              {order.status === "completed" && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                              {order.status === "processing" && <Clock className="h-3 w-3 mr-1" />}
-                              {order.status === "pending" && <AlertCircle className="h-3 w-3 mr-1" />}
-                              {order.status}
-                            </Badge>
-                          </td>
-                          <td className="py-4 px-4">
-                            <span className="text-sm text-slate-600">
-                              {new Date(order.createdAt).toLocaleDateString()}
-                            </span>
-                          </td>
-                          <td className="py-4 px-4">
-                            <div className="flex items-center gap-2">
-                              <Button 
-                                variant="ghost" 
-                                size="sm"
-                                onClick={() => setExpandedOrderId(expandedOrderId === order.id ? null : order.id)}
-                              >
-                                <ChevronDown className={`h-4 w-4 transition-transform ${expandedOrderId === order.id ? 'rotate-180' : ''}`} />
+                      <tr
+                        key={order.id}
+                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200"
+                      >
+                        <td className="py-4 px-4">
+                          <span className="text-sm font-medium text-slate-900 font-mono">{order.id}</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <div>
+                            <p className="text-sm font-medium text-slate-900">{order.customerName}</p>
+                            <p className="text-xs text-slate-500">ID: {order.userId}</p>
+                          </div>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-sm text-slate-700">{order.companyName}</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-sm text-slate-700">{order.state}</span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Badge variant="outline" className="text-xs capitalize">
+                            {order.packageType}
+                          </Badge>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-sm font-semibold text-slate-900">
+                            ${order.pricing?.total || order.amount || order.total || 0}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <Badge
+                            variant={
+                              order.status === "completed"
+                                ? "default"
+                                : order.status === "processing"
+                                  ? "secondary"
+                                  : "outline"
+                            }
+                            className="text-xs capitalize"
+                          >
+                            {order.status === "completed" && <CheckCircle2 className="h-3 w-3 mr-1" />}
+                            {order.status === "processing" && <Clock className="h-3 w-3 mr-1" />}
+                            {order.status === "pending" && <AlertCircle className="h-3 w-3 mr-1" />}
+                            {order.status}
+                          </Badge>
+                        </td>
+                        <td className="py-4 px-4">
+                          <span className="text-sm text-slate-600">
+                            {new Date(order.createdAt).toLocaleDateString()}
+                          </span>
+                        </td>
+                        <td className="py-4 px-4">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" size="sm">
+                                <MoreVertical className="h-4 w-4" />
                               </Button>
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="sm">
-                                    <MoreVertical className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => router.push(`/admin/orders/${order.id}`)}>
-                                    <Eye className="h-4 w-4 mr-2" />
-                                    View Details
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem onClick={() => handleViewCompanyDetails(order)}>
-                                    <Building2 className="h-4 w-4 mr-2" />
-                                    View Company
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                                    onSelect={(e) => {
-                                      e.preventDefault()
-                                      handleDeleteOrder(order.id)
-                                    }}
-                                  >
-                                    <Trash2 className="h-4 w-4 mr-2" />
-                                    Delete Order
-                                  </DropdownMenuItem>
-                                </DropdownMenuContent>
-                              </DropdownMenu>
-                            </div>
-                          </td>
-                        </tr>
-                        
-                        {/* Expanded Details Row */}
-                        {expandedOrderId === order.id && (
-                          <tr className="bg-slate-50 border-b border-slate-200">
-                            <td colSpan={9} className="py-4 px-4">
-                              <div className="space-y-4">
-                                {/* Pricing Breakdown */}
-                                <div className="grid grid-cols-4 gap-3">
-                                  {order.pricing?.packagePrice && (
-                                    <div className="p-3 rounded-lg bg-white border border-slate-200">
-                                      <p className="text-xs text-slate-600 font-medium mb-1">Package Price</p>
-                                      <p className="text-lg font-bold text-slate-900">${order.pricing.packagePrice.toFixed(2)}</p>
-                                    </div>
-                                  )}
-                                  {order.pricing?.stateFilingFee && (
-                                    <div className="p-3 rounded-lg bg-white border border-slate-200">
-                                      <p className="text-xs text-slate-600 font-medium mb-1">Filing Fee</p>
-                                      <p className="text-lg font-bold text-slate-900">${order.pricing.stateFilingFee.toFixed(2)}</p>
-                                    </div>
-                                  )}
-                                  {order.pricing?.addonsTotal && (
-                                    <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                                      <p className="text-xs text-blue-700 font-medium mb-1">Add-ons Total</p>
-                                      <p className="text-lg font-bold text-blue-900">${order.pricing.addonsTotal.toFixed(2)}</p>
-                                    </div>
-                                  )}
-                                  {order.pricing?.total && (
-                                    <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-                                      <p className="text-xs text-green-700 font-medium mb-1">Order Total</p>
-                                      <p className="text-lg font-bold text-green-900">${order.pricing.total.toFixed(2)}</p>
-                                    </div>
-                                  )}
-                                </div>
-
-                                {/* Purchased Addons */}
-                                {order.purchasedAddons && order.purchasedAddons.length > 0 && (
-                                  <div>
-                                    <p className="text-sm font-semibold text-slate-900 mb-2">Purchased Add-ons ({order.purchasedAddons.length})</p>
-                                    <div className="space-y-2">
-                                      {order.purchasedAddons.map((addon: any, idx: number) => (
-                                        <div key={idx} className="p-3 rounded-lg bg-white border border-slate-200">
-                                          <div className="flex justify-between items-start">
-                                            <div className="flex-1">
-                                              <p className="text-sm font-medium text-slate-900">{addon.name}</p>
-                                              {addon.paymentDetails && (
-                                                <div className="text-xs text-slate-600 mt-1 space-y-0.5">
-                                                  {addon.paymentDetails.paymentMethod && (
-                                                    <p>Payment: <span className="font-medium capitalize">{addon.paymentDetails.paymentMethod}</span></p>
-                                                  )}
-                                                  {addon.paymentDetails.phoneNumber && (
-                                                    <p>Phone: <span className="font-medium">{addon.paymentDetails.phoneNumber}</span></p>
-                                                  )}
-                                                  {addon.paymentDetails.createdAt && (
-                                                    <p>Purchased: <span className="font-medium">{new Date(addon.paymentDetails.createdAt).toLocaleDateString()}</span></p>
-                                                  )}
-                                                  {addon.paymentDetails.receiptUrl && (
-                                                    <a href={addon.paymentDetails.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
-                                                      View Receipt
-                                                    </a>
-                                                  )}
-                                                </div>
-                                              )}
-                                            </div>
-                                            <div className="text-right ml-4">
-                                              <p className="font-bold text-slate-900">${addon.price?.toFixed(2) || '0.00'}</p>
-                                            </div>
-                                          </div>
-                                        </div>
-                                      ))}
-                                    </div>
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                              <DropdownMenuItem onClick={() => handleViewCompanyDetails(order)}>
+                                <Eye className="h-4 w-4 mr-2" />
+                                View Details
+                              </DropdownMenuItem>
+                              <DropdownMenuItem onClick={() => router.push(`/admin/orders/${order.id}`)}>
+                                <Building2 className="h-4 w-4 mr-2" />
+                                Order Page
+                              </DropdownMenuItem>
+                              <DropdownMenuItem
+                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                onSelect={(e) => {
+                                  e.preventDefault()
+                                  handleDeleteOrder(order.id)
+                                }}
+                              >
+                                <Trash2 className="h-4 w-4 mr-2" />
+                                Delete Order
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </td>
+                      </tr>
                     ))}
                   </tbody>
                 </table>
@@ -908,7 +822,7 @@ export default function OrdersPage() {
         open={companyModalOpen}
         onOpenChange={setCompanyModalOpen}
         companyId={selectedCompanyId}
-        companies={companies}
+        order={selectedOrder}
       />
     </div>
   )
