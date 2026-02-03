@@ -601,6 +601,8 @@ export function CompanyModal({
               <CardContent>
                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{company.notes}</p>
               </CardContent>
+            </Card>
+          )}
 
           {/* User Information Section */}
           {user && (
