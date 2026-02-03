@@ -32,6 +32,7 @@ interface CompanyModalProps {
   passportDocuments?: any[]
   orderDate?: string
   showOwnerDetails?: boolean
+  order?: any
 }
 
 export function CompanyModal({
@@ -41,11 +42,12 @@ export function CompanyModal({
   passportDocuments: propPassportDocuments,
   orderDate: propOrderDate,
   showOwnerDetails = false,
+  order: propOrder,
 }: CompanyModalProps) {
   const [loading, setLoading] = useState(true)
   const [company, setCompany] = useState<any>(null)
   const [user, setUser] = useState<any>(null)
-  const [order, setOrder] = useState<any>(null)
+  const [order, setOrder] = useState<any>(propOrder || null)
   const [passportUrls, setPassportUrls] = useState<string[]>([])
   const [passportDocuments, setPassportDocuments] = useState<any[]>(propPassportDocuments || [])
 
@@ -600,6 +602,116 @@ export function CompanyModal({
               </CardHeader>
               <CardContent>
                 <p className="text-sm text-slate-700 whitespace-pre-wrap">{company.notes}</p>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Order Details Section */}
+          {order && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <CreditCard className="h-5 w-5" />
+                  Order Details
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {/* Order Status & Info */}
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-slate-600">Order ID</p>
+                    <p className="font-mono font-medium">{order.id}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600">Order Status</p>
+                    <Badge
+                      variant={
+                        order.status === "completed"
+                          ? "default"
+                          : order.status === "processing"
+                            ? "secondary"
+                            : "outline"
+                      }
+                      className="capitalize"
+                    >
+                      {order.status || "unknown"}
+                    </Badge>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600">Customer Name</p>
+                    <p className="font-medium">{order.customerName || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600">User ID</p>
+                    <p className="font-mono text-sm">{order.userId}</p>
+                  </div>
+                </div>
+
+                <Separator className="my-3" />
+
+                {/* Pricing Breakdown */}
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 mb-3">Pricing Breakdown</p>
+                  <div className="grid grid-cols-2 gap-3">
+                    {order.pricing?.packagePrice && (
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 font-medium mb-1">Package Price</p>
+                        <p className="text-base font-bold text-slate-900">${order.pricing.packagePrice.toFixed(2)}</p>
+                      </div>
+                    )}
+                    {order.pricing?.stateFilingFee && (
+                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                        <p className="text-xs text-slate-600 font-medium mb-1">Filing Fee</p>
+                        <p className="text-base font-bold text-slate-900">${order.pricing.stateFilingFee.toFixed(2)}</p>
+                      </div>
+                    )}
+                    {order.pricing?.addonsTotal && (
+                      <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
+                        <p className="text-xs text-blue-700 font-medium mb-1">Add-ons Total</p>
+                        <p className="text-base font-bold text-blue-900">${order.pricing.addonsTotal.toFixed(2)}</p>
+                      </div>
+                    )}
+                    {order.pricing?.total && (
+                      <div className="p-3 rounded-lg bg-green-50 border border-green-200">
+                        <p className="text-xs text-green-700 font-medium mb-1">Order Total</p>
+                        <p className="text-base font-bold text-green-900">${order.pricing.total.toFixed(2)}</p>
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Purchased Addons */}
+                {order.purchasedAddons && order.purchasedAddons.length > 0 && (
+                  <div>
+                    <Separator className="my-3" />
+                    <p className="text-sm font-semibold text-slate-900 mb-3">Purchased Add-ons ({order.purchasedAddons.length})</p>
+                    <div className="space-y-2">
+                      {order.purchasedAddons.map((addon: any, idx: number) => (
+                        <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                          <div className="flex justify-between items-start mb-2">
+                            <div>
+                              <p className="text-sm font-medium text-slate-900">{addon.name}</p>
+                              <p className="text-xs text-slate-600 mt-1">Price: <span className="font-semibold text-slate-900">${addon.price?.toFixed(2) || '0.00'}</span></p>
+                            </div>
+                          </div>
+                          {addon.paymentDetails && (
+                            <div className="text-xs text-slate-600 space-y-1 pt-2 border-t border-slate-200">
+                              {addon.paymentDetails.paymentMethod && (
+                                <p>Payment: <span className="font-medium capitalize">{addon.paymentDetails.paymentMethod}</span></p>
+                              )}
+                              {addon.paymentDetails.createdAt && (
+                                <p>Purchased: <span className="font-medium">{new Date(addon.paymentDetails.createdAt).toLocaleDateString()}</span></p>
+                              )}
+                              {addon.paymentDetails.phoneNumber && (
+                                <p>Phone: <span className="font-medium">{addon.paymentDetails.phoneNumber}</span></p>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </CardContent>
             </Card>
           )}
