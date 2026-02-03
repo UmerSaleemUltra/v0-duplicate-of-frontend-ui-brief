@@ -93,13 +93,11 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
-  const [dateFilter, setDateFilter] = useState("current-month")
-  const [dateRangeLabel, setDateRangeLabel] = useState("This Month")
+  const [dateFilter, setDateFilter] = useState("all-time")
+  const [dateRangeLabel, setDateRangeLabel] = useState("All Time")
   const router = useRouter()
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompanyId, setSelectedCompanyId] = useState("")
-  const [debugInfo, setDebugInfo] = useState<any>(null)
-  const [showDebug, setShowDebug] = useState(false)
 
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 8
@@ -456,30 +454,6 @@ export default function OrdersPage() {
 
   return (
     <div className="space-y-8">
-      {/* Debug Info Banner */}
-      {debugInfo && (
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex justify-between items-start">
-            <div className="text-sm space-y-1">
-              <p className="font-semibold text-blue-900">Debug Info</p>
-              <p className="text-blue-700">Companies: {debugInfo.companiesCount} | Orders API: {debugInfo.ordersCount} | Users: {debugInfo.usersCount}</p>
-              <p className="text-blue-700">Companies with orders: {debugInfo.companiesWithOrders} | Total embedded orders: {debugInfo.totalEmbeddedOrders}</p>
-            </div>
-            <button
-              onClick={() => setShowDebug(!showDebug)}
-              className="text-xs px-2 py-1 bg-blue-200 hover:bg-blue-300 rounded text-blue-900"
-            >
-              {showDebug ? "Hide" : "Details"}
-            </button>
-          </div>
-          {showDebug && (
-            <pre className="text-xs bg-white p-2 rounded mt-2 overflow-auto max-h-48">
-              {JSON.stringify(debugInfo, null, 2)}
-            </pre>
-          )}
-        </div>
-      )}
-
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-semibold text-slate-900">Orders & Companies</h1>
