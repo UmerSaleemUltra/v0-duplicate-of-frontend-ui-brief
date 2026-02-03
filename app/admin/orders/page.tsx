@@ -155,6 +155,18 @@ export default function OrdersPage() {
         const apiOrders = Array.isArray(ordersData.data) ? ordersData.data : (Array.isArray(ordersData) ? ordersData : [])
         
         console.log("[v0] Data loaded - Users:", allUsers.length, "Companies:", allCompanies.length, "Orders:", apiOrders.length)
+        
+        // Log each order to debug state field issues
+        apiOrders.forEach((order: any, idx: number) => {
+          console.log(`[v0] Order ${idx}:`, {
+            id: order.id,
+            state: order.state,
+            status: order.status,
+            companyId: order.companyId,
+            createdAt: order.createdAt,
+          })
+        })
+        
         const allOrders = apiOrders.map((order: any) => ({
           ...order,
           id: order.id || order._id,
@@ -230,6 +242,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     let filtered = [...orders]
+    console.log("[v0] Filtering started with orders count:", orders.length)
 
     // Date filtering
     if (dateFilter === "current-month") {
@@ -241,6 +254,7 @@ export default function OrdersPage() {
         const orderDate = new Date(order.createdAt)
         return orderDate.getMonth() === currentMonth && orderDate.getFullYear() === currentYear
       })
+      console.log("[v0] After current-month filter:", filtered.length)
     } else if (dateFilter === "last-month") {
       const now = new Date()
       const lastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1)
@@ -250,6 +264,7 @@ export default function OrdersPage() {
         const orderDate = new Date(order.createdAt)
         return orderDate >= lastMonth && orderDate <= lastMonthEnd
       })
+      console.log("[v0] After last-month filter:", filtered.length)
     } else if (dateFilter === "last-3-months") {
       const now = new Date()
       const threeMonthsAgo = new Date(now.getFullYear(), now.getMonth() - 3, 1)
@@ -258,8 +273,10 @@ export default function OrdersPage() {
         const orderDate = new Date(order.createdAt)
         return orderDate >= threeMonthsAgo
       })
+      console.log("[v0] After last-3-months filter:", filtered.length)
+    } else {
+      console.log("[v0] Using all-time filter (no date filtering)")
     }
-    // "all-time" doesn't filter by date
 
     // Search filtering
     if (searchQuery.trim()) {
