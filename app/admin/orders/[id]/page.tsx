@@ -2332,22 +2332,49 @@ export default function OrderDetailPage() {
               </div>
               {company?.businessAddress && (
                 <div className="pt-4 border-t border-slate-200">
-                  <p className="text-sm font-medium text-slate-900 mb-2">Business Address</p>
-                  <div className="text-sm text-slate-600 space-y-1">
+                  <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <MapPin className="w-4 h-4" />
+                    Business Address Details
+                  </p>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
                     {company.businessAddress.companyName && (
-                      <p><span className="font-medium">{company.businessAddress.companyName}</span></p>
+                      <p className="text-sm font-medium text-slate-900">{company.businessAddress.companyName}</p>
                     )}
                     {(company.businessAddress.street || company.businessAddress.city || company.businessAddress.state || company.businessAddress.zip) && (
-                      <p>
+                      <p className="text-sm text-slate-700">
                         {[company.businessAddress.street, company.businessAddress.city, company.businessAddress.state, company.businessAddress.zip]
                           .filter(Boolean)
-                          .join(', ')}
+                          .join(', ') || 'Address not provided'}
+                      </p>
+                    )}
+                    {company.businessAddress.expiryDate && (
+                      <p className="text-xs text-slate-600">
+                        Expires: {new Date(company.businessAddress.expiryDate).toLocaleDateString()}
                       </p>
                     )}
                   </div>
                 </div>
               )}
+
+              {company?.mailingAddress && (company.mailingAddress.street || company.mailingAddress.city || company.mailingAddress.state) && (
+                <div className="pt-4 border-t border-slate-200">
+                  <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <Mail className="w-4 h-4" />
+                    Mailing Address
+                  </p>
+                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <p className="text-sm text-slate-700">
+                      {[company.mailingAddress.street, company.mailingAddress.city, company.mailingAddress.state, company.mailingAddress.zip]
+                        .filter(Boolean)
+                        .join(', ')}
+                    </p>
+                  </div>
+                </div>
+              )}
             </CardContent>
+          </Card>
+
+          {/* Formation Progress */}
           <Card className="bg-white border-slate-200 shadow-sm">
             <CardHeader>
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
