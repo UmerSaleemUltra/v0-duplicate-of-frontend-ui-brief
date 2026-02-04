@@ -108,7 +108,6 @@ export default function OrdersPage() {
   const [totalPages, setTotalPages] = useState(0)
   const [startIndex, setStartIndex] = useState(0)
   const [endIndex, setEndIndex] = useState(0)
-  const [selectedOrder, setSelectedOrder] = useState<any>(null)
 
   useEffect(() => {
     const loadOrders = async () => {
@@ -322,7 +321,6 @@ export default function OrdersPage() {
 
   const handleViewCompanyDetails = (order: any) => {
     setSelectedCompanyId(order.companyId)
-    setSelectedOrder(order)
     setCompanyModalOpen(true)
   }
 
@@ -694,7 +692,7 @@ export default function OrdersPage() {
                         <td className="py-4 px-4">
                           <div>
                             <p className="text-sm font-medium text-slate-900">{order.customerName}</p>
-                            <p className="text-xs text-slate-500">ID: {order.userId}</p>
+                            <p className="text-xs text-slate-500">{order.customerEmail}</p>
                           </div>
                         </td>
                         <td className="py-4 px-4">
@@ -743,13 +741,13 @@ export default function OrdersPage() {
                               </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => handleViewCompanyDetails(order)}>
+                              <DropdownMenuItem onClick={() => router.push(`/admin/orders/${order.id}`)}>
                                 <Eye className="h-4 w-4 mr-2" />
                                 View Details
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => router.push(`/admin/orders/${order.id}`)}>
+                              <DropdownMenuItem onClick={() => handleViewCompanyDetails(order)}>
                                 <Building2 className="h-4 w-4 mr-2" />
-                                Order Page
+                                View Company
                               </DropdownMenuItem>
                               <DropdownMenuItem
                                 className="text-red-600 focus:text-red-600 focus:bg-red-50"
@@ -822,7 +820,7 @@ export default function OrdersPage() {
         open={companyModalOpen}
         onOpenChange={setCompanyModalOpen}
         companyId={selectedCompanyId}
-        order={selectedOrder}
+        companies={companies}
       />
     </div>
   )
