@@ -482,7 +482,7 @@ export default function ClientDashboard() {
     company.mailingAddress.zip
 
   return (
-    <ClientShell>
+    <ClientShell notifications={notifications}>
       <TooltipProvider>
         <OrderCelebration show={showCelebration} onClose={handleCloseCelebration} companyName={company?.name} />
 
