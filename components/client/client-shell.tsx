@@ -104,6 +104,12 @@ export function ClientShell({ children, notifications: notificationsFromDashboar
   }, [])
 
   useEffect(() => {
+    if (notificationsFromDashboard && notificationsFromDashboard.length > 0) {
+      setNotifications(notificationsFromDashboard)
+    }
+  }, [notificationsFromDashboard])
+
+  useEffect(() => {
     const loadCompanies = async () => {
       const token = authService.getToken()
       if (!token) {
@@ -529,7 +535,7 @@ export function ClientShell({ children, notifications: notificationsFromDashboar
                                 <p className="text-xs text-slate-600 line-clamp-3">{notification.description}</p>
                               )}
                               <p className="text-xs text-slate-500 mt-1">
-                                {notification.timestamp ? new Date(notification.timestamp).toLocaleDateString() + " " + new Date(notification.timestamp).toLocaleTimeString() : ""}
+                                {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() + " " + new Date(notification.createdAt).toLocaleTimeString() : notification.timestamp ? new Date(notification.timestamp).toLocaleDateString() + " " + new Date(notification.timestamp).toLocaleTimeString() : ""}
                               </p>
                             </DropdownMenuItem>
                             {index < notifications.length - 1 && <DropdownMenuSeparator className="my-0" />}
