@@ -28,8 +28,7 @@ import { useAuthGuard } from "@/lib/use-auth-guard"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { CompanyModal } from "@/components/company-modal"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover" // Added Popover for date picker
 
 const US_STATES = [
   "Alabama",
@@ -93,8 +92,12 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
-  const [dateFilter, setDateFilter] = useState("all-time")
-  const [dateRangeLabel, setDateRangeLabel] = useState("All Time")
+  const [dateFilter, setDateFilter] = useState("current-month")
+  const [customDateRange, setCustomDateRange] = useState<{ from: Date | null; to: Date | null }>({
+    from: null,
+    to: null,
+  })
+  const [dateRangeLabel, setDateRangeLabel] = useState("This Month")
   const router = useRouter()
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompanyId, setSelectedCompanyId] = useState("")
@@ -145,27 +148,42 @@ export default function OrdersPage() {
         const companiesData = await companiesResponse.json()
         const ordersData = await ordersResponse.json()
 
-        console.log("[v0] Raw API responses:", { usersData, companiesData, ordersData })
-
-        // Properly extract data from API responses
-        const allUsers = Array.isArray(usersData.data) ? usersData.data : (Array.isArray(usersData) ? usersData : [])
-        const allCompanies = Array.isArray(companiesData.data) ? companiesData.data : (Array.isArray(companiesData) ? companiesData : [])
-        const apiOrders = Array.isArray(ordersData.data) ? ordersData.data : (Array.isArray(ordersData) ? ordersData : [])
+        console.log("[v0] Orders API Response:", ordersData)
         
-        console.log("[v0] Data loaded - Users:", allUsers.length, "Companies:", allCompanies.length, "Orders:", apiOrders.length)
-        const allOrders = apiOrders.map((order: any) => ({
+        const allUsers = usersData.data || usersData || []
+        const allCompanies = companiesData.data || companiesData || []
+        const apiOrders = ordersData.data || ordersData || []
+        
+        console.log("[v0] Loaded orders count:", apiOrders.length)
+
+        // Use orders from API or fallback to extracting from companies
+        let allOrders = apiOrders.length > 0 
+          ? apiOrders 
+          : allCompanies.flatMap((company: any) => {
+              const companyOrders = company.orders || []
+              return companyOrders.map((order: any) => ({
+                ...order,
+                companyId: company.id || company._id,
+                companyName: company.name,
+                state: company.state,
+                packageType: order.packageType || company.packageType || "N/A",
+              }))
+            })
+        
+        console.log("[v0] All orders after merge:", allOrders.length)
+
+        // Normalize order IDs and ensure required fields exist
+        allOrders = allOrders.map((order: any) => ({
           ...order,
           id: order.id || order._id,
-          companyId: order.companyId,
+          companyId: order.companyId || order.companyId,
         }))
-        
+
         const ordersWithDetails = allOrders.map((order: any) => {
           const company = allCompanies.find((c: any) => {
-            const companyId = String(c.id || c._id || "")
-            const orderCompanyId = String(order.companyId || "")
-            return companyId === orderCompanyId
+            const companyId = c.id || c._id?.toString?.()
+            return String(companyId) === String(order.companyId)
           })
-          
           const user = allUsers.find((u: any) => String(u.id || u._id) === String(company?.userId))
 
           return {
@@ -185,32 +203,13 @@ export default function OrdersPage() {
         setCompanies(allCompanies)
         setOrders(sortedOrders)
         setFilteredOrders(sortedOrders)
-        
-        // Set initial paginated orders
-        const initialPaginated = sortedOrders.slice(0, ITEMS_PER_PAGE)
-        setPaginatedOrders(initialPaginated)
 
         const totalRev = sortedOrders.reduce(
-          (acc, order) => {
-            const amount = order.pricing?.total || order.amount || order.total || 0
-            console.log("[v0] Revenue calc - Order:", order.id, "pricing:", order.pricing, "amount:", order.amount, "total:", order.total, "calculated:", amount)
-            return acc + amount
-          },
+          (acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0),
           0,
         )
         setTotalRevenue(totalRev)
         setTotalOrders(sortedOrders.length)
-        
-        // Store debug info for display
-        setDebugInfo({
-          companiesCount: allCompanies.length,
-          ordersCount: apiOrders.length,
-          usersCount: allUsers.length,
-          companiesWithOrders: allCompanies.filter((c: any) => c.orders?.length > 0).length,
-          totalEmbeddedOrders: allCompanies.reduce((sum, c: any) => sum + (c.orders?.length || 0), 0),
-        })
-        
-        console.log("[v0] Initial orders loaded and set - Orders:", sortedOrders.length, "Total Revenue:", totalRev, "Paginated initial:", initialPaginated.length)
       } catch (error) {
         console.error("Error loading data:", error)
         toast({
@@ -256,6 +255,16 @@ export default function OrdersPage() {
         const orderDate = new Date(order.createdAt)
         return orderDate >= threeMonthsAgo
       })
+    } else if (dateFilter === "custom" && customDateRange.from && customDateRange.to) {
+      const fromDate = new Date(customDateRange.from)
+      fromDate.setHours(0, 0, 0, 0)
+      const toDate = new Date(customDateRange.to)
+      toDate.setHours(23, 59, 59, 999)
+
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.createdAt)
+        return orderDate >= fromDate && orderDate <= toDate
+      })
     }
     // "all-time" doesn't filter by date
 
@@ -271,39 +280,28 @@ export default function OrdersPage() {
       )
     }
 
-    // Status filtering - only apply if not "all"
-    if (statusFilter && statusFilter !== "all") {
-      filtered = filtered.filter((order) => {
-        const orderStatus = order.status || order.orderStatus || order.paymentStatus || ""
-        return orderStatus.toLowerCase() === statusFilter.toLowerCase()
-      })
+    // Status filtering
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((order) => order.status && order.status.toLowerCase() === statusFilter.toLowerCase())
     }
 
-    // State filtering - only apply if not "all"
-    if (stateFilter && stateFilter !== "all") {
-      filtered = filtered.filter((order) => {
-        const orderState = order.state || ""
-        return orderState.toLowerCase() === stateFilter.toLowerCase()
-      })
+    // State filtering
+    if (stateFilter !== "all") {
+      filtered = filtered.filter((order) => order.state && order.state.toLowerCase() === stateFilter.toLowerCase())
     }
 
-    console.log("[v0] Before filter - orders:", orders.length, "After filtering - result:", filtered.length)
-    console.log("[v0] Filters: statusFilter=", statusFilter, "stateFilter=", stateFilter, "dateFilter=", dateFilter)
     setFilteredOrders(filtered)
     setCurrentPage(1) // Reset to first page when filters change
-    console.log("[v0] Filtered orders count:", filtered.length, "Total orders:", orders.length)
     setTotalRevenue(
       filtered.reduce((acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0), 0),
     )
     setTotalOrders(filtered.length)
-  }, [searchQuery, statusFilter, stateFilter, dateFilter, orders])
+  }, [searchQuery, statusFilter, stateFilter, dateFilter, orders, customDateRange])
 
   useEffect(() => {
-    console.log("[v0] Pagination useEffect triggered - currentPage:", currentPage, "filteredOrders.length:", filteredOrders.length)
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
     const endIndex = startIndex + ITEMS_PER_PAGE
     const paginated = filteredOrders.slice(startIndex, endIndex)
-    console.log("[v0] Pagination - Page:", currentPage, "Start:", startIndex, "End:", endIndex, "Result count:", paginated.length, "Items:", paginated)
     setPaginatedOrders(paginated)
     setStartIndex(startIndex)
     setEndIndex(endIndex)
@@ -313,6 +311,15 @@ export default function OrdersPage() {
   const handleDateRangeSelect = (range: string, label: string) => {
     setDateFilter(range)
     setDateRangeLabel(label)
+    if (range !== "custom") {
+      setCustomDateRange({ from: null, to: null })
+    }
+  }
+
+  const handleCustomDateRange = (from: Date, to: Date) => {
+    setCustomDateRange({ from, to })
+    setDateFilter("custom")
+    setDateRangeLabel(`${from.toLocaleDateString()} - ${to.toLocaleDateString()}`)
   }
 
   const handleExportOrders = () => {
@@ -325,7 +332,6 @@ export default function OrdersPage() {
   }
 
   const handleDeleteOrder = async (orderId: string) => {
-    console.log("[v0] Delete order initiated with ID:", orderId)
     try {
       const token = authService.getToken()
       if (!token) {
@@ -338,13 +344,7 @@ export default function OrdersPage() {
       }
 
       // Find the order to get company ID - search in full orders array, not filtered
-      const order = orders.find((o: any) => {
-        const oId = o._id?.toString ? o._id.toString() : o._id || o.id
-        return oId === orderId
-      })
-      
-      console.log("[v0] Found order:", order)
-      
+      const order = orders.find((o: any) => o.id === orderId)
       if (!order) {
         toast({
           title: "Error",
@@ -354,7 +354,6 @@ export default function OrdersPage() {
         return
       }
 
-      console.log("[v0] Deleting order via /api/orders endpoint")
       const response = await fetch(`/api/orders/${orderId}`, {
         method: "DELETE",
         headers: {
@@ -363,10 +362,8 @@ export default function OrdersPage() {
         },
       })
 
-      console.log("[v0] Delete response status:", response.status)
       if (!response.ok) {
         const error = await response.json()
-        console.log("[v0] Delete error:", error)
         throw new Error(error.error || "Failed to delete order")
       }
 
@@ -400,45 +397,27 @@ export default function OrdersPage() {
 
       const usersData = await usersResponse.json()
       const companiesData = await companiesResponse.json()
-      const ordersData = await ordersResponse.json()
 
-      // Properly extract data from API responses
-      const allUsers = Array.isArray(usersData.data) ? usersData.data : (Array.isArray(usersData) ? usersData : [])
-      const allCompanies = Array.isArray(companiesData.data) ? companiesData.data : (Array.isArray(companiesData) ? companiesData : [])
-      const apiOrders = Array.isArray(ordersData.data) ? ordersData.data : (Array.isArray(ordersData) ? ordersData : [])
+      const allUsers = usersData.data || usersData || []
+      const allCompanies = companiesData.data || companiesData || []
 
-      // Use orders from API or fallback to extracting from companies
-      let allOrdersData = apiOrders.length > 0
-        ? apiOrders
-        : allCompanies.flatMap((company: any) => {
-            const companyOrders = company.orders || []
-            return companyOrders.map((order: any) => ({
-              ...order,
-              companyId: company.id,
-              companyName: company.name,
-              state: company.state,
-              packageType: order.packageType || company.packageType || "N/A",
-            }))
-          })
-
-      // Normalize order IDs
-      allOrdersData = allOrdersData.map((order: any) => ({
-        ...order,
-        id: order.id || order._id,
-        companyId: order.companyId,
-      }))
+      const allOrdersData = allCompanies.flatMap((company: any) => {
+        const companyOrders = company.orders || []
+        return companyOrders.map((order: any) => ({
+          ...order,
+          companyId: company.id,
+          companyName: company.name,
+          state: company.state,
+          packageType: order.packageType || company.packageType || "N/A",
+        }))
+      })
 
       const ordersWithDetails = allOrdersData.map((order: any) => {
-        const company = allCompanies.find((c: any) => {
-          const companyId = String(c.id || c._id || "")
-          return companyId === String(order.companyId || "")
-        })
-        const user = allUsers.find((u: any) => String(u.id || u._id) === String(company?.userId))
+        const company = allCompanies.find((c: any) => c.id === order.companyId)
+        const user = allUsers.find((u: any) => String(u.id) === String(company?.userId))
 
         return {
           ...order,
-          companyName: order.companyName || company?.name || "N/A",
-          state: order.state || company?.state || "N/A",
           customerName: user?.name || company?.members?.[0]?.name || "Unknown",
           customerEmail: user?.email || "N/A",
           userId: company?.userId,
@@ -631,6 +610,49 @@ export default function OrdersPage() {
                     <DropdownMenuItem onClick={() => handleDateRangeSelect("all-time", "All Time")}>
                       All Time
                     </DropdownMenuItem>
+                    <div className="border-t my-1" />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
+                          <Calendar className="h-3 w-3 mr-2" />
+                          Custom Range...
+                        </DropdownMenuItem>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-4" align="start">
+                        <div className="space-y-3">
+                          <div>
+                            <label className="text-sm font-medium text-slate-700">From Date</label>
+                            <Input
+                              type="date"
+                              onChange={(e) => {
+                                const from = new Date(e.target.value)
+                                if (customDateRange.to && from <= customDateRange.to) {
+                                  handleCustomDateRange(from, customDateRange.to)
+                                } else if (!customDateRange.to) {
+                                  setCustomDateRange({ ...customDateRange, from })
+                                }
+                              }}
+                              className="mt-1"
+                            />
+                          </div>
+                          <div>
+                            <label className="text-sm font-medium text-slate-700">To Date</label>
+                            <Input
+                              type="date"
+                              onChange={(e) => {
+                                const to = new Date(e.target.value)
+                                if (customDateRange.from && to >= customDateRange.from) {
+                                  handleCustomDateRange(customDateRange.from, to)
+                                } else if (!customDateRange.from) {
+                                  setCustomDateRange({ ...customDateRange, to })
+                                }
+                              }}
+                              className="mt-1"
+                            />
+                          </div>
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
@@ -659,131 +681,129 @@ export default function OrdersPage() {
         </CardContent>
       </Card>
 
-      <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-slate-900">All Orders ({filteredOrders.length})</CardTitle>
+      <Card className="bg-white border-slate-200 shadow-sm">
+        <CardHeader className="border-b border-slate-200">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-lg font-semibold text-slate-900">Orders</CardTitle>
+            <Badge variant="secondary" className="text-sm">
+              {filteredOrders.length} total
+            </Badge>
+          </div>
         </CardHeader>
-        <CardContent>
-          {filteredOrders.length === 0 ? (
+        <CardContent className="pt-6">
+          {paginatedOrders.length === 0 ? (
             <div className="text-center py-12">
-              <p className="text-slate-600">No orders found</p>
-              <p className="text-sm text-slate-500 mt-2">
+              <ShoppingCart className="h-12 w-12 text-slate-300 mx-auto mb-3" />
+              <p className="text-slate-600 font-medium">No orders found</p>
+              <p className="text-sm text-slate-500 mt-1">
                 {searchQuery || statusFilter !== "all" || stateFilter !== "all"
                   ? "Try adjusting your filters"
-                  : "Orders will appear here once customers complete checkout"}
+                  : "Orders will appear here when customers complete checkout"}
               </p>
             </div>
           ) : (
             <>
-              <div className="overflow-x-auto">
+              <div className="overflow-x-auto -mx-6">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-slate-200">
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Order ID</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Customer</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Company</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">State</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Package</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Amount</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Status</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Date</th>
-                      <th className="text-left py-3 px-4 text-sm font-semibold text-slate-700">Actions</th>
+                    <tr className="border-b border-slate-200 bg-slate-50">
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Order ID</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Customer</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Company</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">State</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Amount</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Status</th>
+                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Date</th>
+                      <th className="text-center py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {paginatedOrders.map((order) => (
-                      <tr
-                        key={order.id}
-                        className="border-b border-slate-100 hover:bg-slate-50 transition-colors duration-200"
-                      >
-                        <td className="py-4 px-4">
-                          <span className="text-sm font-medium text-slate-900 font-mono">{order.id}</span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <div>
-                            <p className="text-sm font-medium text-slate-900">{order.customerName}</p>
-                            <p className="text-xs text-slate-500">{order.customerEmail}</p>
-                          </div>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm text-slate-700">{order.companyName}</span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm text-slate-700">{order.state}</span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Badge variant="outline" className="text-xs capitalize">
-                            {order.packageType}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm font-semibold text-slate-900">
-                            ${order.pricing?.total || order.amount || order.total || 0}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <Badge
-                            variant={
-                              order.status === "completed"
-                                ? "default"
-                                : order.status === "processing"
-                                  ? "secondary"
-                                  : "outline"
-                            }
-                            className="text-xs capitalize"
-                          >
-                            {order.status === "completed" && <CheckCircle2 className="h-3 w-3 mr-1" />}
-                            {order.status === "processing" && <Clock className="h-3 w-3 mr-1" />}
-                            {order.status === "pending" && <AlertCircle className="h-3 w-3 mr-1" />}
-                            {order.status}
-                          </Badge>
-                        </td>
-                        <td className="py-4 px-4">
-                          <span className="text-sm text-slate-600">
-                            {new Date(order.createdAt).toLocaleDateString()}
-                          </span>
-                        </td>
-                        <td className="py-4 px-4">
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" size="sm">
-                                <MoreVertical className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                              <DropdownMenuItem onClick={() => router.push(`/admin/orders/${order.id}`)}>
-                                <Eye className="h-4 w-4 mr-2" />
-                                View Details
-                              </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleViewCompanyDetails(order)}>
-                                <Building2 className="h-4 w-4 mr-2" />
-                                View Company
-                              </DropdownMenuItem>
-                              <DropdownMenuItem
-                                className="text-red-600 focus:text-red-600 focus:bg-red-50"
-                                onSelect={(e) => {
-                                  e.preventDefault()
-                                  handleDeleteOrder(order._id?.toString ? order._id.toString() : order._id || order.id)
-                                }}
-                              >
-                                <Trash2 className="h-4 w-4 mr-2" />
-                                Delete Order
-                              </DropdownMenuItem>
-                            </DropdownMenuContent>
-                          </DropdownMenu>
-                        </td>
-                      </tr>
-                    ))}
+                    {paginatedOrders.map((order) => {
+                      const amount = order.pricing?.total || order.amount || order.total || 0
+                      const statusColor =
+                        order.status === "completed"
+                          ? "bg-emerald-50 text-emerald-700 border-emerald-200"
+                          : order.status === "processing"
+                            ? "bg-blue-50 text-blue-700 border-blue-200"
+                            : "bg-amber-50 text-amber-700 border-amber-200"
+
+                      return (
+                        <tr key={order.id} className="border-b border-slate-100 hover:bg-slate-50/50 transition-colors">
+                          <td className="py-4 px-6">
+                            <code className="text-xs font-medium text-slate-900 bg-slate-100 px-2 py-1 rounded">
+                              {order.id?.substring(0, 8)}...
+                            </code>
+                          </td>
+                          <td className="py-4 px-6">
+                            <div>
+                              <p className="text-sm font-medium text-slate-900">{order.customerName || "N/A"}</p>
+                              <p className="text-xs text-slate-500 truncate">{order.customerEmail || "N/A"}</p>
+                            </div>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-sm text-slate-700">{order.companyName || "N/A"}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <Badge variant="outline" className="text-xs">
+                              {order.state || "N/A"}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-sm font-semibold text-slate-900">${amount.toLocaleString()}</span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <Badge className={`text-xs capitalize border ${statusColor}`}>
+                              {order.status || "pending"}
+                            </Badge>
+                          </td>
+                          <td className="py-4 px-6">
+                            <span className="text-sm text-slate-600">
+                              {order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"}
+                            </span>
+                          </td>
+                          <td className="py-4 px-6">
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                  <MoreVertical className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuItem onClick={() => router.push(`/admin/orders/${order.id}`)}>
+                                  <Eye className="h-4 w-4 mr-2" />
+                                  View Details
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleViewCompanyDetails(order)}>
+                                  <Building2 className="h-4 w-4 mr-2" />
+                                  View Company
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  className="text-red-600 focus:text-red-600 focus:bg-red-50"
+                                  onSelect={(e) => {
+                                    e.preventDefault()
+                                    handleDeleteOrder(order.id)
+                                  }}
+                                >
+                                  <Trash2 className="h-4 w-4 mr-2" />
+                                  Delete
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </td>
+                        </tr>
+                      )
+                    })}
                   </tbody>
                 </table>
               </div>
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
-                  <div className="text-sm text-slate-600">
-                    Showing {startIndex + 1} to {Math.min(endIndex, filteredOrders.length)} of {filteredOrders.length}{" "}
-                    orders
-                  </div>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mt-6 pt-6 border-t border-slate-200">
+                  <p className="text-sm text-slate-600">
+                    Showing <span className="font-semibold">{startIndex + 1}</span> to{" "}
+                    <span className="font-semibold">{Math.min(endIndex, filteredOrders.length)}</span> of{" "}
+                    <span className="font-semibold">{filteredOrders.length}</span> orders
+                  </p>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
@@ -794,17 +814,15 @@ export default function OrdersPage() {
                       Previous
                     </Button>
                     <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => i + 1).map((page) => (
                         <Button
                           key={page}
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(page)}
-                          className={
-                            currentPage === page
-                              ? "w-8 h-8 p-0 bg-gradient-to-r from-[#880000] to-[#ff0d13]"
-                              : "w-8 h-8 p-0"
-                          }
+                          className={`w-8 h-8 p-0 ${
+                            currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""
+                          }`}
                         >
                           {page}
                         </Button>

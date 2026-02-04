@@ -1216,13 +1216,10 @@ export default function OrderDetailPage() {
   }
 
   const handleDeleteOrder = async () => {
-    console.log("[v0] Delete order initiated", { orderId: order?._id || order?.id, companyId: company?._id || company?.id })
+    console.log("[v0] Delete order initiated", { orderId: order?.id, companyId: company?.id })
 
-    const orderId = order?._id || order?.id
-    const companyId = company?._id || company?.id
-
-    if (!orderId || !companyId) {
-      console.log("[v0] Delete failed - missing IDs", { orderId, companyId })
+    if (!order?.id || !company?.id) {
+      console.log("[v0] Delete failed - missing IDs", { orderId: order?.id, companyId: company?.id })
       toast({
         title: "Error",
         description: "Cannot delete order - missing order or company ID",
@@ -1237,10 +1234,10 @@ export default function OrderDetailPage() {
       if (!token) throw new Error("No authentication token")
 
       console.log("[v0] Sending delete request to API", {
-        url: `/api/companies/${companyId}/orders/${orderId}`,
+        url: `/api/companies/${company.id}/orders/${order.id}`,
       })
 
-      const response = await fetch(`/api/companies/${companyId}/orders/${orderId}`, {
+      const response = await fetch(`/api/companies/${company.id}/orders/${order.id}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
