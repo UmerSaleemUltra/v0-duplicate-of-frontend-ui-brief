@@ -638,12 +638,68 @@ export function CompanyModal({
                     </Badge>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-600">Customer Name</p>
-                    <p className="font-medium">{order.customerName || "N/A"}</p>
+                    <p className="text-sm text-slate-600">Order Date</p>
+                    <p className="font-medium">
+                      {order.createdAt
+                        ? new Date(order.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "N/A"}
+                    </p>
                   </div>
                   <div>
-                    <p className="text-sm text-slate-600">User ID</p>
-                    <p className="font-mono text-sm">{order.userId}</p>
+                    <p className="text-sm text-slate-600">Package Type</p>
+                    <p className="font-medium capitalize">{order.packageType || "Standard"}</p>
+                  </div>
+                </div>
+
+                <Separator className="my-3" />
+
+                {/* Customer & User Information */}
+                <div>
+                  <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                    <User className="h-4 w-4" />
+                    Customer Information
+                  </p>
+                  <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-slate-50 border border-slate-200">
+                    <div>
+                      <p className="text-xs text-slate-600 font-medium">Customer Name</p>
+                      <p className="font-medium">{order.customerName || user?.name || "N/A"}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-slate-600 font-medium">User ID</p>
+                      <p className="font-mono text-sm">{order.userId || user?.id || "N/A"}</p>
+                    </div>
+                    {user?.email && (
+                      <div>
+                        <p className="text-xs text-slate-600 font-medium flex items-center gap-1">
+                          <Mail className="h-3 w-3" /> Email
+                        </p>
+                        <p className="font-medium text-sm">{user.email}</p>
+                      </div>
+                    )}
+                    {user?.phone && (
+                      <div>
+                        <p className="text-xs text-slate-600 font-medium flex items-center gap-1">
+                          <Phone className="h-3 w-3" /> Phone
+                        </p>
+                        <p className="font-medium text-sm">{user.phone}</p>
+                      </div>
+                    )}
+                    {user?.createdAt && (
+                      <div>
+                        <p className="text-xs text-slate-600 font-medium">Account Created</p>
+                        <p className="font-medium text-sm">
+                          {new Date(user.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
@@ -652,7 +708,7 @@ export function CompanyModal({
                 {/* Pricing Breakdown */}
                 <div>
                   <p className="text-sm font-semibold text-slate-900 mb-3">Pricing Breakdown</p>
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
                     {order.pricing?.packagePrice && (
                       <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
                         <p className="text-xs text-slate-600 font-medium mb-1">Package Price</p>
@@ -661,50 +717,80 @@ export function CompanyModal({
                     )}
                     {order.pricing?.stateFilingFee && (
                       <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 font-medium mb-1">Filing Fee</p>
+                        <p className="text-xs text-slate-600 font-medium mb-1">State Filing Fee</p>
                         <p className="text-base font-bold text-slate-900">${order.pricing.stateFilingFee.toFixed(2)}</p>
                       </div>
                     )}
-                    {order.pricing?.addonsTotal && (
+                    {order.pricing?.addonsTotal && order.pricing.addonsTotal > 0 && (
                       <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                        <p className="text-xs text-blue-700 font-medium mb-1">Add-ons Total</p>
+                        <p className="text-xs text-blue-700 font-medium mb-1">Add-ons</p>
                         <p className="text-base font-bold text-blue-900">${order.pricing.addonsTotal.toFixed(2)}</p>
                       </div>
                     )}
                     {order.pricing?.total && (
                       <div className="p-3 rounded-lg bg-green-50 border border-green-200">
                         <p className="text-xs text-green-700 font-medium mb-1">Order Total</p>
-                        <p className="text-base font-bold text-green-900">${order.pricing.total.toFixed(2)}</p>
+                        <p className="text-lg font-bold text-green-900">${order.pricing.total.toFixed(2)}</p>
                       </div>
                     )}
                   </div>
+
+                  {/* Additional Pricing Details */}
+                  {(order.pricing?.discount || order.pricing?.tax || order.pricing?.discount > 0) && (
+                    <div className="p-3 rounded-lg bg-orange-50 border border-orange-200 space-y-2">
+                      {order.pricing?.discount && order.pricing.discount > 0 && (
+                        <p className="text-sm text-orange-700">
+                          Discount Applied: <span className="font-semibold">-${order.pricing.discount.toFixed(2)}</span>
+                        </p>
+                      )}
+                      {order.pricing?.tax && order.pricing.tax > 0 && (
+                        <p className="text-sm text-orange-700">
+                          Tax: <span className="font-semibold">${order.pricing.tax.toFixed(2)}</span>
+                        </p>
+                      )}
+                    </div>
+                  )}
                 </div>
 
                 {/* Purchased Addons */}
                 {order.purchasedAddons && order.purchasedAddons.length > 0 && (
                   <div>
                     <Separator className="my-3" />
-                    <p className="text-sm font-semibold text-slate-900 mb-3">Purchased Add-ons ({order.purchasedAddons.length})</p>
-                    <div className="space-y-2">
+                    <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Purchased Add-ons ({order.purchasedAddons.length})
+                    </p>
+                    <div className="space-y-3">
                       {order.purchasedAddons.map((addon: any, idx: number) => (
                         <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                          <div className="flex justify-between items-start mb-2">
-                            <div>
-                              <p className="text-sm font-medium text-slate-900">{addon.name}</p>
-                              <p className="text-xs text-slate-600 mt-1">Price: <span className="font-semibold text-slate-900">${addon.price?.toFixed(2) || '0.00'}</span></p>
+                          <div className="flex justify-between items-start gap-2 mb-2">
+                            <div className="flex-1">
+                              <p className="text-sm font-bold text-slate-900">{addon.name}</p>
+                              <p className="text-xs text-slate-600 mt-0.5">Unit Price: ${addon.price?.toFixed(2) || '0.00'}</p>
                             </div>
+                            <Badge variant="outline" className="text-xs">
+                              ${addon.price?.toFixed(2) || '0.00'}
+                            </Badge>
                           </div>
                           {addon.paymentDetails && (
                             <div className="text-xs text-slate-600 space-y-1 pt-2 border-t border-slate-200">
-                              {addon.paymentDetails.paymentMethod && (
-                                <p>Payment: <span className="font-medium capitalize">{addon.paymentDetails.paymentMethod}</span></p>
-                              )}
-                              {addon.paymentDetails.createdAt && (
-                                <p>Purchased: <span className="font-medium">{new Date(addon.paymentDetails.createdAt).toLocaleDateString()}</span></p>
-                              )}
-                              {addon.paymentDetails.phoneNumber && (
-                                <p>Phone: <span className="font-medium">{addon.paymentDetails.phoneNumber}</span></p>
-                              )}
+                              <div className="grid grid-cols-2 gap-2">
+                                {addon.paymentDetails.paymentMethod && (
+                                  <p>Payment Method: <span className="font-medium capitalize text-slate-900">{addon.paymentDetails.paymentMethod}</span></p>
+                                )}
+                                {addon.paymentDetails.createdAt && (
+                                  <p>Purchased: <span className="font-medium text-slate-900">{new Date(addon.paymentDetails.createdAt).toLocaleDateString()}</span></p>
+                                )}
+                                {addon.paymentDetails.phoneNumber && (
+                                  <p className="col-span-2">Phone: <span className="font-medium text-slate-900">{addon.paymentDetails.phoneNumber}</span></p>
+                                )}
+                                {addon.paymentDetails.receiptUrl && (
+                                  <a href={addon.paymentDetails.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline col-span-2 flex items-center gap-1">
+                                    <Eye className="h-3 w-3" />
+                                    View Receipt
+                                  </a>
+                                )}
+                              </div>
                             </div>
                           )}
                         </div>
