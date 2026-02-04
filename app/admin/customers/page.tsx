@@ -19,6 +19,7 @@ export default function CustomersPage() {
   const [customers, setCustomers] = useState<any[]>([])
   const [filteredCustomers, setFilteredCustomers] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
+  const [dataLoading, setDataLoading] = useState(true)
   const router = useRouter()
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -31,6 +32,7 @@ export default function CustomersPage() {
   }, [isLoading, isAuthenticated])
 
   const loadCustomers = async () => {
+    setDataLoading(true)
     try {
       const token = authService.getToken()
       if (!token) return
@@ -106,6 +108,8 @@ export default function CustomersPage() {
         description: "Failed to load customers",
         variant: "destructive",
       })
+    } finally {
+      setDataLoading(false)
     }
   }
 
@@ -166,7 +170,7 @@ export default function CustomersPage() {
   const endIndex = startIndex + ITEMS_PER_PAGE
   const paginatedCustomers = filteredCustomers.slice(startIndex, endIndex)
 
-  if (isLoading) {
+  if (isLoading || dataLoading) {
     return (
       <div className="space-y-6 p-6 animate-pulse">
         {/* Header Skeleton */}
