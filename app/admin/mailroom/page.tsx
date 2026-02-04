@@ -490,10 +490,47 @@ Notes: ${mail.notes || "None"}
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading mailroom...</p>
+      <div className="space-y-6 p-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-8 bg-slate-200 rounded w-48"></div>
+            <div className="h-4 bg-slate-100 rounded w-64"></div>
+          </div>
+          <div className="h-10 bg-slate-200 rounded w-40"></div>
+        </div>
+
+        {/* Filters Skeleton */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 h-10 bg-slate-200 rounded"></div>
+          <div className="h-10 bg-slate-100 rounded w-32"></div>
+        </div>
+
+        {/* Table Skeleton */}
+        <div className="border rounded-lg overflow-hidden">
+          <div className="bg-slate-50 border-b p-4">
+            <div className="grid grid-cols-7 gap-4">
+              {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                <div key={i} className="h-4 bg-slate-200 rounded"></div>
+              ))}
+            </div>
+          </div>
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="border-b p-4">
+              <div className="grid grid-cols-7 gap-4 items-center">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 bg-slate-200 rounded"></div>
+                  <div className="h-10 w-10 bg-slate-200 rounded"></div>
+                </div>
+                <div className="h-4 bg-slate-100 rounded"></div>
+                <div className="h-4 bg-slate-100 rounded"></div>
+                <div className="h-4 bg-slate-100 rounded"></div>
+                <div className="h-6 bg-slate-200 rounded-full w-20"></div>
+                <div className="h-4 bg-slate-100 rounded"></div>
+                <div className="h-8 w-8 bg-slate-200 rounded"></div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     )

@@ -397,10 +397,55 @@ export default function DocumentsPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading documents...</p>
+      <div className="space-y-6 p-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-8 bg-slate-200 rounded w-48"></div>
+            <div className="h-4 bg-slate-100 rounded w-64"></div>
+          </div>
+          <div className="h-10 bg-slate-200 rounded w-40"></div>
+        </div>
+
+        {/* Filters Skeleton */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 h-10 bg-slate-200 rounded"></div>
+          <div className="h-10 bg-slate-100 rounded w-32"></div>
+          <div className="h-10 bg-slate-100 rounded w-32"></div>
+        </div>
+
+        {/* Cards Grid Skeleton */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="border rounded-lg p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 bg-slate-200 rounded-lg"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-5 bg-slate-200 rounded w-32"></div>
+                  <div className="h-6 bg-slate-100 rounded-full w-24"></div>
+                </div>
+              </div>
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 bg-slate-100 rounded"></div>
+                  <div className="h-3 bg-slate-100 rounded w-32"></div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 bg-slate-100 rounded"></div>
+                  <div className="h-3 bg-slate-100 rounded w-24"></div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="h-4 w-4 bg-slate-100 rounded"></div>
+                  <div className="h-3 bg-slate-100 rounded w-28"></div>
+                </div>
+              </div>
+              <div className="pt-4 flex gap-2">
+                <div className="flex-1 h-9 bg-slate-200 rounded"></div>
+                <div className="h-9 w-9 bg-slate-200 rounded"></div>
+                <div className="h-9 w-9 bg-slate-200 rounded"></div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     )

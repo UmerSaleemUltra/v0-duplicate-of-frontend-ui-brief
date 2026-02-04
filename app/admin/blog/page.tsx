@@ -91,10 +91,61 @@ export default function BlogManagement() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading blog posts...</p>
+      <div className="space-y-6 p-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-8 bg-slate-200 rounded w-48"></div>
+            <div className="h-4 bg-slate-100 rounded w-64"></div>
+          </div>
+          <div className="h-10 bg-slate-200 rounded w-40"></div>
+        </div>
+
+        {/* Stats Cards Skeleton */}
+        <div className="grid gap-4 md:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="border rounded-lg p-6">
+              <div className="space-y-2">
+                <div className="h-4 bg-slate-100 rounded w-24"></div>
+                <div className="h-8 bg-slate-200 rounded w-16"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Filters Skeleton */}
+        <div className="flex flex-col md:flex-row gap-4">
+          <div className="flex-1 h-10 bg-slate-200 rounded"></div>
+          <div className="h-10 bg-slate-100 rounded w-32"></div>
+          <div className="h-10 bg-slate-100 rounded w-32"></div>
+        </div>
+
+        {/* Blog Posts Grid Skeleton */}
+        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <div key={i} className="border rounded-lg overflow-hidden">
+              <div className="h-48 bg-slate-200"></div>
+              <div className="p-6 space-y-4">
+                <div className="flex gap-2">
+                  <div className="h-6 bg-slate-200 rounded-full w-20"></div>
+                  <div className="h-6 bg-slate-100 rounded-full w-24"></div>
+                </div>
+                <div className="space-y-2">
+                  <div className="h-6 bg-slate-200 rounded w-full"></div>
+                  <div className="h-4 bg-slate-100 rounded w-full"></div>
+                  <div className="h-4 bg-slate-100 rounded w-3/4"></div>
+                </div>
+                <div className="flex items-center justify-between pt-4 border-t">
+                  <div className="h-4 bg-slate-100 rounded w-24"></div>
+                  <div className="flex gap-2">
+                    <div className="h-8 w-8 bg-slate-200 rounded"></div>
+                    <div className="h-8 w-8 bg-slate-200 rounded"></div>
+                    <div className="h-8 w-8 bg-slate-200 rounded"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     )

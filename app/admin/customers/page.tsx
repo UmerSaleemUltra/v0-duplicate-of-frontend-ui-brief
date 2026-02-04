@@ -168,13 +168,56 @@ export default function CustomersPage() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-slate-600">Loading...</p>
+      <div className="space-y-6 p-6 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-8 bg-slate-200 rounded w-48"></div>
+            <div className="h-4 bg-slate-100 rounded w-64"></div>
+          </div>
+        </div>
+
+        {/* Search Bar Skeleton */}
+        <div className="h-10 bg-slate-200 rounded w-full max-w-md"></div>
+
+        {/* Cards Grid Skeleton */}
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+            <div key={i} className="border rounded-lg p-6">
+              <div className="flex items-center gap-4 mb-4">
+                <div className="h-12 w-12 bg-slate-200 rounded-full"></div>
+                <div className="flex-1 space-y-2">
+                  <div className="h-5 bg-slate-200 rounded w-32"></div>
+                  <div className="h-3 bg-slate-100 rounded w-40"></div>
+                </div>
+              </div>
+              <div className="space-y-3 pt-4 border-t">
+                <div className="flex justify-between">
+                  <div className="h-3 bg-slate-100 rounded w-20"></div>
+                  <div className="h-3 bg-slate-200 rounded w-16"></div>
+                </div>
+                <div className="flex justify-between">
+                  <div className="h-3 bg-slate-100 rounded w-20"></div>
+                  <div className="h-3 bg-slate-200 rounded w-24"></div>
+                </div>
+                <div className="flex justify-between">
+                  <div className="h-3 bg-slate-100 rounded w-20"></div>
+                  <div className="h-3 bg-slate-200 rounded w-20"></div>
+                </div>
+              </div>
+              <div className="pt-4 flex gap-2">
+                <div className="flex-1 h-9 bg-slate-200 rounded"></div>
+                <div className="h-9 w-9 bg-slate-200 rounded"></div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
     )
+  }
+
+  if (!isAuthenticated) {
+    return null
   }
 
   if (!isAuthenticated) {
