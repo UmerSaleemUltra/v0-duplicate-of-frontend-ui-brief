@@ -483,52 +483,26 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     const { db } = await connectDB()
-    console.log("[v0] DELETE: Starting order deletion for ID:", id)
 
-    let order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
-    let isEmbeddedOrder = false
-    let companyIdObj: ObjectId | null = null
-
-    // If not in orders collection, search in companies for embedded order
-    if (!order) {
-      console.log("[v0] DELETE: Order not found in orders collection, searching companies...")
-      const companies = await db
-        .collection("companies")
-        .find({ orders: { $exists: true, $ne: [] } })
-        .toArray()
-
-      for (const company of companies) {
-        const embeddedOrder = company.orders?.find((o: any) => {
-          const orderId = o._id?.toString() || o.id?.toString() || o.id
-          return orderId === id
-        })
-        if (embeddedOrder) {
-          order = embeddedOrder
-          isEmbeddedOrder = true
-          companyIdObj = company._id
-          console.log("[v0] DELETE: Found embedded order in company:", company._id.toString())
-          break
-        }
-      }
-    }
+    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
 
     if (!order) {
-      console.log("[v0] DELETE: Order not found in either collection")
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
-    // If not already set, try to get companyId from order
-    if (!companyIdObj && order.companyId) {
+    let companyIdObj: ObjectId | null = null
+
+    if (order.companyId) {
       try {
         if (typeof order.companyId === "string" && ObjectId.isValid(order.companyId)) {
           companyIdObj = new ObjectId(order.companyId)
         } else if (order.companyId instanceof ObjectId) {
           companyIdObj = order.companyId
         } else {
-          console.log("[v0] DELETE: Invalid companyId format:", order.companyId)
+          console.log("[v0] Invalid companyId format, skipping related deletes:", order.companyId)
         }
       } catch (conversionError) {
-        console.log("[v0] DELETE: Error converting companyId:", conversionError)
+        console.log("[v0] Error converting companyId:", conversionError)
       }
     }
 
@@ -546,22 +520,15 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         ])
 
         await db.collection("companies").deleteOne({ _id: companyIdObj })
-        console.log("[v0] DELETE: Successfully deleted related company data")
+        console.log("[v0] Successfully deleted related company data")
       } catch (deleteError) {
-        console.log("[v0] DELETE: Error deleting related data (non-critical):", deleteError)
+        console.log("[v0] Error deleting related data (non-critical):", deleteError)
       }
     }
 
     // Delete order itself
-    if (isEmbeddedOrder && companyIdObj) {
-      console.log("[v0] DELETE: Removing embedded order from company")
-      // Order is already deleted as part of company deletion above
-    } else {
-      console.log("[v0] DELETE: Deleting standalone order from orders collection")
-      await db.collection("orders").deleteOne({ _id: new ObjectId(id) })
-    }
+    await db.collection("orders").deleteOne({ _id: new ObjectId(id) })
 
-    console.log("[v0] DELETE: Order deletion completed successfully")
     broadcastUpdate("orders", "deleted", { id })
 
     return addSecurityHeaders(

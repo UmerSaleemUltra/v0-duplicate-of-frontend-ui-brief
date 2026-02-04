@@ -20,7 +20,6 @@ import {
   FileText,
   ShieldAlert,
   RefreshCw,
-  Bell,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -29,14 +28,6 @@ import { Badge } from "@/components/ui/badge"
 import { BusinessNameDisplay } from "@/components/ui/business-name-display"
 import { useSelectedCompany } from "@/lib/company-context"
 import { authService } from "@/lib/auth"
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
 
 const NAV_ITEMS = [
   { href: "/client/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -47,7 +38,7 @@ const NAV_ITEMS = [
   { href: "/client/settings", label: "Settings", icon: Settings },
 ]
 
-export function ClientShell({ children, notifications: notificationsFromDashboard }: { children: React.ReactNode; notifications?: any[] }) {
+export function ClientShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
@@ -61,7 +52,6 @@ export function ClientShell({ children, notifications: notificationsFromDashboar
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isPageReady, setIsPageReady] = useState(true)
   const [hasNoCompanies, setHasNoCompanies] = useState(false)
-  const [notifications, setNotifications] = useState<any[]>(notificationsFromDashboard || [])
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -102,12 +92,6 @@ export function ClientShell({ children, notifications: notificationsFromDashboar
 
     loadUserData()
   }, [])
-
-  useEffect(() => {
-    if (notificationsFromDashboard && notificationsFromDashboard.length > 0) {
-      setNotifications(notificationsFromDashboard)
-    }
-  }, [notificationsFromDashboard])
 
   useEffect(() => {
     const loadCompanies = async () => {
@@ -502,51 +486,6 @@ export function ClientShell({ children, notifications: notificationsFromDashboar
           <div className="flex-1 flex flex-col min-w-0">
             <div className="z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
               <div className="flex items-center justify-end gap-2">
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="h-10 w-10 relative hover:bg-slate-100"
-                      aria-label="Notifications"
-                      title="View notifications"
-                    >
-                      <Bell className="w-5 h-5" />
-                      {notifications && notifications.length > 0 && (
-                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full animate-pulse" />
-                      )}
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-96">
-                    <DropdownMenuLabel className="font-semibold flex items-center justify-between">
-                      <span>Notifications</span>
-                      {notifications && notifications.length > 0 && (
-                        <Badge variant="secondary" className="text-xs">{notifications.length}</Badge>
-                      )}
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    {notifications && notifications.length > 0 ? (
-                      <div className="max-h-[500px] overflow-y-auto">
-                        {notifications.map((notification: any, index: number) => (
-                          <div key={index}>
-                            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3 px-4 cursor-pointer hover:bg-slate-50 focus:bg-slate-50">
-                              <p className="text-sm font-medium text-slate-900">{notification.title || notification.message}</p>
-                              {notification.description && (
-                                <p className="text-xs text-slate-600 line-clamp-3">{notification.description}</p>
-                              )}
-                              <p className="text-xs text-slate-500 mt-1">
-                                {notification.createdAt ? new Date(notification.createdAt).toLocaleDateString() + " " + new Date(notification.createdAt).toLocaleTimeString() : notification.timestamp ? new Date(notification.timestamp).toLocaleDateString() + " " + new Date(notification.timestamp).toLocaleTimeString() : ""}
-                              </p>
-                            </DropdownMenuItem>
-                            {index < notifications.length - 1 && <DropdownMenuSeparator className="my-0" />}
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="py-6 text-center text-sm text-slate-600">No notifications yet</div>
-                    )}
-                  </DropdownMenuContent>
-                </DropdownMenu>
                 <Button
                   variant="ghost"
                   size="icon"

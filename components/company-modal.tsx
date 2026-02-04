@@ -103,13 +103,12 @@ export function CompanyModal({
       }
 
       fetchPromises.push(
-        fetch(`/api/companies/${companyId}/orders`, {
+        fetch(`/api/orders?companyId=${companyId}`, {
           headers: { Authorization: `Bearer ${token}` },
         })
           .then((res) => res.json())
           .then((response) => {
-            const orders = response.data || []
-            const companyOrder = orders.length > 0 ? orders[0] : null
+            const companyOrder = response.data?.[0] || null
             setOrder(companyOrder)
           })
           .catch(() => setOrder(null)),
@@ -278,14 +277,6 @@ export function CompanyModal({
                           : "N/A"}
                   </p>
                 </div>
-                {order?.status && (
-                  <div>
-                    <p className="text-sm text-slate-600">Order Status</p>
-                    <Badge variant={order.status === "completed" ? "default" : "secondary"} className="capitalize">
-                      {order.status}
-                    </Badge>
-                  </div>
-                )}
               </div>
 
               <Separator className="my-4" />

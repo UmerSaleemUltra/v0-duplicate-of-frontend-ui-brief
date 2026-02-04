@@ -250,23 +250,94 @@ export default function AdminDashboard() {
     loadData()
   }, [isAuthenticating, router, dataLoaded, selectedYear])
 
-  if (isAuthenticating) {
+  if (isAuthenticating || (isLoadingData && !dataLoaded)) {
     return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-          <p className="text-slate-600">Verifying authentication...</p>
+      <div className="space-y-4 md:space-y-6 p-4 md:p-6 lg:p-8 animate-pulse">
+        {/* Header Skeleton */}
+        <div className="space-y-2">
+          <div className="h-8 md:h-10 bg-gradient-to-r from-slate-200 to-slate-100 rounded-lg w-48"></div>
+          <div className="h-4 bg-slate-100 rounded w-72"></div>
         </div>
-      </div>
-    )
-  }
 
-  if (isLoadingData && !dataLoaded) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading dashboard...</p>
+        {/* Stats Grid Skeleton */}
+        <div className="grid gap-3 md:gap-4 md:grid-cols-2 lg:grid-cols-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6">
+              <div className="flex flex-row items-center justify-between">
+                <div className="flex-1 space-y-3">
+                  <div className="h-3 bg-slate-200 rounded w-24"></div>
+                  <div className="h-8 bg-slate-300 rounded w-32"></div>
+                  <div className="flex gap-2">
+                    <div className="h-6 bg-slate-200 rounded-full w-16"></div>
+                    <div className="h-6 bg-slate-100 rounded w-20"></div>
+                  </div>
+                </div>
+                <div className="h-12 w-12 bg-slate-200 rounded-xl"></div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Revenue Chart Skeleton */}
+        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 lg:p-8">
+          <div className="flex justify-between items-center mb-6">
+            <div className="space-y-2">
+              <div className="h-6 bg-slate-200 rounded w-48"></div>
+              <div className="h-4 bg-slate-100 rounded w-36"></div>
+            </div>
+            <div className="flex gap-2">
+              <div className="h-10 w-10 bg-slate-200 rounded-full"></div>
+              <div className="h-10 w-20 bg-slate-200 rounded-full"></div>
+              <div className="h-10 w-10 bg-slate-200 rounded-full"></div>
+            </div>
+          </div>
+          <div className="h-[300px] bg-gradient-to-b from-slate-200 to-slate-100 rounded-lg"></div>
+        </div>
+
+        {/* Bottom Section Skeleton */}
+        <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
+          {/* Recent Orders Skeleton */}
+          <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6">
+            <div className="space-y-2 mb-4">
+              <div className="h-6 bg-slate-200 rounded w-40"></div>
+              <div className="h-4 bg-slate-100 rounded w-32"></div>
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="flex items-center justify-between p-4 rounded-xl bg-white/60 border border-white/40">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="h-10 w-10 bg-slate-200 rounded-lg"></div>
+                    <div className="flex-1 space-y-2">
+                      <div className="h-4 bg-slate-200 rounded w-32"></div>
+                      <div className="h-3 bg-slate-100 rounded w-24"></div>
+                    </div>
+                  </div>
+                  <div className="h-6 w-20 bg-slate-200 rounded-full"></div>
+                </div>
+              ))}
+              <div className="h-10 bg-slate-200 rounded-xl w-full mt-4"></div>
+            </div>
+          </div>
+
+          {/* Top States Skeleton */}
+          <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6">
+            <div className="space-y-2 mb-4">
+              <div className="h-6 bg-slate-200 rounded w-40"></div>
+              <div className="h-4 bg-slate-100 rounded w-48"></div>
+            </div>
+            <div className="space-y-3">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="flex items-center gap-3">
+                  <div className="h-4 bg-slate-200 rounded w-12"></div>
+                  <div className="flex-1">
+                    <div className="h-3 bg-slate-200 rounded w-full"></div>
+                  </div>
+                  <div className="h-4 bg-slate-100 rounded w-8"></div>
+                </div>
+              ))}
+              <div className="h-10 bg-slate-200 rounded-xl w-full mt-4"></div>
+            </div>
+          </div>
         </div>
       </div>
     )
