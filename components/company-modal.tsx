@@ -278,6 +278,14 @@ export function CompanyModal({
                           : "N/A"}
                   </p>
                 </div>
+                {order?.status && (
+                  <div>
+                    <p className="text-sm text-slate-600">Order Status</p>
+                    <Badge variant={order.status === "completed" ? "default" : "secondary"} className="capitalize">
+                      {order.status}
+                    </Badge>
+                  </div>
+                )}
               </div>
 
               <Separator className="my-4" />
