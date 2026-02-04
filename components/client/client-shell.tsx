@@ -511,20 +511,25 @@ export function ClientShell({ children, notifications: notificationsFromDashboar
                       )}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-80">
-                    <DropdownMenuLabel className="font-semibold">Notifications</DropdownMenuLabel>
+                  <DropdownMenuContent align="end" className="w-96">
+                    <DropdownMenuLabel className="font-semibold flex items-center justify-between">
+                      <span>Notifications</span>
+                      {notifications && notifications.length > 0 && (
+                        <Badge variant="secondary" className="text-xs">{notifications.length}</Badge>
+                      )}
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     {notifications && notifications.length > 0 ? (
-                      <div className="max-h-96 overflow-y-auto">
-                        {notifications.slice(0, 10).map((notification: any, index: number) => (
+                      <div className="max-h-[500px] overflow-y-auto">
+                        {notifications.map((notification: any, index: number) => (
                           <div key={index}>
-                            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3 px-4 cursor-pointer hover:bg-slate-50">
+                            <DropdownMenuItem className="flex flex-col items-start gap-1 py-3 px-4 cursor-pointer hover:bg-slate-50 focus:bg-slate-50">
                               <p className="text-sm font-medium text-slate-900">{notification.title || notification.message}</p>
                               {notification.description && (
-                                <p className="text-xs text-slate-600 line-clamp-2">{notification.description}</p>
+                                <p className="text-xs text-slate-600 line-clamp-3">{notification.description}</p>
                               )}
                               <p className="text-xs text-slate-500 mt-1">
-                                {notification.timestamp ? new Date(notification.timestamp).toLocaleDateString() : ""}
+                                {notification.timestamp ? new Date(notification.timestamp).toLocaleDateString() + " " + new Date(notification.timestamp).toLocaleTimeString() : ""}
                               </p>
                             </DropdownMenuItem>
                             {index < notifications.length - 1 && <DropdownMenuSeparator className="my-0" />}
