@@ -325,6 +325,7 @@ export default function OrdersPage() {
   }
 
   const handleDeleteOrder = async (orderId: string) => {
+    console.log("[v0] Delete order initiated with ID:", orderId)
     try {
       const token = authService.getToken()
       if (!token) {
@@ -337,7 +338,13 @@ export default function OrdersPage() {
       }
 
       // Find the order to get company ID - search in full orders array, not filtered
-      const order = orders.find((o: any) => o.id === orderId)
+      const order = orders.find((o: any) => {
+        const oId = o._id?.toString ? o._id.toString() : o._id || o.id
+        return oId === orderId
+      })
+      
+      console.log("[v0] Found order:", order)
+      
       if (!order) {
         toast({
           title: "Error",
@@ -347,6 +354,7 @@ export default function OrdersPage() {
         return
       }
 
+      console.log("[v0] Deleting order via /api/orders endpoint")
       const response = await fetch(`/api/orders/${orderId}`, {
         method: "DELETE",
         headers: {
@@ -355,8 +363,10 @@ export default function OrdersPage() {
         },
       })
 
+      console.log("[v0] Delete response status:", response.status)
       if (!response.ok) {
         const error = await response.json()
+        console.log("[v0] Delete error:", error)
         throw new Error(error.error || "Failed to delete order")
       }
 
@@ -753,7 +763,7 @@ export default function OrdersPage() {
                                 className="text-red-600 focus:text-red-600 focus:bg-red-50"
                                 onSelect={(e) => {
                                   e.preventDefault()
-                                  handleDeleteOrder(order.id)
+                                  handleDeleteOrder(order._id?.toString ? order._id.toString() : order._id || order.id)
                                 }}
                               >
                                 <Trash2 className="h-4 w-4 mr-2" />
