@@ -696,140 +696,46 @@ export default function CustomerDetailPage() {
         <div className="mt-8">
           <h2 className="text-2xl font-bold text-slate-900 mb-4">Orders ({orders.length})</h2>
           <div className="space-y-4">
-            {orders.map((order) => {
-              const currentCompany = companies.find(c => c._id === order.userId || c.userId === customerId)
-              return (
-                <Card key={order.id} className="bg-white border-slate-200">
-                  <CardContent className="pt-6">
-                    <div className="space-y-4">
-                      {/* Order Header */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="font-semibold text-slate-900">Order ID: {order.id}</h3>
-                            <Badge 
-                              variant={
-                                order.status === 'completed' ? 'default' : 
-                                order.status === 'pending' ? 'secondary' :
-                                order.status === 'failed' ? 'destructive' :
-                                'outline'
-                              }
-                              className="capitalize"
-                            >
-                              {order.status || 'unknown'}
-                            </Badge>
-                          </div>
-                          
-                          {/* Customer Info */}
-                          <div className="grid grid-cols-2 gap-4 mt-3 mb-3 text-sm">
-                            <div>
-                              <p className="text-xs text-slate-600 font-medium">Customer Name</p>
-                              <p className="font-medium text-slate-900">{customer?.name || 'N/A'}</p>
-                            </div>
-                            <div>
-                              <p className="text-xs text-slate-600 font-medium">User ID</p>
-                              <p className="font-mono text-sm text-slate-700">{customerId}</p>
-                            </div>
-                          </div>
-
-                          {/* Order Type & Package */}
-                          <div className="grid grid-cols-2 gap-4 mb-3 text-sm">
-                            {order.orderType && (
-                              <div>
-                                <p className="text-xs text-slate-600 font-medium">Order Type</p>
-                                <p className="text-slate-900">{order.orderType}</p>
-                              </div>
-                            )}
-                            {order.state && (
-                              <div>
-                                <p className="text-xs text-slate-600 font-medium">State</p>
-                                <p className="text-slate-900">{order.state}</p>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Pricing Breakdown */}
-                          <div className="border-t border-slate-200 pt-3 mt-3">
-                            <p className="text-sm font-semibold text-slate-900 mb-2">Pricing</p>
-                            <div className="grid grid-cols-3 gap-3 text-sm">
-                              {order.pricing?.packagePrice && (
-                                <div className="p-2 rounded bg-slate-50">
-                                  <p className="text-xs text-slate-600">Package</p>
-                                  <p className="font-semibold text-slate-900">${order.pricing.packagePrice.toFixed(2)}</p>
-                                </div>
-                              )}
-                              {order.pricing?.stateFilingFee && (
-                                <div className="p-2 rounded bg-slate-50">
-                                  <p className="text-xs text-slate-600">Filing Fee</p>
-                                  <p className="font-semibold text-slate-900">${order.pricing.stateFilingFee.toFixed(2)}</p>
-                                </div>
-                              )}
-                              {order.pricing?.addonsTotal && (
-                                <div className="p-2 rounded bg-blue-50 border border-blue-200">
-                                  <p className="text-xs text-blue-700 font-medium">Add-ons</p>
-                                  <p className="font-bold text-blue-900">${order.pricing.addonsTotal.toFixed(2)}</p>
-                                </div>
-                              )}
-                            </div>
-                            {order.pricing?.total && (
-                              <div className="mt-3 p-2 rounded-lg bg-slate-100 border border-slate-300">
-                                <p className="text-xs text-slate-700 font-medium">Total</p>
-                                <p className="text-lg font-bold text-slate-900">${order.pricing.total.toFixed(2)}</p>
-                              </div>
-                            )}
-                          </div>
-
-                          {/* Purchased Addons */}
-                          {order.purchasedAddons && order.purchasedAddons.length > 0 && (
-                            <div className="border-t border-slate-200 pt-3 mt-3">
-                              <p className="text-sm font-semibold text-slate-900 mb-2">Purchased Add-ons ({order.purchasedAddons.length})</p>
-                              <div className="space-y-2">
-                                {order.purchasedAddons.map((addon, idx) => (
-                                  <div key={idx} className="p-2 rounded bg-slate-50 border border-slate-200">
-                                    <div className="flex justify-between items-start">
-                                      <div className="flex-1">
-                                        <p className="text-sm font-medium text-slate-900">{addon.name}</p>
-                                        {addon.paymentDetails && (
-                                          <div className="text-xs text-slate-600 mt-1 space-y-0.5">
-                                            {addon.paymentDetails.paymentMethod && (
-                                              <p>Method: <span className="font-medium">{addon.paymentDetails.paymentMethod}</span></p>
-                                            )}
-                                            {addon.paymentDetails.createdAt && (
-                                              <p>Purchased: <span className="font-medium">{new Date(addon.paymentDetails.createdAt).toLocaleDateString()}</span></p>
-                                            )}
-                                          </div>
-                                        )}
-                                      </div>
-                                      <div className="text-right ml-4">
-                                        <p className="font-bold text-slate-900">${addon.price?.toFixed(2) || '0.00'}</p>
-                                      </div>
-                                    </div>
-                                  </div>
-                                ))}
-                              </div>
-                            </div>
-                          )}
-
-                          {order.createdAt && (
-                            <p className="text-xs text-slate-500 mt-3">
-                              Created: {new Date(order.createdAt).toLocaleDateString()}
-                            </p>
-                          )}
-                        </div>
-                        <div className="ml-4">
-                          <Button 
-                            onClick={() => router.push(`/admin/orders/${order.id}`)}
-                            variant="outline"
-                          >
-                            View Details
-                          </Button>
-                        </div>
+            {orders.map((order) => (
+              <Card key={order.id} className="bg-white border-slate-200">
+                <CardContent className="pt-6">
+                  <div className="flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="font-semibold text-slate-900">Order ID: {order.id}</h3>
+                        <Badge 
+                          variant={
+                            order.status === 'completed' ? 'default' : 
+                            order.status === 'pending' ? 'secondary' :
+                            order.status === 'failed' ? 'destructive' :
+                            'outline'
+                          }
+                          className="capitalize"
+                        >
+                          {order.status || 'unknown'}
+                        </Badge>
                       </div>
+                      {order.pricing?.total && (
+                        <p className="text-sm text-slate-600">
+                          Amount: ${order.pricing.total.toFixed(2)}
+                        </p>
+                      )}
+                      {order.createdAt && (
+                        <p className="text-xs text-slate-500 mt-1">
+                          Created: {new Date(order.createdAt).toLocaleDateString()}
+                        </p>
+                      )}
                     </div>
-                  </CardContent>
-                </Card>
-              )
-            })}
+                    <Button 
+                      onClick={() => router.push(`/admin/orders/${order.id}`)}
+                      variant="outline"
+                    >
+                      View Order
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       )}

@@ -1954,7 +1954,7 @@ export default function OrderDetailPage() {
       </div>
       <div class="info-item">
         <div class="info-label">Add-ons</div>
-        <div class="info-value">$${(order?.pricing?.addonsTotal || (order?.purchasedAddons || order?.selectedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) || 0).toFixed(2)}</div>
+        <div class="info-value">$${(order?.pricing?.addonsTotal || (order?.selectedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) || 0).toFixed(2)}</div>
       </div>
       <div class="info-item">
         <div class="info-label">State Fee</div>
@@ -2284,93 +2284,6 @@ export default function OrderDetailPage() {
                   )}
                 </Button>
               </div>
-            </CardContent>
-          </Card>
-
-          {/* Service & Business Address Status */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Building2 className="w-5 h-5" />
-                Service Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <Label className="text-xs font-medium text-slate-600 uppercase">Company Status</Label>
-                  <div className="mt-2">
-                    <Badge className={`${company?.companyStatus === 'completed' ? 'bg-green-100 text-green-800' : company?.companyStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-800'} px-2 py-1 text-xs`}>
-                      {company?.companyStatus || 'N/A'}
-                    </Badge>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs font-medium text-slate-600 uppercase">Business Address</Label>
-                  <div className="mt-2">
-                    <Badge className={`${company?.businessAddressStatus === 'active' ? 'bg-green-100 text-green-800' : company?.businessAddressStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-800'} px-2 py-1 text-xs`}>
-                      {company?.businessAddressStatus || 'N/A'}
-                    </Badge>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs font-medium text-slate-600 uppercase">Registered Agent</Label>
-                  <div className="mt-2">
-                    <Badge className={`${company?.registeredAgentStatus === 'active' ? 'bg-green-100 text-green-800' : company?.registeredAgentStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-800'} px-2 py-1 text-xs`}>
-                      {company?.registeredAgentStatus || 'N/A'}
-                    </Badge>
-                  </div>
-                </div>
-                <div>
-                  <Label className="text-xs font-medium text-slate-600 uppercase">Service Status</Label>
-                  <div className="mt-2">
-                    <Badge className={`${company?.serviceStatus === 'active' ? 'bg-green-100 text-green-800' : company?.serviceStatus === 'pending' ? 'bg-yellow-100 text-yellow-800' : 'bg-slate-100 text-slate-800'} px-2 py-1 text-xs`}>
-                      {company?.serviceStatus || 'N/A'}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              {company?.businessAddress && (
-                <div className="pt-4 border-t border-slate-200">
-                  <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                    <MapPin className="w-4 h-4" />
-                    Business Address Details
-                  </p>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                    {company.businessAddress.companyName && (
-                      <p className="text-sm font-medium text-slate-900">{company.businessAddress.companyName}</p>
-                    )}
-                    {(company.businessAddress.street || company.businessAddress.city || company.businessAddress.state || company.businessAddress.zip) && (
-                      <p className="text-sm text-slate-700">
-                        {[company.businessAddress.street, company.businessAddress.city, company.businessAddress.state, company.businessAddress.zip]
-                          .filter(Boolean)
-                          .join(', ') || 'Address not provided'}
-                      </p>
-                    )}
-                    {company.businessAddress.expiryDate && (
-                      <p className="text-xs text-slate-600">
-                        Expires: {new Date(company.businessAddress.expiryDate).toLocaleDateString()}
-                      </p>
-                    )}
-                  </div>
-                </div>
-              )}
-
-              {company?.mailingAddress && (company.mailingAddress.street || company.mailingAddress.city || company.mailingAddress.state) && (
-                <div className="pt-4 border-t border-slate-200">
-                  <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                    <Mail className="w-4 h-4" />
-                    Mailing Address
-                  </p>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-sm text-slate-700">
-                      {[company.mailingAddress.street, company.mailingAddress.city, company.mailingAddress.state, company.mailingAddress.zip]
-                        .filter(Boolean)
-                        .join(', ')}
-                    </p>
-                  </div>
-                </div>
-              )}
             </CardContent>
           </Card>
 
@@ -2923,35 +2836,15 @@ export default function OrderDetailPage() {
               <p className="text-sm text-slate-600 mt-1">Selected services and add-ons</p>
             </CardHeader>
             <CardContent>
-              {order?.purchasedAddons && order.purchasedAddons.length > 0 ? (
+              {order?.addons && order.addons.length > 0 ? (
                 <div className="space-y-3">
-                  {order.purchasedAddons.map((addon: any, index: number) => (
+                  {order.addons.map((addon: any, index: number) => (
                     <div key={index} className="p-3 rounded-lg bg-slate-50 border border-slate-200">
                       <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <p className="text-sm font-medium text-slate-900">{addon.name || addon.title || "Addon"}</p>
-                          {addon.paymentDetails && (
-                            <div className="text-xs text-slate-600 mt-2 space-y-1">
-                              {addon.paymentDetails.paymentMethod && (
-                                <p>Payment Method: <span className="font-medium">{addon.paymentDetails.paymentMethod}</span></p>
-                              )}
-                              {addon.paymentDetails.phoneNumber && (
-                                <p>Phone: <span className="font-medium">{addon.paymentDetails.phoneNumber}</span></p>
-                              )}
-                              {addon.paymentDetails.createdAt && (
-                                <p>Purchased: <span className="font-medium">{new Date(addon.paymentDetails.createdAt).toLocaleDateString()}</span></p>
-                              )}
-                              {addon.paymentDetails.receiptUrl && (
-                                <a href={addon.paymentDetails.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline block">
-                                  View Receipt
-                                </a>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        <div className="text-right">
+                        <div>
+                          <p className="text-sm font-medium text-slate-900">{addon.name || addon.title || addon}</p>
                           {addon.price && (
-                            <p className="text-sm font-bold text-slate-900">${addon.price.toFixed(2)}</p>
+                            <p className="text-xs text-slate-600 mt-1">${addon.price.toFixed(2)}</p>
                           )}
                         </div>
                       </div>
@@ -2960,13 +2853,13 @@ export default function OrderDetailPage() {
                   <div className="pt-3 border-t border-slate-200">
                     <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
                     <p className="text-lg font-bold text-slate-900">
-                      ${(order.purchasedAddons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0)).toFixed(2)}
+                      ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
                     </p>
                   </div>
                 </div>
               ) : (
                 <div className="p-4 rounded-lg bg-slate-50 border border-dashed border-slate-300">
-                  <p className="text-sm text-slate-600">No add-ons purchased for this order</p>
+                  <p className="text-sm text-slate-600">No add-ons selected for this order</p>
                 </div>
               )}
             </CardContent>

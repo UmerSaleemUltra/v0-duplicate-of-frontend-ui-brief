@@ -32,7 +32,6 @@ interface CompanyModalProps {
   passportDocuments?: any[]
   orderDate?: string
   showOwnerDetails?: boolean
-  order?: any
 }
 
 export function CompanyModal({
@@ -42,12 +41,11 @@ export function CompanyModal({
   passportDocuments: propPassportDocuments,
   orderDate: propOrderDate,
   showOwnerDetails = false,
-  order: propOrder,
 }: CompanyModalProps) {
   const [loading, setLoading] = useState(true)
   const [company, setCompany] = useState<any>(null)
   const [user, setUser] = useState<any>(null)
-  const [order, setOrder] = useState<any>(propOrder || null)
+  const [order, setOrder] = useState<any>(null)
   const [passportUrls, setPassportUrls] = useState<string[]>([])
   const [passportDocuments, setPassportDocuments] = useState<any[]>(propPassportDocuments || [])
 
@@ -105,12 +103,13 @@ export function CompanyModal({
       }
 
       fetchPromises.push(
-        fetch(`/api/orders?companyId=${companyId}`, {
+        fetch(`/api/companies/${companyId}/orders`, {
           headers: { Authorization: `Bearer ${token}` },
         })
           .then((res) => res.json())
           .then((response) => {
-            const companyOrder = response.data?.[0] || null
+            const orders = response.data || []
+            const companyOrder = orders.length > 0 ? orders[0] : null
             setOrder(companyOrder)
           })
           .catch(() => setOrder(null)),
@@ -350,55 +349,7 @@ export function CompanyModal({
                   <p className="text-sm text-slate-600">Business ID</p>
                   <p className="font-mono font-medium">{company.businessId || "Not assigned"}</p>
                 </div>
-                {company.taxClassification && (
-                  <div>
-                    <p className="text-sm text-slate-600">Tax Classification</p>
-                    <p className="font-medium">{company.taxClassification}</p>
-                  </div>
-                )}
               </div>
-
-              {company.formationDate && (
-                <>
-                  <Separator className="my-4" />
-                  <div className="grid grid-cols-2 gap-4">
-                    <div>
-                      <p className="text-sm text-slate-600">Formation Date</p>
-                      <p className="font-medium">
-                        {new Date(company.formationDate).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                    {company.irsFilingDate && (
-                      <div>
-                        <p className="text-sm text-slate-600">IRS Filing Date</p>
-                        <p className="font-medium">
-                          {new Date(company.irsFilingDate).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    )}
-                    {company.annualReportFilingDate && (
-                      <div>
-                        <p className="text-sm text-slate-600">Annual Report Filing Date</p>
-                        <p className="font-medium">
-                          {new Date(company.annualReportFilingDate).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
             </CardContent>
           </Card>
 
@@ -434,370 +385,6 @@ export function CompanyModal({
                     <Badge variant="outline">{company.registeredAgent.status || "Active"}</Badge>
                   </div>
                 </div>
-
-                {(company.registeredAgent.phone || company.registeredAgent.email || company.registeredAgent.servicePeriod || company.registeredAgent.expiryDate) && (
-                  <>
-                    <Separator className="my-4" />
-                    <div className="grid grid-cols-2 gap-4">
-                      {company.registeredAgent.phone && (
-                        <div>
-                          <p className="text-sm text-slate-600 flex items-center gap-1">
-                            <Phone className="h-3 w-3" /> Phone
-                          </p>
-                          <p className="font-medium">{company.registeredAgent.phone}</p>
-                        </div>
-                      )}
-                      {company.registeredAgent.email && (
-                        <div>
-                          <p className="text-sm text-slate-600 flex items-center gap-1">
-                            <Mail className="h-3 w-3" /> Email
-                          </p>
-                          <p className="font-medium">{company.registeredAgent.email}</p>
-                        </div>
-                      )}
-                      {company.registeredAgent.servicePeriod && (
-                        <div>
-                          <p className="text-sm text-slate-600">Service Period</p>
-                          <p className="font-medium">{company.registeredAgent.servicePeriod}</p>
-                        </div>
-                      )}
-                      {company.registeredAgent.expiryDate && (
-                        <div>
-                          <p className="text-sm text-slate-600">Expiry Date</p>
-                          <p className="font-medium">
-                            {new Date(company.registeredAgent.expiryDate).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })}
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  </>
-                )}
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Business Address */}
-          {company.businessAddress && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <MapPin className="h-5 w-5" />
-                  Business Address
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  {company.businessAddress.companyName && (
-                    <div className="col-span-2">
-                      <p className="text-sm text-slate-600">Company Name</p>
-                      <p className="font-medium">{company.businessAddress.companyName}</p>
-                    </div>
-                  )}
-                  <div className="col-span-2">
-                    <p className="text-sm text-slate-600">Address</p>
-                    <p className="font-medium">
-                      {formatAddress({
-                        street: company.businessAddress.street,
-                        city: company.businessAddress.city,
-                        state: company.businessAddress.state,
-                        zip: company.businessAddress.zip,
-                      })}
-                    </p>
-                  </div>
-                  {company.businessAddress.expiryDate && (
-                    <div>
-                      <p className="text-sm text-slate-600">Expiry Date</p>
-                      <p className="font-medium">
-                        {new Date(company.businessAddress.expiryDate).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })}
-                      </p>
-                    </div>
-                  )}
-                  {company.businessAddress.status && (
-                    <div>
-                      <p className="text-sm text-slate-600">Status</p>
-                      <Badge variant="outline">{company.businessAddress.status}</Badge>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Status Information */}
-          {(company.companyStatus || company.registeredAgentStatus || company.businessAddressStatus || company.serviceStatus) && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Status Information</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="grid grid-cols-2 gap-4">
-                  {company.companyStatus && (
-                    <div>
-                      <p className="text-sm text-slate-600">Company Status</p>
-                      <Badge variant="outline" className="capitalize">
-                        {company.companyStatus}
-                      </Badge>
-                    </div>
-                  )}
-                  {company.registeredAgentStatus && (
-                    <div>
-                      <p className="text-sm text-slate-600">Registered Agent Status</p>
-                      <Badge variant="outline" className="capitalize">
-                        {company.registeredAgentStatus}
-                      </Badge>
-                    </div>
-                  )}
-                  {company.businessAddressStatus && (
-                    <div>
-                      <p className="text-sm text-slate-600">Business Address Status</p>
-                      <Badge variant="outline" className="capitalize">
-                        {company.businessAddressStatus}
-                      </Badge>
-                    </div>
-                  )}
-                  {company.serviceStatus && (
-                    <div>
-                      <p className="text-sm text-slate-600">Service Status</p>
-                      <Badge variant="outline" className="capitalize">
-                        {company.serviceStatus}
-                      </Badge>
-                    </div>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Mailing Address */}
-          {company.mailingAddress && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg">Mailing Address</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <p className="font-medium flex items-start gap-2">
-                  <MapPin className="h-4 w-4 mt-1 text-slate-400" />
-                  {formatAddress(company.mailingAddress)}
-                </p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Notes */}
-          {company.notes && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <FileText className="h-5 w-5" />
-                  Notes
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-slate-700 whitespace-pre-wrap">{company.notes}</p>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Order Details Section */}
-          {order && (
-            <Card>
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <CreditCard className="h-5 w-5" />
-                  Order Details
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Order Status & Info */}
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-slate-600">Order ID</p>
-                    <p className="font-mono font-medium">{order.id}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600">Order Status</p>
-                    <Badge
-                      variant={
-                        order.status === "completed"
-                          ? "default"
-                          : order.status === "processing"
-                            ? "secondary"
-                            : "outline"
-                      }
-                      className="capitalize"
-                    >
-                      {order.status || "unknown"}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600">Order Date</p>
-                    <p className="font-medium">
-                      {order.createdAt
-                        ? new Date(order.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "long",
-                            day: "numeric",
-                          })
-                        : "N/A"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600">Package Type</p>
-                    <p className="font-medium capitalize">{order.packageType || "Standard"}</p>
-                  </div>
-                </div>
-
-                <Separator className="my-3" />
-
-                {/* Customer & User Information */}
-                <div>
-                  <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                    <User className="h-4 w-4" />
-                    Customer Information
-                  </p>
-                  <div className="grid grid-cols-2 gap-4 p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <div>
-                      <p className="text-xs text-slate-600 font-medium">Customer Name</p>
-                      <p className="font-medium">{order.customerName || user?.name || "N/A"}</p>
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-600 font-medium">User ID</p>
-                      <p className="font-mono text-sm">{order.userId || user?.id || "N/A"}</p>
-                    </div>
-                    {user?.email && (
-                      <div>
-                        <p className="text-xs text-slate-600 font-medium flex items-center gap-1">
-                          <Mail className="h-3 w-3" /> Email
-                        </p>
-                        <p className="font-medium text-sm">{user.email}</p>
-                      </div>
-                    )}
-                    {user?.phone && (
-                      <div>
-                        <p className="text-xs text-slate-600 font-medium flex items-center gap-1">
-                          <Phone className="h-3 w-3" /> Phone
-                        </p>
-                        <p className="font-medium text-sm">{user.phone}</p>
-                      </div>
-                    )}
-                    {user?.createdAt && (
-                      <div>
-                        <p className="text-xs text-slate-600 font-medium">Account Created</p>
-                        <p className="font-medium text-sm">
-                          {new Date(user.createdAt).toLocaleDateString("en-US", {
-                            year: "numeric",
-                            month: "short",
-                            day: "numeric",
-                          })}
-                        </p>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                <Separator className="my-3" />
-
-                {/* Pricing Breakdown */}
-                <div>
-                  <p className="text-sm font-semibold text-slate-900 mb-3">Pricing Breakdown</p>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
-                    {order.pricing?.packagePrice && (
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 font-medium mb-1">Package Price</p>
-                        <p className="text-base font-bold text-slate-900">${order.pricing.packagePrice.toFixed(2)}</p>
-                      </div>
-                    )}
-                    {order.pricing?.stateFilingFee && (
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 font-medium mb-1">State Filing Fee</p>
-                        <p className="text-base font-bold text-slate-900">${order.pricing.stateFilingFee.toFixed(2)}</p>
-                      </div>
-                    )}
-                    {order.pricing?.addonsTotal && order.pricing.addonsTotal > 0 && (
-                      <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-                        <p className="text-xs text-blue-700 font-medium mb-1">Add-ons</p>
-                        <p className="text-base font-bold text-blue-900">${order.pricing.addonsTotal.toFixed(2)}</p>
-                      </div>
-                    )}
-                    {order.pricing?.total && (
-                      <div className="p-3 rounded-lg bg-green-50 border border-green-200">
-                        <p className="text-xs text-green-700 font-medium mb-1">Order Total</p>
-                        <p className="text-lg font-bold text-green-900">${order.pricing.total.toFixed(2)}</p>
-                      </div>
-                    )}
-                  </div>
-
-                  {/* Additional Pricing Details */}
-                  {(order.pricing?.discount || order.pricing?.tax || order.pricing?.discount > 0) && (
-                    <div className="p-3 rounded-lg bg-orange-50 border border-orange-200 space-y-2">
-                      {order.pricing?.discount && order.pricing.discount > 0 && (
-                        <p className="text-sm text-orange-700">
-                          Discount Applied: <span className="font-semibold">-${order.pricing.discount.toFixed(2)}</span>
-                        </p>
-                      )}
-                      {order.pricing?.tax && order.pricing.tax > 0 && (
-                        <p className="text-sm text-orange-700">
-                          Tax: <span className="font-semibold">${order.pricing.tax.toFixed(2)}</span>
-                        </p>
-                      )}
-                    </div>
-                  )}
-                </div>
-
-                {/* Purchased Addons */}
-                {order.purchasedAddons && order.purchasedAddons.length > 0 && (
-                  <div>
-                    <Separator className="my-3" />
-                    <p className="text-sm font-semibold text-slate-900 mb-3 flex items-center gap-2">
-                      <FileText className="h-4 w-4" />
-                      Purchased Add-ons ({order.purchasedAddons.length})
-                    </p>
-                    <div className="space-y-3">
-                      {order.purchasedAddons.map((addon: any, idx: number) => (
-                        <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                          <div className="flex justify-between items-start gap-2 mb-2">
-                            <div className="flex-1">
-                              <p className="text-sm font-bold text-slate-900">{addon.name}</p>
-                              <p className="text-xs text-slate-600 mt-0.5">Unit Price: ${addon.price?.toFixed(2) || '0.00'}</p>
-                            </div>
-                            <Badge variant="outline" className="text-xs">
-                              ${addon.price?.toFixed(2) || '0.00'}
-                            </Badge>
-                          </div>
-                          {addon.paymentDetails && (
-                            <div className="text-xs text-slate-600 space-y-1 pt-2 border-t border-slate-200">
-                              <div className="grid grid-cols-2 gap-2">
-                                {addon.paymentDetails.paymentMethod && (
-                                  <p>Payment Method: <span className="font-medium capitalize text-slate-900">{addon.paymentDetails.paymentMethod}</span></p>
-                                )}
-                                {addon.paymentDetails.createdAt && (
-                                  <p>Purchased: <span className="font-medium text-slate-900">{new Date(addon.paymentDetails.createdAt).toLocaleDateString()}</span></p>
-                                )}
-                                {addon.paymentDetails.phoneNumber && (
-                                  <p className="col-span-2">Phone: <span className="font-medium text-slate-900">{addon.paymentDetails.phoneNumber}</span></p>
-                                )}
-                                {addon.paymentDetails.receiptUrl && (
-                                  <a href={addon.paymentDetails.receiptUrl} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline col-span-2 flex items-center gap-1">
-                                    <Eye className="h-3 w-3" />
-                                    View Receipt
-                                  </a>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
               </CardContent>
             </Card>
           )}
