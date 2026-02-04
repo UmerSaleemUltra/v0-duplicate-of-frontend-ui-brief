@@ -144,7 +144,10 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     const orders = company.orders || []
-    const orderToDelete = orders.find((order: any) => order.id === orderId)
+    const orderToDelete = orders.find((order: any) => {
+      const orderId_str = order._id?.toString() || order.id?.toString() || order.id
+      return orderId_str === orderId
+    })
 
     console.log("[v0] Order found in company:", orderToDelete ? "Yes" : "No")
 
