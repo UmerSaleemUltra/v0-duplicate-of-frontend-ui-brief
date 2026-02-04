@@ -101,6 +101,7 @@ export default function OrdersPage() {
   const router = useRouter()
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompanyId, setSelectedCompanyId] = useState("")
+  const [dataLoading, setDataLoading] = useState(true)
 
   const [currentPage, setCurrentPage] = useState(1)
   const ITEMS_PER_PAGE = 8
@@ -114,6 +115,7 @@ export default function OrdersPage() {
 
   useEffect(() => {
     const loadOrders = async () => {
+      setDataLoading(true)
       try {
         const token = authService.getToken()
         if (!token) return
@@ -217,6 +219,8 @@ export default function OrdersPage() {
           description: "Failed to load orders. Please try again.",
           variant: "destructive",
         })
+      } finally {
+        setDataLoading(false)
       }
     }
 
@@ -441,7 +445,7 @@ export default function OrdersPage() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || dataLoading) {
     return (
       <div className="space-y-6 p-6 animate-pulse">
         <div className="flex items-center justify-between">
