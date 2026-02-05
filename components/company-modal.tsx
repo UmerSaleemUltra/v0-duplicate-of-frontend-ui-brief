@@ -334,19 +334,64 @@ export function CompanyModal({
             <CardHeader>
               <CardTitle className="text-lg">Tax IDs & Registration</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <p className="text-sm text-slate-600">EIN</p>
                   <p className="font-mono font-medium">{company.ein || "Not assigned"}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-slate-600">ITIN</p>
+                  <p className="text-sm text-slate-600">ITIN/SSN</p>
                   <p className="font-mono font-medium">{company.itin || "Not assigned"}</p>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">Business ID</p>
                   <p className="font-mono font-medium">{company.businessId || "Not assigned"}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Tax Classification</p>
+                  <p className="font-medium capitalize">{company.taxClassification || "Not set"}</p>
+                </div>
+              </div>
+
+              <Separator className="my-3" />
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-600">Formation Date</p>
+                  <p className="font-medium">
+                    {company.formationDate
+                      ? new Date(company.formationDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "Not set"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">IRS Filing Date</p>
+                  <p className="font-medium">
+                    {company.irsFilingDate
+                      ? new Date(company.irsFilingDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "Not set"}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Annual Report Filing Date</p>
+                  <p className="font-medium">
+                    {company.annualReportFilingDate
+                      ? new Date(company.annualReportFilingDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })
+                      : "Not set"}
+                  </p>
                 </div>
               </div>
             </CardContent>
