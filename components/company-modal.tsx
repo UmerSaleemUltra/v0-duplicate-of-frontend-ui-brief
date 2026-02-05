@@ -221,7 +221,53 @@ export function CompanyModal({
         </DialogHeader>
 
         <div className="space-y-6 mt-4">
-          {/* Business Details Section */}
+          {/* Customer Information Section */}
+          {user && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg flex items-center gap-2">
+                  <User className="h-5 w-5" />
+                  Customer Information
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-3">
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-sm text-slate-600">Full Name</p>
+                    <p className="font-medium">{user.name || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 flex items-center gap-1">
+                      <Mail className="h-3 w-3" /> Email
+                    </p>
+                    <p className="font-medium">{user.email || "N/A"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 flex items-center gap-1">
+                      <Phone className="h-3 w-3" /> Phone
+                    </p>
+                    <p className="font-medium">{user.phone || "Not provided"}</p>
+                  </div>
+                  <div>
+                    <p className="text-sm text-slate-600 flex items-center gap-1">
+                      <Calendar className="h-3 w-3" /> Joined
+                    </p>
+                    <p className="font-medium">
+                      {user.createdAt
+                        ? new Date(user.createdAt).toLocaleDateString("en-US", {
+                            year: "numeric",
+                            month: "long",
+                            day: "numeric",
+                          })
+                        : "N/A"}
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Company Details Section */}
           <Card>
             <CardHeader>
               <CardTitle className="text-lg flex items-center gap-2">
@@ -242,12 +288,6 @@ export function CompanyModal({
                 <div>
                   <p className="text-sm text-slate-600">State</p>
                   <p className="font-medium">{company.state || "N/A"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Status</p>
-                  <Badge variant="outline" className="capitalize">
-                    {company.status || "unknown"}
-                  </Badge>
                 </div>
                 <div>
                   <p className="text-sm text-slate-600">Package Type</p>
@@ -278,124 +318,53 @@ export function CompanyModal({
                   </p>
                 </div>
               </div>
+            </CardContent>
+          </Card>
 
-              <Separator className="my-4" />
-
-              <div>
-                <p className="text-sm text-slate-600 mb-2">Business Address</p>
-                <p className="font-medium flex items-start gap-2">
-                  <MapPin className="h-4 w-4 mt-1 text-slate-400" />
-                  {formatAddress(company.address)}
-                </p>
-              </div>
-
-              {company.businessCategory && (
-                <>
-                  <Separator className="my-4" />
+          {/* Business Information */}
+          {(company.businessCategory || company.businessDescription || company.businessWebsite) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Business Information</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {company.businessCategory && (
                   <div>
                     <p className="text-sm text-slate-600">Business Category</p>
                     <p className="font-medium">{company.businessCategory}</p>
                   </div>
-                </>
-              )}
+                )}
 
-              {company.businessDescription && (
-                <>
-                  <Separator className="my-4" />
-                  <div>
-                    <p className="text-sm text-slate-600">Business Description</p>
-                    <p className="text-sm">{company.businessDescription}</p>
-                  </div>
-                </>
-              )}
+                {company.businessDescription && (
+                  <>
+                    {company.businessCategory && <Separator className="my-3" />}
+                    <div>
+                      <p className="text-sm text-slate-600">Business Description</p>
+                      <p className="text-sm">{company.businessDescription}</p>
+                    </div>
+                  </>
+                )}
 
-              {company.businessWebsite && (
-                <>
-                  <Separator className="my-4" />
-                  <div>
-                    <p className="text-sm text-slate-600">Website</p>
-                    <a
-                      href={company.businessWebsite}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-primary hover:underline flex items-center gap-1"
-                    >
-                      {company.businessWebsite}
-                      <ExternalLink className="h-3 w-3" />
-                    </a>
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Tax IDs & Registration */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="text-lg">Tax IDs & Registration</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-slate-600">EIN</p>
-                  <p className="font-mono font-medium">{company.ein || "Not assigned"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">ITIN/SSN</p>
-                  <p className="font-mono font-medium">{company.itin || "Not assigned"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Business ID</p>
-                  <p className="font-mono font-medium">{company.businessId || "Not assigned"}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Tax Classification</p>
-                  <p className="font-medium capitalize">{company.taxClassification || "Not set"}</p>
-                </div>
-              </div>
-
-              <Separator className="my-3" />
-
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <p className="text-sm text-slate-600">Formation Date</p>
-                  <p className="font-medium">
-                    {company.formationDate
-                      ? new Date(company.formationDate).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })
-                      : "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">IRS Filing Date</p>
-                  <p className="font-medium">
-                    {company.irsFilingDate
-                      ? new Date(company.irsFilingDate).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })
-                      : "Not set"}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm text-slate-600">Annual Report Filing Date</p>
-                  <p className="font-medium">
-                    {company.annualReportFilingDate
-                      ? new Date(company.annualReportFilingDate).toLocaleDateString("en-US", {
-                          year: "numeric",
-                          month: "long",
-                          day: "numeric",
-                        })
-                      : "Not set"}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+                {company.businessWebsite && (
+                  <>
+                    {(company.businessCategory || company.businessDescription) && <Separator className="my-3" />}
+                    <div>
+                      <p className="text-sm text-slate-600">Business Website</p>
+                      <a
+                        href={company.businessWebsite}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-primary hover:underline flex items-center gap-1"
+                      >
+                        {company.businessWebsite}
+                        <ExternalLink className="h-3 w-3" />
+                      </a>
+                    </div>
+                  </>
+                )}
+              </CardContent>
+            </Card>
+          )}
 
           {/* Registered Agent */}
           {company.registeredAgent && (
@@ -405,75 +374,170 @@ export function CompanyModal({
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-slate-600">Name</p>
-                    <p className="font-medium">{company.registeredAgent.name || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600">Company</p>
-                    <p className="font-medium">{company.registeredAgent.company || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600">Address</p>
-                    <p className="font-medium">
-                      {formatAddress({
-                        street: company.registeredAgent.address,
-                        city: company.registeredAgent.city,
-                        state: company.registeredAgent.state,
-                        zip: company.registeredAgent.zip,
-                      })}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600">Status</p>
-                    <Badge variant="outline">{company.registeredAgent.status || "Active"}</Badge>
-                  </div>
+                  {company.registeredAgent.name && (
+                    <div>
+                      <p className="text-sm text-slate-600">Name</p>
+                      <p className="font-medium">{company.registeredAgent.name}</p>
+                    </div>
+                  )}
+                  {(company.registeredAgent.address ||
+                    company.registeredAgent.city ||
+                    company.registeredAgent.state ||
+                    company.registeredAgent.zip) && (
+                    <div>
+                      <p className="text-sm text-slate-600">Address</p>
+                      <p className="font-medium">
+                        {formatAddress({
+                          street: company.registeredAgent.address,
+                          city: company.registeredAgent.city,
+                          state: company.registeredAgent.state,
+                          zip: company.registeredAgent.zip,
+                        })}
+                      </p>
+                    </div>
+                  )}
+                  {company.registeredAgent.status && (
+                    <div>
+                      <p className="text-sm text-slate-600">Status</p>
+                      <Badge variant="outline" className="capitalize">
+                        {company.registeredAgent.status}
+                      </Badge>
+                    </div>
+                  )}
+                  {company.registeredAgent.company && (
+                    <div>
+                      <p className="text-sm text-slate-600">Company</p>
+                      <p className="font-medium">{company.registeredAgent.company}</p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
           )}
 
-          {/* User Information Section */}
-          {user && (
+          {/* Mailing Address */}
+          {company.mailingAddress && (
             <Card>
               <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <User className="h-5 w-5" />
-                  Customer Information
-                </CardTitle>
+                <CardTitle className="text-lg">Mailing Address</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <p className="text-sm text-slate-600">Full Name</p>
-                    <p className="font-medium">{user.name || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600">Role</p>
-                    <Badge variant="outline" className="capitalize">
-                      {user.role || "user"}
-                    </Badge>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 flex items-center gap-1">
-                      <Mail className="h-3 w-3" /> Email
-                    </p>
-                    <p className="font-medium">{user.email || "N/A"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 flex items-center gap-1">
-                      <Phone className="h-3 w-3" /> Phone
-                    </p>
-                    <p className="font-medium">{user.phone || "Not provided"}</p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-slate-600 flex items-center gap-1">
-                      <Calendar className="h-3 w-3" /> Joined
-                    </p>
-                    <p className="font-medium">
-                      {user.createdAt ? new Date(user.createdAt).toLocaleDateString() : "N/A"}
-                    </p>
-                  </div>
+                  {company.mailingAddress.name && (
+                    <div>
+                      <p className="text-sm text-slate-600">Name</p>
+                      <p className="font-medium">{company.mailingAddress.name}</p>
+                    </div>
+                  )}
+                  {(company.mailingAddress.address ||
+                    company.mailingAddress.city ||
+                    company.mailingAddress.state ||
+                    company.mailingAddress.zip) && (
+                    <div>
+                      <p className="text-sm text-slate-600">Address</p>
+                      <p className="font-medium">
+                        {formatAddress({
+                          street: company.mailingAddress.address,
+                          city: company.mailingAddress.city,
+                          state: company.mailingAddress.state,
+                          zip: company.mailingAddress.zip,
+                        })}
+                      </p>
+                    </div>
+                  )}
+                  {company.mailingAddress.status && (
+                    <div>
+                      <p className="text-sm text-slate-600">Status</p>
+                      <Badge variant="outline" className="capitalize">
+                        {company.mailingAddress.status}
+                      </Badge>
+                    </div>
+                  )}
+                  {company.mailingAddress.company && (
+                    <div>
+                      <p className="text-sm text-slate-600">Company</p>
+                      <p className="font-medium">{company.mailingAddress.company}</p>
+                    </div>
+                  )}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Tax IDs & Registration */}
+          {(company.taxClassification ||
+            company.itin ||
+            company.businessId ||
+            company.ein ||
+            company.annualReportFilingDate ||
+            company.formationDate ||
+            company.irsFilingDate) && (
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-lg">Tax IDs & Registration</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="grid grid-cols-2 gap-4">
+                  {company.taxClassification && (
+                    <div>
+                      <p className="text-sm text-slate-600">Tax Classification</p>
+                      <p className="font-medium capitalize">{company.taxClassification}</p>
+                    </div>
+                  )}
+                  {company.itin && (
+                    <div>
+                      <p className="text-sm text-slate-600">ITIN/SSN</p>
+                      <p className="font-mono font-medium">{company.itin}</p>
+                    </div>
+                  )}
+                  {company.businessId && (
+                    <div>
+                      <p className="text-sm text-slate-600">Business ID</p>
+                      <p className="font-mono font-medium">{company.businessId}</p>
+                    </div>
+                  )}
+                  {company.ein && (
+                    <div>
+                      <p className="text-sm text-slate-600">EIN</p>
+                      <p className="font-mono font-medium">{company.ein}</p>
+                    </div>
+                  )}
+                  {company.annualReportFilingDate && (
+                    <div>
+                      <p className="text-sm text-slate-600">Annual Report Filing Date</p>
+                      <p className="font-medium">
+                        {new Date(company.annualReportFilingDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  )}
+                  {company.formationDate && (
+                    <div>
+                      <p className="text-sm text-slate-600">Formation Date</p>
+                      <p className="font-medium">
+                        {new Date(company.formationDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  )}
+                  {company.irsFilingDate && (
+                    <div>
+                      <p className="text-sm text-slate-600">IRS Filing Date</p>
+                      <p className="font-medium">
+                        {new Date(company.irsFilingDate).toLocaleDateString("en-US", {
+                          year: "numeric",
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                  )}
                 </div>
               </CardContent>
             </Card>
