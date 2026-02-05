@@ -237,19 +237,17 @@ export default function CustomersPage() {
         <p className="text-slate-600 mt-1">Manage your customer base and view their activity</p>
       </div>
 
-      <Card className="bg-white border-slate-200">
-        <CardContent className="pt-6">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search customers by name, email, or company..."
-              className="pl-10 h-10"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      <div className="glass-card rounded-2xl p-6">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Search customers by name, email, or company..."
+            className="pl-10 h-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
 
       <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
         <div className="glass-card p-6 rounded-2xl">
