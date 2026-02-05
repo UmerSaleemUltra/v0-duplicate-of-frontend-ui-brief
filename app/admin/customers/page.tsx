@@ -412,8 +412,8 @@ export default function CustomersPage() {
               )}
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }
