@@ -747,16 +747,16 @@ export default function OrdersPage() {
             <>
               <div className="overflow-x-auto -mx-6">
                 <table className="w-full">
-                  <thead>
-                    <tr className="border-b border-slate-200 bg-slate-50">
-                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Order ID</th>
-                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Customer</th>
-                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Company</th>
-                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">State</th>
-                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Amount</th>
-                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Status</th>
-                      <th className="text-left py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Date</th>
-                      <th className="text-center py-3 px-6 text-xs font-semibold text-slate-600 uppercase">Actions</th>
+                  <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-white/10">
+                    <tr>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Order ID</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Customer</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Company</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">State</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Amount</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Status</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Date</th>
+                      <th className="text-center p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
