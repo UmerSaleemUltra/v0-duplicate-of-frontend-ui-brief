@@ -848,7 +848,7 @@ export default function OrdersPage() {
                   </p>
                   <div className="flex items-center gap-2">
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
@@ -860,7 +860,7 @@ export default function OrdersPage() {
                       {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                         <Button
                           key={page}
-                          variant={currentPage === page ? "default" : "outline"}
+                          variant="ghost"
                           size="sm"
                           onClick={() => setCurrentPage(page)}
                           className={`h-9 w-9 p-0 ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1d23] text-white" : ""}`}
@@ -870,7 +870,7 @@ export default function OrdersPage() {
                       ))}
                     </div>
                     <Button
-                      variant="outline"
+                      variant="ghost"
                       size="sm"
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
