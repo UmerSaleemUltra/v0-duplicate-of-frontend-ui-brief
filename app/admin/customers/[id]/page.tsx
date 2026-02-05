@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
+import { Skeleton } from "@/components/ui/skeleton"
 import { ArrowLeft, Mail, Phone, DollarSign, Loader2, Trash2, Pencil } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { US_STATES } from "@/lib/constants"
@@ -400,8 +401,54 @@ export default function CustomerDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin" />
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <Skeleton className="h-9 w-64" />
+          <Skeleton className="h-10 w-40" />
+        </div>
+
+        <Card className="bg-white border-slate-200">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-4">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="flex-1 space-y-2">
+                <Skeleton className="h-5 w-48" />
+                <Skeleton className="h-4 w-64" />
+                <Skeleton className="h-3 w-80" />
+              </div>
+              <Skeleton className="h-10 w-36" />
+            </div>
+          </CardContent>
+        </Card>
+
+        <div className="grid gap-6 md:grid-cols-3">
+          <Card className="bg-white border-slate-200">
+            <CardHeader className="pb-2">
+              <Skeleton className="h-5 w-24" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-8 w-16" />
+              <Skeleton className="h-3 w-32 mt-1" />
+            </CardContent>
+          </Card>
+          <Card className="bg-white border-slate-200">
+            <CardHeader>
+              <Skeleton className="h-6 w-32" />
+            </CardHeader>
+            <CardContent>
+              <Skeleton className="h-8 w-24" />
+              <Skeleton className="h-3 w-32 mt-1" />
+            </CardContent>
+          </Card>
+        </div>
+
+        <Card>
+          <CardContent className="pt-6 space-y-4">
+            <Skeleton className="h-6 w-48" />
+            <Skeleton className="h-20 w-full" />
+            <Skeleton className="h-20 w-full" />
+          </CardContent>
+        </Card>
       </div>
     )
   }
