@@ -709,7 +709,7 @@ Notes: ${mail.notes || "None"}
             </span>
           </div>
         )}
-      </Card>
+      </div>
 
       <div className="glass-card rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
@@ -850,7 +850,7 @@ Notes: ${mail.notes || "None"}
             </div>
           </div>
         )}
-      </Card>
+      </div>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
