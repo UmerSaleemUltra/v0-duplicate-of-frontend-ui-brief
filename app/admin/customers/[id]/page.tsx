@@ -702,7 +702,7 @@ export default function CustomerDetailPage() {
                   <div className="flex items-center justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="font-semibold text-slate-900">Order ID: {order.id}</h3>
+                        <h3 className="font-semibold text-slate-900">{order.companyName || 'Unknown Company'}</h3>
                         <Badge 
                           variant={
                             order.status === 'completed' ? 'default' : 
