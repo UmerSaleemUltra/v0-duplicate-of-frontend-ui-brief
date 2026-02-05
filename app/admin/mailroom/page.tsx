@@ -675,7 +675,7 @@ Notes: ${mail.notes || "None"}
         </Dialog>
       </div>
 
-      <Card className="bg-white border-slate-200 p-6">
+      <Card className="bg-white p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -711,7 +711,7 @@ Notes: ${mail.notes || "None"}
         )}
       </Card>
 
-      <Card className="bg-white border-slate-200 overflow-hidden">
+      <Card className="bg-white overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>

@@ -545,7 +545,7 @@ export default function OrdersPage() {
         </Card>
       </div>
 
-      <Card className="bg-white border-slate-200">
+      <Card className="bg-white">
         <CardContent className="pt-6">
           <div className="space-y-4">
             <div className="relative">

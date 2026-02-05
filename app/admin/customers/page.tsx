@@ -290,7 +290,7 @@ export default function CustomersPage() {
         </Card>
       </div>
 
-      <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg">
+      <Card className="bg-white">
         <CardHeader>
           <CardTitle className="text-lg font-semibold text-slate-900">
             All Customers ({filteredCustomers.length})
