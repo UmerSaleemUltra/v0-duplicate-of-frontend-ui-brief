@@ -28,7 +28,6 @@ import { useAuthGuard } from "@/lib/use-auth-guard"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import { CompanyModal } from "@/components/company-modal"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover" // Added Popover for date picker
 
 const US_STATES = [
   "Alabama",
@@ -92,12 +91,8 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
-  const [dateFilter, setDateFilter] = useState("current-month")
-  const [customDateRange, setCustomDateRange] = useState<{ from: Date | null; to: Date | null }>({
-    from: null,
-    to: null,
-  })
-  const [dateRangeLabel, setDateRangeLabel] = useState("This Month")
+  const [dateFilter, setDateFilter] = useState("all-time")
+  const [dateRangeLabel, setDateRangeLabel] = useState("All Time")
   const router = useRouter()
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
   const [selectedCompanyId, setSelectedCompanyId] = useState("")
@@ -259,16 +254,6 @@ export default function OrdersPage() {
         const orderDate = new Date(order.createdAt)
         return orderDate >= threeMonthsAgo
       })
-    } else if (dateFilter === "custom" && customDateRange.from && customDateRange.to) {
-      const fromDate = new Date(customDateRange.from)
-      fromDate.setHours(0, 0, 0, 0)
-      const toDate = new Date(customDateRange.to)
-      toDate.setHours(23, 59, 59, 999)
-
-      filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.createdAt)
-        return orderDate >= fromDate && orderDate <= toDate
-      })
     }
     // "all-time" doesn't filter by date
 
@@ -300,7 +285,7 @@ export default function OrdersPage() {
       filtered.reduce((acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0), 0),
     )
     setTotalOrders(filtered.length)
-  }, [searchQuery, statusFilter, stateFilter, dateFilter, orders, customDateRange])
+  }, [searchQuery, statusFilter, stateFilter, dateFilter, orders])
 
   useEffect(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
@@ -315,15 +300,6 @@ export default function OrdersPage() {
   const handleDateRangeSelect = (range: string, label: string) => {
     setDateFilter(range)
     setDateRangeLabel(label)
-    if (range !== "custom") {
-      setCustomDateRange({ from: null, to: null })
-    }
-  }
-
-  const handleCustomDateRange = (from: Date, to: Date) => {
-    setCustomDateRange({ from, to })
-    setDateFilter("custom")
-    setDateRangeLabel(`${from.toLocaleDateString()} - ${to.toLocaleDateString()}`)
   }
 
   const handleExportOrders = () => {
@@ -652,49 +628,6 @@ export default function OrdersPage() {
                     <DropdownMenuItem onClick={() => handleDateRangeSelect("all-time", "All Time")}>
                       All Time
                     </DropdownMenuItem>
-                    <div className="border-t my-1" />
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <DropdownMenuItem onSelect={(e) => e.preventDefault()}>
-                          <Calendar className="h-3 w-3 mr-2" />
-                          Custom Range...
-                        </DropdownMenuItem>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-4" align="start">
-                        <div className="space-y-3">
-                          <div>
-                            <label className="text-sm font-medium text-slate-700">From Date</label>
-                            <Input
-                              type="date"
-                              onChange={(e) => {
-                                const from = new Date(e.target.value)
-                                if (customDateRange.to && from <= customDateRange.to) {
-                                  handleCustomDateRange(from, customDateRange.to)
-                                } else if (!customDateRange.to) {
-                                  setCustomDateRange({ ...customDateRange, from })
-                                }
-                              }}
-                              className="mt-1"
-                            />
-                          </div>
-                          <div>
-                            <label className="text-sm font-medium text-slate-700">To Date</label>
-                            <Input
-                              type="date"
-                              onChange={(e) => {
-                                const to = new Date(e.target.value)
-                                if (customDateRange.from && to >= customDateRange.from) {
-                                  handleCustomDateRange(customDateRange.from, to)
-                                } else if (!customDateRange.from) {
-                                  setCustomDateRange({ ...customDateRange, to })
-                                }
-                              }}
-                              className="mt-1"
-                            />
-                          </div>
-                        </div>
-                      </PopoverContent>
-                    </Popover>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
