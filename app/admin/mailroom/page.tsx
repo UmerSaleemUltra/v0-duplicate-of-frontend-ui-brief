@@ -809,27 +809,30 @@ Notes: ${mail.notes || "None"}
         </div>
 
         {totalPages > 1 && (
-          <div className="flex items-center justify-between border-t p-4">
-            <div className="text-sm text-muted-foreground">
-              Showing {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} of {filteredItems.length} mail items
-            </div>
-            <div className="flex gap-2">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-5 border-t border-slate-200 dark:border-slate-700">
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              Showing <span className="font-medium text-slate-900 dark:text-slate-100">{startIndex + 1}</span> to{" "}
+              <span className="font-medium text-slate-900 dark:text-slate-100">{Math.min(endIndex, filteredItems.length)}</span> of{" "}
+              <span className="font-medium text-slate-900 dark:text-slate-100">{filteredItems.length}</span> mail items
+            </p>
+            <div className="flex items-center gap-2">
               <Button
                 variant="outline"
                 size="sm"
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
+                className="h-9 px-4"
               >
                 Previous
               </Button>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
                   <Button
                     key={page}
                     variant={currentPage === page ? "default" : "outline"}
                     size="sm"
                     onClick={() => setCurrentPage(page)}
-                    className={currentPage === page ? "bg-primary" : ""}
+                    className={`h-9 w-9 p-0 ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1d23] text-white" : ""}`}
                   >
                     {page}
                   </Button>
@@ -840,6 +843,7 @@ Notes: ${mail.notes || "None"}
                 size="sm"
                 onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
+                className="h-9 px-4"
               >
                 Next
               </Button>
