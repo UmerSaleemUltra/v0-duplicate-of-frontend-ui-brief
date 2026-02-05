@@ -572,7 +572,7 @@ export default function DocumentsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-1">
         <div className="glass-card p-6 rounded-2xl border border-white/10">
           <div className="flex items-center justify-between">
             <div>
@@ -581,18 +581,6 @@ export default function DocumentsPage() {
             </div>
             <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
               <FileText className="h-6 w-6 text-white" />
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-card p-6 rounded-2xl border border-white/10">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-muted-foreground">Ready</p>
-              <p className="text-2xl font-bold mt-1">{completedDocuments}</p>
-            </div>
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
-              <CheckCircle2 className="h-6 w-6 text-white" />
             </div>
           </div>
         </div>
