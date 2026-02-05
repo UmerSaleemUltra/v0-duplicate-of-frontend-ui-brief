@@ -136,12 +136,6 @@ export default function DocumentsPage() {
       formData.append("type", selectedDocType)
       formData.append("category", "general")
 
-      console.log("[v0] Uploading document...", {
-        title: documentTitle,
-        type: selectedDocType,
-        files: selectedFiles.length,
-      })
-
       const response = await fetch("/api/documents", {
         method: "POST",
         headers: {
@@ -153,8 +147,6 @@ export default function DocumentsPage() {
       if (!response.ok) {
         throw new Error("Upload failed")
       }
-
-      console.log("[v0] Document uploaded successfully, refreshing list...")
 
       // Create notification
       try {
