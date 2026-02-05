@@ -502,51 +502,51 @@ export default function OrdersPage() {
       </div>
 
       <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
-        <Card className="bg-white border-slate-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Companies</CardTitle>
+        <div className="glass-card p-6 rounded-2xl">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-slate-600">Total Companies</div>
             <Building2 className="h-4 w-4 text-slate-600" />
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="pt-4">
             <div className="text-2xl font-semibold text-slate-900">{companies.length}</div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="bg-white border-slate-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
+        <div className="glass-card p-6 rounded-2xl">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-slate-600">Total Revenue</div>
             <DollarSign className="h-4 w-4 text-slate-600" />
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="pt-4">
             <div className="text-2xl font-semibold text-slate-900">${totalRevenue.toLocaleString()}</div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="bg-white border-slate-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
+        <div className="glass-card p-6 rounded-2xl">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-slate-600">Total Orders</div>
             <ShoppingCart className="h-4 w-4 text-slate-600" />
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="pt-4">
             <div className="text-2xl font-semibold text-slate-900">{totalOrders}</div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="bg-white border-slate-200">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Avg Order Value</CardTitle>
+        <div className="glass-card p-6 rounded-2xl">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-slate-600">Avg Order Value</div>
             <DollarSign className="h-4 w-4 text-slate-600" />
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="pt-4">
             <div className="text-2xl font-semibold text-slate-900">
               ${totalOrders > 0 ? Math.round(totalRevenue / totalOrders) : 0}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      <Card className="bg-white border-slate-200">
-        <CardContent className="pt-6">
+      <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="p-6">
           <div className="space-y-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />

@@ -556,7 +556,7 @@ export default function DocumentsPage() {
       </div>
 
       {/* Documents Table */}
-      <div className="glass-card rounded-2xl border border-white/10 overflow-hidden">
+      <div className="glass-card rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-white/10">
@@ -591,7 +591,7 @@ export default function DocumentsPage() {
                   const user = users.find((u) => u.id === doc.userId)
 
                   return (
-                    <tr key={doc.id} className="border-b border-white/5 hover:bg-muted/30 transition-colors">
+                    <tr key={doc.id} className="border-b border-white/5">
                       <td className="p-4">
                         <span className="font-medium">
                           {doc.title || doc.fileName || doc.name || "Untitled Document"}

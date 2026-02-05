@@ -252,51 +252,51 @@ export default function CustomersPage() {
       </Card>
 
       <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Customers</CardTitle>
+        <div className="glass-card p-6 rounded-2xl">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-slate-600">Total Customers</div>
             <Building2 className="h-4 w-4 text-slate-600" />
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="pt-4">
             <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">{customers.length}</div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Orders</CardTitle>
+        <div className="glass-card p-6 rounded-2xl">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-slate-600">Total Orders</div>
             <Building2 className="h-4 w-4 text-slate-600" />
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="pt-4">
             <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
               {customers.reduce((sum, c) => sum + c.orders, 0)}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
 
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Total Revenue</CardTitle>
+        <div className="glass-card p-6 rounded-2xl">
+          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <div className="text-sm font-medium text-slate-600">Total Revenue</div>
             <Building2 className="h-4 w-4 text-slate-600" />
-          </CardHeader>
-          <CardContent>
+          </div>
+          <div className="pt-4">
             <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
               {customers.reduce((sum, c) => {
                 const spent = typeof c.totalSpent === 'string' ? parseFloat(c.totalSpent.replace('$', '')) || 0 : c.totalSpent || 0
                 return sum + spent
               }, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
             </div>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
-      <Card className="bg-white border-slate-200 transition-all duration-200 hover:shadow-lg">
-        <CardHeader>
-          <CardTitle className="text-lg font-semibold text-slate-900">
+      <div className="glass-card rounded-2xl overflow-hidden">
+        <div className="p-6">
+          <div className="text-lg font-semibold text-slate-900">
             All Customers ({filteredCustomers.length})
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
+          </div>
+        </div>
+        <div className="px-6 pb-6">
           {filteredCustomers.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-slate-600">No customers found</p>
@@ -308,7 +308,7 @@ export default function CustomersPage() {
                 {paginatedCustomers.map((customer) => (
                   <div
                     key={customer.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-slate-200 hover:border-primary/20 hover:shadow-md transition-all duration-200 gap-4"
+                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-slate-200 gap-4"
                   >
                     <div className="flex items-center gap-4 flex-1 min-w-0">
                       <Avatar className="h-12 w-12">
