@@ -136,12 +136,6 @@ export default function DocumentsPage() {
       formData.append("type", selectedDocType)
       formData.append("category", "general")
 
-      console.log("[v0] Uploading document...", {
-        title: documentTitle,
-        type: selectedDocType,
-        files: selectedFiles.length,
-      })
-
       const response = await fetch("/api/documents", {
         method: "POST",
         headers: {
@@ -153,8 +147,6 @@ export default function DocumentsPage() {
       if (!response.ok) {
         throw new Error("Upload failed")
       }
-
-      console.log("[v0] Document uploaded successfully, refreshing list...")
 
       // Create notification
       try {
@@ -179,7 +171,7 @@ export default function DocumentsPage() {
           token,
         )
       } catch (notifError) {
-        console.log("[v0] Failed to create notification:", notifError)
+        // Notification creation failed
       }
 
       toast({
@@ -191,7 +183,6 @@ export default function DocumentsPage() {
       })
 
       await loadData()
-      console.log("[v0] Document list refreshed")
 
       setSelectedCompany("")
       setSelectedDocType("")
@@ -199,7 +190,6 @@ export default function DocumentsPage() {
       setSelectedFiles([])
       setUploadModalOpen(false)
     } catch (error) {
-      console.error("[v0] Upload error:", error)
       toast({
         title: "Upload Failed",
         description: "Failed to upload document. Please try again.",
@@ -245,14 +235,7 @@ export default function DocumentsPage() {
   }
 
   const handleSaveEdit = async () => {
-    console.log("[v0] handleSaveEdit called")
-    console.log("[v0] editFileName:", editFileName)
-    console.log("[v0] editDocType:", editDocType)
-    console.log("[v0] editFile:", editFile)
-    console.log("[v0] editingDocument:", editingDocument)
-    
     if (!editingDocument || !editFileName) {
-      console.log("[v0] Missing information - editingDocument or editFileName")
       toast({
         title: "Missing Information",
         description: "Please provide a file name",
@@ -266,18 +249,14 @@ export default function DocumentsPage() {
       if (!token) throw new Error("No auth token")
 
       if (editFile) {
-        console.log("[v0] File change detected, replacing document")
         // Replace document by uploading new one first, then deleting old one
         const docId = editingDocument.id || editingDocument._id?.toString() || editingDocument._id
-        console.log("[v0] Document ID:", docId)
         
         if (!docId) {
-          console.error("[v0] Document ID is missing!")
           throw new Error("Document ID is missing")
         }
 
         // First upload the new document with same metadata using direct fetch like the working upload
-        console.log("[v0] Uploading new document...")
         const formData = new FormData()
         formData.append("files", editFile)
         formData.append("companyId", editingDocument.companyId)
@@ -285,13 +264,6 @@ export default function DocumentsPage() {
         formData.append("title", editFileName)
         formData.append("type", editDocType)
         formData.append("category", "general")
-        
-        console.log("[v0] Upload FormData fields:", {
-          companyId: editingDocument.companyId,
-          userId: editingDocument.userId,
-          title: editFileName,
-          type: editDocType,
-        })
 
         const uploadResponse = await fetch("/api/documents", {
           method: "POST",
@@ -303,24 +275,19 @@ export default function DocumentsPage() {
 
         if (!uploadResponse.ok) {
           const errorText = await uploadResponse.text()
-          console.error("[v0] Upload failed:", errorText)
           throw new Error(`Upload failed: ${errorText}`)
         }
 
-        const uploadResult = await uploadResponse.json()
-        console.log("[v0] Upload result:", uploadResult)
+        await uploadResponse.json()
 
         // Only delete the old document after successful upload
-        console.log("[v0] Deleting old document with ID:", docId)
-        const deleteResult = await ApiClient.documents.delete(docId, token)
-        console.log("[v0] Delete result:", deleteResult)
+        await ApiClient.documents.delete(docId, token)
 
         toast({
           title: "Document Replaced",
           description: `Successfully replaced document with ${editFile.name}`,
         })
       } else {
-        console.log("[v0] No file change, updating metadata only")
         const updateData = {
           title: editFileName,
           fileName: editFileName,
@@ -328,16 +295,13 @@ export default function DocumentsPage() {
           documentType: editDocType,
           category: editDocType,
         }
-        console.log("[v0] Update data:", updateData)
-        console.log("[v0] Updating document ID:", editingDocument.id)
         
         // Update document metadata without changing the file
-        const updateResult = await ApiClient.documents.update(
+        await ApiClient.documents.update(
           editingDocument.id,
           updateData,
           token,
         )
-        console.log("[v0] Update result:", updateResult)
 
         toast({
           title: "Document Updated",
@@ -345,19 +309,11 @@ export default function DocumentsPage() {
         })
       }
 
-      console.log("[v0] Reloading data...")
       await loadData()
-      console.log("[v0] Data reloaded, closing modal")
       setEditModalOpen(false)
       setEditingDocument(null)
       setEditFile(null)
     } catch (error) {
-      console.error("[v0] Update failed with error:", error)
-      console.error("[v0] Error details:", {
-        message: error.message,
-        stack: error.stack,
-        error
-      })
       toast({
         title: "Update Failed",
         description: error.message || "Failed to update document. Please try again.",
@@ -572,15 +528,15 @@ export default function DocumentsPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-1">
+      <div className="grid gap-4 md:grid-cols-3">
         <div className="glass-card p-6 rounded-2xl border border-white/10">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <div className="h-14 w-14 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
+              <FileText className="h-7 w-7 text-white" />
+            </div>
             <div>
               <p className="text-sm text-muted-foreground">Total Documents</p>
-              <p className="text-2xl font-bold mt-1">{totalDocuments}</p>
-            </div>
-            <div className="h-12 w-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
-              <FileText className="h-6 w-6 text-white" />
+              <p className="text-3xl font-bold mt-1">{totalDocuments}</p>
             </div>
           </div>
         </div>
@@ -603,22 +559,30 @@ export default function DocumentsPage() {
       <div className="glass-card rounded-2xl border border-white/10 overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-muted/50 border-b border-white/10">
+            <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-white/10">
               <tr>
-                <th className="text-left p-4 font-medium text-sm">Document Name</th>
-                <th className="text-left p-4 font-medium text-sm">Customer</th>
-                <th className="text-left p-4 font-medium text-sm">Company</th>
-                <th className="text-left p-4 font-medium text-sm">Type</th>
-                <th className="text-left p-4 font-medium text-sm">Date</th>
-                <th className="text-left p-4 font-medium text-sm">Size</th>
-                <th className="text-left p-4 font-medium text-sm">Actions</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Document Name</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Customer</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Company</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Type</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Date</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Size</th>
+                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Actions</th>
               </tr>
             </thead>
             <tbody>
               {paginatedDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-8 text-center text-muted-foreground">
-                    No documents found
+                  <td colSpan={7} className="p-16 text-center">
+                    <div className="flex flex-col items-center gap-4">
+                      <div className="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                        <FileText className="h-8 w-8 text-slate-400" />
+                      </div>
+                      <div className="space-y-1">
+                        <p className="text-lg font-medium text-slate-900 dark:text-slate-100">No documents found</p>
+                        <p className="text-sm text-muted-foreground">Upload your first document to get started</p>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               ) : (
@@ -677,7 +641,6 @@ export default function DocumentsPage() {
                             className="h-8 w-8 p-0"
                             onClick={async () => {
                               try {
-                                console.log("[v0] Admin downloading document:", doc.id)
                                 const token = authService.getToken()
                                 if (!token) {
                                   toast({
@@ -703,7 +666,6 @@ export default function DocumentsPage() {
                                   })
                                 }
                               } catch (error) {
-                                console.error("[v0] Download error:", error)
                                 toast({
                                   title: "Download Failed",
                                   description: "Failed to download document",
