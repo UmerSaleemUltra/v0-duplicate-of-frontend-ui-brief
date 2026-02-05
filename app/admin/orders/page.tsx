@@ -720,19 +720,19 @@ export default function OrdersPage() {
               )}
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      <Card className="bg-white border-slate-200 shadow-sm">
-        <CardHeader className="border-b border-slate-200">
+      <div className="glass-card rounded-2xl overflow-hidden shadow-sm">
+        <div className="border-b border-slate-200 p-6">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg font-semibold text-slate-900">Orders</CardTitle>
+            <div className="text-lg font-semibold text-slate-900">Orders</div>
             <Badge variant="secondary" className="text-sm">
               {filteredOrders.length} total
             </Badge>
           </div>
-        </CardHeader>
-        <CardContent className="pt-6">
+        </div>
+        <div className="pt-6 px-6 pb-6">
           {paginatedOrders.length === 0 ? (
             <div className="text-center py-12">
               <ShoppingCart className="h-12 w-12 text-slate-300 mx-auto mb-3" />
@@ -883,8 +883,8 @@ export default function OrdersPage() {
               )}
             </>
           )}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       <CompanyModal
         open={companyModalOpen}

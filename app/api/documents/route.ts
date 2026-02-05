@@ -92,10 +92,10 @@ export async function POST(req: NextRequest) {
       return addSecurityHeaders(NextResponse.json({ error: "Missing required fields" }, { status: 400 }))
     }
 
-    const maxFileSize = 10 * 1024 * 1024
+    const maxFileSize = 200 * 1024 * 1024
     for (const file of files) {
       if (file.size > maxFileSize) {
-        return addSecurityHeaders(NextResponse.json({ error: `File ${file.name} exceeds 10MB limit` }, { status: 400 }))
+        return addSecurityHeaders(NextResponse.json({ error: `File ${file.name} exceeds 200MB limit` }, { status: 400 }))
       }
     }
 
