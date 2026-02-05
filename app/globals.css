@@ -241,6 +241,15 @@
       padding-bottom: env(safe-area-inset-bottom);
     }
   }
+
+  /* Glass card styling for clean, minimal design */
+  .glass-card {
+    @apply bg-white/90 backdrop-blur-sm;
+  }
+
+  .dark .glass-card {
+    @apply bg-slate-900/80 backdrop-blur-sm;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

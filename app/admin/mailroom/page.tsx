@@ -675,7 +675,7 @@ Notes: ${mail.notes || "None"}
         </Dialog>
       </div>
 
-      <Card className="bg-white p-6">
+      <div className="glass-card rounded-2xl p-6">
         <div className="flex flex-col lg:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -711,11 +711,11 @@ Notes: ${mail.notes || "None"}
         )}
       </Card>
 
-      <Card className="bg-white overflow-hidden">
+      <div className="glass-card rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="hover:bg-transparent border-slate-200">
+              <TableRow className="border-slate-200">
                 <TableHead className="w-[50px]">
                   <Checkbox
                     checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
@@ -744,7 +744,7 @@ Notes: ${mail.notes || "None"}
                   return (
                     <TableRow
                       key={item.id}
-                      className="border-slate-200 hover:bg-slate-50 transition-colors duration-200"
+                      className="border-slate-200"
                     >
                       <TableCell>
                         <Checkbox

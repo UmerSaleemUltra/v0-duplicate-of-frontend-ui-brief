@@ -591,7 +591,7 @@ export default function DocumentsPage() {
                   const user = users.find((u) => u.id === doc.userId)
 
                   return (
-                    <tr key={doc.id} className="border-b border-white/5 hover:bg-muted/30 transition-colors">
+                    <tr key={doc.id} className="border-b border-white/5">
                       <td className="p-4">
                         <span className="font-medium">
                           {doc.title || doc.fileName || doc.name || "Untitled Document"}
