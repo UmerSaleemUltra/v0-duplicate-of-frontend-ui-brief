@@ -369,17 +369,19 @@ export default function CustomersPage() {
               </div>
 
               {totalPages > 1 && (
-                <div className="flex items-center justify-between mt-6 pt-6 border-t border-slate-200">
-                  <div className="text-sm text-slate-600">
-                    Showing {startIndex + 1} to {Math.min(endIndex, filteredCustomers.length)} of{" "}
-                    {filteredCustomers.length} customers
-                  </div>
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-5 border-t border-slate-200 dark:border-slate-700">
+                  <p className="text-sm text-slate-600 dark:text-slate-400">
+                    Showing <span className="font-medium text-slate-900 dark:text-slate-100">{startIndex + 1}</span> to{" "}
+                    <span className="font-medium text-slate-900 dark:text-slate-100">{Math.min(endIndex, filteredCustomers.length)}</span> of{" "}
+                    <span className="font-medium text-slate-900 dark:text-slate-100">{filteredCustomers.length}</span> customers
+                  </p>
                   <div className="flex items-center gap-2">
                     <Button
                       variant="outline"
                       size="sm"
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
+                      className="h-9 px-4"
                     >
                       Previous
                     </Button>
@@ -390,7 +392,7 @@ export default function CustomersPage() {
                           variant={currentPage === page ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(page)}
-                          className={currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""}
+                          className={`h-9 w-9 p-0 ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1d23] text-white" : ""}`}
                         >
                           {page}
                         </Button>
@@ -401,6 +403,7 @@ export default function CustomersPage() {
                       size="sm"
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
+                      className="h-9 px-4"
                     >
                       Next
                     </Button>
