@@ -44,7 +44,7 @@ export function validateFileUpload(file: File, options: {
   maxSize?: number
   allowedTypes?: string[]
 } = {}): { valid: boolean; error?: string } {
-  const maxSize = options.maxSize || 10 * 1024 * 1024 // 10MB default
+  const maxSize = options.maxSize || 200 * 1024 * 1024 // 200MB default
   const allowedTypes = options.allowedTypes || ['image/jpeg', 'image/png', 'image/gif', 'application/pdf']
   
   if (file.size > maxSize) {
