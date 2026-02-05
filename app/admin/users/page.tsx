@@ -488,13 +488,13 @@ export default function UsersPage() {
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             <table className="w-full">
-              <thead className="border-b border-border">
+              <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-white/10">
                 <tr>
-                  <th className="text-left p-4 font-semibold text-sm text-foreground">User</th>
-                  <th className="text-left p-4 font-semibold text-sm text-foreground">Email</th>
-                  <th className="text-left p-4 font-semibold text-sm text-foreground">Companies</th>
-                  <th className="text-left p-4 font-semibold text-sm text-foreground">Orders</th>
-                  <th className="text-left p-4 font-semibold text-sm text-foreground">Actions</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">User</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Email</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Companies</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Orders</th>
+                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Actions</th>
                 </tr>
               </thead>
               <tbody>
