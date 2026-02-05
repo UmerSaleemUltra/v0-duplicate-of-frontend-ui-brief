@@ -66,36 +66,38 @@ export default function CustomersPage() {
         id: c.id || (c._id?.toString ? c._id.toString() : String(c._id || "")),
       }))
 
-      const customersWithDetails = allUsers.map((user: any) => {
-        const userId = user.id?.toString ? user.id.toString() : String(user.id || "")
+      const customersWithDetails = allUsers
+        .filter((user: any) => user.role !== "admin")
+        .map((user: any) => {
+          const userId = user.id?.toString ? user.id.toString() : String(user.id || "")
 
-        const userCompanies = normalizedCompanies.filter((c: any) => {
-          const companyUserId = c.userId?.toString ? c.userId.toString() : String(c.userId || "")
-          return companyUserId === userId
+          const userCompanies = normalizedCompanies.filter((c: any) => {
+            const companyUserId = c.userId?.toString ? c.userId.toString() : String(c.userId || "")
+            return companyUserId === userId
+          })
+
+          const userOrders = allOrders.filter((o: any) => {
+            const orderUserId = o.userId?.toString ? o.userId.toString() : String(o.userId || "")
+            return orderUserId === userId
+          })
+
+          const totalSpent = userOrders.reduce(
+            (sum: number, order: any) => sum + (order.amount || order.pricing?.total || 0),
+            0,
+          )
+
+          return {
+            ...user,
+            id: userId,
+            company: userCompanies[0]?.name || "N/A",
+            companyType: userCompanies[0]?.type || "LLC",
+            state: userCompanies[0]?.state || "N/A",
+            companies: userCompanies,
+            orders: userOrders.length,
+            totalSpent: `$${totalSpent}`,
+            joinDate: new Date(user.createdAt).toLocaleDateString(),
+          }
         })
-
-        const userOrders = allOrders.filter((o: any) => {
-          const orderUserId = o.userId?.toString ? o.userId.toString() : String(o.userId || "")
-          return orderUserId === userId
-        })
-
-        const totalSpent = userOrders.reduce(
-          (sum: number, order: any) => sum + (order.amount || order.pricing?.total || 0),
-          0,
-        )
-
-        return {
-          ...user,
-          id: userId,
-          company: userCompanies[0]?.name || "N/A",
-          companyType: userCompanies[0]?.type || "LLC",
-          state: userCompanies[0]?.state || "N/A",
-          companies: userCompanies,
-          orders: userOrders.length,
-          totalSpent: `$${totalSpent}`,
-          joinDate: new Date(user.createdAt).toLocaleDateString(),
-        }
-      })
 
       setCustomers(customersWithDetails)
       setFilteredCustomers(customersWithDetails)
@@ -249,7 +251,7 @@ export default function CustomersPage() {
         </CardContent>
       </Card>
 
-      <div className="grid gap-4 sm:gap-6 grid-cols-2 lg:grid-cols-4">
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
         <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-lg">
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
             <CardTitle className="text-sm font-medium text-slate-600">Total Customers</CardTitle>
@@ -257,18 +259,6 @@ export default function CustomersPage() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">{customers.length}</div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200 transition-all duration-300 hover:shadow-lg">
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-slate-600">Active Customers</CardTitle>
-            <Building2 className="h-4 w-4 text-slate-600" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
-              {customers.filter((c) => c.status === "active").length}
-            </div>
           </CardContent>
         </Card>
 
