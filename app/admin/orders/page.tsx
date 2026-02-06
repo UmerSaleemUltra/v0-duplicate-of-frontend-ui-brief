@@ -303,7 +303,49 @@ export default function OrdersPage() {
   }
 
   const handleExportOrders = () => {
-    // Placeholder for export functionality
+    try {
+      // Create CSV content
+      const headers = ["Order ID", "Customer Name", "Customer Email", "Company Name", "State", "Amount", "Status", "Package Type", "Date"]
+      const rows = filteredOrders.map(order => [
+        order.id || "N/A",
+        order.customerName || "N/A",
+        order.customerEmail || "N/A",
+        order.companyName || "N/A",
+        order.state || "N/A",
+        (order.pricing?.total || order.amount || order.total || 0).toString(),
+        order.status || "pending",
+        order.packageType || "N/A",
+        order.createdAt ? new Date(order.createdAt).toLocaleDateString() : "N/A"
+      ])
+
+      const csvContent = [
+        headers.join(","),
+        ...rows.map(row => row.map(cell => `"${cell}"`).join(","))
+      ].join("\n")
+
+      // Create and download file
+      const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" })
+      const link = document.createElement("a")
+      const url = URL.createObjectURL(blob)
+      link.setAttribute("href", url)
+      link.setAttribute("download", `orders_export_${new Date().toISOString().split('T')[0]}.csv`)
+      link.style.visibility = "hidden"
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      toast({
+        title: "Success",
+        description: `Exported ${filteredOrders.length} orders to CSV`,
+      })
+    } catch (error) {
+      console.error("[v0] Export error:", error)
+      toast({
+        title: "Error",
+        description: "Failed to export orders",
+        variant: "destructive",
+      })
+    }
   }
 
   const handleViewCompanyDetails = (order: any) => {
@@ -469,7 +511,7 @@ export default function OrdersPage() {
           </p>
         </div>
         <Button
-          className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 transition-opacity duration-200"
+          className="h-10 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 transition-opacity duration-200 cursor-pointer"
           onClick={handleExportOrders}
         >
           <Download className="h-4 w-4 mr-2" />
@@ -553,8 +595,8 @@ export default function OrdersPage() {
                     onClick={() => setStatusFilter("all")}
                     className={
                       statusFilter === "all"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 cursor-pointer"
+                        : "hover:bg-slate-100 cursor-pointer"
                     }
                   >
                     All
@@ -565,8 +607,8 @@ export default function OrdersPage() {
                     onClick={() => setStatusFilter("pending")}
                     className={
                       statusFilter === "pending"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 cursor-pointer"
+                        : "hover:bg-slate-100 cursor-pointer"
                     }
                   >
                     <AlertCircle className="h-3 w-3 mr-1" />
@@ -578,8 +620,8 @@ export default function OrdersPage() {
                     onClick={() => setStatusFilter("processing")}
                     className={
                       statusFilter === "processing"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 cursor-pointer"
+                        : "hover:bg-slate-100 cursor-pointer"
                     }
                   >
                     <Clock className="h-3 w-3 mr-1" />
@@ -591,8 +633,8 @@ export default function OrdersPage() {
                     onClick={() => setStatusFilter("completed")}
                     className={
                       statusFilter === "completed"
-                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                        : "hover:bg-slate-100"
+                        ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 cursor-pointer"
+                        : "hover:bg-slate-100 cursor-pointer"
                     }
                   >
                     <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -609,7 +651,7 @@ export default function OrdersPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-9 border-slate-300 hover:bg-slate-50 hover:border-slate-400 bg-transparent"
+                      className="h-9 border-slate-300 hover:bg-slate-50 hover:border-slate-400 bg-transparent cursor-pointer"
                     >
                       {dateRangeLabel}
                       <ChevronDown className="h-4 w-4 ml-2" />
@@ -645,7 +687,7 @@ export default function OrdersPage() {
                       setStatusFilter("all")
                       setStateFilter("all")
                     }}
-                    className="h-8 text-xs text-slate-600 hover:text-slate-900"
+                    className="h-8 text-xs text-slate-600 hover:text-slate-900 cursor-pointer"
                   >
                     Clear filters
                   </Button>
@@ -739,7 +781,7 @@ export default function OrdersPage() {
                           <td className="py-4 px-6">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0 cursor-pointer">
                                   <MoreVertical className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
@@ -785,7 +827,7 @@ export default function OrdersPage() {
                       size="sm"
                       onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                       disabled={currentPage === 1}
-                      className="h-9 px-4"
+                      className="h-9 px-4 cursor-pointer"
                     >
                       Previous
                     </Button>
@@ -796,7 +838,7 @@ export default function OrdersPage() {
                           variant="ghost"
                           size="sm"
                           onClick={() => setCurrentPage(page)}
-                          className={`h-9 w-9 p-0 ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1d23] text-white" : ""}`}
+                          className={`h-9 w-9 p-0 cursor-pointer ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1d23] text-white" : ""}`}
                         >
                           {page}
                         </Button>
@@ -807,7 +849,7 @@ export default function OrdersPage() {
                       size="sm"
                       onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                       disabled={currentPage === totalPages}
-                      className="h-9 px-4"
+                      className="h-9 px-4 cursor-pointer"
                     >
                       Next
                     </Button>

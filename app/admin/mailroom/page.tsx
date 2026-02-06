@@ -545,7 +545,7 @@ Notes: ${mail.notes || "None"}
         </div>
         <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90">
+            <Button className="bg-primary hover:bg-primary/90 cursor-pointer">
               <Upload className="mr-2 h-4 w-4" />
               Upload Mail
             </Button>
@@ -777,7 +777,7 @@ Notes: ${mail.notes || "None"}
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8">
+                            <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
@@ -821,7 +821,7 @@ Notes: ${mail.notes || "None"}
                 size="sm"
                 onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="h-9 px-4"
+                className="h-9 px-4 cursor-pointer hover:bg-transparent"
               >
                 Previous
               </Button>
@@ -832,7 +832,7 @@ Notes: ${mail.notes || "None"}
                     variant="ghost"
                     size="sm"
                     onClick={() => setCurrentPage(page)}
-                    className={`h-9 w-9 p-0 ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1d23] text-white" : ""}`}
+                    className={`h-9 w-9 p-0 cursor-pointer hover:bg-transparent ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white" : ""}`}
                   >
                     {page}
                   </Button>
@@ -843,7 +843,7 @@ Notes: ${mail.notes || "None"}
                 size="sm"
                 onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="h-9 px-4"
+                className="h-9 px-4 cursor-pointer hover:bg-transparent"
               >
                 Next
               </Button>
