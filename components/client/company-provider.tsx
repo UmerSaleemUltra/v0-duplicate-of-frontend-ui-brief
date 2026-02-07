@@ -14,12 +14,7 @@ const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing
 
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(SELECTED_COMPANY_KEY)
-    }
-    return null
-  })
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
   const [companies, setCompanies] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [companiesLoaded, setCompaniesLoaded] = useState(false)
@@ -47,6 +42,8 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
           return
         }
 
+        console.log("[v0] CompanyProvider: Loading companies for user", currentUser.id)
+
         const response = await ApiClient.companies.getAll(token)
 
         const allCompanies = response.data || response.companies || []
@@ -56,36 +53,47 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
           return companyUserId === currentUser.id
         })
 
+        console.log("[v0] CompanyProvider: Found", userCompanies.length, "companies")
+
         setCompanies(userCompanies)
         setCompaniesLoaded(true)
 
-        const storedCompanyId = localStorage.getItem(SELECTED_COMPANY_KEY)
-        if (storedCompanyId) {
-          const companyExists = userCompanies.some((c: any) => (c.id || c._id) === storedCompanyId)
-          if (companyExists) {
-            setSelectedCompanyId(storedCompanyId)
-          } else {
-            localStorage.removeItem(SELECTED_COMPANY_KEY)
-            if (userCompanies.length > 0) {
+        // Auto-select company logic: if selectedCompanyId exists, use it; otherwise use first company
+        if (userCompanies.length > 0) {
+          const storedCompanyId = localStorage.getItem(SELECTED_COMPANY_KEY)
+          
+          if (storedCompanyId) {
+            // Check if stored company exists in user's companies
+            const companyExists = userCompanies.some((c: any) => (c.id || c._id) === storedCompanyId)
+            if (companyExists) {
+              console.log("[v0] CompanyProvider: Using stored company", storedCompanyId)
+              setSelectedCompanyId(storedCompanyId)
+            } else {
+              // Stored company not found, select first company
               const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
+              console.log("[v0] CompanyProvider: Stored company not found, selecting first", firstCompanyId)
               setSelectedCompanyId(firstCompanyId)
               localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
             }
+          } else {
+            // No stored company, select first company
+            const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
+            console.log("[v0] CompanyProvider: No stored company, selecting first", firstCompanyId)
+            setSelectedCompanyId(firstCompanyId)
+            localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
           }
-        } else if (userCompanies.length > 0 && !selectedCompanyId) {
-          const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
-          setSelectedCompanyId(firstCompanyId)
-          localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
+        } else {
+          console.log("[v0] CompanyProvider: No companies found for user")
         }
       } catch (error) {
-        console.error("Error loading companies:", error)
+        console.error("[v0] CompanyProvider: Error loading companies:", error)
       } finally {
         setLoading(false)
       }
     }
 
     loadCompanies()
-  }, [isPublicPage, companiesLoaded, selectedCompanyId])
+  }, [isPublicPage, companiesLoaded])
 
   const handleSetSelectedCompanyId = useCallback((id: string | null) => {
     setSelectedCompanyId(id)
