@@ -20,14 +20,22 @@ import {
   FileText,
   ShieldAlert,
   RefreshCw,
+  Bell,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 import { BusinessNameDisplay } from "@/components/ui/business-name-display"
 import { useSelectedCompany } from "@/lib/company-context"
 import { authService } from "@/lib/auth"
+import { ApiClient } from "@/lib/api-client"
 
 const NAV_ITEMS = [
   { href: "/client/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -52,6 +60,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isPageReady, setIsPageReady] = useState(true)
   const [hasNoCompanies, setHasNoCompanies] = useState(false)
+  const [notifications, setNotifications] = useState<any[]>([])
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -185,6 +194,31 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     document.addEventListener("visibilitychange", handleFocus)
     return () => document.removeEventListener("visibilitychange", handleFocus)
   }, [])
+
+  useEffect(() => {
+    const loadNotifications = async () => {
+      if (!selectedCompanyId) return
+
+      const token = authService.getToken()
+      if (!token) return
+
+      try {
+        const response = await ApiClient.notifications.getAll(token, selectedCompanyId)
+        setNotifications(response.data || [])
+      } catch (error) {
+        console.error("[v0] Error loading notifications:", error)
+      }
+    }
+
+    loadNotifications()
+
+    const handleRefresh = () => {
+      loadNotifications()
+    }
+
+    window.addEventListener("client-dashboard-refresh", handleRefresh)
+    return () => window.removeEventListener("client-dashboard-refresh", handleRefresh)
+  }, [selectedCompanyId])
 
   useEffect(() => {
     let ticking = false
@@ -503,6 +537,38 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                 >
                   <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
                 </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" size="icon" className="h-10 w-10 relative">
+                      <Bell className="w-5 h-5" />
+                      {notifications.length > 0 && (
+                        <span className="absolute top-1 right-1 w-2 h-2 bg-red-600 rounded-full"></span>
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-80">
+                    <div className="px-4 py-3 border-b">
+                      <h3 className="font-semibold text-sm">Notifications</h3>
+                    </div>
+                    <div className="max-h-[400px] overflow-y-auto">
+                      {notifications.length > 0 ? (
+                        notifications.map((notif) => (
+                          <DropdownMenuItem key={notif.id || notif._id} className="p-4 flex flex-col items-start">
+                            <div className="font-semibold text-sm">{notif.title}</div>
+                            <div className="text-xs text-slate-600 mt-1">{notif.message}</div>
+                            {notif.createdAt && (
+                              <div className="text-xs text-slate-400 mt-1">
+                                {new Date(notif.createdAt).toLocaleDateString()}
+                              </div>
+                            )}
+                          </DropdownMenuItem>
+                        ))
+                      ) : (
+                        <div className="px-4 py-8 text-center text-sm text-slate-500">No notifications</div>
+                      )}
+                    </div>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <Button
                   variant="ghost"
                   size="icon"
