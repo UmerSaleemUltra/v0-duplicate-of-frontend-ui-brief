@@ -25,6 +25,8 @@ export default function MailroomPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [loading, setLoading] = useState(true)
   const [viewingDocument, setViewingDocument] = useState<{ url: string; name: string } | null>(null)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     if (selectedCompanyId) {
@@ -88,6 +90,7 @@ export default function MailroomPage() {
     }
 
     setFilteredItems(filtered)
+    setCurrentPage(1) // Reset to first page when filters change
   }, [typeFilter, searchQuery, mailItems])
 
   const handleDownloadDocument = async (mailId: string) => {
@@ -168,6 +171,17 @@ export default function MailroomPage() {
   const mailWithAttachments = mailItems.filter(
     (m) => m.hasAttachment && m.attachments && m.attachments.length > 0,
   ).length
+
+  // Pagination calculations
+  const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentMailItems = filteredItems.slice(startIndex, endIndex)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -266,7 +280,14 @@ export default function MailroomPage() {
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Your Mail</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base sm:text-lg font-semibold">Your Mail</h2>
+            {filteredItems.length > 0 && (
+              <span className="text-xs sm:text-sm text-slate-600">
+                Showing {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} of {filteredItems.length}
+              </span>
+            )}
+          </div>
           {filteredItems.length === 0 ? (
             <div className="text-center py-12">
               <Mail className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
@@ -275,7 +296,7 @@ export default function MailroomPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {filteredItems.map((item) => {
+              {currentMailItems.map((item) => {
                 const Icon = getIcon(item.type)
 
                 return (
@@ -329,6 +350,40 @@ export default function MailroomPage() {
                   </div>
                 )
               })}
+            </div>
+          )}
+
+          {filteredItems.length > itemsPerPage && (
+            <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="cursor-pointer"
+              >
+                Previous
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => goToPage(page)}
+                  className={`cursor-pointer ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""}`}
+                >
+                  {page}
+                </Button>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="cursor-pointer"
+              >
+                Next
+              </Button>
             </div>
           )}
         </div>
