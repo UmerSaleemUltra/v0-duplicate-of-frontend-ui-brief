@@ -63,7 +63,7 @@ export default function AdminMailroomPage() {
   const [editFile, setEditFile] = useState<File | null>(null)
   const [isEditing, setIsEditing] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 8
+  const ITEMS_PER_PAGE = 5
 
   const { toast } = useToast()
 
@@ -744,7 +744,7 @@ Notes: ${mail.notes || "None"}
                   return (
                     <TableRow
                       key={item.id}
-                      className="border-slate-200 hover:bg-transparent"
+                      className="border-slate-200 hover:!bg-transparent"
                     >
                       <TableCell>
                         <Checkbox
