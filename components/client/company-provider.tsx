@@ -14,12 +14,7 @@ const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing
 
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
-    if (typeof window !== "undefined") {
-      return localStorage.getItem(SELECTED_COMPANY_KEY)
-    }
-    return null
-  })
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
   const [companies, setCompanies] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [companiesLoaded, setCompaniesLoaded] = useState(false)
@@ -63,32 +58,30 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         setCompanies(userCompanies)
         setCompaniesLoaded(true)
 
-        // Auto-select company logic
-        const storedCompanyId = localStorage.getItem(SELECTED_COMPANY_KEY)
-        
-        if (storedCompanyId) {
-          // Check if stored company still exists
-          const companyExists = userCompanies.some((c: any) => (c.id || c._id) === storedCompanyId)
-          if (companyExists) {
-            console.log("[v0] CompanyProvider: Restoring stored company", storedCompanyId)
-            setSelectedCompanyId(storedCompanyId)
-          } else {
-            // Stored company doesn't exist, clear it and select first
-            console.log("[v0] CompanyProvider: Stored company not found, selecting first")
-            localStorage.removeItem(SELECTED_COMPANY_KEY)
-            if (userCompanies.length > 0) {
+        // Auto-select company logic: if selectedCompanyId exists, use it; otherwise use first company
+        if (userCompanies.length > 0) {
+          const storedCompanyId = localStorage.getItem(SELECTED_COMPANY_KEY)
+          
+          if (storedCompanyId) {
+            // Check if stored company exists in user's companies
+            const companyExists = userCompanies.some((c: any) => (c.id || c._id) === storedCompanyId)
+            if (companyExists) {
+              console.log("[v0] CompanyProvider: Using stored company", storedCompanyId)
+              setSelectedCompanyId(storedCompanyId)
+            } else {
+              // Stored company not found, select first company
               const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
+              console.log("[v0] CompanyProvider: Stored company not found, selecting first", firstCompanyId)
               setSelectedCompanyId(firstCompanyId)
               localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
-              console.log("[v0] CompanyProvider: Auto-selected first company", firstCompanyId)
             }
+          } else {
+            // No stored company, select first company
+            const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
+            console.log("[v0] CompanyProvider: No stored company, selecting first", firstCompanyId)
+            setSelectedCompanyId(firstCompanyId)
+            localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
           }
-        } else if (userCompanies.length > 0) {
-          // No stored company, auto-select first
-          const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
-          console.log("[v0] CompanyProvider: Auto-selecting first company", firstCompanyId)
-          setSelectedCompanyId(firstCompanyId)
-          localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
         } else {
           console.log("[v0] CompanyProvider: No companies found for user")
         }
