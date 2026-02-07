@@ -747,13 +747,6 @@ export default function CompanyPage() {
             </div>
             <div className="space-y-4">
               <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Company Name</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {companyData.businessName}
-                </span>
-              </div>
-
-              <div className="flex flex-col py-2 gap-2">
                 <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
                 <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
                   {companyData.mailingAddress?.street ? (
