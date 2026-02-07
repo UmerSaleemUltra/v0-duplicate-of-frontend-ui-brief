@@ -154,10 +154,20 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         setAllCompanies(userCompanies)
         setHasNoCompanies(userCompanies.length === 0)
 
-        if (!selectedCompanyId && userCompanies.length > 0) {
-          setSelectedCompanyId(userCompanies[0].id)
+        // Check localStorage for last selected company
+        const lastSelectedCompanyId = localStorage.getItem("selectedCompanyId")
+        
+        if (lastSelectedCompanyId && userCompanies.some((c: any) => c.id === lastSelectedCompanyId)) {
+          // Restore previously selected company
+          setSelectedCompanyId(lastSelectedCompanyId)
+        } else if (!selectedCompanyId && userCompanies.length > 0) {
+          // Auto-select first company if no selection exists
+          const firstCompanyId = userCompanies[0].id
+          setSelectedCompanyId(firstCompanyId)
+          localStorage.setItem("selectedCompanyId", firstCompanyId)
         } else if (userCompanies.length === 0) {
           setSelectedCompanyId(null)
+          localStorage.removeItem("selectedCompanyId")
         }
       } catch (error) {
         console.error("[v0] Sidebar: Error loading companies:", error)
@@ -214,6 +224,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
   const handleSelectCompany = async (company: any) => {
     setSelectedCompanyId(company.id)
+    localStorage.setItem("selectedCompanyId", company.id)
     setCompanyModalOpen(false)
     window.dispatchEvent(new Event("client-dashboard-refresh"))
   }
