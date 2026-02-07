@@ -744,7 +744,7 @@ Notes: ${mail.notes || "None"}
                   return (
                     <TableRow
                       key={item.id}
-                      className="border-slate-200 hover:bg-transparent"
+                      className="border-slate-200 hover:!bg-transparent"
                     >
                       <TableCell>
                         <Checkbox
