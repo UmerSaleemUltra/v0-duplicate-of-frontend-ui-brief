@@ -47,6 +47,8 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
           return
         }
 
+        console.log("[v0] CompanyProvider: Loading companies for user", currentUser.id)
+
         const response = await ApiClient.companies.getAll(token)
 
         const allCompanies = response.data || response.companies || []
@@ -56,36 +58,49 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
           return companyUserId === currentUser.id
         })
 
+        console.log("[v0] CompanyProvider: Found", userCompanies.length, "companies")
+
         setCompanies(userCompanies)
         setCompaniesLoaded(true)
 
+        // Auto-select company logic
         const storedCompanyId = localStorage.getItem(SELECTED_COMPANY_KEY)
+        
         if (storedCompanyId) {
+          // Check if stored company still exists
           const companyExists = userCompanies.some((c: any) => (c.id || c._id) === storedCompanyId)
           if (companyExists) {
+            console.log("[v0] CompanyProvider: Restoring stored company", storedCompanyId)
             setSelectedCompanyId(storedCompanyId)
           } else {
+            // Stored company doesn't exist, clear it and select first
+            console.log("[v0] CompanyProvider: Stored company not found, selecting first")
             localStorage.removeItem(SELECTED_COMPANY_KEY)
             if (userCompanies.length > 0) {
               const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
               setSelectedCompanyId(firstCompanyId)
               localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
+              console.log("[v0] CompanyProvider: Auto-selected first company", firstCompanyId)
             }
           }
-        } else if (userCompanies.length > 0 && !selectedCompanyId) {
+        } else if (userCompanies.length > 0) {
+          // No stored company, auto-select first
           const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
+          console.log("[v0] CompanyProvider: Auto-selecting first company", firstCompanyId)
           setSelectedCompanyId(firstCompanyId)
           localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
+        } else {
+          console.log("[v0] CompanyProvider: No companies found for user")
         }
       } catch (error) {
-        console.error("Error loading companies:", error)
+        console.error("[v0] CompanyProvider: Error loading companies:", error)
       } finally {
         setLoading(false)
       }
     }
 
     loadCompanies()
-  }, [isPublicPage, companiesLoaded, selectedCompanyId])
+  }, [isPublicPage, companiesLoaded])
 
   const handleSetSelectedCompanyId = useCallback((id: string | null) => {
     setSelectedCompanyId(id)
