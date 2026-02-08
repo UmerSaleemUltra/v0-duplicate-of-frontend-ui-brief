@@ -328,6 +328,7 @@ export default function MailroomPage() {
                 </tbody>
               </table>
             )}
+          </div>
 
           {filteredItems.length > itemsPerPage && (
             <div className="flex items-center justify-between px-4 py-4 border-t border-slate-200 bg-white">
