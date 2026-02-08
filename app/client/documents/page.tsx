@@ -20,6 +20,7 @@ export default function DocumentsPage() {
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [companyName, setCompanyName] = useState<string>("")
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -52,6 +53,12 @@ export default function DocumentsPage() {
           variant: "destructive",
         })
         return
+      }
+
+      // Load company details
+      const companyResponse = await ApiClient.companies.getById(token, selectedCompanyId)
+      if (companyResponse.data) {
+        setCompanyName(companyResponse.data.companyName || companyResponse.data.name || "")
       }
 
       const response = await ApiClient.documents.getAll(token, selectedCompanyId)
@@ -224,84 +231,97 @@ export default function DocumentsPage() {
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Documents</h1>
-            <p className="text-slate-600 text-xs sm:text-sm md:text-base">Access and manage your business documents</p>
+            <p className="text-slate-600 text-xs sm:text-sm md:text-base">
+              {companyName ? `${companyName} - Business Documents` : "Access and manage your business documents"}
+            </p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base sm:text-lg font-semibold">Your Documents</h2>
-            {documents.length > 0 && (
-              <span className="text-xs sm:text-sm text-slate-600">
-                Showing {startIndex + 1}-{Math.min(endIndex, documents.length)} of {documents.length}
-              </span>
-            )}
-          </div>
-          {documents.length === 0 ? (
-            <div className="text-center py-12">
-              <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-600 mb-2 text-sm sm:text-base">No documents yet</p>
-              <p className="text-xs sm:text-sm text-slate-500">
-                Documents uploaded by admin will appear here automatically
-              </p>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {currentDocuments.map((doc) => (
-                <div
-                  key={doc.id}
-                  className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center gap-3 bg-white"
-                >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="min-w-0 flex-1">
-                      <div className="font-medium text-slate-900 truncate text-sm sm:text-base">
-                        {doc.title || doc.name || "Untitled Document"}
-                      </div>
-                      <div className="text-xs sm:text-sm text-slate-600 break-words mt-1">
-                        {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"} •{" "}
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            {documents.length === 0 ? (
+              <div className="text-center py-12 px-4">
+                <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-600 mb-2 text-sm sm:text-base">No documents yet</p>
+                <p className="text-xs sm:text-sm text-slate-500">
+                  Documents uploaded by admin will appear here automatically
+                </p>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Document Name</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Date</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Size</th>
+                    <th className="text-center py-3 px-4 text-sm font-medium text-slate-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentDocuments.map((doc, index) => (
+                    <tr
+                      key={doc.id}
+                      className={index !== currentDocuments.length - 1 ? "border-b border-slate-200" : ""}
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <FileText className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                          <span className="text-sm text-slate-900 truncate">
+                            {doc.title || doc.name || "Untitled Document"}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-slate-600">
+                        {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-slate-600">
                         {doc.fileSize
                           ? `${(doc.fileSize / 1024).toFixed(0)} KB`
                           : doc.size
                             ? `${(doc.size / 1024).toFixed(0)} KB`
                             : "N/A"}
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 self-end sm:self-center">
-                    <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        className="h-8 w-8 sm:h-10 sm:w-10 p-0 cursor-pointer"
-                        onClick={() => handleView(doc)}
-                      >
-                        <Eye className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        className="h-8 w-8 sm:h-10 sm:w-10 p-0 cursor-pointer"
-                        onClick={() => handleDownload(doc)}
-                      >
-                        <Download className="w-3 h-3 sm:w-4 sm:h-4 cursor-pointer" />
-                      </Button>
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 cursor-pointer"
+                            onClick={() => handleView(doc)}
+                            title="View"
+                          >
+                            <Eye className="w-4 h-4 text-slate-600" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 w-8 p-0 cursor-pointer"
+                            onClick={() => handleDownload(doc)}
+                            title="Download"
+                          >
+                            <Download className="w-4 h-4 text-slate-600" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
 
           {documents.length > itemsPerPage && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
+            <div className="flex items-center justify-between px-4 py-4 border-t border-slate-200 bg-white">
               <div className="text-sm text-slate-600">
                 Showing {startIndex + 1} to {Math.min(endIndex, documents.length)} of {documents.length} documents
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className={`cursor-pointer ${currentPage === 1 ? "text-slate-400" : "text-slate-900"}`}
+                  className={`${currentPage === 1 ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"}`}
                 >
                   Previous
                 </Button>
@@ -311,10 +331,10 @@ export default function DocumentsPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => goToPage(page)}
-                    className={`cursor-pointer min-w-[40px] ${
+                    className={`min-w-[36px] cursor-pointer ${
                       currentPage === page 
                         ? "bg-[#dc0000] text-white" 
-                        : "text-slate-900"
+                        : "text-slate-700"
                     }`}
                   >
                     {page}
@@ -325,7 +345,7 @@ export default function DocumentsPage() {
                   size="sm"
                   onClick={() => goToPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className={`cursor-pointer ${currentPage === totalPages ? "text-slate-400" : "text-slate-900"}`}
+                  className={`${currentPage === totalPages ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"}`}
                 >
                   Next
                 </Button>

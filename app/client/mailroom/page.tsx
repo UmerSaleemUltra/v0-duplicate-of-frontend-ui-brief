@@ -26,6 +26,7 @@ export default function MailroomPage() {
   const [loading, setLoading] = useState(true)
   const [viewingDocument, setViewingDocument] = useState<{ url: string; name: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
+  const [companyName, setCompanyName] = useState<string>("")
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -47,6 +48,12 @@ export default function MailroomPage() {
           variant: "destructive",
         })
         return
+      }
+
+      // Load company details
+      const companyResponse = await ApiClient.companies.getById(token, selectedCompanyId)
+      if (companyResponse.data) {
+        setCompanyName(companyResponse.data.companyName || companyResponse.data.name || "")
       }
 
       const response = await ApiClient.mail.getAll(token, selectedCompanyId)
@@ -218,7 +225,9 @@ export default function MailroomPage() {
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Mailroom</h1>
-            <p className="text-slate-600 text-xs sm:text-sm md:text-base">View and manage official correspondence</p>
+            <p className="text-slate-600 text-xs sm:text-sm md:text-base">
+              {companyName ? `${companyName} - Official Correspondence` : "View and manage official correspondence"}
+            </p>
           </div>
         </div>
 
@@ -253,74 +262,95 @@ export default function MailroomPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Your Mail</h2>
-          {filteredItems.length === 0 ? (
-            <div className="text-center py-12">
-              <Mail className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
-              <p className="text-slate-600 mb-2 text-sm sm:text-base">No mail items found</p>
-              <p className="text-xs sm:text-sm text-slate-500">Mail sent to your company will appear here</p>
-            </div>
-          ) : (
-            <div className="space-y-0">
-              {currentMailItems.map((item) => {
-                return (
-                  <div
-                    key={item.id}
-                    className="p-4 border-b border-slate-200 bg-white"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="min-w-0 flex-1">
-                        <div className="font-medium text-slate-900 text-sm sm:text-base">{item.subject}</div>
-                        <div className="text-xs sm:text-sm text-slate-600 mt-1">
-                          {item.from || item.sender} •{" "}
-                          {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()}
-                          {item.hasAttachment && item.attachments && item.attachments.length > 0 && (
-                            <span> • {item.attachments.length} file(s)</span>
+        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
+          <div className="overflow-x-auto">
+            {filteredItems.length === 0 ? (
+              <div className="text-center py-12 px-4">
+                <Mail className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
+                <p className="text-slate-600 mb-2 text-sm sm:text-base">No mail items found</p>
+                <p className="text-xs sm:text-sm text-slate-500">Mail sent to your company will appear here</p>
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead className="bg-slate-50 border-b border-slate-200">
+                  <tr>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Subject</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">From</th>
+                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Date</th>
+                    <th className="text-center py-3 px-4 text-sm font-medium text-slate-700">Attachments</th>
+                    <th className="text-center py-3 px-4 text-sm font-medium text-slate-700">Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {currentMailItems.map((item, index) => (
+                    <tr
+                      key={item.id}
+                      className={index !== currentMailItems.length - 1 ? "border-b border-slate-200" : ""}
+                    >
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-3">
+                          <Mail className="w-5 h-5 text-slate-400 flex-shrink-0" />
+                          <span className="text-sm text-slate-900 truncate">{item.subject}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4 text-sm text-slate-600">{item.from || item.sender}</td>
+                      <td className="py-3 px-4 text-sm text-slate-600">
+                        {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()}
+                      </td>
+                      <td className="py-3 px-4 text-center">
+                        {item.hasAttachment && item.attachments && item.attachments.length > 0 ? (
+                          <Badge variant="secondary" className="text-xs">
+                            {item.attachments.length} file(s)
+                          </Badge>
+                        ) : (
+                          <span className="text-sm text-slate-400">-</span>
+                        )}
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center justify-center gap-2">
+                          {item.hasAttachment && (
+                            <>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 cursor-pointer"
+                                onClick={() => handleViewDocument(item.id)}
+                                title="View"
+                              >
+                                <Eye className="w-4 h-4 text-slate-600" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-8 w-8 p-0 cursor-pointer"
+                                onClick={() => handleDownloadDocument(item.id)}
+                                title="Download"
+                              >
+                                <Download className="w-4 h-4 text-slate-600" />
+                              </Button>
+                            </>
                           )}
                         </div>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        {item.hasAttachment && (
-                          <>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 cursor-pointer"
-                              onClick={() => handleViewDocument(item.id)}
-                              title="View document"
-                            >
-                              <Eye className="w-4 h-4 cursor-pointer" />
-                            </Button>
-                            <Button
-                              variant="ghost"
-                              className="h-8 w-8 p-0 cursor-pointer"
-                              onClick={() => handleDownloadDocument(item.id)}
-                              title="Download document"
-                            >
-                              <Download className="w-4 h-4 cursor-pointer" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </div>
 
           {filteredItems.length > itemsPerPage && (
-            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
+            <div className="flex items-center justify-between px-4 py-4 border-t border-slate-200 bg-white">
               <div className="text-sm text-slate-600">
                 Showing {startIndex + 1} to {Math.min(endIndex, filteredItems.length)} of {filteredItems.length} mail items
               </div>
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1">
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className={`cursor-pointer ${currentPage === 1 ? "text-slate-400" : "text-slate-900"}`}
+                  className={`${currentPage === 1 ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"}`}
                 >
                   Previous
                 </Button>
@@ -330,10 +360,10 @@ export default function MailroomPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => goToPage(page)}
-                    className={`cursor-pointer min-w-[40px] ${
+                    className={`min-w-[36px] cursor-pointer ${
                       currentPage === page 
                         ? "bg-[#dc0000] text-white" 
-                        : "text-slate-900"
+                        : "text-slate-700"
                     }`}
                   >
                     {page}
@@ -344,7 +374,7 @@ export default function MailroomPage() {
                   size="sm"
                   onClick={() => goToPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className={`cursor-pointer ${currentPage === totalPages ? "text-slate-400" : "text-slate-900"}`}
+                  className={`${currentPage === totalPages ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"}`}
                 >
                   Next
                 </Button>
