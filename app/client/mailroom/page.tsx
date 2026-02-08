@@ -222,33 +222,7 @@ export default function MailroomPage() {
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                <Mail className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xl sm:text-2xl font-semibold text-slate-900">{totalMail}</div>
-                <div className="text-xs sm:text-sm text-slate-600">Total Mail</div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                <Download className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xl sm:text-2xl font-semibold text-slate-900">{mailWithAttachments}</div>
-                <div className="text-xs sm:text-sm text-slate-600">With Attachments</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 transition-shadow duration-200 hover:shadow-lg">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
@@ -279,15 +253,8 @@ export default function MailroomPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-base sm:text-lg font-semibold">Your Mail</h2>
-            {filteredItems.length > 0 && (
-              <span className="text-xs sm:text-sm text-slate-600">
-                Showing {startIndex + 1}-{Math.min(endIndex, filteredItems.length)} of {filteredItems.length}
-              </span>
-            )}
-          </div>
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8">
+          <h2 className="text-base sm:text-lg font-semibold mb-4">Your Mail</h2>
           {filteredItems.length === 0 ? (
             <div className="text-center py-12">
               <Mail className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
@@ -295,56 +262,45 @@ export default function MailroomPage() {
               <p className="text-xs sm:text-sm text-slate-500">Mail sent to your company will appear here</p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-0">
               {currentMailItems.map((item) => {
-                const Icon = getIcon(item.type)
-
                 return (
                   <div
                     key={item.id}
-                    className="p-3 sm:p-4 rounded-lg bg-slate-50 hover:bg-slate-100 transition-all duration-200"
+                    className="p-4 border-b border-slate-200 bg-white"
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                        <Icon className="w-5 h-5 text-white" />
-                      </div>
                       <div className="min-w-0 flex-1">
                         <div className="font-medium text-slate-900 text-sm sm:text-base">{item.subject}</div>
                         <div className="text-xs sm:text-sm text-slate-600 mt-1">
                           {item.from || item.sender} •{" "}
-                          {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()} • {item.type}
+                          {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()}
                           {item.hasAttachment && item.attachments && item.attachments.length > 0 && (
                             <span> • {item.attachments.length} file(s)</span>
                           )}
                         </div>
-                        {item.notes && (
-                          <div className="text-xs sm:text-sm text-slate-500 mt-2 italic bg-slate-100 rounded px-2 py-1">
-                            {item.notes}
-                          </div>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        {item.hasAttachment && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              className="h-8 w-8 p-0 cursor-pointer"
+                              onClick={() => handleViewDocument(item.id)}
+                              title="View document"
+                            >
+                              <Eye className="w-4 h-4 cursor-pointer" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              className="h-8 w-8 p-0 cursor-pointer"
+                              onClick={() => handleDownloadDocument(item.id)}
+                              title="Download document"
+                            >
+                              <Download className="w-4 h-4 cursor-pointer" />
+                            </Button>
+                          </>
                         )}
-                        <div className="flex items-center gap-2 mt-2">
-                          <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Received</Badge>
-                          {item.hasAttachment && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 cursor-pointer"
-                                onClick={() => handleViewDocument(item.id)}
-                                title="View document"
-                              >
-                                <Eye className="w-4 h-4 cursor-pointer" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                className="h-8 w-8 p-0 cursor-pointer"
-                                onClick={() => handleDownloadDocument(item.id)}
-                                title="Download document"
-                              >
-                                <Download className="w-4 h-4 cursor-pointer" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -354,36 +310,45 @@ export default function MailroomPage() {
           )}
 
           {filteredItems.length > itemsPerPage && (
-            <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="cursor-pointer"
-              >
-                Previous
-              </Button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
+              <div className="text-sm text-slate-600">
+                Showing {startIndex + 1} to {Math.min(endIndex, filteredItems.length)} of {filteredItems.length} mail items
+              </div>
+              <div className="flex items-center gap-2">
                 <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
+                  variant="ghost"
                   size="sm"
-                  onClick={() => goToPage(page)}
-                  className={`cursor-pointer ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""}`}
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`cursor-pointer ${currentPage === 1 ? "text-slate-400" : "text-slate-900"}`}
                 >
-                  {page}
+                  Previous
                 </Button>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="cursor-pointer"
-              >
-                Next
-              </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => goToPage(page)}
+                    className={`cursor-pointer min-w-[40px] ${
+                      currentPage === page 
+                        ? "bg-[#dc0000] text-white" 
+                        : "text-slate-900"
+                    }`}
+                  >
+                    {page}
+                  </Button>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`cursor-pointer ${currentPage === totalPages ? "text-slate-400" : "text-slate-900"}`}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </div>
