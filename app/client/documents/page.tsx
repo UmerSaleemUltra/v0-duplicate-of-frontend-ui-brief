@@ -19,6 +19,8 @@ export default function DocumentsPage() {
   const [documents, setDocuments] = useState<any[]>([])
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   useEffect(() => {
     if (selectedCompanyId) {
@@ -190,6 +192,17 @@ export default function DocumentsPage() {
   const completedDocs = documents.filter((d) => d.status === "ready" || !d.status)
   const pendingDocs = documents.filter((d) => d.status === "pending")
 
+  // Pagination calculations
+  const totalPages = Math.ceil(documents.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const currentDocuments = documents.slice(startIndex, endIndex)
+
+  const goToPage = (page: number) => {
+    setCurrentPage(page)
+    window.scrollTo({ top: 0, behavior: "smooth" })
+  }
+
   if (authLoading || loading) {
     return (
       <ClientShell>
@@ -244,7 +257,14 @@ export default function DocumentsPage() {
         </div>
 
         <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-          <h2 className="text-base sm:text-lg font-semibold mb-4">Your Documents</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-base sm:text-lg font-semibold">Your Documents</h2>
+            {documents.length > 0 && (
+              <span className="text-xs sm:text-sm text-slate-600">
+                Showing {startIndex + 1}-{Math.min(endIndex, documents.length)} of {documents.length}
+              </span>
+            )}
+          </div>
           {documents.length === 0 ? (
             <div className="text-center py-12">
               <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
@@ -255,7 +275,7 @@ export default function DocumentsPage() {
             </div>
           ) : (
             <div className="space-y-3">
-              {documents.map((doc) => (
+              {currentDocuments.map((doc) => (
                 <div
                   key={doc.id}
                   className="p-3 sm:p-4 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-slate-100 transition-all duration-200"
@@ -312,6 +332,40 @@ export default function DocumentsPage() {
                   </div>
                 </div>
               ))}
+            </div>
+          )}
+
+          {documents.length > itemsPerPage && (
+            <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                className="cursor-pointer"
+              >
+                Previous
+              </Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant={currentPage === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => goToPage(page)}
+                  className={`cursor-pointer ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""}`}
+                >
+                  {page}
+                </Button>
+              ))}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                className="cursor-pointer"
+              >
+                Next
+              </Button>
             </div>
           )}
         </div>
