@@ -20,6 +20,7 @@ export default function DocumentsPage() {
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [companyName, setCompanyName] = useState<string>("")
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -52,6 +53,12 @@ export default function DocumentsPage() {
           variant: "destructive",
         })
         return
+      }
+
+      // Load company details
+      const companyResponse = await ApiClient.companies.getById(token, selectedCompanyId)
+      if (companyResponse.data) {
+        setCompanyName(companyResponse.data.companyName || companyResponse.data.name || "")
       }
 
       const response = await ApiClient.documents.getAll(token, selectedCompanyId)
@@ -224,7 +231,9 @@ export default function DocumentsPage() {
           </div>
           <div className="min-w-0 flex-1">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Documents</h1>
-            <p className="text-slate-600 text-xs sm:text-sm md:text-base">Access and manage your business documents</p>
+            <p className="text-slate-600 text-xs sm:text-sm md:text-base">
+              {companyName ? `${companyName} - Business Documents` : "Access and manage your business documents"}
+            </p>
           </div>
         </div>
 
@@ -277,7 +286,7 @@ export default function DocumentsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 cursor-pointer"
                             onClick={() => handleView(doc)}
                             title="View"
                           >
@@ -286,7 +295,7 @@ export default function DocumentsPage() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="h-8 w-8 p-0"
+                            className="h-8 w-8 p-0 cursor-pointer"
                             onClick={() => handleDownload(doc)}
                             title="Download"
                           >
@@ -312,7 +321,7 @@ export default function DocumentsPage() {
                   size="sm"
                   onClick={() => goToPage(currentPage - 1)}
                   disabled={currentPage === 1}
-                  className={`${currentPage === 1 ? "text-slate-400" : "text-slate-700"}`}
+                  className={`${currentPage === 1 ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"}`}
                 >
                   Previous
                 </Button>
@@ -322,7 +331,7 @@ export default function DocumentsPage() {
                     variant="ghost"
                     size="sm"
                     onClick={() => goToPage(page)}
-                    className={`min-w-[36px] ${
+                    className={`min-w-[36px] cursor-pointer ${
                       currentPage === page 
                         ? "bg-[#dc0000] text-white" 
                         : "text-slate-700"
@@ -336,7 +345,7 @@ export default function DocumentsPage() {
                   size="sm"
                   onClick={() => goToPage(currentPage + 1)}
                   disabled={currentPage === totalPages}
-                  className={`${currentPage === totalPages ? "text-slate-400" : "text-slate-700"}`}
+                  className={`${currentPage === totalPages ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"}`}
                 >
                   Next
                 </Button>
