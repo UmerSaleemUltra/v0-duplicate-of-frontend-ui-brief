@@ -228,35 +228,7 @@ export default function DocumentsPage() {
           </div>
         </div>
 
-        <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-          <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-              </div>
-              <div className="min-w-0 flex-1">
-                <div className="text-xl sm:text-2xl font-semibold text-slate-900">{documents.length}</div>
-                <div className="text-xs sm:text-sm text-slate-600">Total Documents</div>
-              </div>
-            </div>
-          </div>
-
-          {completedDocs.length > 0 && (
-            <div className="bg-white rounded-xl border border-slate-200 p-6 sm:p-8 transition-shadow duration-200 hover:shadow-lg">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                  <Download className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <div className="text-xl sm:text-2xl font-semibold text-slate-900">{completedDocs.length}</div>
-                  <div className="text-xs sm:text-sm text-slate-600">Ready to Download</div>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-base sm:text-lg font-semibold">Your Documents</h2>
             {documents.length > 0 && (
@@ -274,27 +246,16 @@ export default function DocumentsPage() {
               </p>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {currentDocuments.map((doc) => (
                 <div
                   key={doc.id}
-                  className="p-3 sm:p-4 rounded-lg bg-slate-50 flex flex-col sm:flex-row sm:items-center gap-3 hover:bg-slate-100 transition-all duration-200"
+                  className="p-4 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center gap-3 bg-white"
                 >
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
-                      <FileText className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
-                    </div>
                     <div className="min-w-0 flex-1">
-                      <div className="font-medium text-slate-900 truncate text-sm sm:text-base flex items-center gap-2 flex-wrap">
+                      <div className="font-medium text-slate-900 truncate text-sm sm:text-base">
                         {doc.title || doc.name || "Untitled Document"}
-                        <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs whitespace-nowrap">
-                          {doc.type || doc.category || "Document"}
-                        </Badge>
-                        {doc.fileCount && doc.fileCount > 1 && (
-                          <Badge variant="secondary" className="text-xs">
-                            {doc.fileCount} files
-                          </Badge>
-                        )}
                       </div>
                       <div className="text-xs sm:text-sm text-slate-600 break-words mt-1">
                         {doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "N/A"} •{" "}
@@ -304,15 +265,9 @@ export default function DocumentsPage() {
                             ? `${(doc.size / 1024).toFixed(0)} KB`
                             : "N/A"}
                       </div>
-                      {doc.fileUrls && doc.fileUrls.length > 1 && (
-                        <div className="text-xs text-slate-500 mt-1 truncate">
-                          Files: {doc.fileUrls.map((f: any) => f.name).join(", ")}
-                        </div>
-                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0 self-end sm:self-center">
-                    <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200 text-xs">Ready</Badge>
                     <div className="flex gap-2">
                       <Button
                         variant="ghost"
@@ -336,36 +291,45 @@ export default function DocumentsPage() {
           )}
 
           {documents.length > itemsPerPage && (
-            <div className="flex items-center justify-center gap-2 mt-6 flex-wrap">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(currentPage - 1)}
-                disabled={currentPage === 1}
-                className="cursor-pointer"
-              >
-                Previous
-              </Button>
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+            <div className="flex items-center justify-between mt-6 pt-4 border-t border-slate-200">
+              <div className="text-sm text-slate-600">
+                Showing {startIndex + 1} to {Math.min(endIndex, documents.length)} of {documents.length} documents
+              </div>
+              <div className="flex items-center gap-2">
                 <Button
-                  key={page}
-                  variant={currentPage === page ? "default" : "outline"}
+                  variant="ghost"
                   size="sm"
-                  onClick={() => goToPage(page)}
-                  className={`cursor-pointer ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : ""}`}
+                  onClick={() => goToPage(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`cursor-pointer ${currentPage === 1 ? "text-slate-400" : "text-slate-900"}`}
                 >
-                  {page}
+                  Previous
                 </Button>
-              ))}
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => goToPage(currentPage + 1)}
-                disabled={currentPage === totalPages}
-                className="cursor-pointer"
-              >
-                Next
-              </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button
+                    key={page}
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => goToPage(page)}
+                    className={`cursor-pointer min-w-[40px] ${
+                      currentPage === page 
+                        ? "bg-[#dc0000] text-white" 
+                        : "text-slate-900"
+                    }`}
+                  >
+                    {page}
+                  </Button>
+                ))}
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => goToPage(currentPage + 1)}
+                  disabled={currentPage === totalPages}
+                  className={`cursor-pointer ${currentPage === totalPages ? "text-slate-400" : "text-slate-900"}`}
+                >
+                  Next
+                </Button>
+              </div>
             </div>
           )}
         </div>
