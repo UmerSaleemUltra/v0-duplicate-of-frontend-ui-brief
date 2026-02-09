@@ -20,7 +20,6 @@ export default function DocumentsPage() {
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const [companyName, setCompanyName] = useState<string>("")
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -53,12 +52,6 @@ export default function DocumentsPage() {
           variant: "destructive",
         })
         return
-      }
-
-      // Load company details
-      const companyResponse = await ApiClient.companies.getById(token, selectedCompanyId)
-      if (companyResponse.data) {
-        setCompanyName(companyResponse.data.companyName || companyResponse.data.name || "")
       }
 
       const response = await ApiClient.documents.getAll(token, selectedCompanyId)
@@ -232,7 +225,7 @@ export default function DocumentsPage() {
           <div className="min-w-0 flex-1">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Documents</h1>
             <p className="text-slate-600 text-xs sm:text-sm md:text-base">
-              {companyName ? `${companyName} - Business Documents` : "Access and manage your business documents"}
+              Access and manage your business documents
             </p>
           </div>
         </div>

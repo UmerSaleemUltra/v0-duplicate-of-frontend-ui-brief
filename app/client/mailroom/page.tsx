@@ -26,7 +26,6 @@ export default function MailroomPage() {
   const [loading, setLoading] = useState(true)
   const [viewingDocument, setViewingDocument] = useState<{ url: string; name: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [companyName, setCompanyName] = useState<string>("")
   const itemsPerPage = 10
 
   useEffect(() => {
@@ -48,12 +47,6 @@ export default function MailroomPage() {
           variant: "destructive",
         })
         return
-      }
-
-      // Load company details
-      const companyResponse = await ApiClient.companies.getById(token, selectedCompanyId)
-      if (companyResponse.data) {
-        setCompanyName(companyResponse.data.companyName || companyResponse.data.name || "")
       }
 
       const response = await ApiClient.mail.getAll(token, selectedCompanyId)
@@ -226,7 +219,7 @@ export default function MailroomPage() {
           <div className="min-w-0 flex-1">
             <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Mailroom</h1>
             <p className="text-slate-600 text-xs sm:text-sm md:text-base">
-              {companyName ? `${companyName} - Official Correspondence` : "View and manage official correspondence"}
+              View and manage official correspondence
             </p>
           </div>
         </div>
