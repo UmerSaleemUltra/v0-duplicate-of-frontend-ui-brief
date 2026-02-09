@@ -498,53 +498,35 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex-1 flex flex-col min-w-0">
             <div className="z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-              <div className="flex items-center justify-between gap-4">
-                <button
-                  onClick={() => setCompanyModalOpen(true)}
-                  className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg hover:bg-slate-50 transition-colors"
-                  aria-label="Select company"
+              <div className="flex items-center justify-end gap-2">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={async () => {
+                    setIsRefreshing(true)
+                    console.log("[v0] Manual refresh triggered")
+                    window.dispatchEvent(new Event("client-dashboard-refresh"))
+                    setTimeout(() => {
+                      setIsRefreshing(false)
+                    }, 1500)
+                  }}
+                  disabled={isRefreshing}
+                  className="h-10 w-10"
+                  aria-label="Refresh dashboard"
                 >
-                  <Building2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
-                  <div className="flex items-center gap-2">
-                    <BusinessNameDisplay
-                      name={selectedCompany?.name || "Select company"}
-                      maxLength={25}
-                      className="text-sm font-medium text-slate-900"
-                      truncateMode="smart"
-                    />
-                    <ChevronDown className="w-4 h-4 text-slate-400" />
-                  </div>
-                </button>
-                <div className="flex items-center gap-2 ml-auto">
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={async () => {
-                      setIsRefreshing(true)
-                      console.log("[v0] Manual refresh triggered")
-                      window.dispatchEvent(new Event("client-dashboard-refresh"))
-                      setTimeout(() => {
-                        setIsRefreshing(false)
-                      }, 1500)
-                    }}
-                    disabled={isRefreshing}
-                    className="h-10 w-10"
-                    aria-label="Refresh dashboard"
-                  >
-                    <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
-                  </Button>
-                  <NotificationDropdown />
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={handleLogout}
-                    className="h-10 w-10 hover:bg-red-50 hover:text-red-600"
-                    aria-label={isAdminView ? "Exit admin mode" : "Logout"}
-                    title={isAdminView ? "Exit Admin Mode" : "Logout"}
-                  >
-                    <LogOut className="w-5 h-5" />
-                  </Button>
-                </div>
+                  <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
+                </Button>
+                <NotificationDropdown />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleLogout}
+                  className="h-10 w-10 hover:bg-red-50 hover:text-red-600"
+                  aria-label={isAdminView ? "Exit admin mode" : "Logout"}
+                  title={isAdminView ? "Exit Admin Mode" : "Logout"}
+                >
+                  <LogOut className="w-5 h-5" />
+                </Button>
               </div>
             </div>
             <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full bg-white">{children}</main>
