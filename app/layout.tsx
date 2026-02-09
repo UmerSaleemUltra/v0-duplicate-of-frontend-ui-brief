@@ -273,6 +273,88 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           dangerouslySetInnerHTML={{
             __html: JSON.stringify({
               "@context": "https://schema.org",
+              "@type": "WebSite",
+              "@id": "https://www.buzzfiling.com/#website",
+              url: "https://www.buzzfiling.com",
+              name: "BuzzFiling",
+              alternateName: "Buzz Filing",
+              description: "Pakistan's #1 US LLC and C-Corp formation service provider",
+              publisher: {
+                "@id": "https://www.buzzfiling.com/#organization",
+              },
+              potentialAction: {
+                "@type": "SearchAction",
+                target: {
+                  "@type": "EntryPoint",
+                  urlTemplate: "https://www.buzzfiling.com/search?q={search_term_string}",
+                },
+                "query-input": "required name=search_term_string",
+              },
+            }),
+          }}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "ItemList",
+              name: "Quick Links",
+              description: "Important pages and services at BuzzFiling",
+              itemListElement: [
+                {
+                  "@type": "SiteNavigationElement",
+                  position: 1,
+                  name: "LLC Formation Services",
+                  description: "Complete US LLC formation with EIN and registered agent",
+                  url: "https://www.buzzfiling.com/#services",
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  position: 2,
+                  name: "Pricing Plans",
+                  description: "Transparent pricing for US business formation services",
+                  url: "https://www.buzzfiling.com/#pricing",
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  position: 3,
+                  name: "Client Dashboard",
+                  description: "Manage your US company and documents online",
+                  url: "https://www.buzzfiling.com/client/dashboard",
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  position: 4,
+                  name: "Contact Us",
+                  description: "Get in touch with our business formation experts",
+                  url: "https://www.buzzfiling.com/#contact",
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  position: 5,
+                  name: "Blog & Resources",
+                  description: "Learn about US business formation and compliance",
+                  url: "https://www.buzzfiling.com/blog",
+                },
+                {
+                  "@type": "SiteNavigationElement",
+                  position: 6,
+                  name: "How It Works",
+                  description: "Step-by-step process for forming your US company",
+                  url: "https://www.buzzfiling.com/#how-it-works",
+                },
+              ],
+            }),
+          }}
+        />
+
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
               "@type": "BreadcrumbList",
               itemListElement: [
                 {
