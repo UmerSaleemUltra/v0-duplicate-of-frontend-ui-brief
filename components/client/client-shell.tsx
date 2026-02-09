@@ -29,6 +29,7 @@ import { BusinessNameDisplay } from "@/components/ui/business-name-display"
 import { useSelectedCompany } from "@/lib/company-context"
 import { authService } from "@/lib/auth"
 import { NotificationDropdown } from "@/components/client/notification-dropdown"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const NAV_ITEMS = [
   { href: "/client/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -497,35 +498,100 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
           <div className="flex-1 flex flex-col min-w-0">
             <div className="z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-              <div className="flex items-center justify-end gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={async () => {
-                    setIsRefreshing(true)
-                    console.log("[v0] Manual refresh triggered")
-                    window.dispatchEvent(new Event("client-dashboard-refresh"))
-                    setTimeout(() => {
-                      setIsRefreshing(false)
-                    }, 1500)
-                  }}
-                  disabled={isRefreshing}
-                  className="h-10 w-10"
-                  aria-label="Refresh dashboard"
-                >
-                  <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
-                </Button>
-                <NotificationDropdown />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleLogout}
-                  className="h-10 w-10 hover:bg-red-50 hover:text-red-600"
-                  aria-label={isAdminView ? "Exit admin mode" : "Logout"}
-                  title={isAdminView ? "Exit Admin Mode" : "Logout"}
-                >
-                  <LogOut className="w-5 h-5" />
-                </Button>
+              <div className="flex items-center justify-between gap-4">
+                <div className="flex items-center gap-2">
+                  <Building2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
+                  <Select
+                    value={selectedCompanyId || ""}
+                    onValueChange={(value) => {
+                      if (value === "add-new") {
+                        handleAddNewCompany()
+                      } else {
+                        const company = allCompanies.find((c) => c.id === value)
+                        if (company) {
+                          handleSelectCompany(company)
+                        }
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="w-[200px] sm:w-[280px] h-10">
+                      <SelectValue placeholder="Select company">
+                        {selectedCompany ? (
+                          <BusinessNameDisplay
+                            name={selectedCompany.name}
+                            maxLength={25}
+                            className="text-sm font-medium"
+                            truncateMode="smart"
+                          />
+                        ) : (
+                          "Select company"
+                        )}
+                      </SelectValue>
+                    </SelectTrigger>
+                    <SelectContent>
+                      {allCompanies.map((company) => (
+                        <SelectItem key={company.id} value={company.id}>
+                          <div className="flex items-center gap-2">
+                            <BusinessNameDisplay
+                              name={company.name}
+                              maxLength={30}
+                              className="text-sm"
+                              truncateMode="smart"
+                            />
+                            <Badge
+                              variant="outline"
+                              className={`text-xs ${
+                                company.serviceStatus === "active"
+                                  ? "bg-green-50 text-green-700 border-green-200"
+                                  : company.serviceStatus === "inactive"
+                                    ? "bg-red-50 text-red-700 border-red-200"
+                                    : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                              }`}
+                            >
+                              {company.serviceStatus || "pending"}
+                            </Badge>
+                          </div>
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="add-new" className="text-[#ff0d13] font-medium">
+                        <div className="flex items-center gap-2">
+                          <Plus className="w-4 h-4" />
+                          Add New Company
+                        </div>
+                      </SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={async () => {
+                      setIsRefreshing(true)
+                      console.log("[v0] Manual refresh triggered")
+                      window.dispatchEvent(new Event("client-dashboard-refresh"))
+                      setTimeout(() => {
+                        setIsRefreshing(false)
+                      }, 1500)
+                    }}
+                    disabled={isRefreshing}
+                    className="h-10 w-10"
+                    aria-label="Refresh dashboard"
+                  >
+                    <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
+                  </Button>
+                  <NotificationDropdown />
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleLogout}
+                    className="h-10 w-10 hover:bg-red-50 hover:text-red-600"
+                    aria-label={isAdminView ? "Exit admin mode" : "Logout"}
+                    title={isAdminView ? "Exit Admin Mode" : "Logout"}
+                  >
+                    <LogOut className="w-5 h-5" />
+                  </Button>
+                </div>
               </div>
             </div>
             <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full bg-white">{children}</main>
