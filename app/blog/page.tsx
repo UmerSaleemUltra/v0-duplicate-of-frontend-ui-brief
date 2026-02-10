@@ -7,68 +7,20 @@ import { Eye } from "lucide-react"
 import { getDatabase } from "@/config/database"
 
 export const metadata: Metadata = {
-  title: "Blog - BuzzFiling | Expert US LLC Formation Guides & Business Resources",
+  title: "Blog - BuzzFiling | US Business Formation Guides & Expert Resources",
   description:
-    "Expert guides and resources for US business formation. Learn about LLC formation, C-Corp setup, tax compliance, state guides, EIN application, ITIN services, BOI filing, and more from Pakistan's #1 US business formation experts.",
+    "Expert guides and resources for US business formation. Learn about LLC formation, C-Corp setup, tax compliance, state guides, and more from Pakistan's #1 US business formation service.",
   keywords: [
     "US LLC formation guide",
-    "business formation tips",
-    "LLC vs C-Corp",
-    "EIN application guide",
-    "ITIN for non-residents",
-    "BOI filing requirements",
-    "Delaware LLC formation",
-    "Wyoming LLC benefits",
-    "US tax compliance",
-    "registered agent services",
-    "state filing guides",
-    "Pakistan entrepreneurs US business",
-    "virtual mailroom",
-    "business compliance checklist",
-    "US business bank account",
+    "business formation blog",
+    "LLC vs C-Corp comparison",
+    "US tax compliance tips",
+    "state business registration guide"
   ],
-  authors: [{ name: "Buzz Filing Team" }],
-  creator: "Buzz Filing",
-  publisher: "Buzz Filing",
-  metadataBase: new URL("https://www.buzzfiling.com"),
-  alternates: {
-    canonical: "https://www.buzzfiling.com/blog",
-  },
   openGraph: {
+    title: "Blog - BuzzFiling | US Business Formation Guides",
+    description: "Expert guides and resources for US business formation from Pakistan's top service provider",
     type: "website",
-    locale: "en_US",
-    url: "https://www.buzzfiling.com/blog",
-    siteName: "Buzz Filing",
-    title: "Blog - Expert US Business Formation Guides | BuzzFiling",
-    description:
-      "Expert guides for US LLC and C-Corp formation. Learn from Pakistan's #1 US business formation experts. Step-by-step tutorials, state guides, compliance tips, and more.",
-    images: [
-      {
-        url: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
-        width: 1200,
-        height: 630,
-        alt: "BuzzFiling Blog - US Business Formation Guides",
-      },
-    ],
-  },
-  twitter: {
-    card: "summary_large_image",
-    site: "@buzzfiling",
-    creator: "@buzzfiling",
-    title: "Blog - Expert US Business Formation Guides",
-    description: "Learn about US LLC formation, compliance, and business setup from experts.",
-    images: ["https://www.buzzfiling.com/images/buzz-filing-logo.png"],
-  },
-  robots: {
-    index: true,
-    follow: true,
-    googleBot: {
-      index: true,
-      follow: true,
-      "max-video-preview": -1,
-      "max-image-preview": "large",
-      "max-snippet": -1,
-    },
   },
 }
 
