@@ -236,6 +236,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
 
         <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
           <Button
+            type="button"
             onClick={handleBackClick}
             variant="outline"
             className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
