@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState, useEffect } from "react"
 import { Mail, Lock, ArrowRight, ArrowLeft, Eye, EyeOff, User } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -30,6 +31,7 @@ const countries = [
 ]
 
 export function AccountStep({ data, updateData, onNext, onBack }: AccountStepProps) {
+  const router = useRouter()
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPassword, setShowPassword] = useState(false)
   const [phone, setPhone] = useState<string>("")
@@ -132,6 +134,10 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
     }
   }
 
+  const handleBackClick = () => {
+    router.push("/auth")
+  }
+
   return (
     <div className="space-y-6 overflow-hidden max-w-full">
       <div className="space-y-2">
@@ -229,7 +235,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
 
         <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
           <Button
-            onClick={onBack}
+            onClick={handleBackClick}
             variant="outline"
             className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
           >
