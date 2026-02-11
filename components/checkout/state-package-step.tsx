@@ -232,7 +232,10 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
 
       <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6 border-t border-slate-100">
         <Button
-          onClick={onBack}
+          onClick={() => {
+            setErrors({})
+            onBack()
+          }}
           variant="outline"
           className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
         >
