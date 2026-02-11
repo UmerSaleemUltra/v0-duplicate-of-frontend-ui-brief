@@ -149,7 +149,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 180px; height: auto;" />
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
                   </td>
                 </tr>
                 
@@ -176,7 +176,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px; text-align: center;">
                     <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
                   </td>
@@ -212,7 +212,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 180px; height: auto;" />
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
                   </td>
                 </tr>
                 
@@ -251,7 +251,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px; text-align: center;">
                     <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
                   </td>
@@ -287,7 +287,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 180px; height: auto;" />
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
                   </td>
                 </tr>
                 
@@ -310,7 +310,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px; text-align: center;">
                     <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
                   </td>
@@ -346,7 +346,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 180px; height: auto;" />
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
                   </td>
                 </tr>
                 
@@ -373,7 +373,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px; text-align: center;">
                     <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
                   </td>
@@ -409,7 +409,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 180px; height: auto;" />
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
                   </td>
                 </tr>
                 
@@ -436,7 +436,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px; text-align: center;">
                     <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
                   </td>
@@ -472,7 +472,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 180px; height: auto;" />
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
                   </td>
                 </tr>
                 
@@ -495,7 +495,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px; text-align: center;">
                     <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
                   </td>
@@ -538,7 +538,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 180px; height: auto;" />
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
                   </td>
                 </tr>
                 
@@ -578,7 +578,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px; text-align: center;">
                     <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
                   </td>
@@ -614,7 +614,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 180px; height: auto;" />
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
                   </td>
                 </tr>
                 
@@ -641,7 +641,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px; text-align: center;">
                     <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
                   </td>
@@ -677,7 +677,7 @@ export const emailTemplates = {
                 
                 <tr>
                   <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="BuzzFiling" style="width: 180px; height: auto;" />
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
                   </td>
                 </tr>
                 
@@ -706,7 +706,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px; text-align: center;">
                     <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">BuzzFiling</span>
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
                   </td>
