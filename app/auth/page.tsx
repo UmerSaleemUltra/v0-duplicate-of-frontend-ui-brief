@@ -49,26 +49,24 @@ function AuthSkeleton() {
 }
 
 export default function AuthSelectionPage() {
-  const { isAuthenticated, user, loading } = useAuth()
+  const { isAuthenticated, user } = useAuth()
   const router = useRouter()
   const [isChecking, setIsChecking] = useState(true)
 
   useEffect(() => {
-    if (!loading) {
-      if (isAuthenticated && user) {
-        // Redirect based on user role
-        if (user.role === "admin") {
-          router.push("/admin")
-        } else {
-          router.push("/client/dashboard")
-        }
+    if (isAuthenticated && user) {
+      // Redirect based on user role
+      if (user.role === "admin") {
+        router.push("/admin")
       } else {
-        setIsChecking(false)
+        router.push("/client/dashboard")
       }
+    } else {
+      setIsChecking(false)
     }
-  }, [isAuthenticated, user, loading, router])
+  }, [isAuthenticated, user, router])
 
-  if (loading || isChecking) {
+  if (isChecking) {
     return <AuthSkeleton />
   }
 
