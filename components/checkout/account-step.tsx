@@ -135,6 +135,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
   }
 
   const handleBackClick = () => {
+    setErrors({})
     router.push("/auth")
   }
 
