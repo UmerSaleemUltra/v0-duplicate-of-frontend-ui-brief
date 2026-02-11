@@ -1,19 +1,20 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Checkout - Start Your US Business | BuzzFiling",
+  title: "Start Your US LLC | BuzzFiling Checkout",
   description:
-    "Complete your US LLC or C-Corp formation order. Quick and secure checkout process with bank transfer payment options. Start your US business today.",
+    "Complete your US LLC formation in minutes. Simple checkout process for business registration in any US state. Get your EIN, registered agent, and compliance support.",
   keywords: [
-    "US LLC checkout",
-    "business formation order",
-    "company registration payment",
-    "US business setup",
-    "LLC formation checkout"
+    "LLC formation checkout",
+    "start US business",
+    "register LLC online",
+    "business formation service",
+    "US company registration"
   ],
-  robots: {
-    index: false,
-    follow: false,
+  openGraph: {
+    title: "Start Your US LLC | BuzzFiling Checkout",
+    description: "Complete your US LLC formation in minutes with BuzzFiling's simple checkout process",
+    type: "website",
   },
 }
 

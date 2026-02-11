@@ -1,19 +1,20 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Login - Access Your Dashboard | BuzzFiling",
+  title: "Login to Your Account | BuzzFiling Client Portal",
   description:
-    "Sign in to your BuzzFiling account to manage your US LLC or C-Corp, access documents, track orders, and manage your business formation services.",
+    "Access your BuzzFiling client dashboard. Manage your US LLC, track formation progress, download documents, and access business compliance tools.",
   keywords: [
     "BuzzFiling login",
-    "client dashboard access",
-    "US business account",
-    "LLC management portal",
-    "business formation login"
+    "client portal access",
+    "LLC dashboard",
+    "business account login",
+    "manage US company"
   ],
-  robots: {
-    index: false,
-    follow: false,
+  openGraph: {
+    title: "Login | BuzzFiling Client Portal",
+    description: "Sign in to access your BuzzFiling dashboard and manage your US business",
+    type: "website",
   },
 }
 

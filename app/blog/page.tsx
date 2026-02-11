@@ -7,19 +7,12 @@ import { Eye } from "lucide-react"
 import { getDatabase } from "@/config/database"
 
 export const metadata: Metadata = {
-  title: "Blog - BuzzFiling | US Business Formation Guides & Expert Resources",
+  title: "Blog - BuzzFiling | Business Formation Guides & Resources",
   description:
-    "Expert guides and resources for US business formation. Learn about LLC formation, C-Corp setup, tax compliance, state guides, and more from Pakistan's #1 US business formation service.",
-  keywords: [
-    "US LLC formation guide",
-    "business formation blog",
-    "LLC vs C-Corp comparison",
-    "US tax compliance tips",
-    "state business registration guide"
-  ],
+    "Expert guides and resources for starting your business. Learn about LLC formation, tax compliance, state guides, and more from BuzzFiling.",
   openGraph: {
-    title: "Blog - BuzzFiling | US Business Formation Guides",
-    description: "Expert guides and resources for US business formation from Pakistan's top service provider",
+    title: "Blog - BuzzFiling",
+    description: "Expert guides and resources for starting your business",
     type: "website",
   },
 }
