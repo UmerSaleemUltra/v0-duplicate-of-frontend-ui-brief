@@ -49,26 +49,6 @@ function AuthSkeleton() {
 }
 
 export default function AuthSelectionPage() {
-  const { isAuthenticated, user } = useAuth()
-  const router = useRouter()
-  const [isChecking, setIsChecking] = useState(true)
-
-  useEffect(() => {
-    if (isAuthenticated && user) {
-      // Redirect based on user role
-      if (user.role === "admin") {
-        router.push("/admin")
-      } else {
-        router.push("/client/dashboard")
-      }
-    } else {
-      setIsChecking(false)
-    }
-  }, [isAuthenticated, user, router])
-
-  if (isChecking) {
-    return <AuthSkeleton />
-  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-50 flex items-center justify-center p-6">
