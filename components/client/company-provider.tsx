@@ -10,7 +10,7 @@ import { authService } from "@/lib/auth"
 const SELECTED_COMPANY_KEY = "selectedCompanyId"
 const COMPANIES_LOADED_KEY = "companiesLoaded"
 
-const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing", "/services"]
+const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing", "/services", "/auth", "/login", "/checkout", "/forgot-password", "/reset-password", "/blog"]
 
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
