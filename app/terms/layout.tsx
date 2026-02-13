@@ -1,18 +1,18 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Terms and Conditions | BuzzFiling Service Agreement",
+  title: "Terms and Conditions | Buzz Filing Service Agreement",
   description:
-    "Review BuzzFiling's terms and conditions for US LLC formation services. Understand our service agreement, refund policy, and business formation guarantees.",
+    "Review Buzz Filing's terms and conditions for US LLC formation services. Understand our service agreement, refund policy, and business formation guarantees.",
   keywords: [
     "terms and conditions",
     "service agreement",
-    "BuzzFiling terms",
+    "Buzz Filing terms",
     "legal terms",
     "LLC formation policy"
   ],
   openGraph: {
-    title: "Terms and Conditions | BuzzFiling",
+    title: "Terms and Conditions | Buzz Filing",
     description: "Read our terms of service for US business formation",
     type: "website",
   },

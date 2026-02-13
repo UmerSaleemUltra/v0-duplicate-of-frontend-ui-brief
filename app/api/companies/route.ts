@@ -336,7 +336,7 @@ export async function POST(req: NextRequest) {
           userId: decoded.userId,
           companyId: companyId,
           type: "system",
-          title: "Welcome to BuzzFiling!",
+          title: "Welcome to Buzz Filing!",
           message: `Welcome! Your company "${name}" has been successfully created. We're excited to help you form your U.S. ${type.toUpperCase()}.`,
           read: false,
           metadata: {

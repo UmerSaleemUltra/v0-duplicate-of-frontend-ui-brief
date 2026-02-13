@@ -97,14 +97,14 @@ export const metadata: Metadata = {
         "@context": "https://schema.org",
         "@type": "ProfessionalService",
         "@id": "https://www.buzzfiling.com/#organization",
-        name: "BuzzFiling",
+        name: "Buzz Filing",
         alternateName: "Buzz Filing",
-        legalName: "BuzzFiling US Business Formation Services",
+        legalName: "Buzz Filing US Business Formation Services",
         url: "https://www.buzzfiling.com",
         logo: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
         image: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
         description:
-          "BuzzFiling is Pakistan's leading US LLC and C-Corp formation service provider, helping Pakistani entrepreneurs register their US businesses with complete EIN, ITIN, and compliance support.",
+          "Buzz Filing is Pakistan's leading US LLC and C-Corp formation service provider, helping Pakistani entrepreneurs register their US businesses with complete EIN, ITIN, and compliance support.",
         aggregateRating: {
           "@type": "AggregateRating",
           ratingValue: "4.9",
@@ -154,7 +154,7 @@ export const metadata: Metadata = {
         "@type": "WebSite",
         "@id": "https://www.buzzfiling.com/#website",
         url: "https://www.buzzfiling.com",
-        name: "BuzzFiling",
+        name: "Buzz Filing",
         description: "Pakistan's #1 US LLC and C-Corp formation service provider",
         publisher: {
           "@id": "https://www.buzzfiling.com/#organization",

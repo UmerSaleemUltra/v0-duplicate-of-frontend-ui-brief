@@ -39,16 +39,16 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: "Post Not Found - BuzzFiling",
+      title: "Post Not Found - Buzz Filing",
       description: "The blog post you're looking for doesn't exist. Browse our other articles on business formation and compliance.",
     }
   }
 
   return {
-    title: `${post.title} | BuzzFiling Blog`,
+    title: `${post.title} | Buzz Filing Blog`,
     description: post.metaDescription || post.excerpt || post.title,
     keywords: post.tags?.join(", ") || "LLC formation, business registration, entrepreneurship",
-    authors: [{ name: post.author || "BuzzFiling Team" }],
+    authors: [{ name: post.author || "Buzz Filing Team" }],
     category: post.category || "Business",
     openGraph: {
       title: post.metaTitle || post.title,
@@ -57,9 +57,9 @@ export async function generateMetadata({
       type: "article",
       publishedTime: post.publishedAt || post.createdAt,
       modifiedTime: post.updatedAt,
-      authors: [post.author || "BuzzFiling Team"],
+      authors: [post.author || "Buzz Filing Team"],
       tags: post.tags || [],
-      siteName: "BuzzFiling",
+      siteName: "Buzz Filing",
     },
     twitter: {
       card: "summary_large_image",

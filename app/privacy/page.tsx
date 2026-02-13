@@ -2,8 +2,8 @@ import Navbar from "@/components/sections/navbar"
 import Footer from "@/components/sections/footer"
 
 export const metadata = {
-  title: "Privacy Policy - BuzzFiling",
-  description: "Legal disclaimer and terms of service for BuzzFiling.",
+  title: "Privacy Policy - Buzz Filing",
+  description: "Legal disclaimer and terms of service for Buzz Filing.",
 }
 
 export default function PrivacyPage() {
