@@ -3,17 +3,33 @@ import Link from "next/link"
 import Navbar from "@/components/sections/navbar"
 import Footer from "@/components/sections/footer"
 import { Badge } from "@/components/ui/badge"
-import { Eye } from "lucide-react"
 import { getDatabase } from "@/config/database"
 
 export const metadata: Metadata = {
-  title: "Blog - BuzzFiling | Business Formation Guides & Resources",
+  title: "Business Formation Blog | LLC Guides & Expert Resources - BuzzFiling",
   description:
-    "Expert guides and resources for starting your business. Learn about LLC formation, tax compliance, state guides, and more from BuzzFiling.",
+    "Expert insights on LLC formation, business registration, compliance, and entrepreneurship. Stay informed with guides, tips, and best practices for starting and managing your business successfully.",
+  keywords: "LLC formation, business registration, startup guides, tax compliance, business formation tips, entrepreneur resources",
+  authors: [{ name: "BuzzFiling Team" }],
   openGraph: {
-    title: "Blog - BuzzFiling",
-    description: "Expert guides and resources for starting your business",
+    title: "Business Formation Blog | Expert Guides & Resources - BuzzFiling",
+    description: "Expert insights on LLC formation, business registration, compliance, and entrepreneurship",
     type: "website",
+    siteName: "BuzzFiling",
+    images: [
+      {
+        url: "/images/buzz-filing-logo.png",
+        width: 1200,
+        height: 630,
+        alt: "BuzzFiling Blog",
+      },
+    ],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Business Formation Blog - BuzzFiling",
+    description: "Expert insights on LLC formation, business registration, and entrepreneurship",
+    images: ["/images/buzz-filing-logo.png"],
   },
 }
 
@@ -104,16 +120,10 @@ export default async function BlogPage() {
                       {post.excerpt}
                     </p>
 
-                    {/* Footer with Explore button and views */}
-                    <div className="flex items-center justify-between pt-3 sm:pt-4 border-t border-slate-100">
+                    {/* Footer with Explore button */}
+                    <div className="flex items-center justify-center pt-3 sm:pt-4 border-t border-slate-100">
                       <div className="inline-flex items-center justify-center px-4 py-1.5 sm:px-6 sm:py-2 bg-slate-900 text-white text-xs sm:text-sm font-semibold rounded-full group-hover:bg-[#ff0d13] transition-colors">
                         Explore
-                      </div>
-
-                      {/* Views count */}
-                      <div className="flex items-center gap-1 sm:gap-1.5 text-slate-600">
-                        <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-                        <span className="text-xs sm:text-sm font-medium">{post.views || 0}</span>
                       </div>
                     </div>
                   </div>

@@ -57,7 +57,7 @@ export default function AuthSelectionPage() {
         <div className="flex justify-center mb-12">
           <Image
             src="/images/buzz-filing-logo.png"
-            alt="BuzzFiling"
+            alt="Buzz Filing"
             width={220}
             height={138}
             className="w-[180px] sm:w-[200px] md:w-[220px] h-auto"

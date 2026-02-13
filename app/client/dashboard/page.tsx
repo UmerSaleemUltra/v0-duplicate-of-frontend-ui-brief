@@ -348,9 +348,9 @@ export default function ClientDashboard() {
     registeredAgent.address &&
     registeredAgent.address.trim() !== "" &&
     registeredAgent.address !== "100 Ambition Parkway" &&
-    registeredAgent.name !== "BuzzFiling Services Inc." &&
-    registeredAgent.name !== "BuzzFiling Services" &&
-    registeredAgent.name !== "BuzzFiling Registered Agent Services"
+    registeredAgent.name !== "Buzz Filing Services Inc." &&
+    registeredAgent.name !== "Buzz Filing Services" &&
+    registeredAgent.name !== "Buzz Filing Registered Agent Services"
 
   const formationMilestones = [
     {

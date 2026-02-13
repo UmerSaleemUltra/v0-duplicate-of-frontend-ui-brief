@@ -37,9 +37,9 @@ export const metadata = {
     "US business formation service",
     "register US company online",
     "Buzz Filing",
-    "BuzzFiling",
+    "Buzz Filing",
     "buzzfiling",
-    "BuzzFiling Karachi",
+    "Buzz Filing Karachi",
     "US C-Corp formation",
     "foreign owned LLC USA",
     "US LLC for non residents",
@@ -193,7 +193,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "@context": "https://schema.org",
               "@type": "ProfessionalService",
               "@id": "https://www.buzzfiling.com/#organization",
-              name: "BuzzFiling",
+              name: "Buzz Filing",
               alternateName: "Buzz Filing",
               url: "https://www.buzzfiling.com",
               logo: {
@@ -204,7 +204,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               },
               image: "https://www.buzzfiling.com/images/buzzfiling-logo.png",
               description:
-                "BuzzFiling is Pakistan's premier US business formation service, helping entrepreneurs establish US LLCs and Corporations with comprehensive support including EIN, registered agent, business address, and compliance services.",
+                "Buzz Filing is Pakistan's premier US business formation service, helping entrepreneurs establish US LLCs and Corporations with comprehensive support including EIN, registered agent, business address, and compliance services.",
               sameAs: [
                 "https://facebook.com/buzzfiling",
                 "https://twitter.com/buzzfiling",

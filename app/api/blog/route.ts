@@ -14,16 +14,7 @@ export async function GET(request: NextRequest) {
     const collection = db.collection("blog_posts")
 
     if (slug) {
-      console.log("[v0] Fetching blog post by slug:", slug)
       const post = await collection.findOne({ slug })
-
-      if (post) {
-        // Increment view count
-        await collection.updateOne({ slug }, { $inc: { views: 1 } })
-        console.log("[v0] Blog post found, incremented views")
-      } else {
-        console.log("[v0] Blog post not found for slug:", slug)
-      }
 
       return NextResponse.json({
         success: true,
@@ -94,7 +85,6 @@ export async function POST(request: NextRequest) {
       metaDescription: metaDescription || excerpt || content.substring(0, 160),
       status: status || "draft",
       author: "Admin",
-      views: 0,
       createdAt: new Date(),
       updatedAt: new Date(),
       publishedAt: status === "published" ? new Date() : null,
