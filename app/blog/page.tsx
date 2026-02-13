@@ -6,28 +6,28 @@ import { Badge } from "@/components/ui/badge"
 import { getDatabase } from "@/config/database"
 
 export const metadata: Metadata = {
-  title: "Business Formation Blog | LLC Guides & Expert Resources - BuzzFiling",
+  title: "Business Formation Blog | LLC Guides & Expert Resources - Buzz Filing",
   description:
     "Expert insights on LLC formation, business registration, compliance, and entrepreneurship. Stay informed with guides, tips, and best practices for starting and managing your business successfully.",
   keywords: "LLC formation, business registration, startup guides, tax compliance, business formation tips, entrepreneur resources",
-  authors: [{ name: "BuzzFiling Team" }],
+  authors: [{ name: "Buzz Filing Team" }],
   openGraph: {
-    title: "Business Formation Blog | Expert Guides & Resources - BuzzFiling",
+    title: "Business Formation Blog | Expert Guides & Resources - Buzz Filing",
     description: "Expert insights on LLC formation, business registration, compliance, and entrepreneurship",
     type: "website",
-    siteName: "BuzzFiling",
+    siteName: "Buzz Filing",
     images: [
       {
         url: "/images/buzz-filing-logo.png",
         width: 1200,
         height: 630,
-        alt: "BuzzFiling Blog",
+        alt: "Buzz Filing Blog",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Business Formation Blog - BuzzFiling",
+    title: "Business Formation Blog - Buzz Filing",
     description: "Expert insights on LLC formation, business registration, and entrepreneurship",
     images: ["/images/buzz-filing-logo.png"],
   },

@@ -2,8 +2,8 @@ import Navbar from "@/components/sections/navbar"
 import Footer from "@/components/sections/footer"
 
 export const metadata = {
-  title: "Terms and Conditions - BuzzFiling",
-  description: "Read BuzzFiling's terms and conditions for using our US business formation services.",
+  title: "Terms and Conditions - Buzz Filing",
+  description: "Read Buzz Filing's terms and conditions for using our US business formation services.",
 }
 
 export default function TermsPage() {

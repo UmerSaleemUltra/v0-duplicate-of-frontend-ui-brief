@@ -586,7 +586,7 @@ Notes: ${mail.notes || "None"}
                   <option value="IRS" />
                   <option value="Secretary of State" />
                   <option value="State Tax Authority" />
-                  <option value="BuzzFiling" />
+                  <option value="Buzz Filing" />
                   <option value="Local Government" />
                   <option value="Federal Agency" />
                 </datalist>
