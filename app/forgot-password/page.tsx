@@ -110,7 +110,7 @@ export default function ForgotPasswordPage() {
             <div className="flex items-center justify-center gap-2 mb-8">
               <Image
                 src="/images/buzz-filing-logo.png"
-                alt="BuzzFiling"
+                alt="Buzz Filing"
                 width={220}
                 height={137}
                 className="w-[180px] sm:w-[200px] md:w-[220px] h-auto"
@@ -167,7 +167,7 @@ export default function ForgotPasswordPage() {
           <div className="flex items-center justify-center gap-2 mb-8">
             <Image
               src="/images/buzz-filing-logo.png"
-              alt="BuzzFiling"
+              alt="Buzz Filing"
               width={220}
               height={137}
               className="w-[180px] sm:w-[200px] md:w-[220px] h-auto"

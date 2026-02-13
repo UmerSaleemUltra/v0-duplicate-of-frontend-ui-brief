@@ -102,7 +102,7 @@ export default function BlockedPage({
         </div>
 
         <p className="text-center text-gray-400 text-sm mt-6 animate-in fade-in duration-1000 delay-500">
-          Security powered by BuzzFiling Advanced Protection System
+          Security powered by Buzz Filing Advanced Protection System
         </p>
       </div>
     </div>

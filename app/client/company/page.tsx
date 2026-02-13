@@ -339,9 +339,9 @@ export default function CompanyPage() {
     companyData.registeredAgent.address !== "100 Ambition Parkway" &&
     companyData.registeredAgent.address !== "Not yet" &&
     companyData.registeredAgent.address !== "Not Yet Assigned" &&
-    companyData.registeredAgent.name !== "BuzzFiling Services Inc." &&
-    companyData.registeredAgent.name !== "BuzzFiling Services" &&
-    companyData.registeredAgent.name !== "BuzzFiling Registered Agent Services"
+    companyData.registeredAgent.name !== "Buzz Filing Services Inc." &&
+    companyData.registeredAgent.name !== "Buzz Filing Services" &&
+    companyData.registeredAgent.name !== "Buzz Filing Registered Agent Services"
 
   const hasBusinessAddress =
     companyData?.businessAddress &&
