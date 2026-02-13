@@ -5,7 +5,7 @@ export async function POST(request: NextRequest) {
   try {
     console.log("[v0] Receipt upload API called")
 
-    const token = "vercel_blob_rw_qzgSC3TMlW6tWgDd_cKLzFHQP4kYvAH9yZ0MqXLJ5v4zJOp"
+    const token = "vercel_blob_rw_enipxGoXoWBCpr7X_5w7RhF4GZzv9S4dBcF8lVwfbINaiXm"
     if (!token) {
       console.error("[v0] BLOB_READ_WRITE_TOKEN is not configured")
       return NextResponse.json(
