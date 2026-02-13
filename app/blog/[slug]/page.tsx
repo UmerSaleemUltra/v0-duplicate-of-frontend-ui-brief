@@ -14,11 +14,6 @@ async function getBlogPost(slug: string) {
 
     const post = await collection.findOne({ slug })
 
-    if (post) {
-      // Increment view count
-      await collection.updateOne({ slug }, { $inc: { views: 1 } })
-    }
-
     // Convert MongoDB _id to string for serialization
     if (post) {
       return {
@@ -29,7 +24,7 @@ async function getBlogPost(slug: string) {
 
     return null
   } catch (error) {
-    console.error("[v0] Error fetching blog post:", error)
+    console.error("Error fetching blog post:", error)
     return null
   }
 }
@@ -44,29 +39,37 @@ export async function generateMetadata({
 
   if (!post) {
     return {
-      title: "Post Not Found",
-      description: "The blog post you're looking for doesn't exist.",
+      title: "Post Not Found - BuzzFiling",
+      description: "The blog post you're looking for doesn't exist. Browse our other articles on business formation and compliance.",
     }
   }
 
   return {
     title: `${post.title} | BuzzFiling Blog`,
-    description: post.metaDescription || post.excerpt,
-    keywords: post.tags?.join(", "),
+    description: post.metaDescription || post.excerpt || post.title,
+    keywords: post.tags?.join(", ") || "LLC formation, business registration, entrepreneurship",
+    authors: [{ name: post.author || "BuzzFiling Team" }],
+    category: post.category || "Business",
     openGraph: {
       title: post.metaTitle || post.title,
-      description: post.metaDescription || post.excerpt,
-      images: post.featuredImage ? [post.featuredImage] : [],
+      description: post.metaDescription || post.excerpt || post.title,
+      images: post.featuredImage ? [{ url: post.featuredImage, width: 1200, height: 630, alt: post.title }] : [{ url: "/images/buzz-filing-logo.png", width: 1200, height: 630, alt: post.title }],
       type: "article",
-      publishedTime: post.publishedAt,
-      authors: [post.author],
-      tags: post.tags,
+      publishedTime: post.publishedAt || post.createdAt,
+      modifiedTime: post.updatedAt,
+      authors: [post.author || "BuzzFiling Team"],
+      tags: post.tags || [],
+      siteName: "BuzzFiling",
     },
     twitter: {
       card: "summary_large_image",
       title: post.metaTitle || post.title,
-      description: post.metaDescription || post.excerpt,
-      images: post.featuredImage ? [post.featuredImage] : [],
+      description: post.metaDescription || post.excerpt || post.title,
+      images: post.featuredImage ? [post.featuredImage] : ["/images/buzz-filing-logo.png"],
+      creator: "@BuzzFiling",
+    },
+    alternates: {
+      canonical: `/blog/${post.slug}`,
     },
   }
 }
@@ -126,24 +129,6 @@ export default async function BlogPostPage({
             <span className="font-medium text-foreground">By {post.author}</span>
             <span className="hidden sm:inline">•</span>
             <time dateTime={post.createdAt}>{publishDate}</time>
-            <span className="hidden sm:inline">•</span>
-            <span className="flex items-center gap-1.5">
-              <svg className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                />
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
-                />
-              </svg>
-              {post.views || 0} views
-            </span>
           </div>
 
           {/* Featured Image */}

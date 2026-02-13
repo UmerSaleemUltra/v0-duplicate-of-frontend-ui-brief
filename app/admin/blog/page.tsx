@@ -266,7 +266,7 @@ export default function BlogManagement() {
 
                     {/* Meta info */}
                     <p className="text-xs text-slate-500 mb-4">
-                      {new Date(post.createdAt).toLocaleDateString()} • {post.views || 0} views
+                      {new Date(post.createdAt).toLocaleDateString()}
                     </p>
 
                     {/* Actions */}

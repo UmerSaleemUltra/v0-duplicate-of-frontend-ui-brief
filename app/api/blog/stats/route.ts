@@ -6,20 +6,10 @@ export async function GET(request: NextRequest) {
     const db = await getDatabase()
     const collection = db.collection("blog_posts")
 
-    const [totalPosts, publishedPosts, draftPosts, totalViews, categories] = await Promise.all([
+    const [totalPosts, publishedPosts, draftPosts, categories] = await Promise.all([
       collection.countDocuments(),
       collection.countDocuments({ status: "published" }),
       collection.countDocuments({ status: "draft" }),
-      collection
-        .aggregate([
-          {
-            $group: {
-              _id: null,
-              total: { $sum: "$views" },
-            },
-          },
-        ])
-        .toArray(),
       collection.distinct("category"),
     ])
 
@@ -29,7 +19,6 @@ export async function GET(request: NextRequest) {
         totalPosts,
         publishedPosts,
         draftPosts,
-        totalViews: totalViews[0]?.total || 0,
         categoriesCount: categories.length,
       },
     })
