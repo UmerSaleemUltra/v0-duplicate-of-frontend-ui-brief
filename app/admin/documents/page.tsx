@@ -772,7 +772,6 @@ export default function DocumentsPage() {
                   <SelectItem value="Operating Agreement">Operating Agreement</SelectItem>
                   <SelectItem value="Certificate of Formation">Certificate of Formation</SelectItem>
                   <SelectItem value="Banking Resolution">Banking Resolution</SelectItem>
-                  <SelectItem value="BOI Report">BOI Report</SelectItem>
                   <SelectItem value="Other">Other</SelectItem>
                 </SelectContent>
               </Select>

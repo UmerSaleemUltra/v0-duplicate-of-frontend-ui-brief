@@ -292,7 +292,6 @@ export async function POST(req: NextRequest) {
         mailingAddressIssued: false,
         formationCompleted: false,
         einProcessed: false,
-        boiReportFiled: false,
       },
       customMilestones: [],
       purchasedAddons: Array.isArray(purchasedAddons) ? purchasedAddons : [],
