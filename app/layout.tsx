@@ -4,6 +4,7 @@ import Script from "next/script"
 import "./globals.css"
 import { AuthProvider } from "@/components/auth/auth-provider"
 import { CompanyProvider } from "@/components/client/company-provider"
+import { Toaster } from "@/components/ui/toaster"
 
 const unbounded = Unbounded({
   subsets: ["latin"],
@@ -299,6 +300,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
           <CompanyProvider>{children}</CompanyProvider>
         </AuthProvider>
+        <Toaster />
       </body>
     </html>
   )
