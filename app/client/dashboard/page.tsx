@@ -377,7 +377,7 @@ export default function ClientDashboard() {
     },
     {
       id: 5,
-      title: "EIN Successfully Processed",
+      title: "EIN Obtained",
       completed: milestones.einProcessed,
       icon: HashIcon,
     },
