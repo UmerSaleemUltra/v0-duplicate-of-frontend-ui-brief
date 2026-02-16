@@ -193,7 +193,6 @@ export default function OrderDetailPage() {
     mailingAddressIssued: false,
     formationCompleted: false,
     einProcessed: false,
-    boiReportFiled: false,
   })
 
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
@@ -504,7 +503,6 @@ export default function OrderDetailPage() {
           mailingAddressIssued: orderData.company.milestones.mailingAddressIssued || false,
           formationCompleted: orderData.company.milestones.formationCompleted || false,
           einProcessed: orderData.company.milestones.einProcessed || false,
-          boiReportFiled: orderData.company.milestones.boiReportFiled || false,
         })
       } else {
         // Initialize with default false values if no milestones exist
@@ -514,7 +512,6 @@ export default function OrderDetailPage() {
           mailingAddressIssued: false,
           formationCompleted: false,
           einProcessed: false,
-          boiReportFiled: false,
         })
       }
 
@@ -768,9 +765,6 @@ export default function OrderDetailPage() {
       }
       if (titleLower.includes("ein") || titleLower.includes("tax id")) {
         updatedMilestones.einProcessed = true
-      }
-      if (titleLower.includes("boi") || titleLower.includes("beneficial ownership")) {
-        updatedMilestones.boiReportFiled = true
       }
 
       const milestonesChanged = Object.keys(updatedMilestones).some(
@@ -2481,27 +2475,8 @@ export default function OrderDetailPage() {
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   ) : (
                     <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.boiReportFiled ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <FileBarChart
-                      className={`w-5 h-5 ${milestones.boiReportFiled ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.boiReportFiled ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      BOI Report Filed
-                    </span>
-                  </div>
-                  {milestones.boiReportFiled ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
+              )}
+            </div>
 
                 {company?.customMilestones && company.customMilestones.length > 0 && (
                   <>
