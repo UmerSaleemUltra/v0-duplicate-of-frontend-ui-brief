@@ -390,11 +390,11 @@ export async function POST(req: NextRequest) {
         const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.userId) })
 
         if (user && user.email) {
-          const emailTemplate = emailTemplates.orderPlacementConfirmation(
+          const emailTemplate = emailTemplates.orderConfirmation(
             user.name || "Valued User",
             name,
             order.orderType,
-            order.pricing.total,
+            `$${order.pricing.total}`,
             order.id,
           )
           await sendEmail({
