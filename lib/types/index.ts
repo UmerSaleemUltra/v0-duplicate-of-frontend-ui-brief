@@ -102,7 +102,6 @@ export interface Company {
     mailingAddressIssued: boolean
     formationCompleted: boolean
     einProcessed: boolean
-    boiReportFiled: boolean
   }
   customMilestones?: Array<{
     id: string

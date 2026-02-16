@@ -3378,21 +3378,6 @@ export default function OrderDetailPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <FileBarChart className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">BOI Report Filed</p>
-                    <p className="text-xs text-slate-500">Beneficial ownership report submitted</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={milestones.boiReportFiled}
-                  onCheckedChange={() => handleMilestoneToggle("boiReportFiled")}
-                  disabled={milestoneUpdating}
-                />
-              </div>
-
               {company?.customMilestones && company.customMilestones.length > 0 && (
                 <>
                   <div className="pt-4 border-t border-slate-200">
