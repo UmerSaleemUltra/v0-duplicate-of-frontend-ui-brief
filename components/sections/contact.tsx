@@ -3,6 +3,7 @@
 import type React from "react"
 import { useState } from "react"
 import Image from "next/image"
+import { useToast } from "@/hooks/use-toast"
 
 export default function ContactSection() {
   const [formData, setFormData] = useState({
@@ -10,9 +11,8 @@ export default function ContactSection() {
     email: "",
     message: "",
   })
-  const [isSubmitted, setIsSubmitted] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState("")
+  const { toast } = useToast()
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -25,7 +25,6 @@ export default function ContactSection() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
-    setError("")
 
     try {
       const response = await fetch("/api/contact", {
@@ -48,13 +47,23 @@ export default function ContactSection() {
           email: "",
           message: "",
         })
-        setIsSubmitted(true)
-        setTimeout(() => setIsSubmitted(false), 4000)
+        toast({
+          title: "Success!",
+          description: "Thank you! Your message has been sent successfully.",
+        })
       } else {
-        setError("Failed to send message. Please try again.")
+        toast({
+          title: "Error",
+          description: "Failed to send message. Please try again.",
+          variant: "destructive",
+        })
       }
     } catch (err) {
-      setError("An error occurred. Please try again later.")
+      toast({
+        title: "Error",
+        description: "An error occurred. Please try again later.",
+        variant: "destructive",
+      })
     } finally {
       setIsSubmitting(false)
     }
@@ -82,18 +91,6 @@ export default function ContactSection() {
           {/* Form Section */}
           <div className="w-full md:w-1/2 p-8 md:p-10">
             <h3 className="text-xl font-semibold text-white mb-6">Send us a message</h3>
-
-            {isSubmitted && (
-              <div className="mb-6 rounded-lg bg-green-500/90 p-4 text-center text-white font-medium shadow-md">
-                Thank you! Your message has been sent successfully.
-              </div>
-            )}
-
-            {error && (
-              <div className="mb-6 rounded-lg bg-red-500/90 p-4 text-center text-white font-medium shadow-md">
-                {error}
-              </div>
-            )}
 
             {/* Form */}
             <form onSubmit={handleSubmit} className="space-y-4 xs:space-y-5">
@@ -153,7 +150,7 @@ export default function ContactSection() {
                   text-[#ff0d13] capitalize bg-white
                   rounded-full px-6 py-3
                   transition-all duration-300 hover:bg-gray-100 hover:shadow-lg
-                  disabled:opacity-50 disabled:cursor-not-allowed"
+                  cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <span>{isSubmitting ? "Sending..." : "Send Message"}</span>
               </button>
