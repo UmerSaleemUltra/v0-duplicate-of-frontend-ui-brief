@@ -11,6 +11,8 @@ export default function ContactSection() {
     message: "",
   })
   const [isSubmitted, setIsSubmitted] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState("")
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target
@@ -20,18 +22,42 @@ export default function ContactSection() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    console.log("Form submitted:", formData)
+    setIsSubmitting(true)
+    setError("")
 
-    setFormData({
-      fullName: "",
-      email: "",
-      message: "",
-    })
+    try {
+      const response = await fetch("/api/contact", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: formData.fullName,
+          email: formData.email,
+          message: formData.message,
+        }),
+      })
 
-    setIsSubmitted(true)
-    setTimeout(() => setIsSubmitted(false), 4000)
+      const data = await response.json()
+
+      if (data.success) {
+        setFormData({
+          fullName: "",
+          email: "",
+          message: "",
+        })
+        setIsSubmitted(true)
+        setTimeout(() => setIsSubmitted(false), 4000)
+      } else {
+        setError("Failed to send message. Please try again.")
+      }
+    } catch (err) {
+      setError("An error occurred. Please try again later.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -60,6 +86,12 @@ export default function ContactSection() {
             {isSubmitted && (
               <div className="mb-6 rounded-lg bg-green-500/90 p-4 text-center text-white font-medium shadow-md">
                 Thank you! Your message has been sent successfully.
+              </div>
+            )}
+
+            {error && (
+              <div className="mb-6 rounded-lg bg-red-500/90 p-4 text-center text-white font-medium shadow-md">
+                {error}
               </div>
             )}
 
@@ -115,13 +147,15 @@ export default function ContactSection() {
 
               <button
                 type="submit"
+                disabled={isSubmitting}
                 className="flex items-center justify-center gap-2 
                   text-sm sm:text-base font-medium
                   text-[#ff0d13] capitalize bg-white
                   rounded-full px-6 py-3
-                  transition-all duration-300 hover:bg-gray-100 hover:shadow-lg"
+                  transition-all duration-300 hover:bg-gray-100 hover:shadow-lg
+                  disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                <span>Send Message</span>
+                <span>{isSubmitting ? "Sending..." : "Send Message"}</span>
               </button>
             </form>
           </div>
