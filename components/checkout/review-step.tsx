@@ -472,23 +472,6 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
               </div>
             )}
 
-            {resellerCertIncluded && (
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-emerald-200 bg-emerald-50">
-                <div className="flex items-center gap-3 flex-1 min-w-0">
-                  <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-emerald-500 to-emerald-600 flex items-center justify-center flex-shrink-0">
-                    <Shield className="w-5 h-5 text-white" />
-                  </div>
-                  <div className="min-w-0 flex-1">
-                    <p className="font-medium text-emerald-900">Reseller Certificate</p>
-                    <p className="text-xs text-emerald-700">Included with Advanced Package</p>
-                  </div>
-                </div>
-                <div className="text-left sm:text-right flex-shrink-0">
-                  <span className="text-lg font-bold text-emerald-600">$0</span>
-                </div>
-              </div>
-            )}
-
             {websitePrice > 0 && (
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 bg-slate-50">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
