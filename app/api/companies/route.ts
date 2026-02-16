@@ -396,6 +396,7 @@ export async function POST(req: NextRequest) {
             order.orderType,
             `$${order.pricing.total}`,
             order.id,
+            name,
           )
           await sendEmail({
             to: user.email,
