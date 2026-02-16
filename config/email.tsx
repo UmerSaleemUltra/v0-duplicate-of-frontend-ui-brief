@@ -132,8 +132,14 @@ export const emailTemplates = {
     `,
   }),
 
-  orderConfirmation: (name: string, orderId: string, companyName: string) => ({
-    subject: `Order Placed Successfully — ${companyName}`,
+  orderConfirmation: (
+    name: string,
+    companyName: string,
+    packageType: string,
+    totalAmount: string,
+    orderId: string,
+  ) => ({
+    subject: `Order Confirmation - ${companyName}`,
     html: `
     <!DOCTYPE html>
     <html>
@@ -160,15 +166,34 @@ export const emailTemplates = {
                     </p>
                     
                     <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Your order has been placed successfully! We're processing your LLC formation for <strong>${companyName}</strong>.
+                      Thank you for your order! We've received your LLC formation request and are processing it now.
                     </p>
                     
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;">
-                      <strong>Order ID:</strong> ${orderId}
+                    <table width="100%" style="margin: 0 0 30px 0; border: 1px solid #e5e5e5; border-radius: 4px;">
+                      <tr>
+                        <td style="padding: 20px; background-color: #fafafa;">
+                          <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;">
+                            <strong>Company Name:</strong> ${companyName}
+                          </p>
+                          <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;">
+                            <strong>Package:</strong> ${packageType}
+                          </p>
+                          <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;">
+                            <strong>Total Amount:</strong> ${totalAmount}
+                          </p>
+                          <p style="margin: 0; font-size: 14px; color: #333333;">
+                            <strong>Order ID:</strong> ${orderId}
+                          </p>
+                        </td>
+                      </tr>
+                    </table>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      We'll keep you updated on your order status. You can track your progress anytime through your dashboard.
                     </p>
                     
                     <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can track your order progress through your dashboard at any time.
+                      If you have any questions, feel free to reach out to our support team.
                     </p>
                   </td>
                 </tr>

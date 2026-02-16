@@ -392,6 +392,9 @@ export async function POST(req: NextRequest) {
         if (user && user.email) {
           const emailTemplate = emailTemplates.orderConfirmation(
             user.name || "Valued User",
+            name,
+            order.orderType,
+            `$${order.pricing.total}`,
             order.id,
             name,
           )
