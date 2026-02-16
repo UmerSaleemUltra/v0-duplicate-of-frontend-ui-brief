@@ -2221,19 +2221,19 @@ export default function OrderDetailPage() {
         </div>
       </div>
 
-      <div className="grid lg:grid-cols-1 gap-6">
-        {/* Main Content - Full Width */}
+      <div className="grid gap-6">
+        {/* Main Content - Responsive Grid */}
         <div className="space-y-6">
           {/* Customer Information Card */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <div className="flex items-center justify-between">
+          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <User className="w-5 h-5" />
+                  <User className="w-5 h-5 text-slate-600" />
                   Customer Information
                 </CardTitle>
                 {!editingCustomer && (
-                  <Button variant="ghost" size="sm" onClick={() => setEditingCustomer(true)} className="h-8 text-xs">
+                  <Button variant="ghost" size="sm" onClick={() => setEditingCustomer(true)} className="h-9 text-xs w-full sm:w-auto">
                     <Settings className="w-4 h-4 mr-1" />
                     Edit
                   </Button>
@@ -2289,18 +2289,18 @@ export default function OrderDetailPage() {
                   </div>
                 </div>
               ) : (
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Customer Name</p>
-                    <p className="text-sm font-medium text-slate-900">{customer?.name || "N/A"}</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Customer Name</p>
+                    <p className="text-sm font-semibold text-slate-900 truncate">{customer?.name || "Unknown"}</p>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Email Address</p>
-                    <p className="text-sm font-medium text-slate-900">{customer?.email || "N/A"}</p>
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Email Address</p>
+                    <p className="text-sm font-semibold text-slate-900 truncate">{customer?.email || "N/A"}</p>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Phone Number</p>
-                    <p className="text-sm font-medium text-slate-900">{customer?.phone || "N/A"}</p>
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Phone Number</p>
+                    <p className="text-sm font-semibold text-slate-900 truncate">{customer?.phone || "N/A"}</p>
                   </div>
                 </div>
               )}
@@ -2535,15 +2535,15 @@ export default function OrderDetailPage() {
             </CardContent>
           </Card>
 
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <div className="flex items-center justify-between">
+          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Building2 className="w-5 h-5" />
+                  <Building2 className="w-5 h-5 text-slate-600" />
                   Company Information
                 </CardTitle>
                 {!editingCompany && (
-                  <Button variant="ghost" size="sm" onClick={() => setEditingCompany(true)} className="h-8 text-xs">
+                  <Button variant="ghost" size="sm" onClick={() => setEditingCompany(true)} className="h-9 text-xs w-full sm:w-auto">
                     <Settings className="w-4 h-4 mr-1" />
                     Edit
                   </Button>
@@ -2674,15 +2674,17 @@ export default function OrderDetailPage() {
           </Card>
 
           {company?.members && company.members.length > 0 && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Users className="w-5 h-5" />
-                  Business Owners / Members
-                </CardTitle>
-                <p className="text-sm text-slate-600 mt-1">
-                  {company.members.length} member{company.members.length !== 1 ? "s" : ""} registered
-                </p>
+            <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+              <CardHeader className="pb-3">
+                <div>
+                  <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                    <Users className="w-5 h-5 text-slate-600" />
+                    Business Owners / Members
+                  </CardTitle>
+                  <p className="text-sm text-slate-600 mt-2">
+                    <span className="font-semibold text-slate-900">{company.members.length}</span> member{company.members.length !== 1 ? "s" : ""} registered
+                  </p>
+                </div>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
@@ -2716,23 +2718,23 @@ export default function OrderDetailPage() {
                         </Badge>
                       </div>
 
-                      <div className="grid sm:grid-cols-2 gap-4 mt-4">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
                         {member.email && (
-                          <div className="p-3 rounded-lg bg-white border border-slate-200">
-                            <p className="text-xs text-slate-500 mb-1">Email Address</p>
-                            <p className="text-sm font-medium text-slate-900">{member.email}</p>
+                          <div className="p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
+                            <p className="text-xs text-slate-500 mb-1.5 font-medium">Email Address</p>
+                            <p className="text-sm font-semibold text-slate-900 truncate">{member.email}</p>
                           </div>
                         )}
                         {member.phone && (
-                          <div className="p-3 rounded-lg bg-white border border-slate-200">
-                            <p className="text-xs text-slate-500 mb-1">Phone Number</p>
-                            <p className="text-sm font-medium text-slate-900">{member.phone}</p>
+                          <div className="p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
+                            <p className="text-xs text-slate-500 mb-1.5 font-medium">Phone Number</p>
+                            <p className="text-sm font-semibold text-slate-900">{member.phone}</p>
                           </div>
                         )}
                         {member.address && (
-                          <div className="sm:col-span-2 p-3 rounded-lg bg-white border border-slate-200">
-                            <p className="text-xs text-slate-500 mb-1">Full Address</p>
-                            <p className="text-sm font-medium text-slate-900">
+                          <div className="sm:col-span-2 p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
+                            <p className="text-xs text-slate-500 mb-1.5 font-medium">Full Address</p>
+                            <p className="text-sm font-semibold text-slate-900 leading-relaxed">
                               {member.address}
                               {member.city && `, ${member.city}`}
                               {member.state && `, ${member.state}`}
@@ -2742,14 +2744,14 @@ export default function OrderDetailPage() {
                           </div>
                         )}
                         {member.ssn && (
-                          <div className="p-3 rounded-lg bg-white border border-slate-200">
-                            <p className="text-xs text-slate-500 mb-1">SSN / ITIN</p>
-                            <p className="text-sm font-medium text-slate-900 font-mono">{member.ssn}</p>
+                          <div className="p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
+                            <p className="text-xs text-slate-500 mb-1.5 font-medium">SSN / ITIN</p>
+                            <p className="text-sm font-semibold text-slate-900 font-mono">{member.ssn}</p>
                           </div>
                         )}
                         {member.passportUrl && (
-                          <div className="p-3 rounded-lg bg-white border border-slate-200">
-                            <p className="text-xs text-slate-500 mb-2">Passport / ID Document</p>
+                          <div className="p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
+                            <p className="text-xs text-slate-500 mb-2 font-medium">Passport / ID Document</p>
                             <Button
                               size="sm"
                               variant="outline"
@@ -2763,7 +2765,7 @@ export default function OrderDetailPage() {
                         )}
                         {member.itinAdded && (
                           <div className="sm:col-span-2">
-                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 px-3 py-1.5">
+                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 px-3 py-1.5 text-xs">
                               <AlertCircle className="w-3 h-3 mr-1" />
                               ITIN Application Requested
                             </Badge>
@@ -2777,37 +2779,37 @@ export default function OrderDetailPage() {
             </Card>
           )}
 
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
+          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
               <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Receipt className="w-5 h-5" />
+                <Receipt className="w-5 h-5 text-slate-600" />
                 Order & Pricing Details
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div className="space-y-4">
                 {/* Pricing Breakdown */}
-                <div className="grid sm:grid-cols-2 gap-3">
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Package Price</p>
-                    <p className="text-lg font-bold text-slate-900">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Package Price</p>
+                    <p className="text-xl font-bold text-slate-900">
                       ${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}
                     </p>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">State Filing Fee</p>
-                    <p className="text-lg font-bold text-slate-900">
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <p className="text-xs text-slate-600 mb-1.5 font-medium">State Filing Fee</p>
+                    <p className="text-xl font-bold text-slate-900">
                       ${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}
                     </p>
                   </div>
-                  <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
-                    <p className="text-lg font-bold text-slate-900">
+                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
+                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Add-ons Total</p>
+                    <p className="text-xl font-bold text-slate-900">
                       ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
                     </p>
                   </div>
-                  <div className="p-3 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-slate-200">
-                    <p className="text-xs text-white mb-1">Total Amount</p>
+                  <div className="p-4 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-transparent shadow-md">
+                    <p className="text-xs text-white/90 mb-1.5 font-medium">Total Amount</p>
                     <p className="text-2xl font-bold text-white">
                       ${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}
                     </p>
@@ -2878,13 +2880,15 @@ export default function OrderDetailPage() {
           </Card>
 
           {/* Add-ons Card */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Add-ons
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">Selected services and add-ons</p>
+          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div>
+                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                  <Package className="w-5 h-5 text-slate-600" />
+                  Add-ons
+                </CardTitle>
+                <p className="text-sm text-slate-600 mt-2">Selected services and add-ons</p>
+              </div>
             </CardHeader>
             <CardContent>
               {order?.addons && order.addons.length > 0 ? (
@@ -3173,13 +3177,25 @@ export default function OrderDetailPage() {
 
           {/* Registered Agent Address - Conditional Rendering */}
           {company?.registeredAgent && company.registeredAgent.address && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <MapPin className="w-5 h-5" />
-                  Registered Agent Address
-                </CardTitle>
-              </CardHeader>
+          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+            <CardHeader className="pb-3">
+              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                <div className="flex-1">
+                  <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
+                    <CheckCircle2 className="w-5 h-5 text-green-600" />
+                    Progress Tracking
+                  </CardTitle>
+                  <p className="text-sm text-slate-600 mt-2">
+                    <span className="font-semibold text-slate-900">{completedMilestonesWithCustom}</span> of{" "}
+                    <span className="font-semibold text-slate-900">{totalMilestonesWithCustom}</span> milestones completed
+                  </p>
+                </div>
+                <Button variant="outline" size="sm" onClick={() => setCustomMilestoneDialogOpen(true)} className="h-9 w-full sm:w-auto">
+                  <Plus className="w-4 h-4 mr-2" />
+                  Add Custom
+                </Button>
+              </div>
+            </CardHeader>
               <CardContent>
                 <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
                   <p className="text-sm font-medium text-slate-900">{company.registeredAgent.companyName}</p>
@@ -3300,14 +3316,86 @@ export default function OrderDetailPage() {
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-3">
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <Package className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">Order Successfully Processed</p>
-                    <p className="text-xs text-slate-500">Articles of Organization uploaded</p>
+              <div className="space-y-2">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                  <div className="flex items-start gap-3 flex-1">
+                    <Package className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900">Order Processed</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Order received and confirmed</p>
+                    </div>
                   </div>
+                  <Switch
+                    checked={milestones.orderProcessed}
+                    onCheckedChange={() => handleMilestoneToggle("orderProcessed")}
+                    disabled={milestoneUpdating}
+                    className="flex-shrink-0"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                  <div className="flex items-start gap-3 flex-1">
+                    <UserCheck className="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900">Registered Agent Assigned</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Agent information provided</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={milestones.registeredAgentAssigned}
+                    onCheckedChange={() => handleMilestoneToggle("registeredAgentAssigned")}
+                    disabled={milestoneUpdating}
+                    className="flex-shrink-0"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                  <div className="flex items-start gap-3 flex-1">
+                    <Home className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900">Mailing Address Issued</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Business address assigned</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={milestones.mailingAddressIssued}
+                    onCheckedChange={() => handleMilestoneToggle("mailingAddressIssued")}
+                    disabled={milestoneUpdating}
+                    className="flex-shrink-0"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                  <div className="flex items-start gap-3 flex-1">
+                    <FileCheck className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900">Formation Completed</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Business entity formed</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={milestones.formationCompleted}
+                    onCheckedChange={() => handleMilestoneToggle("formationCompleted")}
+                    disabled={milestoneUpdating}
+                    className="flex-shrink-0"
+                  />
+                </div>
+
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                  <div className="flex items-start gap-3 flex-1">
+                    <HashIcon className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-slate-900">EIN Processed</p>
+                      <p className="text-xs text-slate-500 mt-0.5">Tax ID number obtained</p>
+                    </div>
+                  </div>
+                  <Switch
+                    checked={milestones.einProcessed}
+                    onCheckedChange={() => handleMilestoneToggle("einProcessed")}
+                    disabled={milestoneUpdating}
+                    className="flex-shrink-0"
+                  />
+                </div>
                 </div>
                 <Switch
                   checked={milestones.orderProcessed}
