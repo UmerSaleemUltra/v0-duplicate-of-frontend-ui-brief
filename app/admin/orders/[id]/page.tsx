@@ -190,11 +190,12 @@ export default function OrderDetailPage() {
   })
 
   const [milestones, setMilestones] = useState({
-    orderProcessed: false,
+    orderSuccessfullyProcessed: false,
     registeredAgentAssigned: false,
-    mailingAddressIssued: false,
-    formationCompleted: false,
-    einProcessed: false,
+    businessMailingAddressIssued: false,
+    companyFormationCompleted: false,
+    einApplicationSubmitted: false,
+    einObtainedFromApis: false,
   })
 
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
@@ -503,21 +504,23 @@ export default function OrderDetailPage() {
       if (orderData.company?.milestones) {
         console.log("[v0] Initializing milestones from company data:", orderData.company.milestones)
         setMilestones({
-          orderProcessed: orderData.company.milestones.orderProcessed || false,
+          orderSuccessfullyProcessed: orderData.company.milestones.orderSuccessfullyProcessed || false,
           registeredAgentAssigned: orderData.company.milestones.registeredAgentAssigned || false,
-          mailingAddressIssued: orderData.company.milestones.mailingAddressIssued || false,
-          formationCompleted: orderData.company.milestones.formationCompleted || false,
-          einProcessed: orderData.company.milestones.einProcessed || false,
+          businessMailingAddressIssued: orderData.company.milestones.businessMailingAddressIssued || false,
+          companyFormationCompleted: orderData.company.milestones.companyFormationCompleted || false,
+          einApplicationSubmitted: orderData.company.milestones.einApplicationSubmitted || false,
+          einObtainedFromApis: orderData.company.milestones.einObtainedFromApis || false,
         })
       } else {
         // Initialize with default false values if no milestones exist
         setMilestones({
-          orderProcessed: false,
+          orderSuccessfullyProcessed: false,
           registeredAgentAssigned: false,
-          mailingAddressIssued: false,
-          formationCompleted: false,
-          einProcessed: false,
-        })
+          businessMailingAddressIssued: false,
+          companyFormationCompleted: false,
+          einApplicationSubmitted: false,
+          einObtainedFromApis: false,
+        }
       }
 
       if (orderData.company?.registeredAgent) {
@@ -757,19 +760,19 @@ export default function OrderDetailPage() {
       const updatedMilestones = { ...milestones }
 
       if (titleLower.includes("articles") || titleLower.includes("organization")) {
-        updatedMilestones.orderProcessed = true
+        updatedMilestones.orderSuccessfullyProcessed = true
       }
       if (titleLower.includes("registered agent") || titleLower.includes("agent appointed")) {
         updatedMilestones.registeredAgentAssigned = true
       }
       if (titleLower.includes("address") || titleLower.includes("mailing")) {
-        updatedMilestones.mailingAddressIssued = true
+        updatedMilestones.businessMailingAddressIssued = true
       }
       if (titleLower.includes("formation") || titleLower.includes("certificate")) {
-        updatedMilestones.formationCompleted = true
+        updatedMilestones.companyFormationCompleted = true
       }
       if (titleLower.includes("ein") || titleLower.includes("tax id")) {
-        updatedMilestones.einProcessed = true
+        updatedMilestones.einObtainedFromApis = true
       }
 
       const milestonesChanged = Object.keys(updatedMilestones).some(
@@ -967,7 +970,7 @@ export default function OrderDetailPage() {
           mailingAddressStatus: "active",
           milestones: {
             ...milestones,
-            mailingAddressIssued: true,
+            businessMailingAddressIssued: true,
           },
         }),
       })
@@ -983,7 +986,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Mailing address assigned successfully:", updatedCompany.mailingAddress)
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, mailingAddressIssued: true })
+      setMilestones(updatedCompany.milestones || { ...milestones, businessMailingAddressIssued: true })
       setMailingAddressDialogOpen(false)
 
       toast({
@@ -1026,7 +1029,7 @@ export default function OrderDetailPage() {
           ein: einValue.trim(),
           milestones: {
             ...milestones,
-            einProcessed: true,
+            einObtainedFromApis: true,
           },
         }),
       })
@@ -1039,7 +1042,7 @@ export default function OrderDetailPage() {
       console.log("[v0] EIN assigned successfully")
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, einProcessed: true })
+      setMilestones(updatedCompany.milestones || { ...milestones, einObtainedFromApis: true })
       setEinDialogOpen(false)
       setEinValue("")
 
@@ -1137,7 +1140,7 @@ export default function OrderDetailPage() {
           businessId: businessIdValue.trim(),
           milestones: {
             ...milestones,
-            formationCompleted: true,
+            companyFormationCompleted: true,
           },
         }),
       })
@@ -1150,7 +1153,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Business ID assigned successfully")
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, formationCompleted: true })
+      setMilestones(updatedCompany.milestones || { ...milestones, companyFormationCompleted: true })
       setBusinessIdDialogOpen(false)
       setBusinessIdValue("")
 
@@ -1805,7 +1808,7 @@ export default function OrderDetailPage() {
           ein: null,
           milestones: {
             ...milestones,
-            einProcessed: false,
+            einObtainedFromApis: false,
           },
         }),
       })
@@ -1818,7 +1821,7 @@ export default function OrderDetailPage() {
       console.log("[v0] EIN removed successfully")
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, einProcessed: false })
+      setMilestones(updatedCompany.milestones || { ...milestones, einObtainedFromApis: false })
 
       toast({
         title: "EIN Removed",
@@ -1900,7 +1903,7 @@ export default function OrderDetailPage() {
           businessId: null,
           milestones: {
             ...milestones,
-            formationCompleted: false,
+            companyFormationCompleted: false,
           },
         }),
       })
@@ -1913,7 +1916,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Business ID removed successfully")
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, formationCompleted: false })
+      setMilestones(updatedCompany.milestones || { ...milestones, companyFormationCompleted: false })
 
       toast({
         title: "Business ID Removed",
@@ -2392,17 +2395,17 @@ export default function OrderDetailPage() {
               {/* Milestone List */}
               <div className="space-y-2">
                 <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.orderProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.orderSuccessfullyProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
                   <div className="flex items-center gap-3">
-                    <Package className={`w-5 h-5 ${milestones.orderProcessed ? "text-green-600" : "text-slate-400"}`} />
+                    <Package className={`w-5 h-5 ${milestones.orderSuccessfullyProcessed ? "text-green-600" : "text-slate-400"}`} />
                     <span
-                      className={`text-sm font-medium ${milestones.orderProcessed ? "text-slate-900" : "text-slate-600"}`}
+                      className={`text-sm font-medium ${milestones.orderSuccessfullyProcessed ? "text-slate-900" : "text-slate-600"}`}
                     >
                       Order Successfully Processed
                     </span>
                   </div>
-                  {milestones.orderProcessed ? (
+                  {milestones.orderSuccessfullyProcessed ? (
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   ) : (
                     <Clock className="w-5 h-5 text-slate-400" />
@@ -2428,55 +2431,55 @@ export default function OrderDetailPage() {
                   )}
                 </div>
                 <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.mailingAddressIssued ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.businessMailingAddressIssued ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
                   <div className="flex items-center gap-3">
                     <Home
-                      className={`w-5 h-5 ${milestones.mailingAddressIssued ? "text-green-600" : "text-slate-400"}`}
+                      className={`w-5 h-5 ${milestones.businessMailingAddressIssued ? "text-green-600" : "text-slate-400"}`}
                     />
                     <span
-                      className={`text-sm font-medium ${milestones.mailingAddressIssued ? "text-slate-900" : "text-slate-600"}`}
+                      className={`text-sm font-medium ${milestones.businessMailingAddressIssued ? "text-slate-900" : "text-slate-600"}`}
                     >
                       Business Mailing Address Issued
                     </span>
                   </div>
-                  {milestones.mailingAddressIssued ? (
+                  {milestones.businessMailingAddressIssued ? (
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   ) : (
                     <Clock className="w-5 h-5 text-slate-400" />
                   )}
                 </div>
                 <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.formationCompleted ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.companyFormationCompleted ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
                   <div className="flex items-center gap-3">
                     <FileCheck
-                      className={`w-5 h-5 ${milestones.formationCompleted ? "text-green-600" : "text-slate-400"}`}
+                      className={`w-5 h-5 ${milestones.companyFormationCompleted ? "text-green-600" : "text-slate-400"}`}
                     />
                     <span
-                      className={`text-sm font-medium ${milestones.formationCompleted ? "text-slate-900" : "text-slate-600"}`}
+                      className={`text-sm font-medium ${milestones.companyFormationCompleted ? "text-slate-900" : "text-slate-600"}`}
                     >
                       Company Formation Completed
                     </span>
                   </div>
-                  {milestones.formationCompleted ? (
+                  {milestones.companyFormationCompleted ? (
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   ) : (
                     <Clock className="w-5 h-5 text-slate-400" />
                   )}
                 </div>
                 <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.einProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.einObtainedFromApis ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
                   <div className="flex items-center gap-3">
-                    <HashIcon className={`w-5 h-5 ${milestones.einProcessed ? "text-green-600" : "text-slate-400"}`} />
+                    <HashIcon className={`w-5 h-5 ${milestones.einObtainedFromApis ? "text-green-600" : "text-slate-400"}`} />
                     <span
-                      className={`text-sm font-medium ${milestones.einProcessed ? "text-slate-900" : "text-slate-600"}`}
+                      className={`text-sm font-medium ${milestones.einObtainedFromApis ? "text-slate-900" : "text-slate-600"}`}
                     >
                       EIN Successfully Processed
                     </span>
                   </div>
-                  {milestones.einProcessed ? (
+                  {milestones.einObtainedFromApis ? (
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   ) : (
                     <Clock className="w-5 h-5 text-slate-400" />

@@ -59,11 +59,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           packageType: company.packageType,
           members: company.members || [],
         milestones: company.milestones || {
-          orderProcessed: false,
+          orderSuccessfullyProcessed: false,
           registeredAgentAssigned: false,
-          mailingAddressIssued: false,
-          formationCompleted: false,
-          einProcessed: false,
+          businessMailingAddressIssued: false,
+          companyFormationCompleted: false,
+          einApplicationSubmitted: false,
+          einObtainedFromApis: false,
         },
           customMilestones: company.customMilestones || [],
           purchasedAddons: company.purchasedAddons || [],
@@ -162,11 +163,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       const newMilestones = body.milestones
 
       const milestoneMap: Record<string, string> = {
-        orderProcessed: "Order Successfully Processed",
+        orderSuccessfullyProcessed: "Order Successfully Processed",
         registeredAgentAssigned: "Registered Agent Assigned",
-        mailingAddressIssued: "Business Mailing Address Issued",
-        formationCompleted: "Company Formation Completed",
-        einProcessed: "EIN Successfully Obtained",
+        businessMailingAddressIssued: "Business Mailing Address Issued",
+        companyFormationCompleted: "Company Formation Completed",
+        einApplicationSubmitted: "EIN Application Submitted",
+        einObtainedFromApis: "EIN Obtained from APIs",
       }
 
       for (const [key, title] of Object.entries(milestoneMap)) {
