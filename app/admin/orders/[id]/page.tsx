@@ -3486,17 +3486,6 @@ export default function OrderDetailPage() {
                   ))}
                 </>
               )}
-                        </div>
-                      </div>
-                      <Switch
-                        checked={customMilestone.completed}
-                        onCheckedChange={() => handleCustomMilestoneToggle(customMilestone.id)}
-                        disabled={milestoneUpdating}
-                      />
-                    </div>
-                  ))}
-                </>
-              )}
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
