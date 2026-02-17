@@ -162,31 +162,49 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       const oldMilestones = company.milestones || {}
       const newMilestones = body.milestones
 
-      const milestoneMap: Record<string, string> = {
-        orderSuccessfullyProcessed: "Order Successfully Processed",
-        registeredAgentAssigned: "Registered Agent Assigned",
-        businessMailingAddressIssued: "Business Mailing Address Issued",
-        companyFormationCompleted: "Company Formation Completed",
-        einApplicationSubmitted: "EIN Application Submitted",
-        einObtained: "EIN Obtained Successfully",
+      const milestoneMap: Record<string, { title: string; emailTemplate: string }> = {
+        orderSuccessfullyProcessed: {
+          title: "Order Successfully Processed",
+          emailTemplate: "orderStarted",
+        },
+        registeredAgentAssigned: {
+          title: "Registered Agent Assigned",
+          emailTemplate: "registeredAgentAssigned",
+        },
+        businessMailingAddressIssued: {
+          title: "Business Mailing Address Issued",
+          emailTemplate: "businessAddressAssigned",
+        },
+        companyFormationCompleted: {
+          title: "Company Formation Completed",
+          emailTemplate: "companyFormed",
+        },
+        einApplicationSubmitted: {
+          title: "EIN Application Submitted",
+          emailTemplate: "einUploaded",
+        },
+        einObtained: {
+          title: "EIN Obtained Successfully",
+          emailTemplate: "einObtained",
+        },
       }
 
-      for (const [key, title] of Object.entries(milestoneMap)) {
+      for (const [key, config] of Object.entries(milestoneMap)) {
         if (!oldMilestones[key] && newMilestones[key]) {
-          console.log("[v0] Milestone completed:", key, "-", title)
+          console.log("[v0] Milestone completed:", key, "-", config.title)
           try {
             await db.collection("notifications").insertOne({
               userId: company.userId,
               type: "milestone",
               title: "Milestone Completed",
-              message: `${title} for ${company.name}`,
+              message: `${config.title} for ${company.name}`,
               read: false,
               actionUrl: "/client/dashboard",
               metadata: {
                 companyId: company._id.toString(),
                 companyName: company.name,
                 milestoneName: key,
-                milestoneTitle: title,
+                milestoneTitle: config.title,
               },
               createdAt: new Date().toISOString(),
             })
@@ -200,8 +218,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 .findOne({ _id: new ObjectId(company.userId) }, { projection: { name: 1, email: 1 } })
 
               if (user) {
-                const milestoneEmail = emailTemplates.milestoneCompleted(user.name, title, company.name)
-                await sendEmail({ to: user.email, subject: milestoneEmail.subject, html: milestoneEmail.html })
+                const emailTemplateFunc = (emailTemplates as any)[config.emailTemplate]
+                if (emailTemplateFunc) {
+                  const milestoneEmail = emailTemplateFunc(user.name, company.name)
+                  await sendEmail({ to: user.email, subject: milestoneEmail.subject, html: milestoneEmail.html })
+                  console.log("[v0] Sent milestone email:", config.emailTemplate)
+                }
               }
             } catch (emailError) {
               console.log("[v0] Error sending milestone email (non-critical):", emailError)
@@ -210,7 +232,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             console.log("[v0] Error creating milestone notification:", notifError)
           }
         } else if (oldMilestones[key] && !newMilestones[key]) {
-          console.log("[v0] Milestone uncompleted:", key, "-", title)
+          console.log("[v0] Milestone uncompleted:", key, "-", config.title)
           try {
             await db.collection("notifications").deleteMany({
               userId: company.userId,

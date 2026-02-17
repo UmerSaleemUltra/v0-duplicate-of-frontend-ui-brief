@@ -173,7 +173,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             entityType: companyDoc.entityType,
             formationDate: companyDoc.formationDate,
           milestones: {
-            orderSuccessfullyProcessed: companyDoc.milestones?.orderSuccessfullyProcessed || true,
+            orderSuccessfullyProcessed: companyDoc.milestones?.orderSuccessfullyProcessed || false,
             registeredAgentAssigned: companyDoc.milestones?.registeredAgentAssigned || false,
             businessMailingAddressIssued: companyDoc.milestones?.businessMailingAddressIssued || false,
             companyFormationCompleted: companyDoc.milestones?.companyFormationCompleted || false,
@@ -387,6 +387,24 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             },
           },
         )
+
+        try {
+          const { sendEmail, emailTemplates } = await import("@/config/email")
+          const company = await db.collection("companies").findOne({ _id: companyIdObj })
+          if (company && company.userId) {
+            const user = await db
+              .collection("users")
+              .findOne({ _id: new ObjectId(company.userId) }, { projection: { name: 1, email: 1 } })
+
+            if (user) {
+              const completionEmail = emailTemplates.orderCompleted(user.name, company.name)
+              await sendEmail({ to: user.email, subject: completionEmail.subject, html: completionEmail.html })
+              console.log("[v0] Sent order completion email to:", user.email)
+            }
+          }
+        } catch (emailError) {
+          console.log("[v0] Error sending order completion email (non-critical):", emailError)
+        }
       }
     }
 
