@@ -168,7 +168,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         businessMailingAddressIssued: "Business Mailing Address Issued",
         companyFormationCompleted: "Company Formation Completed",
         einApplicationSubmitted: "EIN Application Submitted",
-        einObtained: "EIN Obtained",
+        einObtained: "EIN Obtained Successfully",
       }
 
       for (const [key, title] of Object.entries(milestoneMap)) {

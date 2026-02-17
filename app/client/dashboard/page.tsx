@@ -385,7 +385,7 @@ export default function ClientDashboard() {
     },
     {
       id: 6,
-      title: "EIN Obtained from APIs",
+      title: "EIN Obtained Successfully",
       completed: milestones.einObtained,
       icon: CheckCircle2,
     },
