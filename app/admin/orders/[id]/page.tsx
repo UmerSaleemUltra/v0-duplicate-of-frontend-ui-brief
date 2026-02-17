@@ -3499,6 +3499,7 @@ export default function OrderDetailPage() {
               )}
             </div>
 
+            <div className="flex justify-end gap-3 pt-4 border-t">
               <Button variant="outline" onClick={() => setMilestonesDialogOpen(false)} className="h-10">
                 Close
               </Button>
