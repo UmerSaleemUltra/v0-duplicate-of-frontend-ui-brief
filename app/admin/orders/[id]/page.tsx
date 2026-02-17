@@ -520,7 +520,7 @@ export default function OrderDetailPage() {
           companyFormationCompleted: false,
           einApplicationSubmitted: false,
           einObtainedFromApis: false,
-        }
+        })
       }
 
       if (orderData.company?.registeredAgent) {
