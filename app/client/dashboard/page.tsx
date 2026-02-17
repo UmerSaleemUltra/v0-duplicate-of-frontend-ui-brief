@@ -155,11 +155,12 @@ export default function ClientDashboard() {
     if (!company) return
 
   const defaultMilestones = [
-    company.milestones?.orderProcessed,
+    company.milestones?.orderSuccessfullyProcessed,
     company.milestones?.registeredAgentAssigned,
-    company.milestones?.mailingAddressIssued,
-    company.milestones?.formationCompleted,
-    company.milestones?.einProcessed,
+    company.milestones?.businessMailingAddressIssued,
+    company.milestones?.companyFormationCompleted,
+    company.milestones?.einApplicationSubmitted,
+    company.milestones?.einObtainedFromApis,
   ]
 
     const customMilestoneValues = Object.values(company.milestones?.custom || {}).map((m: any) => m.completed)
@@ -171,7 +172,7 @@ export default function ClientDashboard() {
     console.log("[v0] Custom milestone values:", customMilestoneValues)
 
   const allDefaultMilestonesComplete =
-    defaultMilestones.length === 5 &&
+    defaultMilestones.length === 6 &&
     defaultMilestones.every((m) => m === true) &&
     defaultMilestones.filter((m) => m === undefined || m === null).length === 0
 
@@ -331,11 +332,12 @@ export default function ClientDashboard() {
   const orderId = order?.id || "ORD-XXXX-XXXX"
 
   const milestones = company?.milestones || {
-    orderProcessed: true,
+    orderSuccessfullyProcessed: true,
     registeredAgentAssigned: true,
-    mailingAddressIssued: true,
-    formationCompleted: false,
-    einProcessed: false,
+    businessMailingAddressIssued: true,
+    companyFormationCompleted: false,
+    einApplicationSubmitted: false,
+    einObtainedFromApis: false,
   }
 
   const registeredAgent = company?.registeredAgent
@@ -354,7 +356,7 @@ export default function ClientDashboard() {
     {
       id: 1,
       title: "Order Successfully Processed",
-      completed: milestones.orderProcessed,
+      completed: milestones.orderSuccessfullyProcessed,
       icon: Package,
     },
     {
@@ -366,20 +368,26 @@ export default function ClientDashboard() {
     {
       id: 3,
       title: "Business Mailing Address Issued",
-      completed: milestones.mailingAddressIssued,
+      completed: milestones.businessMailingAddressIssued,
       icon: Home,
     },
     {
       id: 4,
       title: "Company Formation Completed",
-      completed: milestones.formationCompleted,
+      completed: milestones.companyFormationCompleted,
       icon: FileCheck,
     },
     {
       id: 5,
-      title: "EIN Obtained",
-      completed: milestones.einProcessed,
+      title: "EIN Application Submitted",
+      completed: milestones.einApplicationSubmitted,
       icon: HashIcon,
+    },
+    {
+      id: 6,
+      title: "EIN Obtained from APIs",
+      completed: milestones.einObtainedFromApis,
+      icon: CheckCircle2,
     },
   ]
 

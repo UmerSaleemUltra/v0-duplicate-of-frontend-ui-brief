@@ -97,11 +97,12 @@ export interface Company {
     zip: string
   }
   milestones?: {
-    orderProcessed: boolean
+    orderSuccessfullyProcessed: boolean
     registeredAgentAssigned: boolean
-    mailingAddressIssued: boolean
-    formationCompleted: boolean
-    einProcessed: boolean
+    businessMailingAddressIssued: boolean
+    companyFormationCompleted: boolean
+    einApplicationSubmitted: boolean
+    einObtainedFromApis: boolean
   }
   customMilestones?: Array<{
     id: string
