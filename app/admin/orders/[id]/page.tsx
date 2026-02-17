@@ -1,5 +1,6 @@
 "use client"
 
+// Order Detail Page - Admin view for managing individual orders
 import { Switch } from "@/components/ui/switch"
 import { StatusUpdateModal } from "@/components/status-update-modal"
 import { AdminManualDataModal } from "@/components/admin-manual-data-modal"
