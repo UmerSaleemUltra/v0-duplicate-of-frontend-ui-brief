@@ -130,6 +130,8 @@ export default function OrderDetailPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
   const [deletingMilestoneId, setDeletingMilestoneId] = useState<string | null>(null)
+  
+  console.log("[v0] deletingMilestoneId state:", deletingMilestoneId)
 
   const [companyStatusDialogOpen, setCompanyStatusDialogOpen] = useState(false)
   const [registeredAgentStatusDialogOpen, setRegisteredAgentStatusDialogOpen] = useState(false)
