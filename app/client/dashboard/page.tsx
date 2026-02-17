@@ -160,7 +160,7 @@ export default function ClientDashboard() {
     company.milestones?.businessMailingAddressIssued,
     company.milestones?.companyFormationCompleted,
     company.milestones?.einApplicationSubmitted,
-    company.milestones?.einObtainedFromApis,
+    company.milestones?.einObtained,
   ]
 
     const customMilestoneValues = Object.values(company.milestones?.custom || {}).map((m: any) => m.completed)
@@ -337,7 +337,7 @@ export default function ClientDashboard() {
     businessMailingAddressIssued: true,
     companyFormationCompleted: false,
     einApplicationSubmitted: false,
-    einObtainedFromApis: false,
+    einObtained: false,
   }
 
   const registeredAgent = company?.registeredAgent
@@ -386,7 +386,7 @@ export default function ClientDashboard() {
     {
       id: 6,
       title: "EIN Obtained from APIs",
-      completed: milestones.einObtainedFromApis,
+      completed: milestones.einObtained,
       icon: CheckCircle2,
     },
   ]

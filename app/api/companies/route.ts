@@ -292,7 +292,7 @@ export async function POST(req: NextRequest) {
         businessMailingAddressIssued: false,
         companyFormationCompleted: false,
         einApplicationSubmitted: false,
-        einObtainedFromApis: false,
+        einObtained: false,
       },
       customMilestones: [],
       purchasedAddons: Array.isArray(purchasedAddons) ? purchasedAddons : [],
