@@ -3317,85 +3317,85 @@ export default function OrderDetailPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
-                  <div className="flex items-start gap-3 flex-1">
-                    <Package className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900">Order Processed</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Order received and confirmed</p>
-                    </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                <div className="flex items-start gap-3 flex-1">
+                  <Package className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">Order Processed</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Order received and confirmed</p>
                   </div>
-                  <Switch
-                    checked={milestones.orderProcessed}
-                    onCheckedChange={() => handleMilestoneToggle("orderProcessed")}
-                    disabled={milestoneUpdating}
-                    className="flex-shrink-0"
-                  />
                 </div>
+                <Switch
+                  checked={milestones.orderProcessed}
+                  onCheckedChange={() => handleMilestoneToggle("orderProcessed")}
+                  disabled={milestoneUpdating}
+                  className="flex-shrink-0"
+                />
+              </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
-                  <div className="flex items-start gap-3 flex-1">
-                    <UserCheck className="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900">Registered Agent Assigned</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Agent information provided</p>
-                    </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                <div className="flex items-start gap-3 flex-1">
+                  <UserCheck className="w-5 h-5 text-indigo-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">Registered Agent Assigned</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Agent information provided</p>
                   </div>
-                  <Switch
-                    checked={milestones.registeredAgentAssigned}
-                    onCheckedChange={() => handleMilestoneToggle("registeredAgentAssigned")}
-                    disabled={milestoneUpdating}
-                    className="flex-shrink-0"
-                  />
                 </div>
+                <Switch
+                  checked={milestones.registeredAgentAssigned}
+                  onCheckedChange={() => handleMilestoneToggle("registeredAgentAssigned")}
+                  disabled={milestoneUpdating}
+                  className="flex-shrink-0"
+                />
+              </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
-                  <div className="flex items-start gap-3 flex-1">
-                    <Home className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900">Mailing Address Issued</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Business address assigned</p>
-                    </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                <div className="flex items-start gap-3 flex-1">
+                  <Home className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">Mailing Address Issued</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Business address assigned</p>
                   </div>
-                  <Switch
-                    checked={milestones.mailingAddressIssued}
-                    onCheckedChange={() => handleMilestoneToggle("mailingAddressIssued")}
-                    disabled={milestoneUpdating}
-                    className="flex-shrink-0"
-                  />
                 </div>
+                <Switch
+                  checked={milestones.mailingAddressIssued}
+                  onCheckedChange={() => handleMilestoneToggle("mailingAddressIssued")}
+                  disabled={milestoneUpdating}
+                  className="flex-shrink-0"
+                />
+              </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
-                  <div className="flex items-start gap-3 flex-1">
-                    <FileCheck className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900">Formation Completed</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Business entity formed</p>
-                    </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                <div className="flex items-start gap-3 flex-1">
+                  <FileCheck className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">Formation Completed</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Business entity formed</p>
                   </div>
-                  <Switch
-                    checked={milestones.formationCompleted}
-                    onCheckedChange={() => handleMilestoneToggle("formationCompleted")}
-                    disabled={milestoneUpdating}
-                    className="flex-shrink-0"
-                  />
                 </div>
+                <Switch
+                  checked={milestones.formationCompleted}
+                  onCheckedChange={() => handleMilestoneToggle("formationCompleted")}
+                  disabled={milestoneUpdating}
+                  className="flex-shrink-0"
+                />
+              </div>
 
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
-                  <div className="flex items-start gap-3 flex-1">
-                    <HashIcon className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-slate-900">EIN Processed</p>
-                      <p className="text-xs text-slate-500 mt-0.5">Tax ID number obtained</p>
-                    </div>
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+                <div className="flex items-start gap-3 flex-1">
+                  <HashIcon className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900">EIN Processed</p>
+                    <p className="text-xs text-slate-500 mt-0.5">Tax ID number obtained</p>
                   </div>
-                  <Switch
-                    checked={milestones.einProcessed}
-                    onCheckedChange={() => handleMilestoneToggle("einProcessed")}
-                    disabled={milestoneUpdating}
-                    className="flex-shrink-0"
-                  />
                 </div>
+                <Switch
+                  checked={milestones.einProcessed}
+                  onCheckedChange={() => handleMilestoneToggle("einProcessed")}
+                  disabled={milestoneUpdating}
+                  className="flex-shrink-0"
+                />
+              </div>
                 </div>
                 <Switch
                   checked={milestones.orderProcessed}
@@ -3451,27 +3451,12 @@ export default function OrderDetailPage() {
                 />
               </div>
 
-              <div className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors">
-                <div className="flex items-center gap-3">
-                  <HashIcon className="w-5 h-5 text-slate-600" />
-                  <div>
-                    <p className="text-sm font-medium text-slate-900">EIN Successfully Processed</p>
-                    <p className="text-xs text-slate-500">EIN letter uploaded</p>
-                  </div>
-                </div>
-                <Switch
-                  checked={milestones.einProcessed}
-                  onCheckedChange={() => handleMilestoneToggle("einProcessed")}
-                  disabled={milestoneUpdating}
-                />
-              </div>
-
               {company?.customMilestones && company.customMilestones.length > 0 && (
                 <>
                   <div className="pt-4 border-t border-slate-200">
                     <p className="text-sm font-semibold text-slate-900 mb-1">Custom Milestones</p>
                     <p className="text-xs text-slate-500 mb-3">
-                      Custom milestones are tracked separately and don't affect the core progress percentage
+                      Custom milestones are tracked separately and don&apos;t affect the core progress percentage
                     </p>
                   </div>
                   {company.customMilestones.map((customMilestone: any) => (
@@ -3486,6 +3471,21 @@ export default function OrderDetailPage() {
                           {customMilestone.description && (
                             <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">{customMilestone.description}</p>
                           )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => handleDeleteCustomMilestone(customMilestone.id)}
+                        disabled={deletingMilestoneId === customMilestone.id}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  ))}
+                </>
+              )}
                         </div>
                       </div>
                       <Switch
