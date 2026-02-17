@@ -1,5 +1,6 @@
 "use client"
 
+// Milestones Dialog Component - Manages formation milestone toggles
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
