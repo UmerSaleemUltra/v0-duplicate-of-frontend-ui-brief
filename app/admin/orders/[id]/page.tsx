@@ -195,7 +195,7 @@ export default function OrderDetailPage() {
     businessMailingAddressIssued: false,
     companyFormationCompleted: false,
     einApplicationSubmitted: false,
-    einObtainedFromApis: false,
+    einObtained: false,
   })
 
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
@@ -509,7 +509,7 @@ export default function OrderDetailPage() {
           businessMailingAddressIssued: orderData.company.milestones.businessMailingAddressIssued || false,
           companyFormationCompleted: orderData.company.milestones.companyFormationCompleted || false,
           einApplicationSubmitted: orderData.company.milestones.einApplicationSubmitted || false,
-          einObtainedFromApis: orderData.company.milestones.einObtainedFromApis || false,
+          einObtained: orderData.company.milestones.einObtained || false,
         })
       } else {
         // Initialize with default false values if no milestones exist
@@ -519,7 +519,7 @@ export default function OrderDetailPage() {
           businessMailingAddressIssued: false,
           companyFormationCompleted: false,
           einApplicationSubmitted: false,
-          einObtainedFromApis: false,
+          einObtained: false,
         })
       }
 
@@ -772,7 +772,7 @@ export default function OrderDetailPage() {
         updatedMilestones.companyFormationCompleted = true
       }
       if (titleLower.includes("ein") || titleLower.includes("tax id")) {
-        updatedMilestones.einObtainedFromApis = true
+        updatedMilestones.einObtained = true
       }
 
       const milestonesChanged = Object.keys(updatedMilestones).some(
@@ -1029,7 +1029,7 @@ export default function OrderDetailPage() {
           ein: einValue.trim(),
           milestones: {
             ...milestones,
-            einObtainedFromApis: true,
+            einObtained: true,
           },
         }),
       })
@@ -1042,7 +1042,7 @@ export default function OrderDetailPage() {
       console.log("[v0] EIN assigned successfully")
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, einObtainedFromApis: true })
+      setMilestones(updatedCompany.milestones || { ...milestones, einObtained: true })
       setEinDialogOpen(false)
       setEinValue("")
 
@@ -1808,7 +1808,7 @@ export default function OrderDetailPage() {
           ein: null,
           milestones: {
             ...milestones,
-            einObtainedFromApis: false,
+            einObtained: false,
           },
         }),
       })
@@ -1821,7 +1821,7 @@ export default function OrderDetailPage() {
       console.log("[v0] EIN removed successfully")
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, einObtainedFromApis: false })
+      setMilestones(updatedCompany.milestones || { ...milestones, einObtained: false })
 
       toast({
         title: "EIN Removed",
@@ -2469,17 +2469,17 @@ export default function OrderDetailPage() {
                   )}
                 </div>
                 <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.einObtainedFromApis ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
+                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.einObtained ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
                 >
                   <div className="flex items-center gap-3">
-                    <HashIcon className={`w-5 h-5 ${milestones.einObtainedFromApis ? "text-green-600" : "text-slate-400"}`} />
+                    <HashIcon className={`w-5 h-5 ${milestones.einObtained ? "text-green-600" : "text-slate-400"}`} />
                     <span
-                      className={`text-sm font-medium ${milestones.einObtainedFromApis ? "text-slate-900" : "text-slate-600"}`}
+                      className={`text-sm font-medium ${milestones.einObtained ? "text-slate-900" : "text-slate-600"}`}
                     >
                       EIN Successfully Processed
                     </span>
                   </div>
-                  {milestones.einObtainedFromApis ? (
+                  {milestones.einObtained ? (
                     <CheckCircle2 className="w-5 h-5 text-green-600" />
                   ) : (
                     <Clock className="w-5 h-5 text-slate-400" />

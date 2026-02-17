@@ -102,7 +102,7 @@ export interface Company {
     businessMailingAddressIssued: boolean
     companyFormationCompleted: boolean
     einApplicationSubmitted: boolean
-    einObtainedFromApis: boolean
+    einObtained: boolean
   }
   customMilestones?: Array<{
     id: string

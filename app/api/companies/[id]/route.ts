@@ -64,7 +64,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           businessMailingAddressIssued: false,
           companyFormationCompleted: false,
           einApplicationSubmitted: false,
-          einObtainedFromApis: false,
+          einObtained: false,
         },
           customMilestones: company.customMilestones || [],
           purchasedAddons: company.purchasedAddons || [],
@@ -168,7 +168,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         businessMailingAddressIssued: "Business Mailing Address Issued",
         companyFormationCompleted: "Company Formation Completed",
         einApplicationSubmitted: "EIN Application Submitted",
-        einObtainedFromApis: "EIN Obtained from APIs",
+        einObtained: "EIN Obtained",
       }
 
       for (const [key, title] of Object.entries(milestoneMap)) {

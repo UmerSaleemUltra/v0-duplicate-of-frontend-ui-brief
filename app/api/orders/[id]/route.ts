@@ -178,7 +178,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             businessMailingAddressIssued: companyDoc.milestones?.businessMailingAddressIssued || false,
             companyFormationCompleted: companyDoc.milestones?.companyFormationCompleted || false,
             einApplicationSubmitted: companyDoc.milestones?.einApplicationSubmitted || false,
-            einObtainedFromApis: companyDoc.milestones?.einObtainedFromApis || false,
+            einObtained: companyDoc.milestones?.einObtained || false,
           },
             customMilestones: companyDoc.customMilestones || [],
             registeredAgent: companyDoc.registeredAgent || null,
