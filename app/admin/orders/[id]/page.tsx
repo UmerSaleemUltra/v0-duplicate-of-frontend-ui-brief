@@ -129,6 +129,7 @@ export default function OrderDetailPage() {
   const [milestoneUpdating, setMilestoneUpdating] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
+  const [deletingMilestoneId, setDeletingMilestoneId] = useState<string | null>(null)
 
   const [companyStatusDialogOpen, setCompanyStatusDialogOpen] = useState(false)
   const [registeredAgentStatusDialogOpen, setRegisteredAgentStatusDialogOpen] = useState(false)
@@ -377,6 +378,7 @@ export default function OrderDetailPage() {
     if (!company) return
 
     try {
+      setDeletingMilestoneId(milestoneId)
       const token = authService.getToken()
       if (!token) {
         router.push("/login")
@@ -426,6 +428,8 @@ export default function OrderDetailPage() {
         description: "Failed to delete custom milestone. Please try again.",
         variant: "destructive",
       })
+    } finally {
+      setDeletingMilestoneId(null)
     }
   }
 
