@@ -6,11 +6,12 @@ import { Switch } from "@/components/ui/switch"
 import { Package, UserCheck, Home, FileCheck, HashIcon, CheckCircle2, Trash2 } from "lucide-react"
 
 interface MilestoneState {
-  orderProcessed: boolean
+  orderSuccessfullyProcessed: boolean
   registeredAgentAssigned: boolean
-  mailingAddressIssued: boolean
-  formationCompleted: boolean
-  einProcessed: boolean
+  businessMailingAddressIssued: boolean
+  companyFormationCompleted: boolean
+  einApplicationSubmitted: boolean
+  einObtainedFromApis: boolean
 }
 
 interface CustomMilestone {
@@ -80,13 +81,13 @@ export function MilestonesDialog({
               <div className="flex items-start gap-3 flex-1">
                 <Package className="w-5 h-5 text-blue-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900">Order Processed</p>
+                  <p className="text-sm font-semibold text-slate-900">Order Successfully Processed</p>
                   <p className="text-xs text-slate-500 mt-0.5">Order received and confirmed</p>
                 </div>
               </div>
               <Switch
-                checked={milestones.orderProcessed}
-                onCheckedChange={() => onMilestoneToggle("orderProcessed")}
+                checked={milestones.orderSuccessfullyProcessed}
+                onCheckedChange={() => onMilestoneToggle("orderSuccessfullyProcessed")}
                 disabled={milestoneUpdating}
                 className="flex-shrink-0"
               />
@@ -112,13 +113,13 @@ export function MilestonesDialog({
               <div className="flex items-start gap-3 flex-1">
                 <Home className="w-5 h-5 text-purple-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900">Mailing Address Issued</p>
+                  <p className="text-sm font-semibold text-slate-900">Business Mailing Address Issued</p>
                   <p className="text-xs text-slate-500 mt-0.5">Business address assigned</p>
                 </div>
               </div>
               <Switch
-                checked={milestones.mailingAddressIssued}
-                onCheckedChange={() => onMilestoneToggle("mailingAddressIssued")}
+                checked={milestones.businessMailingAddressIssued}
+                onCheckedChange={() => onMilestoneToggle("businessMailingAddressIssued")}
                 disabled={milestoneUpdating}
                 className="flex-shrink-0"
               />
@@ -128,13 +129,13 @@ export function MilestonesDialog({
               <div className="flex items-start gap-3 flex-1">
                 <FileCheck className="w-5 h-5 text-emerald-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900">Formation Completed</p>
+                  <p className="text-sm font-semibold text-slate-900">Company Formation Completed</p>
                   <p className="text-xs text-slate-500 mt-0.5">Business entity formed</p>
                 </div>
               </div>
               <Switch
-                checked={milestones.formationCompleted}
-                onCheckedChange={() => onMilestoneToggle("formationCompleted")}
+                checked={milestones.companyFormationCompleted}
+                onCheckedChange={() => onMilestoneToggle("companyFormationCompleted")}
                 disabled={milestoneUpdating}
                 className="flex-shrink-0"
               />
@@ -144,13 +145,29 @@ export function MilestonesDialog({
               <div className="flex items-start gap-3 flex-1">
                 <HashIcon className="w-5 h-5 text-amber-600 mt-0.5 flex-shrink-0" />
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-slate-900">EIN Processed</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Tax ID number obtained</p>
+                  <p className="text-sm font-semibold text-slate-900">EIN Application Submitted</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Application sent to IRS</p>
                 </div>
               </div>
               <Switch
-                checked={milestones.einProcessed}
-                onCheckedChange={() => onMilestoneToggle("einProcessed")}
+                checked={milestones.einApplicationSubmitted}
+                onCheckedChange={() => onMilestoneToggle("einApplicationSubmitted")}
+                disabled={milestoneUpdating}
+                className="flex-shrink-0"
+              />
+            </div>
+
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:border-slate-300 hover:bg-slate-50 transition-all">
+              <div className="flex items-start gap-3 flex-1">
+                <CheckCircle2 className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-slate-900">EIN Obtained from APIs</p>
+                  <p className="text-xs text-slate-500 mt-0.5">Tax ID number received</p>
+                </div>
+              </div>
+              <Switch
+                checked={milestones.einObtainedFromApis}
+                onCheckedChange={() => onMilestoneToggle("einObtainedFromApis")}
                 disabled={milestoneUpdating}
                 className="flex-shrink-0"
               />
