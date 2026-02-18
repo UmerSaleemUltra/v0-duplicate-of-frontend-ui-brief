@@ -224,10 +224,10 @@ export function NotificationDropdown() {
                 >
                   <div className="flex items-start gap-2 sm:gap-3">
                     <div
-                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
                         !notification.read && !notification.isRead
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-muted text-muted-foreground"
+                          ? "bg-gradient-to-br from-[#880000] to-[#ff0d13] text-white"
+                          : "bg-red-50 text-[#880000] border border-red-100"
                       }`}
                     >
                       {getNotificationIcon(notification.type)}
