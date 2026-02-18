@@ -1,10 +1,10 @@
 "use client"
 
-import { Bell, Check, FileText, Mail, Package, Receipt, X } from "lucide-react"
+import { Bell, Check, FileText, Mail, Package, Receipt, X, ChevronDown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { useState, useEffect } from "react"
 import type { Notification } from "@/lib/local-storage"
 import { authService } from "@/lib/auth"
@@ -25,6 +25,33 @@ const getNotificationIcon = (type: string) => {
       return <Check className="w-4 h-4" />
     default:
       return <Package className="w-4 h-4" />
+  }
+}
+
+const getNotificationStatus = (notification: Notification) => {
+  if (notification.type === "milestone") {
+    if (notification.title.includes("Complete")) return { label: "Completed", variant: "success" as const }
+    if (notification.title.includes("Started")) return { label: "In progress", variant: "info" as const }
+    return { label: "Action needed", variant: "warning" as const }
+  }
+  if (notification.type === "order") {
+    return { label: "New order", variant: "info" as const }
+  }
+  return null
+}
+
+const getIconColor = (type: string) => {
+  switch (type) {
+    case "milestone":
+      return "bg-purple-500"
+    case "order":
+      return "bg-blue-500"
+    case "document":
+      return "bg-green-500"
+    case "mail":
+      return "bg-orange-500"
+    default:
+      return "bg-slate-500"
   }
 }
 
@@ -104,16 +131,16 @@ export function NotificationDropdown() {
 
   const formatTime = (isoString: string) => {
     const date = new Date(isoString)
-    const now = new Date()
-    const diffMs = now.getTime() - date.getTime()
-    const diffMins = Math.floor(diffMs / 60000)
-    const diffHours = Math.floor(diffMs / 3600000)
-    const diffDays = Math.floor(diffMs / 86400000)
-
-    if (diffMins < 1) return "Just now"
-    if (diffMins < 60) return `${diffMins} minute${diffMins > 1 ? "s" : ""} ago`
-    if (diffHours < 24) return `${diffHours} hour${diffHours > 1 ? "s" : ""} ago`
-    return `${diffDays} day${diffDays > 1 ? "s" : ""} ago`
+    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    
+    const dayName = days[date.getDay()]
+    const day = date.getDate()
+    const month = months[date.getMonth()]
+    const hours = date.getHours().toString().padStart(2, '0')
+    const minutes = date.getMinutes().toString().padStart(2, '0')
+    
+    return `${dayName} ${day} ${month}, ${hours}:${minutes}`
   }
 
   if (loading) {
@@ -214,8 +241,128 @@ export function NotificationDropdown() {
               ))
             )}
           </div>
+=======
+    <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative h-10 w-10">
+          <Bell className="w-5 h-5" />
+          {unreadCount > 0 && (
+            <Badge className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs">
+              {unreadCount}
+            </Badge>
+          )}
+        </Button>
+      </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[calc(100vw-1rem)] sm:w-[600px] max-w-2xl p-0">
+          {/* Header */}
+          <div className="flex items-center justify-between px-6 py-4 border-b">
+            <h3 className="text-xl font-semibold text-slate-900">Notifications</h3>
+            {notifications.length > 0 && unreadCount > 0 && (
+              <button
+                onClick={markAllAsRead}
+                className="text-sm text-blue-600 hover:text-blue-700 font-medium transition-colors"
+              >
+                Mark all as read
+              </button>
+            )}
+          </div>
+
+          <Tabs defaultValue="direct" className="w-full">
+            <TabsList className="w-full justify-start rounded-none border-b bg-transparent p-0 h-auto">
+              <TabsTrigger 
+                value="direct" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-3 font-medium"
+              >
+                Direct
+              </TabsTrigger>
+              <TabsTrigger 
+                value="watching" 
+                className="rounded-none border-b-2 border-transparent data-[state=active]:border-blue-600 data-[state=active]:bg-transparent data-[state=active]:shadow-none px-6 py-3 font-medium"
+              >
+                Watching
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="direct" className="mt-0 max-h-[60vh] overflow-y-auto">
+              {notifications.length === 0 ? (
+                <div className="p-12 text-center">
+                  <Bell className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                  <p className="text-sm text-slate-600">No notifications</p>
+                </div>
+              ) : (
+                <div className="divide-y">
+                  {notifications.map((notification) => {
+                    const status = getNotificationStatus(notification)
+                    const isUnread = !notification.read && !notification.isRead
+                    
+                    return (
+                      <div
+                        key={notification.id}
+                        className="px-6 py-4 hover:bg-slate-50 transition-colors cursor-pointer"
+                        onClick={() => markAsRead(notification.id)}
+                      >
+                        <div className="flex items-start gap-3">
+                          {/* Unread indicator */}
+                          {isUnread && (
+                            <div className="w-2 h-2 rounded-full bg-red-500 mt-2 flex-shrink-0" />
+                          )}
+                          
+                          {/* Icon */}
+                          <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 text-white ${getIconColor(notification.type)}`}>
+                            {getNotificationIcon(notification.type)}
+                          </div>
+
+                          {/* Content */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-3 mb-1">
+                              <div className="flex items-center gap-2 flex-wrap">
+                                <span className="font-semibold text-sm text-slate-900">
+                                  {notification.metadata?.companyName || 'Notification'}
+                                </span>
+                                {status && (
+                                  <Badge 
+                                    variant={status.variant} 
+                                    className={`text-xs font-medium ${
+                                      status.variant === 'success' 
+                                        ? 'bg-green-100 text-green-700 hover:bg-green-100' 
+                                        : status.variant === 'warning'
+                                        ? 'bg-blue-100 text-blue-700 hover:bg-blue-100'
+                                        : 'bg-slate-100 text-slate-700 hover:bg-slate-100'
+                                    }`}
+                                  >
+                                    {status.label}
+                                  </Badge>
+                                )}
+                              </div>
+                              <span className="text-sm text-slate-500 whitespace-nowrap flex-shrink-0">
+                                {formatTime(notification.createdAt)}
+                              </span>
+                            </div>
+                            
+                            <p className="text-sm font-medium text-slate-900 mb-1">
+                              {notification.title}
+                            </p>
+                            
+                            <p className="text-sm text-slate-600 leading-relaxed">
+                              {notification.message}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
+            </TabsContent>
+
+            <TabsContent value="watching" className="mt-0 max-h-[60vh] overflow-y-auto">
+              <div className="p-12 text-center">
+                <Bell className="w-12 h-12 text-slate-300 mx-auto mb-3" />
+                <p className="text-sm text-slate-600">No watching notifications</p>
+              </div>
+            </TabsContent>
+          </Tabs>
         </DropdownMenuContent>
       </DropdownMenu>
-    </TooltipProvider>
   )
 }
