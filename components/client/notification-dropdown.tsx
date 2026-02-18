@@ -152,6 +152,96 @@ export function NotificationDropdown() {
   }
 
   return (
+    <TooltipProvider>
+      <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="icon" className="relative h-9 w-9 sm:h-10 sm:w-10">
+            <Bell className="w-4 h-4 sm:w-5 sm:h-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-0.5 -right-0.5 sm:-top-1 sm:-right-1 h-4 w-4 sm:h-5 sm:w-5 flex items-center justify-center rounded-full bg-destructive text-destructive-foreground text-[10px] sm:text-xs font-semibold">
+                {unreadCount > 99 ? '99+' : unreadCount}
+              </span>
+            )}
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-[calc(100vw-2rem)] xs:w-[calc(100vw-2rem)] sm:w-96 max-w-md p-0">
+          {/* Header */}
+          <div className="flex items-center justify-between p-3 sm:p-4 border-b">
+            <div className="flex-1 min-w-0 pr-2">
+              <h3 className="font-semibold text-sm sm:text-base truncate">Notifications</h3>
+              {unreadCount > 0 && <p className="text-xs text-muted-foreground truncate">{unreadCount} unread</p>}
+            </div>
+            <div className="flex items-center gap-1 flex-shrink-0">
+              {notifications.length > 0 && unreadCount > 0 && (
+                <Button variant="ghost" size="sm" onClick={markAllAsRead} className="h-7 sm:h-8 text-xs px-2 sm:px-3">
+                  <Check className="w-3 h-3 sm:mr-1" />
+                  <span className="hidden sm:inline">Mark all read</span>
+                </Button>
+              )}
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsOpen(false)}
+                className="h-7 w-7 sm:h-8 sm:w-8 md:hidden"
+                aria-label="Close notifications"
+              >
+                <X className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Notifications List */}
+          <div className="max-h-[70vh] xs:max-h-[65vh] sm:max-h-96 overflow-y-auto">
+            {notifications.length === 0 ? (
+              <div className="p-6 sm:p-8 text-center">
+                <Bell className="w-10 h-10 sm:w-12 sm:h-12 text-muted-foreground/30 mx-auto mb-3" />
+                <p className="text-sm text-muted-foreground">No notifications</p>
+              </div>
+            ) : (
+              notifications.map((notification) => (
+                <div
+                  key={notification.id}
+                  className={`p-3 sm:p-4 border-b hover:bg-accent/50 transition-colors duration-200 cursor-pointer ${
+                    !notification.read && !notification.isRead ? "bg-accent/30" : ""
+                  }`}
+                >
+                  <div className="flex items-start gap-2 sm:gap-3">
+                    <div
+                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
+                        !notification.read && !notification.isRead
+                          ? "bg-primary text-primary-foreground"
+                          : "bg-muted text-muted-foreground"
+                      }`}
+                    >
+                      {getNotificationIcon(notification.type)}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-start justify-between gap-2 mb-1">
+                        <h4 className="font-semibold text-xs sm:text-sm truncate pr-1">
+                          {notification.title}
+                        </h4>
+                      </div>
+                      <p className="text-xs sm:text-sm text-muted-foreground mb-2 line-clamp-2 break-words">{notification.message}</p>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="text-xs text-muted-foreground/80 truncate flex-shrink">{formatTime(notification.createdAt)}</span>
+                        {!notification.read && !notification.isRead && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => markAsRead(notification.id)}
+                            className="h-6 text-xs text-primary hover:text-primary/80 whitespace-nowrap flex-shrink-0"
+                          >
+                            Mark read
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+=======
     <DropdownMenu open={isOpen} onOpenChange={setIsOpen}>
       <DropdownMenuTrigger asChild>
         <Button variant="ghost" size="icon" className="relative h-10 w-10">
