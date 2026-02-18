@@ -4,7 +4,7 @@ import { Bell, Check, FileText, Mail, Package, Receipt, X, ChevronDown } from "l
 import { Button } from "@/components/ui/button"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import { Badge } from "@/components/ui/badge"
-import { TooltipProvider } from "@/components/ui/tooltip"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { useState, useEffect } from "react"
 import type { Notification } from "@/lib/local-storage"
 import { authService } from "@/lib/auth"
@@ -223,15 +223,22 @@ export function NotificationDropdown() {
                   }`}
                 >
                   <div className="flex items-start gap-2 sm:gap-3">
-                    <div
-                      className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
-                        !notification.read && !notification.isRead
-                          ? "bg-gradient-to-br from-[#880000] to-[#ff0d13] text-white"
-                          : "bg-red-50 text-[#880000] border border-red-100"
-                      }`}
-                    >
-                      {getNotificationIcon(notification.type)}
-                    </div>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div
+                          className={`w-8 h-8 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm bg-white border ${
+                            !notification.read && !notification.isRead
+                              ? "border-[#880000] text-[#880000]"
+                              : "border-gray-200 text-[#880000]"
+                          }`}
+                        >
+                          {getNotificationIcon(notification.type)}
+                        </div>
+                      </TooltipTrigger>
+                      <TooltipContent side="left" className="text-xs">
+                        <p>{notification.type === "milestone" ? "Milestone Update" : notification.type === "order" ? "Order Update" : notification.type === "document" ? "Document Update" : notification.type === "mail" ? "Mail Update" : "Notification"}</p>
+                      </TooltipContent>
+                    </Tooltip>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-start justify-between gap-2 mb-1">
                         <h4 className="font-semibold text-xs sm:text-sm truncate pr-1">
