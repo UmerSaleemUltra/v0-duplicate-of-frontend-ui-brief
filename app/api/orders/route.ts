@@ -182,8 +182,8 @@ export async function POST(req: NextRequest) {
         userId: decoded.userId,
         companyId: companyId,
         type: "order",
-        title: "Order Placed Successfully!",
-        message: `Thank you for placing your trust in Buzz Filing! We've received your order for forming your U.S. ${type}, and our team is now processing it.`,
+        title: "Order Received!",
+        message: `Thank you! Your order to create "${companyName}" has been received. We'll start processing it shortly.`,
         read: false,
         metadata: {
           orderId: orderId,
