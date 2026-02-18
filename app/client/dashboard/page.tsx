@@ -237,52 +237,7 @@ export default function ClientDashboard() {
     setShowCelebration(false)
   }
 
-  const recentActivities = useMemo(() => {
-    const activities: Array<{
-      id: string
-      title: string
-      description: string
-      icon: any
-      timestamp?: string
-      type: "milestone" | "notification"
-    }> = []
 
-    const milestones = company?.milestones || {}
-    const milestoneKeys = Object.keys(milestones)
-    milestoneKeys.forEach((key) => {
-      if (milestones[key]) {
-        activities.push({
-          id: key,
-          title: key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, " $1"),
-          description: "Completed recently",
-          icon: Bell,
-          type: "milestone",
-        })
-      }
-    })
-
-    if (notifications) {
-      notifications.slice(0, 5).forEach((notif: any) => {
-        activities.push({
-          id: notif.id || notif._id,
-          title: notif.title,
-          description: notif.message?.substring(0, 60) + "..." || "",
-          icon: Bell,
-          timestamp: notif.createdAt,
-          type: "notification",
-        })
-      })
-    }
-
-    return activities
-      .sort((a, b) => {
-        if (a.timestamp && b.timestamp) {
-          return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-        }
-        return 0
-      })
-      .slice(0, 6)
-  }, [company, notifications])
 
   if (!isAuthenticating && hasNoCompanies) {
     return (
@@ -705,63 +660,7 @@ export default function ClientDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-2xl p-6 shadow-lg border border-slate-100">
-            <div className="flex items-center gap-3 mb-6">
-              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-md shadow-red-500/20">
-                <Clock className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h2 className="text-lg font-semibold text-slate-900">Recent Activity</h2>
-                <p className="text-xs text-slate-600">Latest updates on your formation</p>
-              </div>
-            </div>
 
-            <div className="space-y-3">
-              {recentActivities.length > 0 ? (
-                recentActivities.map((activity) => {
-                  const Icon = activity.icon
-                  return (
-                    <div
-                      key={activity.id}
-                      className={`flex items-start gap-3 p-3 rounded-lg border transition-all hover:shadow-md ${
-                        activity.type === "milestone"
-                          ? "bg-green-50/50 border-green-100 hover:bg-green-50"
-                          : "bg-red-50/50 border-red-100 hover:bg-red-50"
-                      }`}
-                    >
-                      <div
-                        className={`w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 shadow-sm ${
-                          activity.type === "milestone"
-                            ? "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
-                            : "bg-gradient-to-br from-[#880000] to-[#ff0d13]"
-                        }`}
-                      >
-                        <Icon className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-semibold text-slate-900 leading-tight break-words">
-                          {activity.title}
-                        </p>
-                        <p className="text-xs text-slate-600 mt-1 leading-relaxed break-words">
-                          {activity.description}
-                        </p>
-                      </div>
-                      <CheckCircle2
-                        className={`w-5 h-5 flex-shrink-0 ${
-                          activity.type === "milestone" ? "text-green-600" : "text-[#ff0d13]"
-                        }`}
-                      />
-                    </div>
-                  )
-                })
-              ) : (
-                <div className="text-center py-8 text-slate-500">
-                  <Clock className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-                  <p className="text-sm">No recent activity yet</p>
-                </div>
-              )}
-            </div>
-          </div>
         </div>
       </TooltipProvider>
     </ClientShell>

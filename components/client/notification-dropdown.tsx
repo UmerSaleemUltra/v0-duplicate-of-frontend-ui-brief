@@ -131,16 +131,33 @@ export function NotificationDropdown() {
 
   const formatTime = (isoString: string) => {
     const date = new Date(isoString)
-    const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"]
-    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+    const now = new Date()
+    const diffMs = now.getTime() - date.getTime()
+    const diffMins = Math.floor(diffMs / 60000)
+    const diffHours = Math.floor(diffMs / 3600000)
+    const diffDays = Math.floor(diffMs / 86400000)
     
-    const dayName = days[date.getDay()]
+    // Less than 1 minute
+    if (diffMins < 1) return 'Just now'
+    // Less than 1 hour
+    if (diffMins < 60) return `${diffMins}m ago`
+    // Less than 24 hours
+    if (diffHours < 24) return `${diffHours}h ago`
+    // Less than 7 days
+    if (diffDays < 7) return `${diffDays}d ago`
+    
+    // Otherwise show full date
+    const months = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
     const day = date.getDate()
     const month = months[date.getMonth()]
-    const hours = date.getHours().toString().padStart(2, '0')
-    const minutes = date.getMinutes().toString().padStart(2, '0')
+    const year = date.getFullYear()
+    const currentYear = now.getFullYear()
     
-    return `${dayName} ${day} ${month}, ${hours}:${minutes}`
+    // Show year only if different from current year
+    if (year !== currentYear) {
+      return `${day} ${month} ${year}`
+    }
+    return `${day} ${month}`
   }
 
   if (loading) {
