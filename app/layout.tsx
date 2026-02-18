@@ -170,14 +170,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           })(window,document,'script','dataLayer','GTM-KTZXH7FM');`}
         </Script>
 
-        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-9NH7KYTZH5" strategy="afterInteractive" />
+        <Script async src="https://www.googletagmanager.com/gtag/js?id=G-FJJRFZNDPF" strategy="afterInteractive" />
         <Script id="google-analytics" strategy="afterInteractive">
           {`
             window.dataLayer = window.dataLayer || [];
             function gtag(){dataLayer.push(arguments);}
             gtag('js', new Date());
-            gtag('config', 'G-9NH7KYTZH5');
-            gtag('config', 'GT-MBLBWX43');
+            gtag('config', 'G-FJJRFZNDPF');
           `}
         </Script>
 
