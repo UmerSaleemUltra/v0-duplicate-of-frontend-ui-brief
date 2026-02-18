@@ -162,29 +162,35 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       const oldMilestones = company.milestones || {}
       const newMilestones = body.milestones
 
-      const milestoneMap: Record<string, { title: string; emailTemplate: string }> = {
+      const milestoneMap: Record<string, { title: string; message: string; emailTemplate: string }> = {
         orderSuccessfullyProcessed: {
-          title: "Order Successfully Processed",
+          title: "Order Processing Started",
+          message: `We have started processing your order to create "${company.name}". You can track progress in your dashboard.`,
           emailTemplate: "orderStarted",
         },
         registeredAgentAssigned: {
           title: "Registered Agent Assigned",
+          message: `A registered agent has been assigned for your company "${company.name}". You can track all updates in your dashboard.`,
           emailTemplate: "registeredAgentAssigned",
         },
         businessMailingAddressIssued: {
-          title: "Business Mailing Address Issued",
+          title: "Mailing Address Assigned",
+          message: `Your company "${company.name}" now has an official mailing address. Check your dashboard for details.`,
           emailTemplate: "businessAddressAssigned",
         },
         companyFormationCompleted: {
-          title: "Company Formation Completed",
+          title: "Company Formation Complete",
+          message: `Congratulations! Your company "${company.name}" is now officially registered. Check your dashboard for all documents and next steps.`,
           emailTemplate: "companyFormed",
         },
         einApplicationSubmitted: {
           title: "EIN Application Submitted",
+          message: `Your EIN application for "${company.name}" has been successfully submitted. You'll be notified once it's approved.`,
           emailTemplate: "einUploaded",
         },
         einObtained: {
-          title: "EIN Obtained Successfully",
+          title: "EIN Obtained",
+          message: `Congratulations! Your EIN for "${company.name}" has been issued. Check your dashboard for the official EIN document.`,
           emailTemplate: "einObtained",
         },
       }
@@ -196,8 +202,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             await db.collection("notifications").insertOne({
               userId: company.userId,
               type: "milestone",
-              title: "Milestone Completed",
-              message: `${config.title} for ${company.name}`,
+              title: config.title,
+              message: config.message,
               read: false,
               actionUrl: "/client/dashboard",
               metadata: {
