@@ -337,7 +337,7 @@ export async function POST(req: NextRequest) {
           companyId: companyId,
           type: "system",
           title: "Welcome to Buzz Filing!",
-          message: `Welcome! Your company "${name}" has been successfully created. We're excited to help you form your U.S. ${type.toUpperCase()}.`,
+          message: `Congratulations! Your account has been created and your company "${name}" setup has started. Check your dashboard for details.`,
           read: false,
           metadata: {
             companyId: companyId,
@@ -375,8 +375,8 @@ export async function POST(req: NextRequest) {
           userId: decoded.userId,
           companyId: companyId,
           type: "order_placed",
-          title: "Order Placed Successfully",
-          message: `Your ${order.orderType} order has been placed successfully. Order ID: ${order.id}. Total: $${order.pricing.total.toFixed(2)}`,
+          title: "Order Received!",
+          message: `Thank you! Your order to create "${name}" has been received. We'll start processing it shortly.`,
           read: false,
           metadata: {
             companyId: companyId,
