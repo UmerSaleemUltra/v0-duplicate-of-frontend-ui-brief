@@ -162,35 +162,35 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       const oldMilestones = company.milestones || {}
       const newMilestones = body.milestones
 
-      const milestoneMap: Record<string, { title: string; messageTemplate: string; emailTemplate: string }> = {
+      const milestoneMap: Record<string, { title: string; message: string; emailTemplate: string }> = {
         orderSuccessfullyProcessed: {
-          title: "🚀 Order Processing Started",
-          messageTemplate: `Hi {userName}! We have started processing your order to create "{companyName}". You can track progress in your dashboard.`,
+          title: "Order Processing Started",
+          message: `We have started processing your order to create "${company.name}". You can track progress in your dashboard.`,
           emailTemplate: "orderStarted",
         },
         registeredAgentAssigned: {
-          title: "📝 Registered Agent Assigned",
-          messageTemplate: `Hi {userName}! A registered agent has been assigned for your company "{companyName}". You can track all updates in your dashboard.`,
+          title: "Registered Agent Assigned",
+          message: `A registered agent has been assigned for your company "${company.name}". You can track all updates in your dashboard.`,
           emailTemplate: "registeredAgentAssigned",
         },
         businessMailingAddressIssued: {
-          title: "📬 Mailing Address Assigned",
-          messageTemplate: `Hi {userName}! Your company "{companyName}" now has an official mailing address. Check your dashboard for details.`,
+          title: "Mailing Address Assigned",
+          message: `Your company "${company.name}" now has an official mailing address. Check your dashboard for details.`,
           emailTemplate: "businessAddressAssigned",
         },
         companyFormationCompleted: {
-          title: "🎉 Company Formation Complete!",
-          messageTemplate: `Congratulations {userName}! Your company "{companyName}" is now officially registered. Check your dashboard for all documents and next steps.`,
+          title: "Company Formation Complete",
+          message: `Congratulations! Your company "${company.name}" is now officially registered. Check your dashboard for all documents and next steps.`,
           emailTemplate: "companyFormed",
         },
         einApplicationSubmitted: {
-          title: "🆔 EIN Application Submitted",
-          messageTemplate: `Hi {userName}! Your EIN application for "{companyName}" has been successfully submitted. You'll be notified once it's approved.`,
+          title: "EIN Application Submitted",
+          message: `Your EIN application for "${company.name}" has been successfully submitted. You'll be notified once it's approved.`,
           emailTemplate: "einUploaded",
         },
         einObtained: {
-          title: "🆔 EIN Obtained!",
-          messageTemplate: `Congratulations {userName}! Your EIN for "{companyName}" has been issued. Check your dashboard for the official EIN document.`,
+          title: "EIN Obtained",
+          message: `Congratulations! Your EIN for "${company.name}" has been issued. Check your dashboard for the official EIN document.`,
           emailTemplate: "einObtained",
         },
       }
@@ -199,20 +199,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         if (!oldMilestones[key] && newMilestones[key]) {
           console.log("[v0] Milestone completed:", key, "-", config.title)
           try {
-            const user = await db
-              .collection("users")
-              .findOne({ _id: new ObjectId(company.userId) }, { projection: { name: 1, email: 1 } })
-
-            const userName = user?.name || "there"
-            const message = config.messageTemplate
-              .replace("{userName}", userName)
-              .replace("{companyName}", company.name)
-
             await db.collection("notifications").insertOne({
               userId: company.userId,
               type: "milestone",
               title: config.title,
-              message: message,
+              message: config.message,
               read: false,
               actionUrl: "/client/dashboard",
               metadata: {
