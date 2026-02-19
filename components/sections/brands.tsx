@@ -1,7 +1,5 @@
 "use client"
 
-import Image from "next/image"
-
 export default function Brands() {
   const brands = [
     {
@@ -16,7 +14,7 @@ export default function Brands() {
     },
     {
       name: "Nsave",
-      logo: "https://cdn.brandfetch.io/idtf53Ue7K/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+      logo: "https://cdn.brandfetch.io/idtf53Ue7K/w/820/h/187/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
     },
   ]
 
@@ -35,18 +33,16 @@ export default function Brands() {
 
         {/* Desktop / Tablet Grid */}
         <div className="hidden sm:grid gap-4 sm:gap-6 md:gap-8 lg:gap-10 [grid-template-columns:repeat(auto-fit,minmax(120px,1fr))]">
-          {brands.map((b, index) => (
+          {brands.map((b) => (
             <div key={b.name} className="flex items-center justify-center">
               <div
-                className={`relative w-full h-[clamp(28px,6vw,72px)] ${b.name === "Slash" ? "max-w-[120px]" : "max-w-[200px]"}`}
+                className={`relative w-full flex items-center justify-center h-[clamp(28px,6vw,72px)] ${b.name === "Slash" ? "max-w-[120px]" : "max-w-[200px]"}`}
               >
                 {b.logo && (
-                  <Image
-                    src={b.logo || "/placeholder.svg"}
+                  <img
+                    src={b.logo}
                     alt={`${b.name} logo`}
-                    fill
-                    className="object-contain transition-opacity brightness-0 invert"
-                    sizes="(max-width: 640px) 140px, (max-width: 1024px) 180px, 200px"
+                    className="max-w-full max-h-full object-contain transition-opacity brightness-0 invert"
                     loading="lazy"
                     decoding="async"
                   />
@@ -61,13 +57,12 @@ export default function Brands() {
           <div className="flex gap-8 animate-marquee whitespace-nowrap">
             {brands.concat(brands).map((b, i) => (
               <div key={`${b.name}-${i}`} className="flex-shrink-0 flex items-center justify-center">
-                <div className={`relative h-[40px] ${b.name === "Slash" ? "w-[70px]" : "w-[100px]"}`}>
+                <div className={`relative flex items-center justify-center h-[40px] ${b.name === "Slash" ? "w-[70px]" : "w-[100px]"}`}>
                   {b.logo && (
-                    <Image
-                      src={b.logo || "/placeholder.svg"}
+                    <img
+                      src={b.logo}
                       alt={`${b.name} logo`}
-                      fill
-                      className="object-contain opacity-90 brightness-0 invert"
+                      className="max-w-full max-h-full object-contain opacity-90 brightness-0 invert"
                       loading="lazy"
                       decoding="async"
                     />
