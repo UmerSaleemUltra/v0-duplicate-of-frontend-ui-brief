@@ -331,7 +331,7 @@ export async function POST(req: NextRequest) {
 
     if (isFirstCompany) {
       try {
-        // Create welcome notification
+        // Create welcome notification (email already sent during signup)
         await db.collection("notifications").insertOne({
           userId: decoded.userId,
           companyId: companyId,
@@ -346,23 +346,9 @@ export async function POST(req: NextRequest) {
           createdAt: new Date().toISOString(),
         })
 
-        // Get user email from database
-        const user = await db.collection("users").findOne({ _id: new ObjectId(decoded.userId) })
-
-        // Send welcome email
-        if (user && user.email) {
-          const emailTemplate = emailTemplates.welcome(user.name || "Valued User")
-          await sendEmail({
-            to: user.email,
-            subject: emailTemplate.subject,
-            html: emailTemplate.html,
-          })
-          console.log("[v0] Welcome email sent to:", user.email)
-        }
-
         broadcastUpdate("notifications", "created", { userId: decoded.userId })
       } catch (notificationError) {
-        console.error("[v0] Error sending welcome notification/email:", notificationError)
+        console.error("[v0] Error sending welcome notification:", notificationError)
       }
     }
 
