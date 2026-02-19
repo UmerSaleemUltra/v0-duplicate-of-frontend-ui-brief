@@ -52,7 +52,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           registeredAgentStatus: company.registeredAgentStatus || "pending",
           businessAddressStatus: company.businessAddressStatus || "pending",
           serviceStatus: company.serviceStatus || "pending",
-          address: company.address,
           businessCategory: company.businessCategory,
           businessDescription: company.businessDescription,
           businessWebsite: company.businessWebsite,

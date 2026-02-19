@@ -57,7 +57,6 @@ export async function GET(req: NextRequest) {
         customMilestones: 1, // Include custom milestones
         registeredAgent: 1, // Include registered agent
         mailingAddress: 1, // Include mailing address
-        address: 1, // Include company address
         members: 1, // Include members
         businessCategory: 1,
         businessDescription: 1,
@@ -126,7 +125,6 @@ export async function GET(req: NextRequest) {
           customMilestones: company.customMilestones || [], // Include custom milestones
           registeredAgent: company.registeredAgent || null,
           mailingAddress: company.mailingAddress || null,
-          address: company.address || {},
           members: company.members || [],
           businessCategory: company.businessCategory || "",
           businessDescription: company.businessDescription || "",
@@ -191,8 +189,7 @@ export async function POST(req: NextRequest) {
       name,
       type,
       state,
-      address,
-      members,
+    members,
       status,
       businessCategory,
       businessDescription,
@@ -280,7 +277,6 @@ export async function POST(req: NextRequest) {
       registeredAgentStatus: registeredAgentStatus || "pending",
       businessAddressStatus: businessAddressStatus || "pending",
       serviceStatus: serviceStatus || "pending", // Explicitly set to "pending"
-      address: address || {},
       businessCategory: businessCategory || "",
       businessDescription: businessDescription || "",
       businessWebsite: businessWebsite || "",
