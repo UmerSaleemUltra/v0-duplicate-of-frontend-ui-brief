@@ -14,7 +14,7 @@ export default function Brands() {
     },
     {
       name: "Nsave",
-      logo: "https://cdn.brandfetch.io/idtf53Ue7K/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+      logo: "https://cdn.brandfetch.io/idtf53Ue7K/w/820/h/187/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
     },
   ]
 
