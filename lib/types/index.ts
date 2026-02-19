@@ -83,12 +83,6 @@ export interface Company {
   packageType?: string // (F)
 
   einDocument?: string
-  address?: {
-    street: string
-    city: string
-    state: string
-    zip: string
-  }
   notes?: string
   mailingAddress?: {
     street: string
@@ -415,7 +409,6 @@ export interface CompanyForm {
   name: string
   type: Company["type"]
   state: string
-  address?: Company["address"]
 }
 
 export interface ProfileUpdateForm {

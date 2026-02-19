@@ -161,7 +161,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             state: companyDoc.state,
             status: companyDoc.status,
             members: companyDoc.members || [],
-            address: companyDoc.address,
             businessCategory: companyDoc.businessCategory,
             businessDescription: companyDoc.businessDescription,
             businessWebsite: companyDoc.businessWebsite,
