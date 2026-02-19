@@ -32,11 +32,11 @@ export default function Brands() {
         </h2>
 
         {/* Desktop / Tablet Grid */}
-        <div className="hidden sm:grid gap-4 sm:gap-6 md:gap-8 lg:gap-10 [grid-template-columns:repeat(auto-fit,minmax(120px,1fr))]">
+        <div className="hidden sm:grid grid-cols-5 gap-4 justify-items-center items-center">
           {brands.map((b) => (
             <div key={b.name} className="flex items-center justify-center">
               <div
-                className={`relative w-full flex items-center justify-center h-[clamp(28px,6vw,72px)] ${b.name === "Nsave" ? "max-w-[130px]" : b.name === "Slash" ? "max-w-[120px]" : "max-w-[200px]"}`}
+                className={`relative flex items-center justify-center h-[clamp(28px,6vw,72px)] ${b.name === "Nsave" ? "max-w-[130px]" : b.name === "Slash" ? "max-w-[120px]" : "max-w-[200px]"}`}
               >
                 {b.logo && (
                   <img
