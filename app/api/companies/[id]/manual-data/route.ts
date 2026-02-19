@@ -65,6 +65,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           expiryDate: data.expiryDate,
           servicePeriod: data.servicePeriod || "1 Year",
         },
+        "milestones.registeredAgentAssigned": true,
       }
     } else if (dataType === "business-address") {
       updateFields = {
