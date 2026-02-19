@@ -15,8 +15,8 @@ export default function Brands() {
       logo: "https://cdn.brandfetch.io/id1R4rkJXF/w/1024/h/280/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
     },
     {
-      name: "Openphone",
-      logo: "https://cdn.brandfetch.io/id8eCYh_qw/theme/light/iddDfghnAG.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+      name: "Nsave",
+      logo: "https://cdn.brandfetch.io/idtf53Ue7K/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
     },
   ]
 
