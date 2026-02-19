@@ -45,6 +45,13 @@ export default function Brands() {
                     className="max-w-full max-h-full object-contain transition-opacity brightness-0 invert"
                     loading="lazy"
                     decoding="async"
+                    onError={(e) => {
+                      console.log(`[v0] Failed to load ${b.name} logo:`, b.logo);
+                      e.currentTarget.style.display = 'none';
+                    }}
+                    onLoad={() => {
+                      console.log(`[v0] Successfully loaded ${b.name} logo`);
+                    }}
                   />
                 )}
               </div>
