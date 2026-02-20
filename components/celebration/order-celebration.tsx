@@ -62,7 +62,7 @@ export function OrderCelebration({ show, onClose }: OrderCelebrationProps) {
       ))}
 
       {/* Celebration Card */}
-      <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 md:p-12 w-full max-w-[90vw] sm:max-w-md mx-auto text-center animate-in zoom-in-95 duration-500 my-auto">
+      <div className="relative bg-white rounded-2xl sm:rounded-3xl shadow-2xl p-6 sm:p-8 md:p-12 w-full max-w-[90vw] sm:max-w-md mx-auto text-center animate-in zoom-in-95 duration-500 my-auto max-h-[90vh] overflow-y-auto">
         {/* Party Popper Icon */}
         <div className="relative mx-auto w-20 h-20 sm:w-24 sm:h-24 mb-4 sm:mb-6">
           <div className="absolute inset-0 bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full animate-pulse" />
@@ -106,7 +106,7 @@ export function OrderCelebration({ show, onClose }: OrderCelebrationProps) {
         <Button
           onClick={onClose}
           size="lg"
-          className="w-full min-h-[44px] sm:min-h-[48px] bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#660000] hover:to-[#cc0a0f] text-white font-semibold shadow-lg shadow-red-500/30 transition-all duration-300 text-sm sm:text-base"
+          className="w-full min-h-[44px] sm:min-h-[48px] bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#660000] hover:to-[#cc0a0f] hover:scale-[1.02] active:scale-[0.98] text-white font-semibold shadow-lg shadow-red-500/30 transition-all duration-200 text-sm sm:text-base"
         >
           Continue to Dashboard
         </Button>
