@@ -2,11 +2,26 @@
 
 export default function Brands() {
   const brands = [
-    { name: "Airwallex" },
-    { name: "Payoneer" },
-    { name: "Sunrate" },
-    { name: "Wise" },
-    { name: "Zyla" },
+    { 
+      name: "Airwallex",
+      logo: "https://cdn.brandfetch.io/idXCtf-53F/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+    },
+    { 
+      name: "Payoneer",
+      logo: "https://cdn.brandfetch.io/idVmyDyyyZ/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+    },
+    { 
+      name: "Sunrate",
+      logo: "https://cdn.brandfetch.io/idY4rzp0Gt/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+    },
+    { 
+      name: "Wise",
+      logo: "https://cdn.brandfetch.io/id1R4rkJXF/w/1024/h/280/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
+    },
+    { 
+      name: "Zyla",
+      logo: "https://cdn.brandfetch.io/idtf53Ue7K/w/820/h/187/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
+    },
   ]
 
   return (
@@ -27,26 +42,12 @@ export default function Brands() {
           {brands.map((b) => (
             <div key={b.name} className="flex items-center justify-center">
               <div className="relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px]">
-                <svg
-                  width="200"
-                  height="60"
-                  viewBox="0 0 200 60"
-                  className="max-w-full max-h-full"
-                  aria-label={`${b.name} logo`}
-                >
-                  <text
-                    x="50%"
-                    y="50%"
-                    dominantBaseline="middle"
-                    textAnchor="middle"
-                    fill="white"
-                    fontSize="20"
-                    fontWeight="600"
-                    letterSpacing="0.5"
-                  >
-                    {b.name}
-                  </text>
-                </svg>
+                <img
+                  src={b.logo}
+                  alt={`${b.name} logo`}
+                  className="max-w-full max-h-full object-contain transition-opacity brightness-0 invert"
+                  loading="lazy"
+                />
               </div>
             </div>
           ))}
@@ -58,26 +59,12 @@ export default function Brands() {
             {brands.concat(brands).map((b, i) => (
               <div key={`${b.name}-${i}`} className="flex-shrink-0 flex items-center justify-center">
                 <div className="relative flex items-center justify-center h-[40px] w-[120px]">
-                  <svg
-                    width="120"
-                    height="40"
-                    viewBox="0 0 120 40"
-                    className="max-w-full max-h-full"
-                    aria-label={`${b.name} logo`}
-                  >
-                    <text
-                      x="50%"
-                      y="50%"
-                      dominantBaseline="middle"
-                      textAnchor="middle"
-                      fill="white"
-                      fontSize="16"
-                      fontWeight="600"
-                      letterSpacing="0.5"
-                    >
-                      {b.name}
-                    </text>
-                  </svg>
+                  <img
+                    src={b.logo}
+                    alt={`${b.name} logo`}
+                    className="max-w-full max-h-full object-contain opacity-90 brightness-0 invert"
+                    loading="lazy"
+                  />
                 </div>
               </div>
             ))}
