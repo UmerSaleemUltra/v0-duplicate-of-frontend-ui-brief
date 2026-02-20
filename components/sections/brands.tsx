@@ -4,15 +4,15 @@ export default function Brands() {
   const brands = [
     { 
       name: "Airwallex",
-      logo: "https://cdn.brandfetch.io/idXCtf-53F/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+      logo: "https://cdn.brandfetch.io/idXCtf-53F/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1764298515500"
     },
     { 
       name: "Payoneer",
-      logo: "https://cdn.brandfetch.io/idVmyDyyyZ/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+      logo: "https://cdn.brandfetch.io/idVmyDyyyZ/w/800/h/156/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1667571027582"
     },
     { 
       name: "Sunrate",
-      logo: "https://cdn.brandfetch.io/idY4rzp0Gt/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+      logo: "https://cdn.brandfetch.io/idY4rzp0Gt/w/820/h/94/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX&t=1769383332682"
     },
     { 
       name: "Wise",
