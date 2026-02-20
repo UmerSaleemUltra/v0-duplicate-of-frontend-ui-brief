@@ -4,10 +4,16 @@ export default function Brands() {
   const brands = [
     {
       name: "Airwallex",
-      logo: "https://cdn.brandfetch.io/idXCtf-53F/theme/light/idFqBtrNJv.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+      logo: "https://images.crunchbase.com/image/upload/c_pad,h_256,w_256,f_auto,q_auto:eco,dpr_1/v1488261295/twkls1kzyfcpvbijawdi.png",
     },
-    { name: "Payoneer", logo: "https://cdn.brandfetch.io/idVmyDyyyZ/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
-    { name: "Sunrate", logo: "https://cdn.brandfetch.io/idY4rzp0Gt/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B" },
+    { 
+      name: "Payoneer", 
+      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Payoneer_logo.svg/2560px-Payoneer_logo.svg.png" 
+    },
+    { 
+      name: "Sunrate", 
+      logo: "https://media.licdn.com/dms/image/v2/D560BAQGDqhvkm3w1Zg/company-logo_200_200/company-logo_200_200/0/1721120826559/sunrate_logo?e=2147483647&v=beta&t=XhJVq8hOjBkIUqHLWHg1rQ4PztqCjPvs3wE7hZVGZXw" 
+    },
     {
       name: "Zyla",
       logo: "https://cdn.brandfetch.io/id1R4rkJXF/w/1024/h/280/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
@@ -45,13 +51,6 @@ export default function Brands() {
                     className="max-w-full max-h-full object-contain transition-opacity brightness-0 invert"
                     loading="lazy"
                     decoding="async"
-                    onError={(e) => {
-                      console.log(`[v0] Failed to load ${b.name} logo:`, b.logo);
-                      e.currentTarget.style.display = 'none';
-                    }}
-                    onLoad={() => {
-                      console.log(`[v0] Successfully loaded ${b.name} logo`);
-                    }}
                   />
                 )}
               </div>
