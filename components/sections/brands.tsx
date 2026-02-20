@@ -4,7 +4,7 @@ export default function Brands() {
   const brands = [
     { 
       name: "Airwallex",
-      logo: "https://cdn.brandfetch.io/idXCtf-53F/theme/dark/logo.svg?c=1bxid64Mup7aczewSAYMX&t=1764298515500"
+      logo: "https://cdn.brandfetch.io/idXCtf-53F/w/800/h/110/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX&t=1764298515500"
     },
     { 
       name: "Payoneer",
