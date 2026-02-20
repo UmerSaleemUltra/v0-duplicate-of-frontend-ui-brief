@@ -1,41 +1,28 @@
 "use client"
 
-import { useState } from "react"
-
 export default function Brands() {
   const brands = [
-    {
+    { 
       name: "Airwallex",
-      logo: "https://cdn.brandfetch.io/idXCtf-53F/w/400/h/133.png",
+      logo: "https://cdn.brandfetch.io/idXCtf-53F/w/800/h/110/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX&t=1764298515500"
     },
     { 
-      name: "Payoneer", 
-      logo: "https://cdn.brandfetch.io/idVmyDyyyZ/w/400/h/100.png" 
+      name: "Payoneer",
+      logo: "https://cdn.brandfetch.io/idVmyDyyyZ/w/800/h/156/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1667571027582"
     },
     { 
-      name: "Sunrate", 
-      logo: "https://cdn.brandfetch.io/idY4rzp0Gt/w/400/h/116.png" 
+      name: "Sunrate",
+      logo: "https://cdn.brandfetch.io/idY4rzp0Gt/w/820/h/94/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX&t=1769383332682"
     },
-    {
+    { 
+      name: "Wise",
+      logo: "https://cdn.brandfetch.io/id1R4rkJXF/w/1024/h/280/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
+    },
+    { 
       name: "Zyla",
-      logo: "https://cdn.brandfetch.io/id1R4rkJXF/w/1024/h/280/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
-    },
-    {
-      name: "Nsave",
-      logo: "https://cdn.brandfetch.io/idtf53Ue7K/w/820/h/187/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
+      logo: "https://cdn.brandfetch.io/idtf53Ue7K/w/820/h/187/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
     },
   ]
-
-  const [failedLogos, setFailedLogos] = useState<Set<string>>(new Set())
-
-  const handleImageError = (brandName: string) => {
-    console.log(`[v0] Failed to load ${brandName} logo`)
-    setFailedLogos(prev => new Set(prev).add(brandName))
-  }
-
-  const handleImageLoad = (brandName: string) => {
-    console.log(`[v0] Successfully loaded ${brandName} logo`)
-  }
 
   return (
     <section
@@ -54,25 +41,13 @@ export default function Brands() {
         <div className="hidden sm:grid grid-cols-5 gap-4 justify-items-center items-center">
           {brands.map((b) => (
             <div key={b.name} className="flex items-center justify-center">
-              <div
-                className={`relative flex items-center justify-center h-[clamp(28px,6vw,72px)] ${b.name === "Nsave" ? "max-w-[130px]" : b.name === "Slash" ? "max-w-[120px]" : "max-w-[200px]"}`}
-              >
-                {b.logo && !failedLogos.has(b.name) ? (
-                  <img
-                    src={b.logo}
-                    alt={`${b.name} logo`}
-                    className="max-w-full max-h-full object-contain transition-opacity brightness-0 invert"
-                    loading="lazy"
-                    decoding="async"
-                    onError={() => handleImageError(b.name)}
-                    onLoad={() => handleImageLoad(b.name)}
-                    crossOrigin="anonymous"
-                  />
-                ) : failedLogos.has(b.name) ? (
-                  <div className="text-white text-lg font-bold tracking-wider">
-                    {b.name}
-                  </div>
-                ) : null}
+              <div className="relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px]">
+                <img
+                  src={b.logo}
+                  alt={`${b.name} logo`}
+                  className="max-w-full max-h-full object-contain transition-opacity brightness-0 invert"
+                  loading="lazy"
+                />
               </div>
             </div>
           ))}
@@ -83,23 +58,13 @@ export default function Brands() {
           <div className="flex gap-8 animate-marquee whitespace-nowrap">
             {brands.concat(brands).map((b, i) => (
               <div key={`${b.name}-${i}`} className="flex-shrink-0 flex items-center justify-center">
-                <div className={`relative flex items-center justify-center h-[40px] ${b.name === "Nsave" ? "w-[80px]" : b.name === "Slash" ? "w-[70px]" : "w-[100px]"}`}>
-                  {b.logo && !failedLogos.has(b.name) ? (
-                    <img
-                      src={b.logo}
-                      alt={`${b.name} logo`}
-                      className="max-w-full max-h-full object-contain opacity-90 brightness-0 invert"
-                      loading="lazy"
-                      decoding="async"
-                      onError={() => handleImageError(b.name)}
-                      onLoad={() => handleImageLoad(b.name)}
-                      crossOrigin="anonymous"
-                    />
-                  ) : failedLogos.has(b.name) ? (
-                    <div className="text-white text-base font-bold tracking-wider">
-                      {b.name}
-                    </div>
-                  ) : null}
+                <div className="relative flex items-center justify-center h-[40px] w-[120px]">
+                  <img
+                    src={b.logo}
+                    alt={`${b.name} logo`}
+                    className="max-w-full max-h-full object-contain opacity-90 brightness-0 invert"
+                    loading="lazy"
+                  />
                 </div>
               </div>
             ))}
