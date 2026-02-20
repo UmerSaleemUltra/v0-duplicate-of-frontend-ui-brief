@@ -4,15 +4,15 @@ export default function Brands() {
   const brands = [
     {
       name: "Airwallex",
-      logo: "https://images.crunchbase.com/image/upload/c_pad,h_256,w_256,f_auto,q_auto:eco,dpr_1/v1488261295/twkls1kzyfcpvbijawdi.png",
+      logo: "https://cdn.brandfetch.io/idXCtf-53F/w/400/h/133.png",
     },
     { 
       name: "Payoneer", 
-      logo: "https://upload.wikimedia.org/wikipedia/commons/thumb/e/e8/Payoneer_logo.svg/2560px-Payoneer_logo.svg.png" 
+      logo: "https://cdn.brandfetch.io/idVmyDyyyZ/w/400/h/100.png" 
     },
     { 
       name: "Sunrate", 
-      logo: "https://media.licdn.com/dms/image/v2/D560BAQGDqhvkm3w1Zg/company-logo_200_200/company-logo_200_200/0/1721120826559/sunrate_logo?e=2147483647&v=beta&t=XhJVq8hOjBkIUqHLWHg1rQ4PztqCjPvs3wE7hZVGZXw" 
+      logo: "https://cdn.brandfetch.io/idY4rzp0Gt/w/400/h/116.png" 
     },
     {
       name: "Zyla",
