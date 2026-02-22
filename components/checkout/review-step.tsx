@@ -489,14 +489,18 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
 
       <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
         <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-3">
+            <div className="min-w-0 flex-1">
+              <span className="text-sm text-slate-700 block">{formData?.packageType === "starter" ? "Starter" : "Advanced"} Package</span>
+            </div>
+            <span className="text-sm font-medium text-slate-900 flex-shrink-0">${basePackagePrice}</span>
+          </div>
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-slate-200">
             <div className="min-w-0 flex-1">
-              <span className="text-sm text-slate-700 block">Formation Package</span>
-              <p className="text-xs text-slate-500 mt-0.5 break-words">
-                {formData?.state || "N/A"} {formData?.packageType === "starter" ? "Starter" : "Advanced"} Package
-              </p>
+              <span className="text-sm text-slate-700 block">{formData?.state || "N/A"} State Filing Fee</span>
             </div>
-            <span className="text-sm font-medium text-slate-900 flex-shrink-0">${subtotal}</span>
+            <span className="text-sm font-medium text-slate-900 flex-shrink-0">${stateFilingFee}</span>
           </div>
 
           {addonsTotal > 0 && (
