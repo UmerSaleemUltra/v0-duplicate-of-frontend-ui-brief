@@ -222,7 +222,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer h-9 px-3 self-start sm:self-auto"
+            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 h-9 px-3 self-start sm:self-auto cursor-pointer"
             onClick={onBack}
           >
             <Edit2 className="w-4 h-4 mr-1" />
@@ -251,7 +251,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer h-9 px-3 self-start sm:self-auto"
+            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 h-9 px-3 self-start sm:self-auto cursor-pointer"
             onClick={onBack}
           >
             <Edit2 className="w-4 h-4 mr-1" />
@@ -382,7 +382,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           <Button
             variant="ghost"
             size="sm"
-            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 cursor-pointer h-9 px-3 self-start sm:self-auto"
+            className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 h-9 px-3 self-start sm:self-auto cursor-pointer"
             onClick={onBack}
           >
             <Edit2 className="w-4 h-4 mr-1" />
@@ -559,7 +559,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           variant="outline"
           onClick={onBack}
           disabled={isCreatingCompany}
-          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
+          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900 cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back to Edit
@@ -568,7 +568,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
         <Button
           type="button"
           onClick={handleProceedToPayment}
-          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
+          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold cursor-pointer"
         >
           Next
           <ArrowRight className="w-5 h-5 ml-2" />

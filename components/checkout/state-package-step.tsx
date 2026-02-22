@@ -237,13 +237,13 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
             onBack()
           }}
           variant="outline"
-          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
+          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900 cursor-pointer"
         >
           <ArrowLeft className="mr-2 w-5 h-5" /> Back
         </Button>
         <Button
           onClick={handleSubmit}
-          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
+          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold cursor-pointer"
         >
           Next <ArrowRight className="ml-2 w-5 h-5" />
         </Button>
