@@ -1,7 +1,7 @@
 // Package pricing configuration
 export const packagePricing = {
   starter: 149,
-  advanced: 349,
+  advanced: 249,
 } as const
 
 // State filing fees
