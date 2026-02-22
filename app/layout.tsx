@@ -343,28 +343,41 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster />
 
         <Script id="whatsapp-widget" strategy="lazyOnload">
-          {`(function (w, d, s, u) {
-            w.gbwawc = {
-              url: u,
-              options: {
-                waId: "+923394882800",
-                siteName: "Buzz Filing",
-                siteTag: "Usually reply in 4 minutes",
-                siteLogo: "https://www.buzzfiling.com/favicon.ico",
-                widgetPosition: "RIGHT",
-                triggerMessage: "",
-                welcomeMessage: "Welcome to BuzzFiling! Your trusted partner in business success!",
-                brandColor: "#25D366",
-                messageText: "",
-                replyOptions: ['', ''],
+          {`var url = 'https://wati-integration-prod-service.clare.ai/v2/watiWidget.js?27669';
+            var s = document.createElement('script');
+            s.type = 'text/javascript';
+            s.async = true;
+            s.src = url;
+            var options = {
+              "enabled":true,
+              "chatButtonSetting":{
+                "backgroundColor":"#00e785",
+                "ctaText":"Chat with us",
+                "borderRadius":"25",
+                "marginLeft": "0",
+                "marginRight": "20",
+                "marginBottom": "20",
+                "ctaIconWATI":false,
+                "position":"right"
               },
+              "brandSetting":{
+                "brandName":"Buzz Filing",
+                "brandSubTitle":"undefined",
+                "brandImg":"https://www.wati.io/wp-content/uploads/2023/04/Wati-logo.svg",
+                "welcomeText":"Start your U.S. company with Buzz Filing",
+                "messageText":"Hello, %0A I have a question about {{page_link}}",
+                "backgroundColor":"#00e785",
+                "ctaText":"Chat with us",
+                "borderRadius":"25",
+                "autoShow":false,
+                "phoneNumber":"923394882800"
+              }
             };
-            var h = d.getElementsByTagName(s)[0],
-              j = d.createElement(s);
-            j.async = true;
-            j.src = u + "/whatsapp-widget.min.js?_=" + Math.random();
-            h.parentNode.insertBefore(j, h);
-          })(window, document, "script", "https://waw.gallabox.com");`}
+            s.onload = function() {
+              CreateWhatsappChatWidget(options);
+            };
+            var x = document.getElementsByTagName('script')[0];
+            x.parentNode.insertBefore(s, x);`}
         </Script>
       </body>
     </html>
