@@ -326,6 +326,21 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
+      </head>
+      <body className="font-sans antialiased">
+        <noscript>
+          <iframe
+            src="https://www.googletagmanager.com/ns.html?id=GTM-KTZXH7FM"
+            height="0"
+            width="0"
+            style={{ display: "none", visibility: "hidden" }}
+          />
+        </noscript>
+
+        <AuthProvider>
+          <CompanyProvider>{children}</CompanyProvider>
+        </AuthProvider>
+        <Toaster />
 
         <Script id="whatsapp-widget" strategy="lazyOnload">
           {`(function (w, d, s, u) {
@@ -351,21 +366,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             h.parentNode.insertBefore(j, h);
           })(window, document, "script", "https://waw.gallabox.com");`}
         </Script>
-      </head>
-      <body className="font-sans antialiased">
-        <noscript>
-          <iframe
-            src="https://www.googletagmanager.com/ns.html?id=GTM-KTZXH7FM"
-            height="0"
-            width="0"
-            style={{ display: "none", visibility: "hidden" }}
-          />
-        </noscript>
-
-        <AuthProvider>
-          <CompanyProvider>{children}</CompanyProvider>
-        </AuthProvider>
-        <Toaster />
       </body>
     </html>
   )
