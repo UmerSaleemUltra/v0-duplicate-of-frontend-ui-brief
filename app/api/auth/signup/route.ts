@@ -65,17 +65,14 @@ export async function POST(request: NextRequest) {
       role: "client",
     })
 
-    // Send welcome email (non-blocking)
-    try {
-      const welcomeEmail = emailTemplates.welcome(sanitizedName)
-      await sendEmail({
-        to: email,
-        subject: welcomeEmail.subject,
-        html: welcomeEmail.html,
-      })
-    } catch (emailError) {
-      // Email failure is non-fatal
-    }
+    // Send welcome email (non-blocking, fire-and-forget)
+    sendEmail({
+      to: email,
+      subject: emailTemplates.welcome(sanitizedName).subject,
+      html: emailTemplates.welcome(sanitizedName).html,
+    }).catch(() => {
+      // Email failure is non-fatal - silently ignore
+    })
 
     const { password: _, ...userWithoutPassword } = newUser
     return addSecurityHeaders(apiResponse(
