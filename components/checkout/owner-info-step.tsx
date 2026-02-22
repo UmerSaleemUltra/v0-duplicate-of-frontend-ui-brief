@@ -331,7 +331,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       variant="ghost"
                       size="sm"
                       onClick={() => removeMember(member.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-9 px-3 text-sm rounded-md w-full sm:w-auto"
+                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-9 px-3 text-sm rounded-md w-full sm:w-auto cursor-pointer"
                     >
                       <Trash2 className="w-4 h-4 mr-1" />
                       Remove
@@ -432,7 +432,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                       <DropdownMenuTrigger asChild>
                         <Button
                           variant="outline"
-                          className="w-full justify-between pl-10 h-10 md:h-11 relative bg-transparent text-sm md:text-base"
+                          className="w-full justify-between pl-10 h-10 md:h-11 relative bg-transparent text-sm md:text-base cursor-pointer"
                         >
                           <Globe className="absolute left-3 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
                           <span className="truncate">{getCountryName(member.country)}</span>
@@ -583,7 +583,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                             <Button
                               type="button"
                               variant="outline"
-                              className="w-full md:w-auto border-red-300 text-red-600 bg-transparent hover:bg-red-50 h-10 md:h-9 text-sm"
+                              className="w-full md:w-auto border-red-300 text-red-600 bg-transparent hover:bg-red-50 h-10 md:h-9 text-sm cursor-pointer"
                               onClick={() => handleRemoveItinForMember(member.id)}
                             >
                               <X className="w-4 h-4 mr-2" /> Remove from Order
@@ -591,7 +591,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
                           ) : (
                             <Button
                               type="button"
-                              className="w-full md:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 h-10 md:h-9 text-sm"
+                              className="w-full md:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 h-10 md:h-9 text-sm cursor-pointer"
                               onClick={() => handleAddItinForMember(member.id)}
                             >
                               <DollarSign className="w-4 h-4 mr-2" />
@@ -618,7 +618,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         type="button"
         onClick={addMember}
         variant="outline"
-        className="w-full border-slate-300 hover:bg-slate-50 bg-white h-12 text-base font-medium"
+        className="w-full border-slate-300 hover:bg-slate-50 bg-white h-12 text-base font-medium cursor-pointer"
       >
         <Plus className="w-5 h-5 mr-2" />
         Add Another Member
@@ -630,7 +630,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
           type="button"
           variant="outline"
           onClick={onBack}
-          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900"
+          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900 cursor-pointer"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back
@@ -639,7 +639,7 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
         <Button
           type="button"
           onClick={handleSubmit}
-          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold"
+          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold cursor-pointer"
         >
           Next
           <ArrowRight className="w-5 h-5 ml-2" />

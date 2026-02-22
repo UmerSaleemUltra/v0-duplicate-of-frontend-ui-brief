@@ -326,6 +326,31 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             }),
           }}
         />
+
+        <Script id="whatsapp-widget" strategy="lazyOnload">
+          {`(function (w, d, s, u) {
+            w.gbwawc = {
+              url: u,
+              options: {
+                waId: "+923394882800",
+                siteName: "Buzz Filing",
+                siteTag: "Usually reply in 4 minutes",
+                siteLogo: "https://www.buzzfiling.com/favicon.ico",
+                widgetPosition: "RIGHT",
+                triggerMessage: "",
+                welcomeMessage: "Welcome to BuzzFiling! Your trusted partner in business success!",
+                brandColor: "#25D366",
+                messageText: "",
+                replyOptions: ['', ''],
+              },
+            };
+            var h = d.getElementsByTagName(s)[0],
+              j = d.createElement(s);
+            j.async = true;
+            j.src = u + "/whatsapp-widget.min.js?_=" + Math.random();
+            h.parentNode.insertBefore(j, h);
+          })(window, document, "script", "https://waw.gallabox.com");`}
+        </Script>
       </head>
       <body className="font-sans antialiased">
         <noscript>
