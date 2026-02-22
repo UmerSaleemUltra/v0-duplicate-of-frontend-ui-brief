@@ -158,6 +158,7 @@ export async function POST(req: NextRequest) {
         .findOne({ _id: new ObjectId(decoded.userId) }, { projection: { name: 1, email: 1 } })
 
       if (user) {
+        console.log("[v0] Attempting to send order confirmation email to:", user.email)
         const orderEmail = emailTemplates.orderConfirmation(user.name, orderId, {
           companyName,
           packageType: packageType || "Starter Package",
@@ -165,16 +166,17 @@ export async function POST(req: NextRequest) {
           total: total || amount,
         })
 
-        await sendEmail({
+        const emailResult = await sendEmail({
           to: user.email,
           subject: orderEmail.subject,
           html: orderEmail.html,
-        }).catch((emailError) => {
-          console.log("[v0] Email sending failed (non-critical):", emailError)
         })
+        console.log("[v0] Order confirmation email result:", emailResult)
+      } else {
+        console.log("[v0] User not found for email notification:", decoded.userId)
       }
     } catch (emailError) {
-      console.log("[v0] Email preparation failed (non-critical):", emailError)
+      console.error("[v0] Order confirmation email failed:", emailError)
     }
 
     try {
