@@ -33,6 +33,14 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
       return { success: false, error: "Missing email parameters" }
     }
 
+    console.log("[v0] Sending email to:", to, "| Subject:", subject)
+    console.log("[v0] Email config:", {
+      host: EMAIL_CONFIG.host,
+      port: EMAIL_CONFIG.port,
+      user: EMAIL_CONFIG.auth.user,
+      sender: SENDER_EMAIL,
+    })
+
     const info = await transporter.sendMail({
       from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
       to,
@@ -40,9 +48,15 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
       html,
     })
 
+    console.log("[v0] Email sent successfully:", info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error: any) {
-    console.error("[v0] Email send error:", error.message)
+    console.error("[v0] Email send error details:", {
+      message: error.message,
+      code: error.code,
+      command: error.command,
+      response: error.response,
+    })
     return { success: false, error: error.message || "Unknown email error" }
   }
 }
