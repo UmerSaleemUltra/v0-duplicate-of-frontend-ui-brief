@@ -6,6 +6,7 @@ import type { CheckoutData } from "@/app/checkout/page"
 import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/local-storage"
 import { useToast } from "@/hooks/use-toast"
 import { STATE_FEES } from "@/lib/constants"
+import { packagePricing } from "@/lib/pricing"
 
 type ReviewStepProps = {
   formData?: CheckoutData
@@ -69,7 +70,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
 
   const websitePrice = formData?.upsells?.includes("website") ? 499 : 0
 
-  const basePackagePrice = formData?.packageType === "starter" ? 149 : 349
+  const basePackagePrice = formData?.packageType === "starter" ? packagePricing.starter : packagePricing.advanced
   const stateFilingFee = STATE_FEES[formData?.state || ""] || 100
 
   const itinPrice = membersWithItin.length * 199
