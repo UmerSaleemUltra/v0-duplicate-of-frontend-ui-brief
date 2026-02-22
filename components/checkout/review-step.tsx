@@ -69,7 +69,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
 
   const websitePrice = formData?.upsells?.includes("website") ? 499 : 0
 
-  const basePackagePrice = formData?.packageType === "starter" ? 149 : 249
+  const basePackagePrice = formData?.packageType === "starter" ? 149 : 349
   const stateFilingFee = STATE_FEES[formData?.state || ""] || 100
 
   const itinPrice = membersWithItin.length * 199
