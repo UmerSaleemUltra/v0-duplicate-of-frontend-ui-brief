@@ -365,7 +365,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 "brandSubTitle":"undefined",
                 "brandImg":"https://www.buzzfiling.com/favicon.ico",
                 "welcomeText":"Start your U.S. company with Buzz Filing",
-                "messageText":"Hello, %0A I have a question about {{page_link}}",
+                "messageText":"Hi! 👋 I'd like to know more. Is anyone free to chat?",
                 "backgroundColor":"#00e785",
                 "ctaText":"Chat with us",
                 "borderRadius":"25",
