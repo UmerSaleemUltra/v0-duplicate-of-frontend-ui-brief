@@ -343,17 +343,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <Toaster />
 
         <Script id="whatsapp-widget" strategy="lazyOnload">
-          {`console.log("[v0] WhatsApp Widget: Script initialization started");
-            
-            var url = 'https://wati-integration-prod-service.clare.ai/v2/watiWidget.js?27669';
-            console.log("[v0] WhatsApp Widget: Script URL set to", url);
-            
+          {`var url = 'https://wati-integration-prod-service.clare.ai/v2/watiWidget.js?27669';
             var s = document.createElement('script');
             s.type = 'text/javascript';
             s.async = true;
             s.src = url;
-            console.log("[v0] WhatsApp Widget: Script element created");
-            
             var options = {
               "enabled":true,
               "chatButtonSetting":{
@@ -379,29 +373,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 "phoneNumber":"923394882800"
               }
             };
-            console.log("[v0] WhatsApp Widget: Options configured", options);
-            
             s.onload = function() {
-              console.log("[v0] WhatsApp Widget: External script loaded successfully");
               if (typeof CreateWhatsappChatWidget === 'function') {
-                console.log("[v0] WhatsApp Widget: CreateWhatsappChatWidget function found, initializing widget");
                 CreateWhatsappChatWidget(options);
-                console.log("[v0] WhatsApp Widget: Widget initialized successfully");
-              } else {
-                console.error("[v0] WhatsApp Widget: CreateWhatsappChatWidget function not found");
               }
             };
-            
-            s.onerror = function(error) {
-              console.error("[v0] WhatsApp Widget: Failed to load external script", error);
-            };
-            
             var x = document.getElementsByTagName('script')[0];
             if (x && x.parentNode) {
               x.parentNode.insertBefore(s, x);
-              console.log("[v0] WhatsApp Widget: Script injected into DOM");
-            } else {
-              console.error("[v0] WhatsApp Widget: Failed to find script tag to inject widget");
             }`}
         </Script>
       </body>
