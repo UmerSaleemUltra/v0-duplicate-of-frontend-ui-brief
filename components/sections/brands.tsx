@@ -40,8 +40,8 @@ export default function Brands() {
         {/* Desktop / Tablet Grid */}
         <div className="hidden sm:grid grid-cols-5 gap-4 md:gap-6 lg:gap-8 justify-items-center items-center">
           {brands.map((b) => (
-            <div key={b.name} className="flex items-center justify-center">
-              <div className={`relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px] ${b.name === 'nsave' ? 'scale-[0.6] -mx-16' : ''}`}>
+            <div key={b.name} className={`flex items-center justify-center ${b.name === 'nsave' ? '-ml-8 md:-ml-12 lg:-ml-16' : ''}`}>
+              <div className={`relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px] ${b.name === 'nsave' ? 'scale-[0.6]' : ''}`}>
                 <img
                   src={b.logo}
                   alt={`${b.name} logo`}
