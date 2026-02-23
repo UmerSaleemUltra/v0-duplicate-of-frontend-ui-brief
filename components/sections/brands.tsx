@@ -15,16 +15,12 @@ export default function Brands() {
       logo: "https://cdn.brandfetch.io/idY4rzp0Gt/w/820/h/94/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX&t=1769383332682"
     },
     { 
-      name: "Wise",
+      name: "zyla",
       logo: "https://cdn.brandfetch.io/id1R4rkJXF/w/1024/h/280/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
     },
     { 
-      name: "Zyla",
-      logo: "https://cdn.brandfetch.io/idtf53Ue7K/w/820/h/187/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
-    },
-    { 
       name: "nsave",
-      logo: "https://cdn.brandfetch.io/idmsqYL_qH/w/820/h/269/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
+      logo: "https://cdn.brandfetch.io/idtf53Ue7K/w/820/h/187/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
     },
   ]
 
@@ -42,10 +38,10 @@ export default function Brands() {
         </h2>
 
         {/* Desktop / Tablet Grid */}
-        <div className="hidden sm:grid grid-cols-6 gap-4 justify-items-center items-center">
+        <div className="hidden sm:grid grid-cols-5 gap-4 justify-items-center items-center">
           {brands.map((b) => (
             <div key={b.name} className="flex items-center justify-center">
-              <div className={`relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px] ${b.name === 'nsave' ? 'scale-75' : ''}`}>
+              <div className={`relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px] ${b.name === 'nsave' ? 'scale-[0.65]' : ''}`}>
                 <img
                   src={b.logo}
                   alt={`${b.name} logo`}
@@ -62,7 +58,7 @@ export default function Brands() {
           <div className="flex gap-8 animate-marquee whitespace-nowrap">
             {brands.concat(brands).map((b, i) => (
               <div key={`${b.name}-${i}`} className="flex-shrink-0 flex items-center justify-center">
-                <div className={`relative flex items-center justify-center h-[40px] w-[120px] ${b.name === 'nsave' ? 'scale-75' : ''}`}>
+                <div className={`relative flex items-center justify-center h-[40px] w-[120px] ${b.name === 'nsave' ? 'scale-[0.65]' : ''}`}>
                   <img
                     src={b.logo}
                     alt={`${b.name} logo`}
