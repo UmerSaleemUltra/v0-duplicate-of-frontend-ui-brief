@@ -22,6 +22,10 @@ export default function Brands() {
       name: "Zyla",
       logo: "https://cdn.brandfetch.io/idtf53Ue7K/w/820/h/187/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
     },
+    { 
+      name: "nsave",
+      logo: "https://cdn.brandfetch.io/idmsqYL_qH/w/820/h/269/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
+    },
   ]
 
   return (
@@ -38,10 +42,10 @@ export default function Brands() {
         </h2>
 
         {/* Desktop / Tablet Grid */}
-        <div className="hidden sm:grid grid-cols-5 gap-4 justify-items-center items-center">
+        <div className="hidden sm:grid grid-cols-6 gap-4 justify-items-center items-center">
           {brands.map((b) => (
             <div key={b.name} className="flex items-center justify-center">
-              <div className="relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px]">
+              <div className={`relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px] ${b.name === 'nsave' ? 'scale-75' : ''}`}>
                 <img
                   src={b.logo}
                   alt={`${b.name} logo`}
@@ -58,7 +62,7 @@ export default function Brands() {
           <div className="flex gap-8 animate-marquee whitespace-nowrap">
             {brands.concat(brands).map((b, i) => (
               <div key={`${b.name}-${i}`} className="flex-shrink-0 flex items-center justify-center">
-                <div className="relative flex items-center justify-center h-[40px] w-[120px]">
+                <div className={`relative flex items-center justify-center h-[40px] w-[120px] ${b.name === 'nsave' ? 'scale-75' : ''}`}>
                   <img
                     src={b.logo}
                     alt={`${b.name} logo`}
