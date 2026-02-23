@@ -41,7 +41,7 @@ export default function Brands() {
         <div className="hidden sm:grid grid-cols-5 gap-8 justify-items-center items-center">
           {brands.map((b) => (
             <div key={b.name} className="flex items-center justify-center">
-              <div className={`relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px] ${b.name === 'nsave' ? 'scale-[0.65]' : ''}`}>
+              <div className={`relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px] ${b.name === 'nsave' ? 'scale-[0.65] -mx-8' : ''}`}>
                 <img
                   src={b.logo}
                   alt={`${b.name} logo`}
@@ -58,7 +58,7 @@ export default function Brands() {
           <div className="flex gap-8 animate-marquee whitespace-nowrap">
             {brands.concat(brands).map((b, i) => (
               <div key={`${b.name}-${i}`} className="flex-shrink-0 flex items-center justify-center">
-                <div className={`relative flex items-center justify-center h-[40px] w-[120px] ${b.name === 'nsave' ? 'scale-[0.65]' : ''}`}>
+                <div className={`relative flex items-center justify-center h-[40px] w-[120px] ${b.name === 'nsave' ? 'scale-[0.65] -mx-4' : ''}`}>
                   <img
                     src={b.logo}
                     alt={`${b.name} logo`}
