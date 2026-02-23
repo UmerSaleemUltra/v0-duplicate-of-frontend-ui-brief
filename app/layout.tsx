@@ -369,7 +369,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               "brandSetting":{
                 "brandName":"Buzz Filing",
                 "brandSubTitle":"undefined",
-                "brandImg":"https://www.wati.io/wp-content/uploads/2023/04/Wati-logo.svg",
+                "brandImg":"https://www.buzzfiling.com/favicon.ico",
                 "welcomeText":"Start your U.S. company with Buzz Filing",
                 "messageText":"Hello, %0A I have a question about {{page_link}}",
                 "backgroundColor":"#00e785",
