@@ -12,20 +12,13 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    console.log("[v0] Manual-data API - Token received, length:", token.length)
-
     const decoded = await verifyToken(token)
-    console.log("[v0] Manual-data API - Token exists:", !!token)
-    console.log("[v0] Manual-data API - Decoded:", decoded)
-    console.log("[v0] Manual-data API - Has admin role:", decoded?.role === "admin")
 
     if (!decoded) {
-      console.error("[v0] Token verification failed - decoded is null")
       return NextResponse.json({ error: "Invalid or expired token. Please log in again." }, { status: 401 })
     }
 
     if (decoded.role !== "admin") {
-      console.error(`[v0] User role check failed - role: ${decoded.role}`)
       return NextResponse.json(
         { error: `Admin access required. Current role: ${decoded.role || "unknown"}` },
         { status: 403 },
@@ -53,9 +46,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         ...(data.annualReportFilingDate && { annualReportFilingDate: data.annualReportFilingDate }),
         ...(data.irsFilingDate && { irsFilingDate: data.irsFilingDate }),
         ...(data.itin && { itin: data.itin }),
-        // Auto-complete milestones based on the data being saved
-        ...(data.businessId && { "milestones.companyFormationCompleted": true }),
-        ...(data.ein && { "milestones.einObtained": true }),
       }
     } else if (dataType === "registered-agent") {
       updateFields = {
@@ -68,7 +58,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           expiryDate: data.expiryDate,
           servicePeriod: data.servicePeriod || "1 Year",
         },
-        "milestones.registeredAgentAssigned": true,
       }
     } else if (dataType === "business-address") {
       updateFields = {
@@ -79,7 +68,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           zip: data.zip,
           expiryDate: data.expiryDate,
         },
-        "milestones.businessMailingAddressIssued": true,
       }
     }
 
@@ -106,7 +94,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
-    console.error("[v0] Error updating manual data:", error)
+    console.error("Error updating manual data:", error)
     return NextResponse.json({ error: "Failed to update manual data" }, { status: 500 })
   }
 }
