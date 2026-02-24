@@ -41,11 +41,11 @@ export default function Brands() {
         <div className="hidden sm:grid grid-cols-5 gap-4 md:gap-6 lg:gap-8 justify-items-center items-center">
           {brands.map((b) => (
             <div key={b.name} className="flex items-center justify-center">
-              <div className={`relative flex items-center justify-center ${b.name === 'nsave' ? 'w-[150px] h-[clamp(18px,3.5vw,44px)]' : 'max-w-[200px] h-[clamp(28px,6vw,72px)]'}`}>
+              <div className="relative flex items-center justify-center max-w-[200px] h-[clamp(28px,6vw,72px)]">
                 <img
                   src={b.logo}
                   alt={`${b.name} logo`}
-                  className="max-w-full max-h-full object-contain transition-opacity brightness-0 invert"
+                  className={`max-h-full object-contain transition-opacity brightness-0 invert ${b.name === 'nsave' ? 'w-[150px]' : 'max-w-full'}`}
                   loading="lazy"
                 />
               </div>
