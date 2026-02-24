@@ -159,7 +159,10 @@ export const emailTemplates = {
     packageType: string,
     totalAmount: string,
     orderId: string,
-  ) => ({
+  ) => {
+    const raw = (packageType || "").toLowerCase().trim()
+    const packageLabel = raw.includes("advanced") ? "Advanced" : "Starter"
+    return {
     subject: "Your Order Has Been Confirmed",
     html: `
     <!DOCTYPE html>
@@ -199,7 +202,7 @@ export const emailTemplates = {
                         <strong>Company Name:</strong> ${companyName}
                       </li>
                       <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Package:</strong> ${packageType}
+                        <strong>Package:</strong> ${packageLabel}
                       </li>
                       <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
                         <strong>Total Amount:</strong> ${totalAmount}
@@ -243,7 +246,7 @@ export const emailTemplates = {
       </body>
     </html>
     `,
-  }),
+  }},
 
   einUploaded: (name: string, companyName: string) => ({
     subject: "Your EIN Application Is Under Review",
