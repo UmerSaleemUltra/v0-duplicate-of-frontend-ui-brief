@@ -257,9 +257,9 @@ export function NotificationDropdown() {
                       </div>
                     </div>
                   </TooltipTrigger>
-                  <TooltipContent side="left" className="max-w-xs p-3" sideOffset={4}>
-                    <p className="font-semibold text-xs mb-1">{notification.title}</p>
-                    <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap">{notification.message}</p>
+                  <TooltipContent side="left" className="max-w-xs p-3 bg-gray-900 border-gray-800" sideOffset={4}>
+                    <p className="font-semibold text-xs mb-1 text-white">{notification.title}</p>
+                    <p className="text-xs text-gray-300 leading-relaxed whitespace-pre-wrap">{notification.message}</p>
                   </TooltipContent>
                 </Tooltip>
               ))
