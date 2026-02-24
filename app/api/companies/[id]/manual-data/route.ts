@@ -53,6 +53,9 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         ...(data.annualReportFilingDate && { annualReportFilingDate: data.annualReportFilingDate }),
         ...(data.irsFilingDate && { irsFilingDate: data.irsFilingDate }),
         ...(data.itin && { itin: data.itin }),
+        // Auto-complete milestones based on the data being saved
+        ...(data.businessId && { "milestones.companyFormationCompleted": true }),
+        ...(data.ein && { "milestones.einObtained": true }),
       }
     } else if (dataType === "registered-agent") {
       updateFields = {
@@ -76,6 +79,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
           zip: data.zip,
           expiryDate: data.expiryDate,
         },
+        "milestones.businessMailingAddressIssued": true,
       }
     }
 
