@@ -38,17 +38,15 @@ export default function Brands() {
         </h2>
 
         {/* Desktop / Tablet Grid */}
-        <div className="hidden sm:grid grid-cols-5 gap-4 md:gap-6 lg:gap-8 justify-items-center items-center">
+        <div className="hidden sm:grid grid-cols-5 gap-4 md:gap-6 lg:gap-8 items-center">
           {brands.map((b) => (
-            <div key={b.name} className="flex items-center justify-center">
-              <div className="relative flex items-center justify-center h-[clamp(28px,6vw,72px)] max-w-[200px]">
-                <img
-                  src={b.logo}
-                  alt={`${b.name} logo`}
-                  className="max-w-full max-h-full object-contain transition-opacity brightness-0 invert"
-                  loading="lazy"
-                />
-              </div>
+            <div key={b.name} className="flex items-center justify-center w-full">
+              <img
+                src={b.logo}
+                alt={`${b.name} logo`}
+                className={`object-contain transition-opacity brightness-0 invert ${b.name === 'nsave' ? 'w-[120px] h-auto' : 'w-full max-w-[160px] h-[clamp(28px,4vw,56px)]'}`}
+                loading="lazy"
+              />
             </div>
           ))}
         </div>
