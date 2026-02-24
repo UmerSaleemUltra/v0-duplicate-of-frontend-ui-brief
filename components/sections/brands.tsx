@@ -44,7 +44,7 @@ export default function Brands() {
               <img
                 src={b.logo}
                 alt={`${b.name} logo`}
-                className={`object-contain transition-opacity brightness-0 invert ${b.name === 'nsave' ? 'w-[120px] h-auto' : 'w-full max-w-[160px] h-[clamp(28px,4vw,56px)]'}`}
+                className="object-contain transition-opacity brightness-0 invert w-full max-w-[140px] h-[40px]"
                 loading="lazy"
               />
             </div>
