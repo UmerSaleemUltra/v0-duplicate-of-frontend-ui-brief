@@ -490,13 +490,6 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
 
       <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-slate-200">
-            <div className="min-w-0 flex-1">
-              <span className="text-sm text-slate-700 block">{formData?.packageType === "starter" ? "Starter" : "Advanced"} Package</span>
-            </div>
-            <span className="text-sm font-medium text-slate-900 flex-shrink-0">${basePackagePrice}</span>
-          </div>
-
           {addonsTotal > 0 && (
             <>
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pb-4 border-b border-slate-200">
@@ -537,7 +530,6 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t-2 border-slate-300">
             <div className="min-w-0">
               <p className="text-base md:text-lg font-semibold text-slate-900">Grand Total</p>
-              <p className="text-xs text-slate-600 mt-0.5">One-time payment</p>
             </div>
             <div className="text-left sm:text-right">
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">${total}</p>
