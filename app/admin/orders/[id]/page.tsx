@@ -867,10 +867,6 @@ export default function OrderDetailPage() {
             status: "Active",
           },
           registeredAgentStatus: "active",
-          milestones: {
-            ...milestones,
-            registeredAgentAssigned: true,
-          },
         }),
       })
 
@@ -885,7 +881,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Registered agent assigned successfully:", updatedCompany.registeredAgent)
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, registeredAgentAssigned: true })
+      setMilestones(updatedCompany.milestones || milestones)
       setRegisteredAgentDialogOpen(false)
 
       toast({
@@ -968,10 +964,6 @@ export default function OrderDetailPage() {
             zip: mailingAddress.zip.trim(),
           },
           mailingAddressStatus: "active",
-          milestones: {
-            ...milestones,
-            businessMailingAddressIssued: true,
-          },
         }),
       })
 
@@ -986,7 +978,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Mailing address assigned successfully:", updatedCompany.mailingAddress)
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, businessMailingAddressIssued: true })
+      setMilestones(updatedCompany.milestones || milestones)
       setMailingAddressDialogOpen(false)
 
       toast({
@@ -1027,10 +1019,6 @@ export default function OrderDetailPage() {
         },
         body: JSON.stringify({
           ein: einValue.trim(),
-          milestones: {
-            ...milestones,
-            einObtained: true,
-          },
         }),
       })
 
@@ -1042,7 +1030,7 @@ export default function OrderDetailPage() {
       console.log("[v0] EIN assigned successfully")
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, einObtained: true })
+      setMilestones(updatedCompany.milestones || milestones)
       setEinDialogOpen(false)
       setEinValue("")
 
@@ -1138,10 +1126,6 @@ export default function OrderDetailPage() {
         },
         body: JSON.stringify({
           businessId: businessIdValue.trim(),
-          milestones: {
-            ...milestones,
-            companyFormationCompleted: true,
-          },
         }),
       })
 
@@ -1153,7 +1137,7 @@ export default function OrderDetailPage() {
       console.log("[v0] Business ID assigned successfully")
 
       setCompany(updatedCompany)
-      setMilestones(updatedCompany.milestones || { ...milestones, companyFormationCompleted: true })
+      setMilestones(updatedCompany.milestones || milestones)
       setBusinessIdDialogOpen(false)
       setBusinessIdValue("")
 
