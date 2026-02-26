@@ -55,6 +55,16 @@ import {
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { CompanyDetailsModal } from "@/components/modals/company-details-modal"
+import { CustomerInfoCard } from "@/components/admin/order-detail/CustomerInfoCard"
+import { OrderStatusCard } from "@/components/admin/order-detail/OrderStatusCard"
+import { FormationProgressCard } from "@/components/admin/order-detail/FormationProgressCard"
+import { CompanyInfoCard } from "@/components/admin/order-detail/CompanyInfoCard"
+import { MembersCard } from "@/components/admin/order-detail/MembersCard"
+import { OrderPricingCard } from "@/components/admin/order-detail/OrderPricingCard"
+import { AddonsCard } from "@/components/admin/order-detail/AddonsCard"
+import { AdminActionsCard } from "@/components/admin/order-detail/AdminActionsCard"
+import { StatusManagementCard } from "@/components/admin/order-detail/StatusManagementCard"
+import { AssignedInfoCards } from "@/components/admin/order-detail/AssignedInfoCards"
 
 const getDisplayValue = (value: any, defaultValue = "N/A"): string => {
   if (value === null || value === undefined || value === "") return defaultValue
@@ -2190,1102 +2200,132 @@ export default function OrderDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Header - Prominent Order ID */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button
-            variant="outline"
-            onClick={() => router.push("/admin/orders")}
-            className="h-10 w-10 p-0 bg-transparent"
-          >
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-2xl font-semibold text-slate-900">Order Details</h1>
-            <div className="flex items-center gap-3 mt-3">
-              <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg">
-                <Package className="w-4 h-4 text-slate-600" />
-                <span className="text-sm text-slate-600 font-medium">Order ID:</span>
-                <span className="font-mono text-sm font-semibold text-slate-900">{order.orderId || order.id}</span>
-              </div>
-            </div>
+      {/* Page Header */}
+      <div className="flex items-center gap-4">
+        <Button
+          variant="outline"
+          onClick={() => router.push("/admin/orders")}
+          className="h-10 w-10 p-0 bg-transparent shrink-0"
+        >
+          <ArrowLeft className="w-4 h-4" />
+        </Button>
+        <div>
+          <h1 className="text-2xl font-semibold text-slate-900">Order Details</h1>
+          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg mt-2">
+            <Package className="w-4 h-4 text-slate-500" />
+            <span className="text-xs text-slate-500 font-medium">Order ID:</span>
+            <span className="font-mono text-sm font-semibold text-slate-900">{order.orderId || order.id}</span>
           </div>
         </div>
       </div>
 
-      <div className="grid gap-6">
-        {/* Main Content - Responsive Grid */}
-        <div className="space-y-6">
-          {/* Customer Information Card */}
-          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <User className="w-5 h-5 text-slate-600" />
-                  Customer Information
-                </CardTitle>
-                {!editingCustomer && (
-                  <Button variant="ghost" size="sm" onClick={() => setEditingCustomer(true)} className="h-9 text-xs w-full sm:w-auto">
-                    <Settings className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {editingCustomer ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label>Customer Name</Label>
-                    <Input
-                      value={customerForm.name}
-                      onChange={(e) => setCustomerForm({ ...customerForm, name: e.target.value })}
-                      placeholder="Enter customer name"
-                    />
-                  </div>
-                  <div>
-                    <Label>Email Address</Label>
-                    <Input
-                      type="email"
-                      value={customerForm.email}
-                      onChange={(e) => setCustomerForm({ ...customerForm, email: e.target.value })}
-                      placeholder="Enter email"
-                    />
-                  </div>
-                  <div>
-                    <Label>Phone Number</Label>
-                    <Input
-                      value={customerForm.phone}
-                      onChange={(e) => setCustomerForm({ ...customerForm, phone: e.target.value })}
-                      placeholder="Enter phone number"
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleSaveCustomer} size="sm">
-                      Save Changes
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditingCustomer(false)
-                        setCustomerForm({
-                          name: customer?.name || "",
-                          email: customer?.email || "",
-                          phone: customer?.phone || "",
-                        })
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Customer Name</p>
-                    <p className="text-sm font-semibold text-slate-900 truncate">{customer?.name || "Unknown"}</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Email Address</p>
-                    <p className="text-sm font-semibold text-slate-900 truncate">{customer?.email || "N/A"}</p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Phone Number</p>
-                    <p className="text-sm font-semibold text-slate-900 truncate">{customer?.phone || "N/A"}</p>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </Card>
+      {/* All Sections */}
+      <div className="space-y-6">
+        <CustomerInfoCard
+          customer={customer}
+          editingCustomer={editingCustomer}
+          customerForm={customerForm}
+          onEdit={() => setEditingCustomer(true)}
+          onSave={handleSaveCustomer}
+          onCancel={() => {
+            setEditingCustomer(false)
+            setCustomerForm({
+              name: customer?.name || "",
+              email: customer?.email || "",
+              phone: customer?.phone || "",
+            })
+          }}
+          onFormChange={setCustomerForm}
+        />
 
-          {/* Order Status */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Package className="w-5 h-5" />
-                Order Status
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div>
-                <Label className="text-sm font-medium text-slate-700">Current Status</Label>
-                <div className="mt-2">
-                  <Badge className={`${getStatusColor(order.status)} px-3 py-1 text-sm flex items-center gap-2 w-fit`}>
-                    {getStatusIcon(order.status)}
-                    <span className="capitalize">{order.status}</span>
-                  </Badge>
-                </div>
-              </div>
+        <OrderStatusCard
+          order={order}
+          newStatus={newStatus}
+          statusUpdating={statusUpdating}
+          onStatusChange={setNewStatus}
+          onStatusUpdate={handleStatusUpdate}
+        />
 
-              <div className="flex gap-2">
-                <div className="flex-1">
-                  <Select value={newStatus} onValueChange={setNewStatus}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="processing">Processing</SelectItem>
-                      <SelectItem value="completed">Completed</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <Button
-                  onClick={handleStatusUpdate}
-                  disabled={statusUpdating || !newStatus || newStatus === order.status}
-                  className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90"
-                >
-                  {statusUpdating ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Updating...
-                    </>
-                  ) : (
-                    "Update Status"
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+        <FormationProgressCard
+          milestones={milestones}
+          company={company}
+          completedDefaultMilestones={completedDefaultMilestones}
+          totalDefaultMilestones={totalDefaultMilestones}
+          completionPercentage={completionPercentage}
+          completedMilestonesWithCustom={completedMilestonesWithCustom}
+          totalMilestonesWithCustom={totalMilestonesWithCustom}
+          onCustomMilestoneToggle={handleCustomMilestoneToggle}
+          onDeleteCustomMilestone={handleDeleteCustomMilestone}
+          deletingMilestoneId={deletingMilestoneId}
+        />
 
-          {/* Formation Progress */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <FileCheck className="w-5 h-5" />
-                Formation Progress
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed (
-                {completionPercentage}%)
-                {company?.customMilestones && company.customMilestones.length > 0 && (
-                  <span className="text-slate-500">
-                    {" "}
-                    • {completedMilestonesWithCustom} of {totalMilestonesWithCustom} total
-                  </span>
-                )}
-              </p>
-            </CardHeader>
-            <CardContent>
-              {/* Progress Bar */}
-              <div className="relative w-full h-3 bg-slate-100 rounded-full overflow-hidden mb-6">
-                <div
-                  className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full transition-all duration-700"
-                  style={{ width: `${completionPercentage}%` }}
-                />
-              </div>
+        <CompanyInfoCard
+          company={company}
+          editingCompany={editingCompany}
+          companyForm={companyForm}
+          onEdit={() => setEditingCompany(true)}
+          onSave={handleSaveCompany}
+          onCancel={() => {
+            setEditingCompany(false)
+            setCompanyForm({
+              name: company?.name || "",
+              state: company?.state || "",
+              businessCategory: company?.businessCategory || "",
+              businessWebsite: company?.businessWebsite || "",
+              businessDescription: company?.businessDescription || "",
+            })
+          }}
+          onFormChange={setCompanyForm}
+        />
 
-              {/* Milestone List */}
-              <div className="space-y-2">
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.orderSuccessfullyProcessed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Package className={`w-5 h-5 ${milestones.orderSuccessfullyProcessed ? "text-green-600" : "text-slate-400"}`} />
-                    <span
-                      className={`text-sm font-medium ${milestones.orderSuccessfullyProcessed ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Order Successfully Processed
-                    </span>
-                  </div>
-                  {milestones.orderSuccessfullyProcessed ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.registeredAgentAssigned ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <UserCheck
-                      className={`w-5 h-5 ${milestones.registeredAgentAssigned ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.registeredAgentAssigned ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Registered Agent Assigned
-                    </span>
-                  </div>
-                  {milestones.registeredAgentAssigned ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.businessMailingAddressIssued ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <Home
-                      className={`w-5 h-5 ${milestones.businessMailingAddressIssued ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.businessMailingAddressIssued ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Business Mailing Address Issued
-                    </span>
-                  </div>
-                  {milestones.businessMailingAddressIssued ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.companyFormationCompleted ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <FileCheck
-                      className={`w-5 h-5 ${milestones.companyFormationCompleted ? "text-green-600" : "text-slate-400"}`}
-                    />
-                    <span
-                      className={`text-sm font-medium ${milestones.companyFormationCompleted ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      Company Formation Completed
-                    </span>
-                  </div>
-                  {milestones.companyFormationCompleted ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-                  )}
-                </div>
-                <div
-                  className={`flex items-center justify-between p-3 rounded-lg ${milestones.einObtained ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                >
-                  <div className="flex items-center gap-3">
-                    <HashIcon className={`w-5 h-5 ${milestones.einObtained ? "text-green-600" : "text-slate-400"}`} />
-                    <span
-                      className={`text-sm font-medium ${milestones.einObtained ? "text-slate-900" : "text-slate-600"}`}
-                    >
-                      EIN Successfully Processed
-                    </span>
-                  </div>
-                  {milestones.einObtained ? (
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                  ) : (
-                    <Clock className="w-5 h-5 text-slate-400" />
-              )}
-            </div>
+        <MembersCard members={company?.members || []} />
 
-                {company?.customMilestones && company.customMilestones.length > 0 && (
-                  <>
-                    <div className="pt-3 border-t border-slate-200">
-                      <p className="text-xs font-semibold text-slate-600 uppercase tracking-wide mb-2">
-                        Custom Milestones
-                      </p>
-                    </div>
-                    {company.customMilestones.map((milestone) => (
-                      <div
-                        key={milestone.id}
-                        className={`flex items-center justify-between p-3 rounded-lg ${milestone.completed ? "bg-green-50 border border-green-200" : "bg-slate-50 border border-slate-200"}`}
-                      >
-                        <div className="flex items-center gap-3">
-                          <FileCheck
-                            className={`w-5 h-5 ${milestone.completed ? "text-green-600" : "text-slate-400"}`}
-                          />
-                          <div>
-                            <span
-                              className={`text-sm font-medium ${milestone.completed ? "text-slate-900" : "text-slate-600"}`}
-                            >
-                              {milestone.title}
-                            </span>
-                            {milestone.description && (
-                              <p className="text-xs text-slate-500 mt-0.5">{milestone.description}</p>
-                            )}
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleCustomMilestoneToggle(milestone.id)}
-                            className="h-8 w-8 p-0"
-                          >
-                            {milestone.completed ? (
-                              <CheckCircle2 className="w-5 h-5 text-green-600" />
-                            ) : (
-                              <Clock className="w-5 h-5 text-slate-400" />
-                            )}
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handleDeleteCustomMilestone(milestone.id)}
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    ))}
-                  </>
-                )}
-              </div>
-            </CardContent>
-          </Card>
+        <OrderPricingCard order={order} />
 
-          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Building2 className="w-5 h-5 text-slate-600" />
-                  Company Information
-                </CardTitle>
-                {!editingCompany && (
-                  <Button variant="ghost" size="sm" onClick={() => setEditingCompany(true)} className="h-9 text-xs w-full sm:w-auto">
-                    <Settings className="w-4 h-4 mr-1" />
-                    Edit
-                  </Button>
-                )}
-              </div>
-            </CardHeader>
-            <CardContent>
-              {editingCompany ? (
-                <div className="space-y-4">
-                  <div>
-                    <Label>Company Name</Label>
-                    <Input
-                      value={companyForm.name}
-                      onChange={(e) => setCompanyForm({ ...companyForm, name: e.target.value })}
-                      placeholder="Enter company name"
-                    />
-                  </div>
-                  <div>
-                    <Label>State</Label>
-                    <Input
-                      value={companyForm.state}
-                      onChange={(e) => setCompanyForm({ ...companyForm, state: e.target.value })}
-                      placeholder="Enter state"
-                    />
-                  </div>
-                  <div>
-                    <Label>Business Category</Label>
-                    <Input
-                      value={companyForm.businessCategory}
-                      onChange={(e) => setCompanyForm({ ...companyForm, businessCategory: e.target.value })}
-                      placeholder="Enter business category"
-                    />
-                  </div>
-                  <div>
-                    <Label>Business Website</Label>
-                    <Input
-                      value={companyForm.businessWebsite}
-                      onChange={(e) => setCompanyForm({ ...companyForm, businessWebsite: e.target.value })}
-                      placeholder="Enter website URL"
-                    />
-                  </div>
-                  <div>
-                    <Label>Business Description</Label>
-                    <Textarea
-                      value={companyForm.businessDescription}
-                      onChange={(e) => setCompanyForm({ ...companyForm, businessDescription: e.target.value })}
-                      placeholder="Enter business description"
-                      rows={3}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <Button onClick={handleSaveCompany} size="sm">
-                      Save Changes
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => {
-                        setEditingCompany(false)
-                        setCompanyForm({
-                          name: company?.name || "",
-                          state: company?.state || "",
-                          businessCategory: company?.businessCategory || "",
-                          businessWebsite: company?.businessWebsite || "",
-                          businessDescription: company?.businessDescription || "",
-                        })
-                      }}
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                </div>
-              ) : (
-                <div className="space-y-6">
-                  {/* Basic Information Grid */}
-                  <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Company Name</p>
-                      <p className="text-sm font-medium text-slate-900">{company.name}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">State of Formation</p>
-                      <p className="text-sm font-medium text-slate-900">{company.state}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Entity Type</p>
-                      <p className="text-sm font-medium text-slate-900">{company.type || company.entityType}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Business Category</p>
-                      <p className="text-sm font-medium text-slate-900">{company.businessCategory || "Not provided"}</p>
-                    </div>
-                    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-1">Package Type</p>
-                      <Badge variant="outline" className="text-xs capitalize">
-                        {company.packageType || "Starter"}
-                      </Badge>
-                    </div>
-                    {company.businessWebsite && (
-                      <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                        <p className="text-xs text-slate-600 mb-1">Business Website</p>
-                        <a
-                          href={
-                            company.businessWebsite.startsWith("http")
-                              ? company.businessWebsite
-                              : `https://${company.businessWebsite}`
-                          }
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium text-blue-600 hover:underline"
-                        >
-                          {company.businessWebsite}
-                        </a>
-                      </div>
-                    )}
-                  </div>
+        <AddonsCard order={order} />
 
-                  {/* Business Description */}
-                  {company.businessDescription && (
-                    <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                      <p className="text-xs text-slate-600 mb-2">Business Description</p>
-                      <p className="text-sm text-slate-900 leading-relaxed">{company.businessDescription}</p>
-                    </div>
-                  )}
-                </div>
-              )}
-            </CardContent>
-          </Card>
+        <AdminActionsCard
+          company={company}
+          hasEIN={hasEIN}
+          agentUpdating={agentUpdating}
+          addressUpdating={addressUpdating}
+          einUpdating={einUpdating}
+          itinUpdating={itinUpdating}
+          businessIdUpdating={businessIdUpdating}
+          taxUpdating={taxUpdating}
+          milestoneUpdating={milestoneUpdating}
+          deleting={deleting}
+          onAddMilestone={() => setCustomMilestoneDialogOpen(true)}
+          onAssignAgent={() => setRegisteredAgentDialogOpen(true)}
+          onAssignAddress={() => setMailingAddressDialogOpen(true)}
+          onAssignEIN={() => setEinDialogOpen(true)}
+          onAssignITIN={() => setItinDialogOpen(true)}
+          onAssignBusinessId={() => setBusinessIdDialogOpen(true)}
+          onTaxInfo={() => {
+            setTaxData({
+              taxClassification: company?.taxClassification || "",
+              annualReportFilingDate: company?.annualReportFilingDate || "",
+              irsFilingDate: company?.irsFilingDate || "",
+              itin: company?.itin || "",
+            })
+            setTaxInfoDialogOpen(true)
+          }}
+          onManageMilestones={() => setMilestonesDialogOpen(true)}
+          onDownloadInvoice={generateInvoice}
+          onDeleteOrder={() => {
+            setDeleteDialogOpen(true)
+          }}
+        />
 
-          {company?.members && company.members.length > 0 && (
-            <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-              <CardHeader className="pb-3">
-                <div>
-                  <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                    <Users className="w-5 h-5 text-slate-600" />
-                    Business Owners / Members
-                  </CardTitle>
-                  <p className="text-sm text-slate-600 mt-2">
-                    <span className="font-semibold text-slate-900">{company.members.length}</span> member{company.members.length !== 1 ? "s" : ""} registered
-                  </p>
-                </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {company.members.map((member: any, index: number) => (
-                    <div
-                      key={member.id || index}
-                      className={`p-5 rounded-xl border-2 ${member.responsiblePerson ? "bg-gradient-to-br from-red-50 to-orange-50 border-red-300 shadow-sm" : "bg-slate-50 border-slate-200"}`}
-                    >
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div
-                            className={`w-12 h-12 rounded-full ${member.responsiblePerson ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : "bg-slate-400"} flex items-center justify-center shadow-md`}
-                          >
-                            <User className="w-6 h-6 text-white" />
-                          </div>
-                          <div>
-                            <h3 className="font-bold text-slate-900 text-base">{member.name || "N/A"}</h3>
-                            {member.responsiblePerson && (
-                              <Badge
-                                variant="secondary"
-                                className="mt-1.5 text-xs bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0"
-                              >
-                                <UserCheck className="w-3 h-3 mr-1" />
-                                Responsible Person
-                              </Badge>
-                            )}
-                          </div>
-                        </div>
-                        <Badge variant="outline" className="text-xs font-medium">
-                          Member #{index + 1}
-                        </Badge>
-                      </div>
+        <StatusManagementCard
+          company={company}
+          onUpdateCompanyStatus={() => setCompanyStatusDialogOpen(true)}
+          onUpdateAgentStatus={() => setRegisteredAgentStatusDialogOpen(true)}
+          onUpdateAddressStatus={() => setBusinessAddressStatusDialogOpen(true)}
+          onUpdateServiceStatus={() => setServiceStatusDialogOpen(true)}
+        />
 
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-4">
-                        {member.email && (
-                          <div className="p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
-                            <p className="text-xs text-slate-500 mb-1.5 font-medium">Email Address</p>
-                            <p className="text-sm font-semibold text-slate-900 truncate">{member.email}</p>
-                          </div>
-                        )}
-                        {member.phone && (
-                          <div className="p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
-                            <p className="text-xs text-slate-500 mb-1.5 font-medium">Phone Number</p>
-                            <p className="text-sm font-semibold text-slate-900">{member.phone}</p>
-                          </div>
-                        )}
-                        {member.address && (
-                          <div className="sm:col-span-2 p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
-                            <p className="text-xs text-slate-500 mb-1.5 font-medium">Full Address</p>
-                            <p className="text-sm font-semibold text-slate-900 leading-relaxed">
-                              {member.address}
-                              {member.city && `, ${member.city}`}
-                              {member.state && `, ${member.state}`}
-                              {member.zip && ` ${member.zip}`}
-                              {member.country && `, ${member.country}`}
-                            </p>
-                          </div>
-                        )}
-                        {member.ssn && (
-                          <div className="p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
-                            <p className="text-xs text-slate-500 mb-1.5 font-medium">SSN / ITIN</p>
-                            <p className="text-sm font-semibold text-slate-900 font-mono">{member.ssn}</p>
-                          </div>
-                        )}
-                        {member.passportUrl && (
-                          <div className="p-3 rounded-lg bg-white border border-slate-200 hover:border-slate-300 transition-colors">
-                            <p className="text-xs text-slate-500 mb-2 font-medium">Passport / ID Document</p>
-                            <Button
-                              size="sm"
-                              variant="outline"
-                              onClick={() => window.open(member.passportUrl, "_blank")}
-                              className="w-full justify-center h-9 bg-transparent hover:bg-slate-100"
-                            >
-                              <FileText className="w-4 h-4 mr-2" />
-                              View Document
-                            </Button>
-                          </div>
-                        )}
-                        {member.itinAdded && (
-                          <div className="sm:col-span-2">
-                            <Badge variant="outline" className="bg-yellow-50 border-yellow-300 text-yellow-800 px-3 py-1.5 text-xs">
-                              <AlertCircle className="w-3 h-3 mr-1" />
-                              ITIN Application Requested
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Receipt className="w-5 h-5 text-slate-600" />
-                Order & Pricing Details
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
-                {/* Pricing Breakdown */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Package Price</p>
-                    <p className="text-xl font-bold text-slate-900">
-                      ${(order?.pricing?.packagePrice || order?.packagePrice || 0).toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-                    <p className="text-xs text-slate-600 mb-1.5 font-medium">State Filing Fee</p>
-                    <p className="text-xl font-bold text-slate-900">
-                      ${(order?.pricing?.stateFilingFee || order?.stateFilingFee || 0).toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-                    <p className="text-xs text-slate-600 mb-1.5 font-medium">Add-ons Total</p>
-                    <p className="text-xl font-bold text-slate-900">
-                      ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
-                    </p>
-                  </div>
-                  <div className="p-4 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] border border-transparent shadow-md">
-                    <p className="text-xs text-white/90 mb-1.5 font-medium">Total Amount</p>
-                    <p className="text-2xl font-bold text-white">
-                      ${(order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-
-                {/* Payment Information */}
-                <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="grid sm:grid-cols-2 gap-3">
-                    <div>
-                      <p className="text-xs text-slate-600 mb-1">Payment Method</p>
-                      <p className="text-sm font-medium text-slate-900 capitalize">
-                        {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
-                      </p>
-                      {/* Show WhatsApp Phone if payment method is WhatsApp */}
-                      {(order?.paymentInfo?.method?.toLowerCase() === "whatsapp" ||
-                        order?.paymentInfo?.method?.toLowerCase() === "whatsapp phone") &&
-                        order?.paymentInfo?.phone && (
-                          <p className="text-xs text-slate-600 mt-1">
-                            Phone: <span className="font-mono text-slate-900">{order.paymentInfo.phone}</span>
-                          </p>
-                        )}
-                    </div>
-                    <div>
-                      <p className="text-xs text-slate-600 mb-1">Payment Status</p>
-                      <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"}>
-                        {order?.paymentInfo?.status || "Pending"}
-                      </Badge>
-                    </div>
-                    {/* Show Receipt URL if available */}
-                    {order?.paymentInfo?.receiptUrl && (
-                      <div className="sm:col-span-2">
-                        <p className="text-xs text-slate-600 mb-1">Payment Receipt</p>
-                        <a
-                          href={order.paymentInfo.receiptUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
-                        >
-                          <Receipt className="w-4 h-4" />
-                          View Receipt
-                        </a>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Order Date */}
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <div className="flex items-center gap-2">
-                    <Calendar className="w-4 h-4 text-slate-600" />
-                    <div>
-                      <p className="text-xs text-slate-600">Order Date</p>
-                      <p className="text-sm font-medium text-slate-900">
-                        {order?.createdAt
-                          ? new Date(order.createdAt).toLocaleDateString("en-US", {
-                              year: "numeric",
-                              month: "long",
-                              day: "numeric",
-                            })
-                          : "N/A"}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Add-ons Card */}
-          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Package className="w-5 h-5 text-slate-600" />
-                  Add-ons
-                </CardTitle>
-                <p className="text-sm text-slate-600 mt-2">Selected services and add-ons</p>
-              </div>
-            </CardHeader>
-            <CardContent>
-              {order?.addons && order.addons.length > 0 ? (
-                <div className="space-y-3">
-                  {order.addons.map((addon: any, index: number) => (
-                    <div key={index} className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                      <div className="flex items-start justify-between">
-                        <div>
-                          <p className="text-sm font-medium text-slate-900">{addon.name || addon.title || addon}</p>
-                          {addon.price && (
-                            <p className="text-xs text-slate-600 mt-1">${addon.price.toFixed(2)}</p>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                  <div className="pt-3 border-t border-slate-200">
-                    <p className="text-xs text-slate-600 mb-1">Add-ons Total</p>
-                    <p className="text-lg font-bold text-slate-900">
-                      ${(order?.pricing?.addonsTotal || order?.addonsTotal || 0).toFixed(2)}
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="p-4 rounded-lg bg-slate-50 border border-dashed border-slate-300">
-                  <p className="text-sm text-slate-600">No add-ons selected for this order</p>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Admin Actions Card */}
-          <Card className="shadow-sm border-slate-200">
-            <CardHeader className="bg-slate-50/50 border-b">
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Admin Actions
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">Manage order and company details</p>
-            </CardHeader>
-            <CardContent className="p-6">
-              <div className="space-y-3">
-                <Button
-                  onClick={() => setCustomMilestoneDialogOpen(true)}
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50"
-                >
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Milestone
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setRegisteredAgentDialogOpen(true)}
-                  disabled={agentUpdating || !company}
-                >
-                  <UserCheck className="w-4 h-4" />
-                  <span className="font-medium">Assign Registered Agent</span>
-                </Button>
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMailingAddressDialogOpen(true)}
-                  disabled={addressUpdating || !company}
-                >
-                  <MapPin className="w-4 h-4" />
-                  <span className="font-medium">Assign Mailing Address</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setEinDialogOpen(true)}
-                  disabled={einUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{hasEIN ? "View/Edit EIN" : "Assign EIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setItinDialogOpen(true)}
-                  disabled={itinUpdating || !company}
-                >
-                  <Hash className="w-4 h-4" />
-                  <span className="font-medium">{company?.itin ? "View/Edit ITIN" : "Assign ITIN"}</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setBusinessIdDialogOpen(true)}
-                  disabled={businessIdUpdating || !company}
-                >
-                  <Building2 className="w-4 h-4" />
-                  <span className="font-medium">
-                    {company?.businessId ? "View/Edit Business ID" : "Assign Business ID"}
-                  </span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => {
-                    setTaxData({
-                      taxClassification: company?.taxClassification || "",
-                      annualReportFilingDate: company?.annualReportFilingDate || "",
-                      irsFilingDate: company?.irsFilingDate || "",
-                      itin: company?.itin || "",
-                    })
-                    setTaxInfoDialogOpen(true)
-                  }}
-                  disabled={taxUpdating || !company}
-                >
-                  <FileBarChart className="w-4 h-4" />
-                  <span className="font-medium">Tax Information</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => setMilestonesDialogOpen(true)}
-                  disabled={milestoneUpdating}
-                >
-                  <FileCheck className="w-4 h-4" />
-                  <span className="font-medium">Manage Milestones</span>
-                </Button>
-
-                <Button
-                  variant="outline"
-                  className="w-full justify-start h-11 hover:bg-slate-50 text-slate-700 bg-transparent"
-                  onClick={() => {
-                    generateInvoice()
-                  }}
-                  disabled={deleting}
-                >
-                  <Download className="w-4 h-4" />
-                  <span className="font-medium">Download Invoice</span>
-                </Button>
-
-                <Button
-                  variant="destructive"
-                  className="w-full justify-start h-11 hover:bg-red-600"
-                  onClick={() => {
-                    console.log("[v0] Delete button clicked")
-                    setDeleteDialogOpen(true)
-                  }}
-                  disabled={deleting}
-                >
-                  {deleting ? (
-                    <>
-                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      Deleting...
-                    </>
-                  ) : (
-                    <>
-                      <Trash2 className="w-4 h-4" />
-                      Delete Order
-                    </>
-                  )}
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Status Management */}
-          <Card className="bg-white border-slate-200 shadow-sm">
-            <CardHeader>
-              <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                <Settings className="w-5 h-5" />
-                Status Management
-              </CardTitle>
-              <p className="text-sm text-slate-600 mt-1">
-                Manage company, registered agent, business address, and service statuses
-              </p>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {/* Company Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Company Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Overall company operational status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.companyStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.companyStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.companyStatus || "pending"}
-                  </Badge>
-                  <Button size="sm" variant="outline" onClick={() => setCompanyStatusDialogOpen(true)} className="h-8">
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Registered Agent Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Registered Agent Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Agent assignment and service status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.registeredAgentStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.registeredAgentStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.registeredAgentStatus || "pending"}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setRegisteredAgentStatusDialogOpen(true)}
-                    className="h-8"
-                  >
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Business Address Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Business Address Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Mailing address setup status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.businessAddressStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.businessAddressStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.businessAddressStatus || "pending"}
-                  </Badge>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setBusinessAddressStatusDialogOpen(true)}
-                    className="h-8"
-                  >
-                    Update
-                  </Button>
-                </div>
-              </div>
-
-              {/* Service Status */}
-              <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-                <div>
-                  <p className="text-sm font-medium text-slate-900">Service Status</p>
-                  <p className="text-xs text-slate-500 mt-0.5">Overall service delivery status</p>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Badge
-                    className={`${
-                      company?.serviceStatus === "active"
-                        ? "bg-green-100 text-green-700"
-                        : company?.serviceStatus === "inactive"
-                          ? "bg-red-100 text-red-700"
-                          : "bg-yellow-100 text-yellow-700"
-                    }`}
-                  >
-                    {company?.serviceStatus || "pending"}
-                  </Badge>
-                  <Button size="sm" variant="outline" onClick={() => setServiceStatusDialogOpen(true)} className="h-8">
-                    Update
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Registered Agent Address - Conditional Rendering */}
-          {company?.registeredAgent && company.registeredAgent.address && (
-          <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-            <CardHeader className="pb-3">
-              <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
-                <div className="flex-1">
-                  <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                    <CheckCircle2 className="w-5 h-5 text-green-600" />
-                    Progress Tracking
-                  </CardTitle>
-                  <p className="text-sm text-slate-600 mt-2">
-                    <span className="font-semibold text-slate-900">{completedMilestonesWithCustom}</span> of{" "}
-                    <span className="font-semibold text-slate-900">{totalMilestonesWithCustom}</span> milestones completed
-                  </p>
-                </div>
-                <Button variant="outline" size="sm" onClick={() => setCustomMilestoneDialogOpen(true)} className="h-9 w-full sm:w-auto">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Add Custom
-                </Button>
-              </div>
-            </CardHeader>
-              <CardContent>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                  <p className="text-sm font-medium text-slate-900">{company.registeredAgent.companyName}</p>
-                  <p className="text-sm text-slate-700">{company.registeredAgent.address}</p>
-                  {company.registeredAgent.city && (
-                    <p className="text-sm text-slate-700">
-                      {company.registeredAgent.city}
-                      {company.registeredAgent.state && `, ${company.registeredAgent.state}`}
-                      {company.registeredAgent.zipCode && ` ${company.registeredAgent.zipCode}`}
-                    </p>
-                  )}
-                  {company.registeredAgent.servicePeriod && (
-                    <p className="text-xs text-slate-600 mt-2">Service Period: {company.registeredAgent.servicePeriod}</p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Mailing Address - Conditional Rendering */}
-          {company?.mailingAddress && company.mailingAddress.address && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Home className="w-5 h-5" />
-                  Mailing Address
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
-                  <p className="text-sm font-medium text-slate-900">{company.mailingAddress.addressType || "Business Mailing Address"}</p>
-                  <p className="text-sm text-slate-700">{company.mailingAddress.address}</p>
-                  {company.mailingAddress.city && (
-                    <p className="text-sm text-slate-700">
-                      {company.mailingAddress.city}
-                      {company.mailingAddress.state && `, ${company.mailingAddress.state}`}
-                      {company.mailingAddress.zipCode && ` ${company.mailingAddress.zipCode}`}
-                    </p>
-                  )}
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* EIN - Conditional Rendering */}
-          {hasEIN && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Hash className="w-5 h-5" />
-                  EIN
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Employer Identification Number</p>
-                  <p className="text-lg font-mono font-bold text-slate-900">{company?.ein}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* Business ID - Conditional Rendering */}
-          {company?.businessId && company.businessId.trim() !== "" && !company.businessId.includes("PENDING") && company.businessId !== "BIZ-PENDING" && company.businessId !== "N/A" && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Building2 className="w-5 h-5" />
-                  Business ID
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">State Business License ID</p>
-                  <p className="text-lg font-mono font-bold text-slate-900">{company?.businessId}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-
-          {/* ITIN - Conditional Rendering */}
-          {company?.itin && company.itin.trim() !== "" && company.itin !== "N/A" && (
-            <Card className="bg-white border-slate-200 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-                  <Hash className="w-5 h-4" />
-                  ITIN
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-                  <p className="text-xs text-slate-600 mb-1">Individual Taxpayer Identification Number</p>
-                  <p className="text-lg font-mono font-bold text-slate-900">{company?.itin}</p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
+        <AssignedInfoCards company={company} />
       </div>
 
       {/* Manage Milestones Dialog */}
