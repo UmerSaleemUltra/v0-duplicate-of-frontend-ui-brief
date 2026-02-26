@@ -2,7 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import { blobStorage } from "@/config/storage"
-import { sendEmail, emailTemplates } from "@/config/email"
+import { sendAdminEmail, emailTemplates } from "@/config/email"
 import { ObjectId } from "mongodb"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
@@ -148,34 +148,32 @@ export async function POST(req: NextRequest) {
     broadcastUpdate("documents", "created", createdDocument)
 
     try {
-      if (decoded.role === "admin" && userId) {
-        const user = await db
-          .collection("users")
-          .findOne({ _id: new ObjectId(userId) }, { projection: { name: 1, email: 1 } })
-        const company = await db
-          .collection("companies")
-          .findOne({ _id: new ObjectId(companyId) }, { projection: { name: 1 } })
+      const targetUserId = userId || decoded.userId
+      const company = await db
+        .collection("companies")
+        .findOne({ _id: new ObjectId(companyId) }, { projection: { name: 1 } })
 
-        if (user && company) {
-          const fileList = fileUrls.map((f) => f.name).join(", ")
+      const uploaderName = decoded.name || decoded.email || "Unknown"
+      const fileList = fileUrls.map((f) => f.name).join(", ")
+      const documentTitle =
+        files.length > 1
+          ? `${title || "Documents"} (${files.length} files: ${fileList})`
+          : title || files[0].name
 
-          const documentEmail = emailTemplates.documentUploaded(
-            user.name,
-            files.length > 1 ? `${title || "Documents"} (${files.length} files: ${fileList})` : title || files[0].name,
-            company.name,
-          )
+      const documentEmail = emailTemplates.documentUploaded(
+        uploaderName,
+        documentTitle,
+        company?.name || companyId,
+      )
 
-          await sendEmail({
-            to: user.email,
-            subject: documentEmail.subject,
-            html: documentEmail.html,
-          }).catch((emailError) => {
-            console.log("[v0] Email sending failed (non-critical):", emailError)
-          })
-        }
-      }
+      await sendAdminEmail({
+        subject: documentEmail.subject,
+        html: documentEmail.html,
+      }).catch((emailError) => {
+        console.error("Admin email sending failed (non-critical):", emailError)
+      })
     } catch (emailError) {
-      console.log("[v0] Error in email notification logic:", emailError)
+      console.error("Error in email notification logic:", emailError)
     }
 
     return addSecurityHeaders(
