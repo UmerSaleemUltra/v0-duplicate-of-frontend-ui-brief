@@ -481,7 +481,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   try {
     const { id } = await params
 
-    validateObjectId(id, "Order ID")
+    if (!id || typeof id !== "string" || id.trim() === "") {
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid Order ID" }, { status: 400 }))
+    }
 
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
@@ -501,22 +503,52 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     const { db } = await connectDB()
 
-    const order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+    // Try to find the order in the standalone orders collection first
+    let order: any = null
+    let isEmbedded = false
+    let embeddedCompanyId: ObjectId | null = null
+
+    // Attempt lookup by ObjectId in the orders collection
+    if (ObjectId.isValid(id)) {
+      try {
+        order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+      } catch (_) {}
+    }
+
+    // If not found as standalone, search embedded orders inside companies
+    if (!order) {
+      const companies = await db
+        .collection("companies")
+        .find({ orders: { $exists: true, $not: { $size: 0 } } })
+        .toArray()
+
+      for (const company of companies) {
+        if (!Array.isArray(company.orders)) continue
+        const embedded = company.orders.find((o: any) => {
+          const oid = o._id?.toString() || o.id?.toString() || o.id
+          return oid === id
+        })
+        if (embedded) {
+          order = { ...embedded, companyId: company._id.toString() }
+          isEmbedded = true
+          embeddedCompanyId = company._id
+          break
+        }
+      }
+    }
 
     if (!order) {
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
-    let companyIdObj: ObjectId | null = null
+    let companyIdObj: ObjectId | null = embeddedCompanyId
 
-    if (order.companyId) {
+    if (!companyIdObj && order.companyId) {
       try {
         if (typeof order.companyId === "string" && ObjectId.isValid(order.companyId)) {
           companyIdObj = new ObjectId(order.companyId)
         } else if (order.companyId instanceof ObjectId) {
           companyIdObj = order.companyId
-        } else {
-          console.log("[v0] Invalid companyId format, skipping related deletes:", order.companyId)
         }
       } catch (conversionError) {
         console.log("[v0] Error converting companyId:", conversionError)
@@ -543,8 +575,12 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       }
     }
 
-    // Delete order itself
-    await db.collection("orders").deleteOne({ _id: new ObjectId(id) })
+    if (isEmbedded && embeddedCompanyId) {
+      // For embedded orders already deleted via company, nothing extra needed
+    } else if (ObjectId.isValid(id)) {
+      // Delete standalone order
+      await db.collection("orders").deleteOne({ _id: new ObjectId(id) })
+    }
 
     broadcastUpdate("orders", "deleted", { id })
 
