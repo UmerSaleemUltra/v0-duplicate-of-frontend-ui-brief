@@ -118,6 +118,9 @@ export default function OrdersPage() {
   const [startIndex, setStartIndex] = useState(0)
   const [endIndex, setEndIndex] = useState(0)
 
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
+  const [orderToDelete, setOrderToDelete] = useState<{ id: string; companyName: string } | null>(null)
+
   useEffect(() => {
     const loadOrders = async () => {
       setDataLoading(true)
@@ -824,7 +827,8 @@ export default function OrdersPage() {
                                   className="text-red-600 focus:text-red-600 focus:bg-red-50"
                                   onSelect={(e) => {
                                     e.preventDefault()
-                                    handleDeleteOrder(order.id)
+                                    setOrderToDelete({ id: order.id, companyName: order.companyName || "this order" })
+                                    setDeleteConfirmOpen(true)
                                   }}
                                 >
                                   <Trash2 className="h-4 w-4 mr-2" />
@@ -893,6 +897,43 @@ export default function OrdersPage() {
         companyId={selectedCompanyId}
         companies={companies}
       />
+
+      <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Order</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete the order for{" "}
+              <span className="font-semibold text-slate-900">
+                {orderToDelete?.companyName}
+              </span>
+              ? This action cannot be undone and will permanently remove the order and all associated data.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel
+              onClick={() => {
+                setDeleteConfirmOpen(false)
+                setOrderToDelete(null)
+              }}
+            >
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-red-600 hover:bg-red-700 text-white focus:ring-red-600"
+              onClick={() => {
+                if (orderToDelete) {
+                  handleDeleteOrder(orderToDelete.id)
+                }
+                setDeleteConfirmOpen(false)
+                setOrderToDelete(null)
+              }}
+            >
+              Delete Order
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
