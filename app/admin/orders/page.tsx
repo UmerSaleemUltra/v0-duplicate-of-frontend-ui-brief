@@ -419,27 +419,41 @@ export default function OrdersPage() {
 
       const usersData = await usersResponse.json()
       const companiesData = await companiesResponse.json()
+      const ordersData = await ordersResponse.json()
 
       const allUsers = usersData.data || usersData || []
       const allCompanies = companiesData.data || companiesData || []
+      const apiOrders = ordersData.data || ordersData || []
 
-      const allOrdersData = allCompanies.flatMap((company: any) => {
-        const companyOrders = company.orders || []
-        return companyOrders.map((order: any) => ({
-          ...order,
-          companyId: company.id,
-          companyName: company.name,
-          state: company.state,
-          packageType: order.packageType || company.packageType || "N/A",
-        }))
-      })
+      let allOrdersData = apiOrders.length > 0
+        ? apiOrders
+        : allCompanies.flatMap((company: any) => {
+            const companyOrders = company.orders || []
+            return companyOrders.map((order: any) => ({
+              ...order,
+              companyId: company.id,
+              companyName: company.name,
+              state: company.state,
+              packageType: order.packageType || company.packageType || "N/A",
+            }))
+          })
+
+      allOrdersData = allOrdersData.map((order: any) => ({
+        ...order,
+        id: order.id || order._id,
+      }))
 
       const ordersWithDetails = allOrdersData.map((order: any) => {
-        const company = allCompanies.find((c: any) => c.id === order.companyId)
-        const user = allUsers.find((u: any) => String(u.id) === String(company?.userId))
+        const company = allCompanies.find((c: any) => {
+          const cId = c.id || c._id?.toString?.()
+          return String(cId) === String(order.companyId)
+        })
+        const user = allUsers.find((u: any) => String(u.id || u._id) === String(company?.userId))
 
         return {
           ...order,
+          companyName: order.companyName || company?.name || "N/A",
+          state: order.state || company?.state || "N/A",
           customerName: user?.name || company?.members?.[0]?.name || "Unknown",
           customerEmail: user?.email || "N/A",
           userId: company?.userId,
@@ -585,10 +599,10 @@ export default function OrdersPage() {
             </div>
 
             <div className="flex flex-wrap gap-3 items-center">
-              <div className="flex items-center gap-2">
-                <Filter className="h-4 w-4 text-slate-600" />
-                <span className="text-sm font-medium text-slate-700">Status:</span>
-                <div className="flex gap-2">
+              <div className="flex flex-wrap items-center gap-2">
+                <Filter className="h-4 w-4 text-slate-600 shrink-0" />
+                <span className="text-sm font-medium text-slate-700 shrink-0">Status:</span>
+                <div className="flex flex-wrap gap-2">
                   <Button
                     variant={statusFilter === "all" ? "default" : "outline"}
                     size="sm"
@@ -724,14 +738,14 @@ export default function OrdersPage() {
                 <table className="w-full">
                   <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-white/10">
                     <tr>
-                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Order ID</th>
-                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Customer</th>
-                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Company</th>
-                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">State</th>
-                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Amount</th>
-                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Status</th>
-                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Date</th>
-                      <th className="text-center p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Actions</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200 w-28">Order ID</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200 min-w-[160px]">Customer</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200 min-w-[140px] max-w-[200px]">Company</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200 w-28">State</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200 w-24">Amount</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200 w-28">Status</th>
+                      <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200 w-28">Date</th>
+                      <th className="text-center p-4 font-semibold text-sm text-slate-700 dark:text-slate-200 w-16">Actions</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -751,14 +765,16 @@ export default function OrdersPage() {
                               {order.id?.substring(0, 8)}...
                             </code>
                           </td>
-                          <td className="py-4 px-6">
+                          <td className="py-4 px-4 min-w-[160px]">
                             <div>
-                              <p className="text-sm font-medium text-slate-900">{order.customerName || "N/A"}</p>
-                              <p className="text-xs text-slate-500 truncate">{order.customerEmail || "N/A"}</p>
+                              <p className="text-sm font-medium text-slate-900 break-words">{order.customerName || "N/A"}</p>
+                              <p className="text-xs text-slate-500 break-all">{order.customerEmail || "N/A"}</p>
                             </div>
                           </td>
-                          <td className="py-4 px-6">
-                            <span className="text-sm text-slate-700">{order.companyName || "N/A"}</span>
+                          <td className="py-4 px-4 min-w-[140px] max-w-[200px]">
+                            <span className="text-sm text-slate-700 break-words whitespace-normal leading-snug">
+                              {order.companyName || "N/A"}
+                            </span>
                           </td>
                           <td className="py-4 px-6">
                             <Badge variant="outline" className="text-xs">
