@@ -2206,7 +2206,7 @@ export default function OrderDetailPage() {
               <div className="inline-flex items-center gap-2 px-4 py-2 bg-slate-100 border border-slate-200 rounded-lg">
                 <Package className="w-4 h-4 text-slate-600" />
                 <span className="text-sm text-slate-600 font-medium">Order ID:</span>
-                <span className="font-mono text-sm font-semibold text-slate-900">{order.id}</span>
+                <span className="font-mono text-sm font-semibold text-slate-900">{order.orderId || order.id}</span>
               </div>
             </div>
           </div>
