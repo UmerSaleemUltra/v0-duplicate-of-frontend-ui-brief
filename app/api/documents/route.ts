@@ -148,10 +148,11 @@ export async function POST(req: NextRequest) {
     broadcastUpdate("documents", "created", createdDocument)
 
     try {
-      if (decoded.role === "admin" && userId) {
+      const targetUserId = userId || decoded.userId
+      if (targetUserId) {
         const user = await db
           .collection("users")
-          .findOne({ _id: new ObjectId(userId) }, { projection: { name: 1, email: 1 } })
+          .findOne({ _id: new ObjectId(targetUserId) }, { projection: { name: 1, email: 1 } })
         const company = await db
           .collection("companies")
           .findOne({ _id: new ObjectId(companyId) }, { projection: { name: 1 } })
@@ -170,12 +171,12 @@ export async function POST(req: NextRequest) {
             subject: documentEmail.subject,
             html: documentEmail.html,
           }).catch((emailError) => {
-            console.log("[v0] Email sending failed (non-critical):", emailError)
+            console.error("Email sending failed (non-critical):", emailError)
           })
         }
       }
     } catch (emailError) {
-      console.log("[v0] Error in email notification logic:", emailError)
+      console.error("Error in email notification logic:", emailError)
     }
 
     return addSecurityHeaders(
