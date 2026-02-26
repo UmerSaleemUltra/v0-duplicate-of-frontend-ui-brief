@@ -2,8 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import { blobStorage } from "@/config/storage"
-import { sendAdminEmail, emailTemplates } from "@/config/email"
-import { ObjectId } from "mongodb"
+
+
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 
@@ -146,35 +146,6 @@ export async function POST(req: NextRequest) {
     const createdDocument = { id: documentId, ...newDocument }
 
     broadcastUpdate("documents", "created", createdDocument)
-
-    try {
-      const targetUserId = userId || decoded.userId
-      const company = await db
-        .collection("companies")
-        .findOne({ _id: new ObjectId(companyId) }, { projection: { name: 1 } })
-
-      const uploaderName = decoded.name || decoded.email || "Unknown"
-      const fileList = fileUrls.map((f) => f.name).join(", ")
-      const documentTitle =
-        files.length > 1
-          ? `${title || "Documents"} (${files.length} files: ${fileList})`
-          : title || files[0].name
-
-      const documentEmail = emailTemplates.documentUploaded(
-        uploaderName,
-        documentTitle,
-        company?.name || companyId,
-      )
-
-      await sendAdminEmail({
-        subject: documentEmail.subject,
-        html: documentEmail.html,
-      }).catch((emailError) => {
-        console.error("Admin email sending failed (non-critical):", emailError)
-      })
-    } catch (emailError) {
-      console.error("Error in email notification logic:", emailError)
-    }
 
     return addSecurityHeaders(
       NextResponse.json({
