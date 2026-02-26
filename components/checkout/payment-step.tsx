@@ -149,6 +149,31 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       let userId = data.userId
       let currentToken = authService.getToken()
 
+      // If we have a token, always verify it server-side to get the canonical userId
+      // This fixes the bug where a user has a stale/missing userId in client state
+      // but a valid token — the company would be created with a wrong/missing userId
+      // causing "user not registered" in the admin customers panel.
+      if (currentToken) {
+        try {
+          const meResponse = await fetch("/api/auth/me", {
+            headers: { Authorization: `Bearer ${currentToken}` },
+          })
+          if (meResponse.ok) {
+            const meData = await meResponse.json()
+            const serverUserId = meData?.data?.id || meData?.id
+            if (serverUserId) {
+              userId = serverUserId
+            }
+          } else {
+            // Token is invalid/expired — force re-auth below
+            currentToken = null
+            userId = undefined
+          }
+        } catch {
+          // Network error — continue and let the signup/login block handle it
+        }
+      }
+
       if (!userId || !currentToken) {
         console.log("[v0] No userId or token found, creating/logging in account...")
 
