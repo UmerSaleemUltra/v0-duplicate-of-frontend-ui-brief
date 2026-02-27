@@ -51,7 +51,9 @@ import {
   Plus,
   Receipt,
   Calendar,
+  ChevronRight,
 } from "lucide-react"
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { CompanyDetailsModal } from "@/components/modals/company-details-modal"
@@ -2224,133 +2226,218 @@ export default function OrderDetailPage() {
   // Removed duplicate handleUpdateServiceStatus
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div className="flex items-center gap-4">
-        <Button
-          variant="outline"
-          onClick={() => router.push("/admin/orders")}
-          className="h-10 w-10 p-0 bg-transparent shrink-0"
-        >
-          <ArrowLeft className="w-4 h-4" />
-        </Button>
-        <div>
-          <h1 className="text-2xl font-semibold text-slate-900">Order Details</h1>
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-slate-100 border border-slate-200 rounded-lg mt-2">
-            <Package className="w-4 h-4 text-slate-500" />
-            <span className="text-xs text-slate-500 font-medium">Order ID:</span>
-            <span className="font-mono text-sm font-semibold text-slate-900">{order.orderId || order.id}</span>
+    <div className="min-h-screen bg-white">
+      {/* Apple-style Page Header */}
+      <div className="border-b border-gray-100 bg-white sticky top-0 z-10">
+        <div className="max-w-6xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => router.push("/admin/orders")}
+                className="flex items-center gap-1 text-sm text-gray-500 hover:text-gray-900 transition-colors"
+              >
+                <ArrowLeft className="w-4 h-4" />
+                Orders
+              </button>
+              <ChevronRight className="w-3.5 h-3.5 text-gray-300" />
+              <span className="text-sm text-gray-900 font-medium">Order Details</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-400 font-mono">{order.orderId || order.id}</span>
+              <span
+                className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${getStatusColor(order.status)}`}
+              >
+                {getStatusIcon(order.status)}
+                {order.status?.charAt(0).toUpperCase() + order.status?.slice(1) || "Pending"}
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* All Sections */}
-      <div className="space-y-6">
-        <CustomerInfoCard
-          customer={customer}
-          editingCustomer={editingCustomer}
-          customerForm={customerForm}
-          onEdit={() => setEditingCustomer(true)}
-          onSave={handleSaveCustomer}
-          onCancel={() => {
-            setEditingCustomer(false)
-            setCustomerForm({
-              name: customer?.name || "",
-              email: customer?.email || "",
-              phone: customer?.phone || "",
-            })
-          }}
-          onFormChange={setCustomerForm}
-        />
+      <div className="max-w-6xl mx-auto px-6 py-8">
+        {/* Hero row: company name + quick meta */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-semibold text-gray-900 tracking-tight">
+            {company?.name || "Unnamed Business"}
+          </h1>
+          <div className="flex flex-wrap items-center gap-4 mt-2">
+            <span className="text-sm text-gray-500">
+              {company?.state && <span className="font-medium text-gray-700">{company.state}</span>}
+              {company?.state && company?.packageType && " · "}
+              {company?.packageType && (
+                <span className="capitalize">
+                  {company.packageType
+                    .split("-")
+                    .map((w: string) => w.charAt(0).toUpperCase() + w.slice(1))
+                    .join(" ")}
+                </span>
+              )}
+            </span>
+            {order?.createdAt && (
+              <span className="text-sm text-gray-400">
+                {new Date(order.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" })}
+              </span>
+            )}
+          </div>
+        </div>
 
-        <OrderStatusCard
-          order={order}
-          newStatus={newStatus}
-          statusUpdating={statusUpdating}
-          onStatusChange={setNewStatus}
-          onStatusUpdate={handleStatusUpdate}
-        />
+        {/* Tabs */}
+        <Tabs defaultValue="overview" className="w-full">
+          <TabsList className="h-10 bg-gray-100 rounded-lg p-1 mb-8 w-auto inline-flex gap-0.5">
+            <TabsTrigger value="overview" className="text-sm px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 text-gray-500">
+              Overview
+            </TabsTrigger>
+            <TabsTrigger value="company" className="text-sm px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 text-gray-500">
+              Company
+            </TabsTrigger>
+            <TabsTrigger value="members" className="text-sm px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 text-gray-500">
+              Members
+            </TabsTrigger>
+            <TabsTrigger value="pricing" className="text-sm px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 text-gray-500">
+              Pricing
+            </TabsTrigger>
+            <TabsTrigger value="assigned" className="text-sm px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 text-gray-500">
+              Tax & IDs
+            </TabsTrigger>
+            <TabsTrigger value="actions" className="text-sm px-4 py-1.5 rounded-md data-[state=active]:bg-white data-[state=active]:shadow-sm data-[state=active]:text-gray-900 text-gray-500">
+              Actions
+            </TabsTrigger>
+          </TabsList>
 
-        <FormationProgressCard
-          milestones={milestones}
-          company={company}
-          completedDefaultMilestones={completedDefaultMilestones}
-          totalDefaultMilestones={totalDefaultMilestones}
-          completionPercentage={completionPercentage}
-          completedMilestonesWithCustom={completedMilestonesWithCustom}
-          totalMilestonesWithCustom={totalMilestonesWithCustom}
-          onCustomMilestoneToggle={handleCustomMilestoneToggle}
-          onDeleteCustomMilestone={handleDeleteCustomMilestone}
-          deletingMilestoneId={deletingMilestoneId}
-        />
+          {/* ── OVERVIEW TAB ── */}
+          <TabsContent value="overview" className="space-y-6 focus-visible:outline-none">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Left column */}
+              <div className="lg:col-span-2 space-y-6">
+                <CustomerInfoCard
+                  customer={customer}
+                  editingCustomer={editingCustomer}
+                  customerForm={customerForm}
+                  onEdit={() => setEditingCustomer(true)}
+                  onSave={handleSaveCustomer}
+                  onCancel={() => {
+                    setEditingCustomer(false)
+                    setCustomerForm({
+                      name: customer?.name || "",
+                      email: customer?.email || "",
+                      phone: customer?.phone || "",
+                    })
+                  }}
+                  onFormChange={setCustomerForm}
+                />
 
-        <CompanyInfoCard
-          company={company}
-          editingCompany={editingCompany}
-          companyForm={companyForm}
-          onEdit={() => setEditingCompany(true)}
-          onSave={handleSaveCompany}
-          onCancel={() => {
-            setEditingCompany(false)
-            setCompanyForm({
-              name: company?.name || "",
-              state: company?.state || "",
-              businessCategory: company?.businessCategory || "",
-              businessWebsite: company?.businessWebsite || "",
-              businessDescription: company?.businessDescription || "",
-            })
-          }}
-          onFormChange={setCompanyForm}
-        />
+                <FormationProgressCard
+                  milestones={milestones}
+                  company={company}
+                  completedDefaultMilestones={completedDefaultMilestones}
+                  totalDefaultMilestones={totalDefaultMilestones}
+                  completionPercentage={completionPercentage}
+                  completedMilestonesWithCustom={completedMilestonesWithCustom}
+                  totalMilestonesWithCustom={totalMilestonesWithCustom}
+                  onCustomMilestoneToggle={handleCustomMilestoneToggle}
+                  onDeleteCustomMilestone={handleDeleteCustomMilestone}
+                  deletingMilestoneId={deletingMilestoneId}
+                />
+              </div>
 
-        <MembersCard members={company?.members || []} />
+              {/* Right column */}
+              <div className="space-y-6">
+                <OrderStatusCard
+                  order={order}
+                  newStatus={newStatus}
+                  statusUpdating={statusUpdating}
+                  onStatusChange={setNewStatus}
+                  onStatusUpdate={handleStatusUpdate}
+                />
 
-        <OrderPricingCard order={order} />
+                <StatusManagementCard
+                  company={company}
+                  onUpdateCompanyStatus={() => setCompanyStatusDialogOpen(true)}
+                  onUpdateAgentStatus={() => setRegisteredAgentStatusDialogOpen(true)}
+                  onUpdateAddressStatus={() => setBusinessAddressStatusDialogOpen(true)}
+                  onUpdateServiceStatus={() => setServiceStatusDialogOpen(true)}
+                />
+              </div>
+            </div>
+          </TabsContent>
 
-        <AddonsCard order={order} />
+          {/* ── COMPANY TAB ── */}
+          <TabsContent value="company" className="focus-visible:outline-none">
+            <CompanyInfoCard
+              company={company}
+              editingCompany={editingCompany}
+              companyForm={companyForm}
+              onEdit={() => setEditingCompany(true)}
+              onSave={handleSaveCompany}
+              onCancel={() => {
+                setEditingCompany(false)
+                setCompanyForm({
+                  name: company?.name || "",
+                  state: company?.state || "",
+                  businessCategory: company?.businessCategory || "",
+                  businessWebsite: company?.businessWebsite || "",
+                  businessDescription: company?.businessDescription || "",
+                })
+              }}
+              onFormChange={setCompanyForm}
+            />
+          </TabsContent>
 
-        <AdminActionsCard
-          company={company}
-          hasEIN={hasEIN}
-          agentUpdating={agentUpdating}
-          addressUpdating={addressUpdating}
-          einUpdating={einUpdating}
-          itinUpdating={itinUpdating}
-          businessIdUpdating={businessIdUpdating}
-          taxUpdating={taxUpdating}
-          milestoneUpdating={milestoneUpdating}
-          deleting={deleting}
-          onAddMilestone={() => setCustomMilestoneDialogOpen(true)}
-          onAssignAgent={() => setRegisteredAgentDialogOpen(true)}
-          onAssignAddress={() => setMailingAddressDialogOpen(true)}
-          onAssignEIN={() => setEinDialogOpen(true)}
-          onAssignITIN={() => setItinDialogOpen(true)}
-          onAssignBusinessId={() => setBusinessIdDialogOpen(true)}
-          onTaxInfo={() => {
-            setTaxData({
-              taxClassification: company?.taxClassification || "",
-              annualReportFilingDate: company?.annualReportFilingDate || "",
-              irsFilingDate: company?.irsFilingDate || "",
-              itin: company?.itin || "",
-            })
-            setTaxInfoDialogOpen(true)
-          }}
-          onManageMilestones={() => setMilestonesDialogOpen(true)}
-          onDownloadInvoice={generateInvoice}
-          onDeleteOrder={() => {
-            setDeleteDialogOpen(true)
-          }}
-        />
+          {/* ── MEMBERS TAB ── */}
+          <TabsContent value="members" className="focus-visible:outline-none">
+            <MembersCard members={company?.members || []} />
+          </TabsContent>
 
-        <StatusManagementCard
-          company={company}
-          onUpdateCompanyStatus={() => setCompanyStatusDialogOpen(true)}
-          onUpdateAgentStatus={() => setRegisteredAgentStatusDialogOpen(true)}
-          onUpdateAddressStatus={() => setBusinessAddressStatusDialogOpen(true)}
-          onUpdateServiceStatus={() => setServiceStatusDialogOpen(true)}
-        />
+          {/* ── PRICING TAB ── */}
+          <TabsContent value="pricing" className="focus-visible:outline-none space-y-6">
+            <OrderPricingCard order={order} />
+            <AddonsCard order={order} />
+          </TabsContent>
 
-        <AssignedInfoCards company={company} />
+          {/* ── TAX & IDs TAB ── */}
+          <TabsContent value="assigned" className="focus-visible:outline-none">
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+              <AssignedInfoCards company={company} />
+            </div>
+          </TabsContent>
+
+          {/* ── ACTIONS TAB ── */}
+          <TabsContent value="actions" className="focus-visible:outline-none">
+            <AdminActionsCard
+              company={company}
+              hasEIN={hasEIN}
+              agentUpdating={agentUpdating}
+              addressUpdating={addressUpdating}
+              einUpdating={einUpdating}
+              itinUpdating={itinUpdating}
+              businessIdUpdating={businessIdUpdating}
+              taxUpdating={taxUpdating}
+              milestoneUpdating={milestoneUpdating}
+              deleting={deleting}
+              onAddMilestone={() => setCustomMilestoneDialogOpen(true)}
+              onAssignAgent={() => setRegisteredAgentDialogOpen(true)}
+              onAssignAddress={() => setMailingAddressDialogOpen(true)}
+              onAssignEIN={() => setEinDialogOpen(true)}
+              onAssignITIN={() => setItinDialogOpen(true)}
+              onAssignBusinessId={() => setBusinessIdDialogOpen(true)}
+              onTaxInfo={() => {
+                setTaxData({
+                  taxClassification: company?.taxClassification || "",
+                  annualReportFilingDate: company?.annualReportFilingDate || "",
+                  irsFilingDate: company?.irsFilingDate || "",
+                  itin: company?.itin || "",
+                })
+                setTaxInfoDialogOpen(true)
+              }}
+              onManageMilestones={() => setMilestonesDialogOpen(true)}
+              onDownloadInvoice={generateInvoice}
+              onDeleteOrder={() => {
+                setDeleteDialogOpen(true)
+              }}
+            />
+          </TabsContent>
+        </Tabs>
       </div>
 
       {/* Manage Milestones Dialog */}
