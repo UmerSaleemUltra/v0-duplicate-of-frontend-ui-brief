@@ -62,6 +62,13 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
     company.itin.trim() !== "" &&
     company.itin !== "N/A"
 
+  const itinMembers: { memberId: string | null; memberName: string; itin: string; assignedAt?: string }[] =
+    company?.itinMembers && Array.isArray(company.itinMembers) && company.itinMembers.length > 0
+      ? company.itinMembers
+      : hasITIN
+        ? [{ memberId: null, memberName: "Member", itin: company.itin }]
+        : []
+
   return (
     <>
       {/* Registered Agent */}
@@ -124,10 +131,19 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
         </InfoCard>
       )}
 
-      {/* ITIN */}
-      {hasITIN && (
+      {/* ITIN — per member */}
+      {itinMembers.length > 0 && (
         <InfoCard title="ITIN" icon={<Hash className="w-5 h-5 text-slate-600" />}>
-          <DataRow label="Individual Taxpayer Identification Number" value={company.itin} />
+          <div className="space-y-3">
+            {itinMembers.map((entry, idx) => (
+              <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Member</p>
+                <p className="text-sm font-semibold text-slate-900">{entry.memberName}</p>
+                <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mt-2">ITIN Number</p>
+                <p className="text-sm font-semibold text-slate-900 font-mono">{entry.itin}</p>
+              </div>
+            ))}
+          </div>
         </InfoCard>
       )}
     </>

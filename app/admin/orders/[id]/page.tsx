@@ -175,6 +175,8 @@ export default function OrderDetailPage() {
 
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
+  const [itinSelectedMemberId, setItinSelectedMemberId] = useState("")
+  const [itinCustomMemberName, setItinCustomMemberName] = useState("")
   const [businessIdValue, setBusinessIdValue] = useState("")
   const [newMilestoneTitle, setNewMilestoneTitle] = useState("")
   const [newMilestoneDescription, setNewMilestoneDescription] = useState("")
@@ -1064,15 +1066,37 @@ export default function OrderDetailPage() {
     if (!company || !itinValue.trim()) {
       toast({
         title: "Missing Information",
-        description: "Please enter a valid ITIN",
+        description: "Please enter a valid ITIN number",
         variant: "destructive",
       })
       return
     }
 
+    // Determine the member name to use
+    let memberName = itinCustomMemberName.trim()
+    if (!memberName && itinSelectedMemberId) {
+      const selectedMember = (company.members || []).find(
+        (m: any) => (m._id?.toString() || m.id) === itinSelectedMemberId,
+      )
+      if (selectedMember) {
+        const fn = selectedMember.firstName || ""
+        const mn = selectedMember.middleName || ""
+        const ln = selectedMember.lastName || ""
+        memberName = fn && ln ? (mn ? `${fn} ${mn} ${ln}` : `${fn} ${ln}`) : selectedMember.name || ""
+      }
+    }
+
     setItinUpdating(true)
     try {
-      console.log("[v0] Assigning ITIN:", itinValue)
+      // Build the updated itinMembers array
+      const existingItinMembers: any[] = company.itinMembers || []
+      const newEntry = {
+        memberId: itinSelectedMemberId || null,
+        memberName: memberName || "Unknown Member",
+        itin: itinValue.trim(),
+        assignedAt: new Date().toISOString(),
+      }
+      const updatedItinMembers = [...existingItinMembers, newEntry]
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -1082,8 +1106,7 @@ export default function OrderDetailPage() {
         },
         body: JSON.stringify({
           itin: itinValue.trim(),
-          // ITIN assignment doesn't directly correspond to a core milestone,
-          // but could be tied to a custom one if needed.
+          itinMembers: updatedItinMembers,
         }),
       })
 
@@ -1092,15 +1115,15 @@ export default function OrderDetailPage() {
       const result = await response.json()
       const updatedCompany = result.data || result.company
 
-      console.log("[v0] ITIN assigned successfully")
-
       setCompany(updatedCompany)
       setItinDialogOpen(false)
       setItinValue("")
+      setItinSelectedMemberId("")
+      setItinCustomMemberName("")
 
       toast({
         title: "ITIN Assigned",
-        description: "ITIN has been successfully assigned to the company",
+        description: `ITIN has been successfully assigned to ${memberName || "the member"}`,
       })
     } catch (error) {
       console.error("[v0] Error assigning ITIN:", error)
@@ -1293,6 +1316,8 @@ export default function OrderDetailPage() {
   const handleCloseItinDialog = () => {
     setItinDialogOpen(false)
     setItinValue("")
+    setItinSelectedMemberId("")
+    setItinCustomMemberName("")
   }
 
   const handleCloseBusinessIdDialog = () => {
@@ -2566,12 +2591,57 @@ export default function OrderDetailPage() {
       <Dialog open={itinDialogOpen} onOpenChange={handleCloseItinDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Assign ITIN</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">Assign ITIN to Member</DialogTitle>
             <DialogDescription>
-              Enter the ITIN (Individual Taxpayer Identification Number) for this company.
+              ITIN is an Individual Taxpayer Identification Number assigned to a specific member, not the company.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
+            {/* Member selector */}
+            <div className="space-y-2">
+              <Label htmlFor="itinMemberSelect">Select Member</Label>
+              {company?.members && company.members.length > 0 ? (
+                <Select value={itinSelectedMemberId} onValueChange={setItinSelectedMemberId}>
+                  <SelectTrigger id="itinMemberSelect" className="h-10">
+                    <SelectValue placeholder="Choose a member..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {company.members.map((m: any, idx: number) => {
+                      const fn = m.firstName || ""
+                      const mn = m.middleName || ""
+                      const ln = m.lastName || ""
+                      const displayName =
+                        fn && ln ? (mn ? `${fn} ${mn} ${ln}` : `${fn} ${ln}`) : m.name || `Member ${idx + 1}`
+                      const memberId = m._id?.toString() || m.id || `member-${idx}`
+                      return (
+                        <SelectItem key={memberId} value={memberId}>
+                          {displayName}
+                        </SelectItem>
+                      )
+                    })}
+                  </SelectContent>
+                </Select>
+              ) : (
+                <p className="text-sm text-slate-500 italic">No members found for this company.</p>
+              )}
+            </div>
+
+            {/* Custom member name override */}
+            <div className="space-y-2">
+              <Label htmlFor="itinCustomName">
+                Custom Member Name{" "}
+                <span className="text-slate-400 font-normal">(optional — overrides selected member name)</span>
+              </Label>
+              <Input
+                id="itinCustomName"
+                placeholder="Enter custom name..."
+                value={itinCustomMemberName}
+                onChange={(e) => setItinCustomMemberName(e.target.value)}
+                className="h-10"
+              />
+            </div>
+
+            {/* ITIN Number */}
             <div className="space-y-2">
               <Label htmlFor="itinInput">ITIN Number *</Label>
               <Input
@@ -2582,13 +2652,13 @@ export default function OrderDetailPage() {
                 className="h-10 font-mono"
               />
               <p className="text-xs text-slate-500">
-                Format: 9XX-XX-XXXX (starts with 9, followed by two digits from 50-65, 70-88, 90-92, 94-99)
+                Format: 9XX-XX-XXXX (ITINs begin with the digit 9)
               </p>
             </div>
 
-            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> The ITIN will be entered as provided.
+            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
+              <p className="text-sm text-amber-800">
+                <strong>Note:</strong> ITIN is for individual members, not the company entity.
               </p>
             </div>
 
@@ -2605,7 +2675,7 @@ export default function OrderDetailPage() {
                   "Assigning..."
                 ) : (
                   <>
-                    <FileBarChart className="w-4 h-4 mr-2" />
+                    <Hash className="w-4 h-4 mr-2" />
                     Assign ITIN
                   </>
                 )}

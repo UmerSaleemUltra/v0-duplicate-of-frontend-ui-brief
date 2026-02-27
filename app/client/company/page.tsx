@@ -195,6 +195,7 @@ export default function CompanyPage() {
             registeredAgent: selectedComp.registeredAgent,
             businessAddress: selectedComp.businessAddress,
             itin: selectedComp.itin || "Not yet",
+            itinMembers: selectedComp.itinMembers || [],
             businessAddressStatus: selectedComp.businessAddressStatus || "pending",
             companyStatus: selectedComp.status || "pending",
             registeredAgentStatus: selectedComp.registeredAgentStatus || "pending",
@@ -821,18 +822,29 @@ export default function CompanyPage() {
         )}
 
         {/* ITIN Information */}
-        {hasITIN && (
+        {(hasITIN || (companyData?.itinMembers && companyData.itinMembers.length > 0)) && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
             <h2 className="text-base sm:text-lg font-semibold mb-4">ITIN Information</h2>
             <div className="space-y-4">
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">ITIN</span>
-                {companyData.itin ? (
+              {companyData?.itinMembers && companyData.itinMembers.length > 0 ? (
+                companyData.itinMembers.map((entry: any, idx: number) => (
+                  <div key={idx} className="p-3 sm:p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-slate-500 uppercase tracking-wide font-medium">Member</span>
+                      <span className="font-medium text-slate-900 text-sm sm:text-base">{entry.memberName}</span>
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <span className="text-xs text-slate-500 uppercase tracking-wide font-medium">ITIN Number</span>
+                      <span className="font-medium text-slate-900 text-sm sm:text-base font-mono">{entry.itin}</span>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="flex flex-col py-2 gap-2">
+                  <span className="text-slate-600 text-sm sm:text-base text-left">ITIN</span>
                   <span className="font-medium text-slate-900 text-sm sm:text-base text-left">{companyData.itin}</span>
-                ) : (
-                  <Badge className="bg-yellow-50 text-yellow-700 border-yellow-200">Not Yet Assigned</Badge>
-                )}
-              </div>
+                </div>
+              )}
             </div>
           </div>
         )}
