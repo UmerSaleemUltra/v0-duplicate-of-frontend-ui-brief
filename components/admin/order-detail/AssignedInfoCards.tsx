@@ -77,25 +77,25 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
           title="Registered Agent"
           icon={<UserCheck className="w-5 h-5 text-slate-600" />}
         >
-          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+          <div className="space-y-1">
             {agent.name && (
               <p className="text-sm font-semibold text-slate-900">{agent.name}</p>
             )}
             {agent.company && (
-              <p className="text-sm text-slate-700">{agent.company}</p>
+              <p className="text-sm text-slate-600">{agent.company}</p>
             )}
             {agent.address && (
-              <p className="text-sm text-slate-700">{agent.address}</p>
+              <p className="text-sm text-slate-600">{agent.address}</p>
             )}
             {agent.city && (
-              <p className="text-sm text-slate-700">
+              <p className="text-sm text-slate-600">
                 {agent.city}
                 {agent.state && `, ${agent.state}`}
                 {agent.zip && ` ${agent.zip}`}
               </p>
             )}
             {agent.servicePeriod && (
-              <p className="text-xs text-slate-500 mt-2">Service Period: {agent.servicePeriod}</p>
+              <p className="text-xs text-slate-400 mt-1">Service Period: {agent.servicePeriod}</p>
             )}
           </div>
         </InfoCard>
@@ -107,10 +107,10 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
           title="Mailing Address"
           icon={<Home className="w-5 h-5 text-slate-600" />}
         >
-          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+          <div className="space-y-1">
             <p className="text-sm font-semibold text-slate-900">Business Mailing Address</p>
-            <p className="text-sm text-slate-700">{mailing.street}</p>
-            <p className="text-sm text-slate-700">
+            <p className="text-sm text-slate-600">{mailing.street}</p>
+            <p className="text-sm text-slate-600">
               {mailing.city}, {mailing.state} {mailing.zip}
             </p>
           </div>

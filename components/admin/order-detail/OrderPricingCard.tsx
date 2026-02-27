@@ -24,71 +24,69 @@ export function OrderPricingCard({ order }: OrderPricingCardProps) {
       </CardHeader>
       <CardContent className="space-y-4">
         {/* Pricing Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-            <p className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wide">Package Price</p>
-            <p className="text-xl font-bold text-slate-900">${packagePrice.toFixed(2)}</p>
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-gray-100 rounded-xl overflow-hidden border border-gray-100">
+          <div className="bg-white p-5">
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Package Price</p>
+            <p className="text-2xl font-semibold text-gray-900">${packagePrice.toFixed(2)}</p>
           </div>
-          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-            <p className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wide">State Filing Fee</p>
-            <p className="text-xl font-bold text-slate-900">${stateFee.toFixed(2)}</p>
+          <div className="bg-white p-5">
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">State Filing Fee</p>
+            <p className="text-2xl font-semibold text-gray-900">${stateFee.toFixed(2)}</p>
           </div>
-          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-            <p className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wide">Add-ons Total</p>
-            <p className="text-xl font-bold text-slate-900">${addonsTotal.toFixed(2)}</p>
+          <div className="bg-white p-5">
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Add-ons Total</p>
+            <p className="text-2xl font-semibold text-gray-900">${addonsTotal.toFixed(2)}</p>
           </div>
-          <div className="p-4 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] shadow-md">
-            <p className="text-xs text-white/80 mb-1 font-medium uppercase tracking-wide">Total Amount</p>
-            <p className="text-2xl font-bold text-white">${total.toFixed(2)}</p>
+          <div className="bg-gray-900 p-5">
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Total Amount</p>
+            <p className="text-2xl font-semibold text-white">${total.toFixed(2)}</p>
           </div>
         </div>
 
         {/* Payment Info */}
-        <div className="p-4 rounded-lg bg-slate-50 border border-slate-200">
-          <div className="grid sm:grid-cols-2 gap-3">
-            <div>
-              <p className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wide">Payment Method</p>
-              <p className="text-sm font-medium text-slate-900 capitalize">
-                {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
-              </p>
-              {(order?.paymentInfo?.method?.toLowerCase() === "whatsapp" ||
-                order?.paymentInfo?.method?.toLowerCase() === "whatsapp phone") &&
-                order?.paymentInfo?.phone && (
-                  <p className="text-xs text-slate-500 mt-1">
-                    Phone:{" "}
-                    <span className="font-mono text-slate-800">{order.paymentInfo.phone}</span>
-                  </p>
-                )}
-            </div>
-            <div>
-              <p className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wide">Payment Status</p>
-              <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"} className="capitalize">
-                {order?.paymentInfo?.status || "Pending"}
-              </Badge>
-            </div>
-            {order?.paymentInfo?.receiptUrl && (
-              <div className="sm:col-span-2">
-                <p className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wide">Payment Receipt</p>
-                <a
-                  href={order.paymentInfo.receiptUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
-                >
-                  <Receipt className="w-4 h-4" />
-                  View Receipt
-                </a>
-              </div>
-            )}
+        <div className="grid sm:grid-cols-2 gap-6 pt-2">
+          <div>
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Payment Method</p>
+            <p className="text-sm font-medium text-gray-900 capitalize">
+              {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
+            </p>
+            {(order?.paymentInfo?.method?.toLowerCase() === "whatsapp" ||
+              order?.paymentInfo?.method?.toLowerCase() === "whatsapp phone") &&
+              order?.paymentInfo?.phone && (
+                <p className="text-xs text-gray-400 mt-1">
+                  Phone:{" "}
+                  <span className="font-mono text-gray-700">{order.paymentInfo.phone}</span>
+                </p>
+              )}
           </div>
+          <div>
+            <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Payment Status</p>
+            <Badge variant={order?.paymentInfo?.status === "paid" ? "default" : "secondary"} className="capitalize">
+              {order?.paymentInfo?.status || "Pending"}
+            </Badge>
+          </div>
+          {order?.paymentInfo?.receiptUrl && (
+            <div className="sm:col-span-2">
+              <p className="text-xs text-gray-400 font-medium uppercase tracking-wide mb-1">Payment Receipt</p>
+              <a
+                href={order.paymentInfo.receiptUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm font-medium text-blue-600 hover:underline flex items-center gap-1"
+              >
+                <Receipt className="w-4 h-4" />
+                View Receipt
+              </a>
+            </div>
+          )}
         </div>
 
         {/* Order Date */}
-        <div className="p-3 rounded-lg bg-slate-50 border border-slate-200 flex items-center gap-3">
-          <Calendar className="w-4 h-4 text-slate-500 shrink-0" />
+        <div className="flex items-center gap-2 pt-1 border-t border-gray-50">
+          <Calendar className="w-4 h-4 text-gray-300 shrink-0" />
           <div>
-            <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Order Date</p>
-            <p className="text-sm font-medium text-slate-900">
+            <span className="text-xs text-gray-400">Order Date: </span>
+            <span className="text-sm font-medium text-gray-700">
               {order?.createdAt
                 ? new Date(order.createdAt).toLocaleDateString("en-US", {
                     year: "numeric",
@@ -96,7 +94,7 @@ export function OrderPricingCard({ order }: OrderPricingCardProps) {
                     day: "numeric",
                   })
                 : "N/A"}
-            </p>
+            </span>
           </div>
         </div>
       </CardContent>
