@@ -136,7 +136,7 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
         <InfoCard title="ITIN" icon={<Hash className="w-5 h-5 text-slate-600" />}>
           <div className="space-y-3">
             {itinMembers.map((entry, idx) => (
-              <div key={idx} className="p-3 rounded-lg bg-slate-50 border border-slate-200 space-y-1">
+              <div key={idx} className="space-y-1">
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Member</p>
                 <p className="text-sm font-semibold text-slate-900">{entry.memberName}</p>
                 <p className="text-xs text-slate-500 font-medium uppercase tracking-wide mt-2">ITIN Number</p>
