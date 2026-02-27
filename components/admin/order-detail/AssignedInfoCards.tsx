@@ -29,8 +29,8 @@ function InfoCard({ title, icon, children }: InfoCardProps) {
 
 function DataRow({ label, value }: { label: string; value: string }) {
   return (
-    <div className="p-3 rounded-lg bg-slate-50 border border-slate-200">
-      <p className="text-xs text-slate-500 mb-1 font-medium uppercase tracking-wide">{label}</p>
+    <div className="space-y-1">
+      <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">{label}</p>
       <p className="text-sm font-semibold text-slate-900 font-mono">{value}</p>
     </div>
   )
