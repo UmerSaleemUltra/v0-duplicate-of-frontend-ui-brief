@@ -828,7 +828,7 @@ export default function CompanyPage() {
             <div className="space-y-4">
               {companyData?.itinMembers && companyData.itinMembers.length > 0 ? (
                 companyData.itinMembers.map((entry: any, idx: number) => (
-                  <div key={idx} className="p-3 sm:p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+                  <div key={idx} className="space-y-2">
                     <div className="flex flex-col gap-1">
                       <span className="text-xs text-slate-500 uppercase tracking-wide font-medium">Member</span>
                       <span className="font-medium text-slate-900 text-sm sm:text-base">{entry.memberName}</span>
