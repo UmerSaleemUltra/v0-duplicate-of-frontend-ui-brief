@@ -267,21 +267,14 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
           <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
             {itinMembers.map((entry, idx) => (
               <div key={idx} className="px-4 py-3">
-                {/* Member Name row */}
                 <div className="flex items-start gap-3 mb-2">
                   <UserCheck className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-400 mb-0.5">Member Name</p>
-              <div key={idx} className="px-4 py-4">
-                <div className="flex items-start gap-3 mb-3">
-                  <UserCheck className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 mb-0.5">Member</p>
                     <p className="text-sm text-gray-900 font-medium break-words">{entry.memberName}</p>
                   </div>
                   <CopyButton value={entry.memberName} />
                 </div>
-                {/* ITIN Number row */}
                 <div className="flex items-start gap-3">
                   <Hash className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
