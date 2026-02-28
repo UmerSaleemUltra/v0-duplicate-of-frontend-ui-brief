@@ -71,24 +71,37 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
 
   const hasITIN = company?.itin && company.itin.trim() !== "" && company.itin !== "N/A"
 
-  // Resolve member name from members array
+  // Debug: log raw itinMembers from DB
+  console.log("[v0] company.itinMembers raw:", JSON.stringify(company?.itinMembers))
+  console.log("[v0] company.members raw:", JSON.stringify(company?.members))
+
+  // Resolve member name: prefer entry.memberName from DB directly,
+  // only look up by memberId if memberName is missing
   const resolveMemberName = (memberId: string | null, fallback: string): string => {
-    if (!memberId) return fallback || "Member"
+    console.log("[v0] resolveMemberName called — memberId:", memberId, "fallback:", fallback)
+    if (fallback && fallback.trim() !== "" && fallback !== "Member") return fallback
+    if (!memberId) return fallback && fallback.trim() !== "" ? fallback : "Unknown Member"
     const found = (company?.members || []).find(
       (m: any) => (m._id?.toString() || m.id?.toString()) === memberId,
     )
-    return found?.name || fallback || "Member"
+    console.log("[v0] member lookup result:", found)
+    return found?.name || fallback || "Unknown Member"
   }
 
   const itinMembers: { memberId: string | null; memberName: string; itin: string; assignedAt?: string }[] =
     company?.itinMembers && Array.isArray(company.itinMembers) && company.itinMembers.length > 0
-      ? company.itinMembers.map((entry: any) => ({
-          ...entry,
-          memberName: resolveMemberName(entry.memberId, entry.memberName),
-        }))
+      ? company.itinMembers.map((entry: any) => {
+          console.log("[v0] processing itinMember entry:", JSON.stringify(entry))
+          return {
+            ...entry,
+            memberName: resolveMemberName(entry.memberId, entry.memberName),
+          }
+        })
       : hasITIN
-        ? [{ memberId: null, memberName: "Member", itin: company.itin }]
+        ? [{ memberId: null, memberName: "Unknown Member", itin: company.itin }]
         : []
+
+  console.log("[v0] final itinMembers to render:", JSON.stringify(itinMembers))
 
   const mailingAddressString = hasMailing
     ? `${mailing.street}, ${mailing.city}, ${mailing.state} ${mailing.zip}`
@@ -253,11 +266,11 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
         <InfoCard title="ITIN" icon={<Hash className="w-4 h-4 text-gray-500" />}>
           <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
             {itinMembers.map((entry, idx) => (
-              <div key={idx} className="px-4 py-4">
-                <div className="flex items-start gap-3 mb-3">
+              <div key={idx} className="px-4 py-3">
+                <div className="flex items-start gap-3 mb-2">
                   <UserCheck className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 mb-0.5">Member</p>
+                    <p className="text-xs text-gray-400 mb-0.5">Member Name</p>
                     <p className="text-sm text-gray-900 font-medium break-words">{entry.memberName}</p>
                   </div>
                   <CopyButton value={entry.memberName} />
