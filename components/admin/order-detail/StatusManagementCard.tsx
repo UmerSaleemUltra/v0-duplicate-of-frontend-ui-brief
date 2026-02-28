@@ -46,7 +46,7 @@ function StatusRow({
       </div>
       <button
         onClick={onUpdate}
-        className="text-xs text-stone-400 hover:text-stone-700 font-medium transition-colors"
+        className="text-xs text-stone-400 hover:text-stone-700 font-medium transition-colors cursor-pointer"
       >
         Update
       </button>

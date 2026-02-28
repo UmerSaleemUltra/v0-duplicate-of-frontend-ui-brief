@@ -1,7 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { UserCheck, Home, Hash, Building2, MapPin, Phone, Copy, Check } from "lucide-react"
+import { UserCheck, Home, Hash, Building2, MapPin, Phone, Copy, Check, Receipt, FileText } from "lucide-react"
 
 interface AssignedInfoCardsProps {
   company: any
@@ -185,6 +185,45 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
               <span className="text-sm text-gray-900 font-semibold font-mono flex-1">{company.businessId}</span>
               <CopyButton value={company.businessId} />
             </div>
+          </div>
+        </InfoCard>
+      )}
+
+      {/* Tax Information */}
+      {(company?.taxClassification || company?.annualReportFilingDate || company?.irsFilingDate || company?.taxNotes) && (
+        <InfoCard title="Tax Information" icon={<Receipt className="w-4 h-4 text-gray-500" />}>
+          <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
+            {company?.taxClassification && (
+              <div className="flex items-center gap-3 px-4 py-3">
+                <FileText className="w-4 h-4 text-gray-300 shrink-0" />
+                <span className="text-xs text-gray-400 w-44 shrink-0">Tax Classification</span>
+                <span className="text-sm text-gray-900 font-medium flex-1">{company.taxClassification}</span>
+                <CopyButton value={company.taxClassification} />
+              </div>
+            )}
+            {company?.annualReportFilingDate && (
+              <div className="flex items-center gap-3 px-4 py-3">
+                <FileText className="w-4 h-4 text-gray-300 shrink-0" />
+                <span className="text-xs text-gray-400 w-44 shrink-0">Annual Report Date</span>
+                <span className="text-sm text-gray-900 font-medium flex-1">{company.annualReportFilingDate}</span>
+                <CopyButton value={company.annualReportFilingDate} />
+              </div>
+            )}
+            {company?.irsFilingDate && (
+              <div className="flex items-center gap-3 px-4 py-3">
+                <FileText className="w-4 h-4 text-gray-300 shrink-0" />
+                <span className="text-xs text-gray-400 w-44 shrink-0">IRS Filing Date</span>
+                <span className="text-sm text-gray-900 font-medium flex-1">{company.irsFilingDate}</span>
+                <CopyButton value={company.irsFilingDate} />
+              </div>
+            )}
+            {company?.taxNotes && (
+              <div className="flex items-start gap-3 px-4 py-3">
+                <FileText className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                <span className="text-xs text-gray-400 w-44 shrink-0 mt-0.5">Notes</span>
+                <p className="text-sm text-gray-700 flex-1 leading-relaxed">{company.taxNotes}</p>
+              </div>
+            )}
           </div>
         </InfoCard>
       )}
