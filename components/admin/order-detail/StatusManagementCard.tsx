@@ -1,8 +1,6 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Settings } from "lucide-react"
 
 interface StatusManagementCardProps {
@@ -13,34 +11,45 @@ interface StatusManagementCardProps {
   onUpdateServiceStatus: () => void
 }
 
-interface StatusRowProps {
+const statusDot: Record<string, string> = {
+  active: "bg-emerald-500",
+  inactive: "bg-red-400",
+  pending: "bg-amber-400",
+}
+
+const statusLabel: Record<string, string> = {
+  active: "Active",
+  inactive: "Inactive",
+  pending: "Pending",
+}
+
+function StatusRow({
+  label,
+  status,
+  onUpdate,
+}: {
   label: string
-  description: string
   status: string
   onUpdate: () => void
-}
+}) {
+  const dot = statusDot[status] || "bg-stone-300"
+  const text = statusLabel[status] || status
 
-function statusBadgeClass(status: string) {
-  switch (status) {
-    case "active":   return "bg-emerald-100 text-emerald-700 border-emerald-200"
-    case "inactive": return "bg-red-100 text-red-700 border-red-200"
-    default:         return "bg-amber-100 text-amber-700 border-amber-200"
-  }
-}
-
-function StatusRow({ label, description, status, onUpdate }: StatusRowProps) {
   return (
-    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
-      <div>
-        <p className="text-sm font-medium text-slate-900">{label}</p>
-        <p className="text-xs text-slate-500 mt-0.5">{description}</p>
+    <div className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+      <div className="flex items-center gap-3">
+        <span className={`w-2 h-2 rounded-full shrink-0 ${dot}`} />
+        <div>
+          <p className="text-sm font-medium text-stone-800 leading-none">{label}</p>
+          <p className="text-xs text-stone-400 mt-0.5 capitalize">{text}</p>
+        </div>
       </div>
-      <div className="flex items-center gap-2 shrink-0">
-        <Badge className={`capitalize text-xs border ${statusBadgeClass(status)}`}>{status}</Badge>
-        <Button size="sm" variant="outline" onClick={onUpdate} className="h-8 text-xs">
-          Update
-        </Button>
-      </div>
+      <button
+        onClick={onUpdate}
+        className="text-xs text-stone-400 hover:text-stone-700 font-medium transition-colors"
+      >
+        Update
+      </button>
     </div>
   )
 }
@@ -53,42 +62,40 @@ export function StatusManagementCard({
   onUpdateServiceStatus,
 }: StatusManagementCardProps) {
   return (
-    <Card className="bg-white border-slate-200 shadow-sm">
-      <CardHeader className="pb-3 border-b border-slate-100">
-        <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-          <Settings className="w-5 h-5 text-slate-600" />
-          Status Management
-        </CardTitle>
-        <p className="text-xs text-slate-500 mt-1">
-          Manage company, agent, address, and service statuses
-        </p>
-      </CardHeader>
-      <CardContent className="pt-4 space-y-2">
-        <StatusRow
-          label="Company Status"
-          description="Overall company operational status"
-          status={company?.companyStatus || "pending"}
-          onUpdate={onUpdateCompanyStatus}
-        />
-        <StatusRow
-          label="Registered Agent Status"
-          description="Agent assignment and service status"
-          status={company?.registeredAgentStatus || "pending"}
-          onUpdate={onUpdateAgentStatus}
-        />
-        <StatusRow
-          label="Business Address Status"
-          description="Mailing address setup status"
-          status={company?.businessAddressStatus || "pending"}
-          onUpdate={onUpdateAddressStatus}
-        />
-        <StatusRow
-          label="Service Status"
-          description="Overall service delivery status"
-          status={company?.serviceStatus || "pending"}
-          onUpdate={onUpdateServiceStatus}
-        />
-      </CardContent>
-    </Card>
+    <div className="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center gap-2.5 px-6 py-4 border-b border-stone-100">
+        <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center">
+          <Settings className="w-3.5 h-3.5 text-stone-500" />
+        </div>
+        <span className="text-sm font-semibold text-stone-800 tracking-tight">Service Status</span>
+      </div>
+
+      {/* Body */}
+      <div className="px-6 py-5">
+        <div className="divide-y divide-stone-100">
+          <StatusRow
+            label="Company"
+            status={company?.companyStatus || "pending"}
+            onUpdate={onUpdateCompanyStatus}
+          />
+          <StatusRow
+            label="Registered Agent"
+            status={company?.registeredAgentStatus || "pending"}
+            onUpdate={onUpdateAgentStatus}
+          />
+          <StatusRow
+            label="Business Address"
+            status={company?.businessAddressStatus || "pending"}
+            onUpdate={onUpdateAddressStatus}
+          />
+          <StatusRow
+            label="Service"
+            status={company?.serviceStatus || "pending"}
+            onUpdate={onUpdateServiceStatus}
+          />
+        </div>
+      </div>
+    </div>
   )
 }
