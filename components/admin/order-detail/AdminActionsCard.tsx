@@ -1,7 +1,5 @@
 "use client"
 
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Settings,
   Plus,
@@ -14,6 +12,7 @@ import {
   Download,
   Trash2,
   Loader2,
+  ChevronRight,
 } from "lucide-react"
 
 interface AdminActionsCardProps {
@@ -39,48 +38,33 @@ interface AdminActionsCardProps {
   onDeleteOrder: () => void
 }
 
-interface ActionButtonProps {
-  icon: React.ReactNode
-  label: string
-  onClick: () => void
-  disabled?: boolean
-  variant?: "outline" | "destructive"
-  loading?: boolean
-  loadingLabel?: string
-}
-
-function ActionButton({
+function ActionRow({
   icon,
   label,
   onClick,
   disabled,
-  variant = "outline",
   loading,
   loadingLabel,
-}: ActionButtonProps) {
+}: {
+  icon: React.ReactNode
+  label: string
+  onClick: () => void
+  disabled?: boolean
+  loading?: boolean
+  loadingLabel?: string
+}) {
   return (
-    <Button
-      variant={variant}
-      className={`w-full justify-start h-11 gap-3 font-medium ${
-        variant === "outline"
-          ? "hover:bg-slate-50 text-slate-700 bg-transparent"
-          : "hover:bg-red-600"
-      }`}
+    <button
       onClick={onClick}
       disabled={disabled || loading}
+      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
     >
-      {loading ? (
-        <>
-          <Loader2 className="w-4 h-4 animate-spin" />
-          {loadingLabel || label}
-        </>
-      ) : (
-        <>
-          {icon}
-          {label}
-        </>
-      )}
-    </Button>
+      <span className="w-4 h-4 text-gray-400 shrink-0 flex items-center justify-center">
+        {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
+      </span>
+      <span className="flex-1 text-sm font-medium text-gray-800">{loading ? (loadingLabel || label) : label}</span>
+      <ChevronRight className="w-3.5 h-3.5 text-gray-300 shrink-0" />
+    </button>
   )
 }
 
@@ -107,77 +91,94 @@ export function AdminActionsCard({
   onDeleteOrder,
 }: AdminActionsCardProps) {
   return (
-    <Card className="bg-white border-slate-200 shadow-sm">
-      <CardHeader className="pb-3 border-b border-slate-100">
-        <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-          <Settings className="w-5 h-5 text-slate-600" />
-          Admin Actions
-        </CardTitle>
-        <p className="text-xs text-slate-500 mt-1">Manage order and company details</p>
-      </CardHeader>
-      <CardContent className="pt-4">
-        <div className="space-y-2">
-          <ActionButton icon={<Plus className="w-4 h-4" />} label="Add Milestone" onClick={onAddMilestone} />
-          <ActionButton
-            icon={<UserCheck className="w-4 h-4" />}
-            label="Assign Registered Agent"
-            onClick={onAssignAgent}
-            disabled={agentUpdating || !company}
-          />
-          <ActionButton
-            icon={<MapPin className="w-4 h-4" />}
-            label="Assign Mailing Address"
-            onClick={onAssignAddress}
-            disabled={addressUpdating || !company}
-          />
-          <ActionButton
-            icon={<Hash className="w-4 h-4" />}
-            label={hasEIN ? "View / Edit EIN" : "Assign EIN"}
-            onClick={onAssignEIN}
-            disabled={einUpdating || !company}
-          />
-          <ActionButton
-            icon={<Hash className="w-4 h-4" />}
-            label={company?.itin ? "View / Edit ITIN" : "Assign ITIN"}
-            onClick={onAssignITIN}
-            disabled={itinUpdating || !company}
-          />
-          <ActionButton
-            icon={<Building2 className="w-4 h-4" />}
-            label={company?.businessId ? "View / Edit Business ID" : "Assign Business ID"}
-            onClick={onAssignBusinessId}
-            disabled={businessIdUpdating || !company}
-          />
-          <ActionButton
-            icon={<FileBarChart className="w-4 h-4" />}
-            label="Tax Information"
-            onClick={onTaxInfo}
-            disabled={taxUpdating || !company}
-          />
-          <ActionButton
-            icon={<FileCheck className="w-4 h-4" />}
-            label="Manage Milestones"
-            onClick={onManageMilestones}
-            disabled={milestoneUpdating}
-          />
-          <ActionButton
-            icon={<Download className="w-4 h-4" />}
-            label="Download Invoice"
-            onClick={onDownloadInvoice}
-          />
-
-          <div className="pt-2 border-t border-slate-100">
-            <ActionButton
-              icon={<Trash2 className="w-4 h-4" />}
-              label="Delete Order"
-              onClick={onDeleteOrder}
-              variant="destructive"
-              loading={deleting}
-              loadingLabel="Deleting..."
-            />
-          </div>
+    <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-3">
+        <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+          <Settings className="w-4 h-4 text-gray-500" />
         </div>
-      </CardContent>
-    </Card>
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Admin Actions</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Manage order and company details</p>
+        </div>
+      </div>
+
+      {/* Action rows — Apple Settings style */}
+      <div className="divide-y divide-gray-100">
+        <ActionRow icon={<Plus className="w-4 h-4" />} label="Add Milestone" onClick={onAddMilestone} />
+        <ActionRow
+          icon={<UserCheck className="w-4 h-4" />}
+          label="Assign Registered Agent"
+          onClick={onAssignAgent}
+          disabled={agentUpdating || !company}
+          loading={agentUpdating}
+          loadingLabel="Updating..."
+        />
+        <ActionRow
+          icon={<MapPin className="w-4 h-4" />}
+          label="Assign Mailing Address"
+          onClick={onAssignAddress}
+          disabled={addressUpdating || !company}
+          loading={addressUpdating}
+          loadingLabel="Updating..."
+        />
+        <ActionRow
+          icon={<Hash className="w-4 h-4" />}
+          label={hasEIN ? "View / Edit EIN" : "Assign EIN"}
+          onClick={onAssignEIN}
+          disabled={einUpdating || !company}
+          loading={einUpdating}
+          loadingLabel="Updating..."
+        />
+        <ActionRow
+          icon={<Hash className="w-4 h-4" />}
+          label={company?.itin ? "View / Edit ITIN" : "Assign ITIN"}
+          onClick={onAssignITIN}
+          disabled={itinUpdating || !company}
+          loading={itinUpdating}
+          loadingLabel="Updating..."
+        />
+        <ActionRow
+          icon={<Building2 className="w-4 h-4" />}
+          label={company?.businessId ? "View / Edit Business ID" : "Assign Business ID"}
+          onClick={onAssignBusinessId}
+          disabled={businessIdUpdating || !company}
+          loading={businessIdUpdating}
+          loadingLabel="Updating..."
+        />
+        <ActionRow
+          icon={<FileBarChart className="w-4 h-4" />}
+          label="Tax Information"
+          onClick={onTaxInfo}
+          disabled={taxUpdating || !company}
+          loading={taxUpdating}
+          loadingLabel="Loading..."
+        />
+        <ActionRow
+          icon={<FileCheck className="w-4 h-4" />}
+          label="Manage Milestones"
+          onClick={onManageMilestones}
+          disabled={milestoneUpdating}
+          loading={milestoneUpdating}
+          loadingLabel="Loading..."
+        />
+        <ActionRow icon={<Download className="w-4 h-4" />} label="Download Invoice" onClick={onDownloadInvoice} />
+      </div>
+
+      {/* Destructive zone */}
+      <div className="border-t border-gray-100">
+        <button
+          onClick={onDeleteOrder}
+          disabled={deleting}
+          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+        >
+          <span className="w-4 h-4 text-red-400 shrink-0 flex items-center justify-center">
+            {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+          </span>
+          <span className="flex-1 text-sm font-medium text-red-600">{deleting ? "Deleting..." : "Delete Order"}</span>
+          <ChevronRight className="w-3.5 h-3.5 text-red-300 shrink-0" />
+        </button>
+      </div>
+    </div>
   )
 }
