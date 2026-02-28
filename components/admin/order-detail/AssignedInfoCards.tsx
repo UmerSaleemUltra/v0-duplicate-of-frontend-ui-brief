@@ -71,26 +71,37 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
 
   const hasITIN = company?.itin && company.itin.trim() !== "" && company.itin !== "N/A"
 
+  // Debug: log raw itinMembers from DB
+  console.log("[v0] company.itinMembers raw:", JSON.stringify(company?.itinMembers))
+  console.log("[v0] company.members raw:", JSON.stringify(company?.members))
+
   // Resolve member name: prefer entry.memberName from DB directly,
   // only look up by memberId if memberName is missing
   const resolveMemberName = (memberId: string | null, fallback: string): string => {
+    console.log("[v0] resolveMemberName called — memberId:", memberId, "fallback:", fallback)
     if (fallback && fallback.trim() !== "" && fallback !== "Member") return fallback
     if (!memberId) return fallback && fallback.trim() !== "" ? fallback : "Unknown Member"
     const found = (company?.members || []).find(
       (m: any) => (m._id?.toString() || m.id?.toString()) === memberId,
     )
+    console.log("[v0] member lookup result:", found)
     return found?.name || fallback || "Unknown Member"
   }
 
   const itinMembers: { memberId: string | null; memberName: string; itin: string; assignedAt?: string }[] =
     company?.itinMembers && Array.isArray(company.itinMembers) && company.itinMembers.length > 0
-      ? company.itinMembers.map((entry: any) => ({
-          ...entry,
-          memberName: resolveMemberName(entry.memberId, entry.memberName),
-        }))
+      ? company.itinMembers.map((entry: any) => {
+          console.log("[v0] processing itinMember entry:", JSON.stringify(entry))
+          return {
+            ...entry,
+            memberName: resolveMemberName(entry.memberId, entry.memberName),
+          }
+        })
       : hasITIN
         ? [{ memberId: null, memberName: "Unknown Member", itin: company.itin }]
         : []
+
+  console.log("[v0] final itinMembers to render:", JSON.stringify(itinMembers))
 
   const mailingAddressString = hasMailing
     ? `${mailing.street}, ${mailing.city}, ${mailing.state} ${mailing.zip}`
