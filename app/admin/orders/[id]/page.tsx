@@ -2327,6 +2327,27 @@ export default function OrderDetailPage() {
                   onFormChange={setCustomerForm}
                 />
 
+                {company && (
+                  <CompanyInfoCard
+                    company={company}
+                    editingCompany={editingCompany}
+                    companyForm={companyForm}
+                    onEdit={() => setEditingCompany(true)}
+                    onSave={handleSaveCompany}
+                    onCancel={() => {
+                      setEditingCompany(false)
+                      setCompanyForm({
+                        name: company?.name || "",
+                        state: company?.state || "",
+                        businessCategory: company?.businessCategory || "",
+                        businessWebsite: company?.businessWebsite || "",
+                        businessDescription: company?.businessDescription || "",
+                      })
+                    }}
+                    onFormChange={setCompanyForm}
+                  />
+                )}
+
                 <FormationProgressCard
                   milestones={milestones}
                   company={company}
