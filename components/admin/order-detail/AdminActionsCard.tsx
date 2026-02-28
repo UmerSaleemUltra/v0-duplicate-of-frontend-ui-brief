@@ -57,7 +57,7 @@ function ActionRow({
     <button
       onClick={onClick}
       disabled={disabled || loading}
-      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-gray-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
     >
       <span className="w-4 h-4 text-gray-400 shrink-0 flex items-center justify-center">
         {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : icon}
@@ -170,7 +170,7 @@ export function AdminActionsCard({
         <button
           onClick={onDeleteOrder}
           disabled={deleting}
-          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+          className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-red-50 disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer transition-colors"
         >
           <span className="w-4 h-4 text-red-400 shrink-0 flex items-center justify-center">
             {deleting ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}

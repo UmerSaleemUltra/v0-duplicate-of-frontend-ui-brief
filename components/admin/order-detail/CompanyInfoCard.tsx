@@ -46,7 +46,7 @@ export function CompanyInfoCard({
         {!editingCompany && (
           <button
             onClick={onEdit}
-            className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 transition-colors"
+            className="flex items-center gap-1.5 text-xs font-medium text-gray-500 hover:text-gray-900 bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded-lg px-3 py-1.5 cursor-pointer transition-colors"
           >
             <Pencil className="w-3 h-3" />
             Edit

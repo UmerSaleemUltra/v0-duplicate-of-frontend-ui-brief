@@ -2339,6 +2339,11 @@ export default function OrderDetailPage() {
                   onDeleteCustomMilestone={handleDeleteCustomMilestone}
                   deletingMilestoneId={deletingMilestoneId}
                 />
+
+                {/* Tax & IDs summary in overview */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <AssignedInfoCards company={company} />
+                </div>
               </div>
 
               {/* Right column */}
