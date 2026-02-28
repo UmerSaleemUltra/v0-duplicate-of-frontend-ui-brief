@@ -71,13 +71,15 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
 
   const hasITIN = company?.itin && company.itin.trim() !== "" && company.itin !== "N/A"
 
-  // Resolve member name from members array
+  // Resolve member name: prefer entry.memberName from DB directly,
+  // only look up by memberId if memberName is missing
   const resolveMemberName = (memberId: string | null, fallback: string): string => {
-    if (!memberId) return fallback || "Member"
+    if (fallback && fallback.trim() !== "" && fallback !== "Member") return fallback
+    if (!memberId) return fallback && fallback.trim() !== "" ? fallback : "Unknown Member"
     const found = (company?.members || []).find(
       (m: any) => (m._id?.toString() || m.id?.toString()) === memberId,
     )
-    return found?.name || fallback || "Member"
+    return found?.name || fallback || "Unknown Member"
   }
 
   const itinMembers: { memberId: string | null; memberName: string; itin: string; assignedAt?: string }[] =
@@ -87,7 +89,7 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
           memberName: resolveMemberName(entry.memberId, entry.memberName),
         }))
       : hasITIN
-        ? [{ memberId: null, memberName: "Member", itin: company.itin }]
+        ? [{ memberId: null, memberName: "Unknown Member", itin: company.itin }]
         : []
 
   const mailingAddressString = hasMailing
