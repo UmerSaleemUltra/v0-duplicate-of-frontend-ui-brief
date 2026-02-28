@@ -119,35 +119,41 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
         <InfoCard title="Registered Agent" icon={<UserCheck className="w-4 h-4 text-gray-500" />}>
           <div className="rounded-xl border border-gray-200 overflow-hidden">
             {agent.name && (
-              <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
-                <UserCheck className="w-4 h-4 text-gray-300 shrink-0" />
-                <span className="text-xs text-gray-400 w-28 shrink-0">Name</span>
-                <span className="text-sm text-gray-900 font-medium flex-1">{agent.name}</span>
+              <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
+                <UserCheck className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-0.5">Name</p>
+                  <p className="text-sm text-gray-900 font-medium break-words">{agent.name}</p>
+                </div>
                 <CopyButton value={agent.name} />
               </div>
             )}
             {agent.address && (
               <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
                 <MapPin className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
-                <span className="text-xs text-gray-400 w-28 shrink-0 mt-0.5">Address</span>
-                <div className="text-sm text-gray-900 font-medium flex-1">
-                  <p>{agent.address}</p>
-                  {agent.city && (
-                    <p className="text-gray-600">
-                      {agent.city}
-                      {agent.state && `, ${agent.state}`}
-                      {agent.zip && ` ${agent.zip}`}
-                    </p>
-                  )}
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-0.5">Address</p>
+                  <div className="text-sm text-gray-900 font-medium break-words">
+                    <p>{agent.address}</p>
+                    {agent.city && (
+                      <p className="text-gray-600">
+                        {agent.city}
+                        {agent.state && `, ${agent.state}`}
+                        {agent.zip && ` ${agent.zip}`}
+                      </p>
+                    )}
+                  </div>
                 </div>
                 <CopyButton value={agentAddressString} />
               </div>
             )}
             {agent.servicePeriod && (
-              <div className="flex items-center gap-3 px-4 py-3">
-                <Phone className="w-4 h-4 text-gray-300 shrink-0" />
-                <span className="text-xs text-gray-400 w-28 shrink-0">Service Period</span>
-                <span className="text-sm text-gray-900 font-medium flex-1">{agent.servicePeriod}</span>
+              <div className="flex items-start gap-3 px-4 py-3">
+                <Phone className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-0.5">Service Period</p>
+                  <p className="text-sm text-gray-900 font-medium break-words">{agent.servicePeriod}</p>
+                </div>
                 <CopyButton value={agent.servicePeriod} />
               </div>
             )}
@@ -161,12 +167,14 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
           <div className="rounded-xl border border-gray-200 overflow-hidden">
             <div className="flex items-start gap-3 px-4 py-3">
               <MapPin className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
-              <span className="text-xs text-gray-400 w-28 shrink-0 mt-0.5">Address</span>
-              <div className="text-sm font-medium flex-1">
-                <p className="text-gray-900">{mailing.street}</p>
-                <p className="text-gray-600">
-                  {mailing.city}, {mailing.state} {mailing.zip}
-                </p>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-400 mb-0.5">Address</p>
+                <div className="text-sm font-medium break-words">
+                  <p className="text-gray-900">{mailing.street}</p>
+                  <p className="text-gray-600">
+                    {mailing.city}, {mailing.state} {mailing.zip}
+                  </p>
+                </div>
               </div>
               <CopyButton value={mailingAddressString} />
             </div>
@@ -178,10 +186,12 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
       {hasEIN && (
         <InfoCard title="EIN" icon={<Hash className="w-4 h-4 text-gray-500" />}>
           <div className="rounded-xl border border-gray-200 overflow-hidden">
-            <div className="flex items-center gap-3 px-4 py-3">
-              <Hash className="w-4 h-4 text-gray-300 shrink-0" />
-              <span className="text-xs text-gray-400 w-48 shrink-0">Employer Identification Number</span>
-              <span className="text-sm text-gray-900 font-semibold font-mono flex-1">{company.ein}</span>
+            <div className="flex items-start gap-3 px-4 py-3">
+              <Hash className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-400 mb-0.5">Employer Identification Number</p>
+                <p className="text-sm text-gray-900 font-semibold font-mono break-all">{company.ein}</p>
+              </div>
               <CopyButton value={company.ein} />
             </div>
           </div>
@@ -192,10 +202,12 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
       {hasBusinessId && (
         <InfoCard title="Business ID" icon={<Building2 className="w-4 h-4 text-gray-500" />}>
           <div className="rounded-xl border border-gray-200 overflow-hidden">
-            <div className="flex items-center gap-3 px-4 py-3">
-              <Building2 className="w-4 h-4 text-gray-300 shrink-0" />
-              <span className="text-xs text-gray-400 w-48 shrink-0">State Business License ID</span>
-              <span className="text-sm text-gray-900 font-semibold font-mono flex-1">{company.businessId}</span>
+            <div className="flex items-start gap-3 px-4 py-3">
+              <Building2 className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <p className="text-xs text-gray-400 mb-0.5">State Business License ID</p>
+                <p className="text-sm text-gray-900 font-semibold font-mono break-all">{company.businessId}</p>
+              </div>
               <CopyButton value={company.businessId} />
             </div>
           </div>
@@ -207,34 +219,42 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
         <InfoCard title="Tax Information" icon={<Receipt className="w-4 h-4 text-gray-500" />}>
           <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
             {company?.taxClassification && (
-              <div className="flex items-center gap-3 px-4 py-3">
-                <FileText className="w-4 h-4 text-gray-300 shrink-0" />
-                <span className="text-xs text-gray-400 w-44 shrink-0">Tax Classification</span>
-                <span className="text-sm text-gray-900 font-medium flex-1">{company.taxClassification}</span>
+              <div className="flex items-start gap-3 px-4 py-3">
+                <FileText className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-0.5">Tax Classification</p>
+                  <p className="text-sm text-gray-900 font-medium break-words">{company.taxClassification}</p>
+                </div>
                 <CopyButton value={company.taxClassification} />
               </div>
             )}
             {company?.annualReportFilingDate && (
-              <div className="flex items-center gap-3 px-4 py-3">
-                <FileText className="w-4 h-4 text-gray-300 shrink-0" />
-                <span className="text-xs text-gray-400 w-44 shrink-0">Annual Report Date</span>
-                <span className="text-sm text-gray-900 font-medium flex-1">{company.annualReportFilingDate}</span>
+              <div className="flex items-start gap-3 px-4 py-3">
+                <FileText className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-0.5">Annual Report Date</p>
+                  <p className="text-sm text-gray-900 font-medium break-words">{company.annualReportFilingDate}</p>
+                </div>
                 <CopyButton value={company.annualReportFilingDate} />
               </div>
             )}
             {company?.irsFilingDate && (
-              <div className="flex items-center gap-3 px-4 py-3">
-                <FileText className="w-4 h-4 text-gray-300 shrink-0" />
-                <span className="text-xs text-gray-400 w-44 shrink-0">IRS Filing Date</span>
-                <span className="text-sm text-gray-900 font-medium flex-1">{company.irsFilingDate}</span>
+              <div className="flex items-start gap-3 px-4 py-3">
+                <FileText className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-0.5">IRS Filing Date</p>
+                  <p className="text-sm text-gray-900 font-medium break-words">{company.irsFilingDate}</p>
+                </div>
                 <CopyButton value={company.irsFilingDate} />
               </div>
             )}
             {company?.taxNotes && (
               <div className="flex items-start gap-3 px-4 py-3">
                 <FileText className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
-                <span className="text-xs text-gray-400 w-44 shrink-0 mt-0.5">Notes</span>
-                <p className="text-sm text-gray-700 flex-1 leading-relaxed">{company.taxNotes}</p>
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-0.5">Notes</p>
+                  <p className="text-sm text-gray-700 leading-relaxed break-words">{company.taxNotes}</p>
+                </div>
               </div>
             )}
           </div>
@@ -252,6 +272,11 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
                   <UserCheck className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-400 mb-0.5">Member Name</p>
+              <div key={idx} className="px-4 py-4">
+                <div className="flex items-start gap-3 mb-3">
+                  <UserCheck className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-400 mb-0.5">Member</p>
                     <p className="text-sm text-gray-900 font-medium break-words">{entry.memberName}</p>
                   </div>
                   <CopyButton value={entry.memberName} />
