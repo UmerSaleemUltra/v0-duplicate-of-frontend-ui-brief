@@ -233,19 +233,13 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
         <InfoCard title="ITIN" icon={<Hash className="w-4 h-4 text-gray-500" />}>
           <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
             {itinMembers.map((entry, idx) => (
-              <div key={idx} className="px-4 py-4">
-                <div className="flex items-center gap-3 mb-2">
-                  <UserCheck className="w-4 h-4 text-gray-300 shrink-0" />
-                  <span className="text-xs text-gray-400 w-28 shrink-0">Member</span>
-                  <span className="text-sm text-gray-900 font-medium flex-1">{entry.memberName}</span>
-                  <CopyButton value={entry.memberName} />
+              <div key={idx} className="flex items-start gap-3 px-4 py-3">
+                <UserCheck className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                <div className="flex-1 min-w-0">
+                  <p className="text-xs text-gray-400 mb-0.5">{entry.memberName}</p>
+                  <p className="text-sm text-gray-900 font-semibold font-mono break-all">{entry.itin}</p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <Hash className="w-4 h-4 text-gray-300 shrink-0" />
-                  <span className="text-xs text-gray-400 w-28 shrink-0">ITIN Number</span>
-                  <span className="text-sm text-gray-900 font-semibold font-mono flex-1">{entry.itin}</span>
-                  <CopyButton value={entry.itin} />
-                </div>
+                <CopyButton value={entry.itin} />
               </div>
             ))}
           </div>
