@@ -1,10 +1,9 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { User, Settings } from "lucide-react"
+import { User, Pencil } from "lucide-react"
 
 interface CustomerInfoCardProps {
   customer: any
@@ -26,80 +25,93 @@ export function CustomerInfoCard({
   onFormChange,
 }: CustomerInfoCardProps) {
   return (
-    <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
-      <CardHeader className="pb-3">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
-          <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-            <User className="w-5 h-5 text-slate-600" />
-            Customer Information
-          </CardTitle>
-          {!editingCustomer && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onEdit}
-              className="h-9 text-xs w-full sm:w-auto"
-            >
-              <Settings className="w-4 h-4 mr-1" />
-              Edit
-            </Button>
-          )}
+    <div className="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-6 py-4 border-b border-stone-100">
+        <div className="flex items-center gap-2.5">
+          <div className="w-7 h-7 rounded-full bg-stone-100 flex items-center justify-center">
+            <User className="w-3.5 h-3.5 text-stone-500" />
+          </div>
+          <span className="text-sm font-semibold text-stone-800 tracking-tight">Customer</span>
         </div>
-      </CardHeader>
-      <CardContent>
+        {!editingCustomer && (
+          <button
+            onClick={onEdit}
+            className="flex items-center gap-1.5 text-xs text-stone-400 hover:text-stone-700 transition-colors font-medium"
+          >
+            <Pencil className="w-3 h-3" />
+            Edit
+          </button>
+        )}
+      </div>
+
+      {/* Body */}
+      <div className="px-6 py-5">
         {editingCustomer ? (
           <div className="space-y-4">
-            <div>
-              <Label>Customer Name</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-stone-400 uppercase tracking-widest">Full Name</Label>
               <Input
                 value={customerForm.name}
                 onChange={(e) => onFormChange({ ...customerForm, name: e.target.value })}
                 placeholder="Enter customer name"
+                className="h-9 text-sm border-stone-200 rounded-lg focus-visible:ring-stone-300"
               />
             </div>
-            <div>
-              <Label>Email Address</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-stone-400 uppercase tracking-widest">Email</Label>
               <Input
                 type="email"
                 value={customerForm.email}
                 onChange={(e) => onFormChange({ ...customerForm, email: e.target.value })}
-                placeholder="Enter email"
+                placeholder="Enter email address"
+                className="h-9 text-sm border-stone-200 rounded-lg focus-visible:ring-stone-300"
               />
             </div>
-            <div>
-              <Label>Phone Number</Label>
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-stone-400 uppercase tracking-widest">Phone</Label>
               <Input
                 value={customerForm.phone}
                 onChange={(e) => onFormChange({ ...customerForm, phone: e.target.value })}
                 placeholder="Enter phone number"
+                className="h-9 text-sm border-stone-200 rounded-lg focus-visible:ring-stone-300"
               />
             </div>
-            <div className="flex gap-2">
-              <Button onClick={onSave} size="sm" className="bg-gradient-to-r from-[#880000] to-[#ff0d13]">
-                Save Changes
+            <div className="flex gap-2 pt-1">
+              <Button
+                onClick={onSave}
+                size="sm"
+                className="h-8 text-xs px-4 bg-stone-900 hover:bg-stone-800 text-white rounded-lg"
+              >
+                Save
               </Button>
-              <Button variant="outline" size="sm" onClick={onCancel}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onCancel}
+                className="h-8 text-xs px-4 text-stone-500 hover:text-stone-700 rounded-lg"
+              >
                 Cancel
               </Button>
             </div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-              <p className="text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wide">Customer Name</p>
-              <p className="text-sm font-semibold text-slate-900 truncate">{customer?.name || "Unknown"}</p>
-            </div>
-            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-              <p className="text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wide">Email Address</p>
-              <p className="text-sm font-semibold text-slate-900 truncate">{customer?.email || "N/A"}</p>
-            </div>
-            <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 hover:bg-slate-100 transition-colors">
-              <p className="text-xs text-slate-500 mb-1.5 font-medium uppercase tracking-wide">Phone Number</p>
-              <p className="text-sm font-semibold text-slate-900 truncate">{customer?.phone || "N/A"}</p>
-            </div>
+          <div className="divide-y divide-stone-100">
+            <InfoRow label="Full Name" value={customer?.name || "—"} />
+            <InfoRow label="Email" value={customer?.email || "—"} />
+            <InfoRow label="Phone" value={customer?.phone || "—"} />
           </div>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
+  )
+}
+
+function InfoRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center justify-between py-3 first:pt-0 last:pb-0">
+      <span className="text-xs font-medium text-stone-400 uppercase tracking-widest shrink-0 w-24">{label}</span>
+      <span className="text-sm font-medium text-stone-800 text-right truncate ml-4">{value}</span>
+    </div>
   )
 }

@@ -2306,10 +2306,10 @@ export default function OrderDetailPage() {
           </TabsList>
 
           {/* ── OVERVIEW TAB ── */}
-          <TabsContent value="overview" className="space-y-6 focus-visible:outline-none">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <TabsContent value="overview" className="space-y-5 focus-visible:outline-none">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
               {/* Left column */}
-              <div className="lg:col-span-2 space-y-6">
+              <div className="lg:col-span-2 space-y-5">
                 <CustomerInfoCard
                   customer={customer}
                   editingCustomer={editingCustomer}
@@ -2327,27 +2327,6 @@ export default function OrderDetailPage() {
                   onFormChange={setCustomerForm}
                 />
 
-                {company && (
-                  <CompanyInfoCard
-                    company={company}
-                    editingCompany={editingCompany}
-                    companyForm={companyForm}
-                    onEdit={() => setEditingCompany(true)}
-                    onSave={handleSaveCompany}
-                    onCancel={() => {
-                      setEditingCompany(false)
-                      setCompanyForm({
-                        name: company?.name || "",
-                        state: company?.state || "",
-                        businessCategory: company?.businessCategory || "",
-                        businessWebsite: company?.businessWebsite || "",
-                        businessDescription: company?.businessDescription || "",
-                      })
-                    }}
-                    onFormChange={setCompanyForm}
-                  />
-                )}
-
                 <FormationProgressCard
                   milestones={milestones}
                   company={company}
@@ -2364,7 +2343,7 @@ export default function OrderDetailPage() {
               </div>
 
               {/* Right column */}
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <OrderStatusCard
                   order={order}
                   newStatus={newStatus}

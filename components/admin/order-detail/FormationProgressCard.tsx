@@ -1,16 +1,13 @@
 "use client"
 
 import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Package,
   UserCheck,
   Home,
   FileCheck,
-  HashIcon,
   FileText,
-  CheckCircle2,
-  Clock,
+  Hash,
   Trash2,
 } from "lucide-react"
 
@@ -36,28 +33,44 @@ interface FormationProgressCardProps {
   deletingMilestoneId: string | null
 }
 
-interface MilestoneRowProps {
+function MilestoneStep({
+  icon,
+  label,
+  completed,
+  isLast = false,
+}: {
   icon: React.ReactNode
   label: string
   completed: boolean
-}
-
-function MilestoneRow({ icon, label, completed }: MilestoneRowProps) {
+  isLast?: boolean
+}) {
   return (
-    <div
-      className={`flex items-center justify-between p-3 rounded-lg border ${
-        completed ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200"
-      }`}
-    >
-      <div className="flex items-center gap-3">
-        <span className={completed ? "text-emerald-600" : "text-slate-400"}>{icon}</span>
-        <span className={`text-sm font-medium ${completed ? "text-slate-900" : "text-slate-500"}`}>{label}</span>
+    <div className="flex gap-4">
+      {/* Timeline track */}
+      <div className="flex flex-col items-center">
+        <div
+          className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+            completed ? "bg-stone-900" : "bg-stone-100"
+          }`}
+        >
+          <span className={`${completed ? "text-white" : "text-stone-400"}`}>
+            {icon}
+          </span>
+        </div>
+        {!isLast && (
+          <div className={`w-px flex-1 mt-1 mb-1 min-h-[1.25rem] ${completed ? "bg-stone-300" : "bg-stone-100"}`} />
+        )}
       </div>
-      {completed ? (
-        <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
-      ) : (
-        <Clock className="w-5 h-5 text-slate-300 shrink-0" />
-      )}
+
+      {/* Label */}
+      <div className={`pb-${isLast ? "0" : "4"} pt-0.5 flex-1`}>
+        <p className={`text-sm leading-tight font-medium ${completed ? "text-stone-900" : "text-stone-400"}`}>
+          {label}
+        </p>
+        {completed && (
+          <p className="text-xs text-stone-400 mt-0.5">Completed</p>
+        )}
+      </div>
     </div>
   )
 }
@@ -74,122 +87,95 @@ export function FormationProgressCard({
   onDeleteCustomMilestone,
   deletingMilestoneId,
 }: FormationProgressCardProps) {
+  const coreMilestones = [
+    { icon: <Package className="w-3.5 h-3.5" />, label: "Order Processed", done: milestones.orderSuccessfullyProcessed },
+    { icon: <UserCheck className="w-3.5 h-3.5" />, label: "Registered Agent Assigned", done: milestones.registeredAgentAssigned },
+    { icon: <Home className="w-3.5 h-3.5" />, label: "Business Address Issued", done: milestones.businessMailingAddressIssued },
+    { icon: <FileCheck className="w-3.5 h-3.5" />, label: "Company Formation Completed", done: milestones.companyFormationCompleted },
+    { icon: <FileText className="w-3.5 h-3.5" />, label: "EIN Application Submitted", done: milestones.einApplicationSubmitted },
+    { icon: <Hash className="w-3.5 h-3.5" />, label: "EIN Obtained", done: milestones.einObtained },
+  ]
+
   return (
-    <Card className="bg-white border-slate-200 shadow-sm">
-      <CardHeader className="pb-3">
-        <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
-          <FileCheck className="w-5 h-5 text-slate-600" />
-          Formation Progress
-        </CardTitle>
-        <p className="text-xs text-slate-500 mt-1">
-          {completedDefaultMilestones} of {totalDefaultMilestones} core milestones completed ({completionPercentage}%)
-          {company?.customMilestones?.length > 0 && (
-            <span className="text-slate-400">
-              {" "}
-              &bull; {completedMilestonesWithCustom} of {totalMilestonesWithCustom} total
-            </span>
-          )}
-        </p>
-      </CardHeader>
-      <CardContent>
-        {/* Progress Bar */}
-        <div className="relative w-full h-2.5 bg-slate-100 rounded-full overflow-hidden mb-5">
+    <div className="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-6 py-4 border-b border-stone-100">
+        <div className="flex items-center justify-between mb-3">
+          <span className="text-sm font-semibold text-stone-800 tracking-tight">Formation Progress</span>
+          <span className="text-xs font-medium text-stone-400">
+            {completedDefaultMilestones}/{totalDefaultMilestones}
+          </span>
+        </div>
+        {/* Thin progress bar — Apple style */}
+        <div className="w-full h-1 bg-stone-100 rounded-full overflow-hidden">
           <div
-            className="absolute top-0 left-0 h-full bg-gradient-to-r from-[#880000] to-[#ff0d13] rounded-full transition-all duration-700"
+            className="h-full bg-stone-900 rounded-full transition-all duration-700"
             style={{ width: `${completionPercentage}%` }}
           />
         </div>
+      </div>
 
-        {/* Core Milestones */}
-        <div className="space-y-2">
-          <MilestoneRow
-            icon={<Package className="w-4 h-4" />}
-            label="Order Successfully Processed"
-            completed={milestones.orderSuccessfullyProcessed}
-          />
-          <MilestoneRow
-            icon={<UserCheck className="w-4 h-4" />}
-            label="Registered Agent Assigned"
-            completed={milestones.registeredAgentAssigned}
-          />
-          <MilestoneRow
-            icon={<Home className="w-4 h-4" />}
-            label="Business Mailing Address Issued"
-            completed={milestones.businessMailingAddressIssued}
-          />
-          <MilestoneRow
-            icon={<FileCheck className="w-4 h-4" />}
-            label="Company Formation Completed"
-            completed={milestones.companyFormationCompleted}
-          />
-          <MilestoneRow
-            icon={<FileText className="w-4 h-4" />}
-            label="EIN Application Submitted"
-            completed={milestones.einApplicationSubmitted}
-          />
-          <MilestoneRow
-            icon={<HashIcon className="w-4 h-4" />}
-            label="EIN Successfully Processed"
-            completed={milestones.einObtained}
-          />
+      {/* Core milestones timeline */}
+      <div className="px-6 py-5">
+        <div>
+          {coreMilestones.map((m, i) => (
+            <MilestoneStep
+              key={m.label}
+              icon={m.icon}
+              label={m.label}
+              completed={m.done}
+              isLast={i === coreMilestones.length - 1 && (!company?.customMilestones?.length)}
+            />
+          ))}
+        </div>
 
-          {/* Custom Milestones */}
-          {company?.customMilestones && company.customMilestones.length > 0 && (
-            <>
-              <div className="pt-3 border-t border-slate-200">
-                <p className="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-2">Custom Milestones</p>
-              </div>
-              {company.customMilestones.map((milestone: any) => (
+        {/* Custom milestones */}
+        {company?.customMilestones && company.customMilestones.length > 0 && (
+          <div className="mt-4 pt-4 border-t border-stone-100">
+            <p className="text-xs font-medium text-stone-400 uppercase tracking-widest mb-3">Custom</p>
+            <div className="space-y-1">
+              {company.customMilestones.map((m: any) => (
                 <div
-                  key={milestone.id}
-                  className={`flex items-center justify-between p-3 rounded-lg border ${
-                    milestone.completed ? "bg-emerald-50 border-emerald-200" : "bg-slate-50 border-slate-200"
-                  }`}
+                  key={m.id}
+                  className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-stone-50 transition-colors group"
                 >
                   <div className="flex items-center gap-3">
-                    <FileCheck
-                      className={`w-4 h-4 ${milestone.completed ? "text-emerald-600" : "text-slate-400"}`}
-                    />
+                    <button
+                      onClick={() => onCustomMilestoneToggle(m.id)}
+                      className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
+                        m.completed
+                          ? "bg-stone-900 border-stone-900"
+                          : "border-stone-300 hover:border-stone-500"
+                      }`}
+                    >
+                      {m.completed && (
+                        <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 8">
+                          <path d="M1 4l3 3 5-6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                        </svg>
+                      )}
+                    </button>
                     <div>
-                      <span
-                        className={`text-sm font-medium ${milestone.completed ? "text-slate-900" : "text-slate-500"}`}
-                      >
-                        {milestone.title}
-                      </span>
-                      {milestone.description && (
-                        <p className="text-xs text-slate-400 mt-0.5">{milestone.description}</p>
+                      <p className={`text-sm font-medium leading-none ${m.completed ? "text-stone-400 line-through" : "text-stone-800"}`}>
+                        {m.title}
+                      </p>
+                      {m.description && (
+                        <p className="text-xs text-stone-400 mt-0.5">{m.description}</p>
                       )}
                     </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onCustomMilestoneToggle(milestone.id)}
-                      className="h-8 w-8 p-0"
-                    >
-                      {milestone.completed ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600" />
-                      ) : (
-                        <Clock className="w-4 h-4 text-slate-300" />
-                      )}
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDeleteCustomMilestone(milestone.id)}
-                      disabled={deletingMilestoneId === milestone.id}
-                      className="h-8 w-8 p-0 text-red-500 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
+                  <button
+                    onClick={() => onDeleteCustomMilestone(m.id)}
+                    disabled={deletingMilestoneId === m.id}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-stone-300 hover:text-red-400"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </button>
                 </div>
               ))}
-            </>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
   )
 }
