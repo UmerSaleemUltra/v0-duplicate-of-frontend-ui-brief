@@ -71,7 +71,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           revenue: company.revenue || 0,
           lastOrderDate: company.lastOrderDate || null,
           ein: company.ein || null,
-          itin: company.itin || null,
           itinMembers: company.itinMembers || [],
           businessId: company.businessId || null,
           registeredAgent: company.registeredAgent || null,

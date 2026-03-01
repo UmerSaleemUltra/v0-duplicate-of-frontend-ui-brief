@@ -45,7 +45,6 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
         ...(data.taxClassification && { taxClassification: data.taxClassification }),
         ...(data.annualReportFilingDate && { annualReportFilingDate: data.annualReportFilingDate }),
         ...(data.irsFilingDate && { irsFilingDate: data.irsFilingDate }),
-        ...(data.itin && { itin: data.itin }),
       }
     } else if (dataType === "registered-agent") {
       updateFields = {
