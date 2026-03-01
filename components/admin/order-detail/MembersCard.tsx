@@ -416,33 +416,66 @@ function MemberForm({
   const set = (key: string, value: any) => onChange({ ...form, [key]: value })
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [uploading, setUploading] = useState(false)
+  const [uploadError, setUploadError] = useState<string | null>(null)
+  // Track the original file name separately so we can display it cleanly
+  const [uploadedFileName, setUploadedFileName] = useState<string>(
+    form.passportFileName || ""
+  )
 
   const handlePassportUpload = async (file: File) => {
+    setUploadError(null)
     try {
       setUploading(true)
       const token = authService.getToken()
-      const formData = new FormData()
-      formData.append("file", file)
-      formData.append("userId", form.userId || form.id || "admin")
-      if (companyId) formData.append("companyId", companyId)
-      formData.append("memberId", form.id || "0")
-      formData.append("memberName", form.name || "Unknown")
+
+      // Resolve a valid userId — the API requires a MongoDB-compatible ObjectId.
+      // Pull it from the auth service so we always have a real user id.
+      const currentUser = authService.getUser?.()
+      const userId = currentUser?.id || currentUser?._id || form.userId || ""
+
+      const uploadData = new FormData()
+      uploadData.append("file", file)
+      uploadData.append("userId", userId)
+      if (companyId) uploadData.append("companyId", companyId)
+      uploadData.append("memberId", form._id || form.id || "0")
+      uploadData.append("memberName", form.name || "Unknown")
 
       const res = await fetch("/api/passports/upload", {
         method: "POST",
         headers: token ? { Authorization: `Bearer ${token}` } : {},
-        body: formData,
+        body: uploadData,
       })
 
-      if (!res.ok) throw new Error("Upload failed")
+      if (!res.ok) {
+        const errBody = await res.json().catch(() => ({}))
+        throw new Error(errBody?.error || "Upload failed")
+      }
+
       const result = await res.json()
-      set("passportUrl", result.data?.fileUrl || "")
-    } catch {
-      // silently fail — the URL field still shows current value
+      const fileUrl = result.data?.fileUrl || ""
+
+      // Update both passportUrl and the display file name in one onChange call
+      // to avoid stale closure issues with sequential set() calls.
+      onChange({ ...form, passportUrl: fileUrl, passportFileName: file.name })
+      setUploadedFileName(file.name)
+    } catch (err: any) {
+      setUploadError(err?.message || "Upload failed. Please try again.")
     } finally {
       setUploading(false)
     }
   }
+
+  // Derive the display name: prefer the stored file name, otherwise decode
+  // the last URL segment (which may be a hash on blob storage).
+  const displayFileName = uploadedFileName || form.passportFileName || (() => {
+    if (!form.passportUrl) return ""
+    try {
+      const segment = new URL(form.passportUrl).pathname.split("/").pop() || ""
+      return decodeURIComponent(segment)
+    } catch {
+      return form.passportUrl.split("/").pop() || "Document"
+    }
+  })()
 
   return (
     <div className="space-y-4">
@@ -529,29 +562,44 @@ function MemberForm({
           onChange={(e) => {
             const file = e.target.files?.[0]
             if (file) handlePassportUpload(file)
+            // reset so the same file can be re-selected after removal
             e.target.value = ""
           }}
         />
-        {form.passportUrl ? (
+
+        {/* Uploaded file preview */}
+        {form.passportUrl && (
           <div className="flex items-center gap-2 p-2.5 rounded-lg border border-gray-200 bg-gray-50">
             <FileText className="w-4 h-4 text-gray-400 shrink-0" />
             <a
               href={form.passportUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-xs text-blue-600 hover:underline truncate flex-1"
+              title={displayFileName}
+              className="text-xs text-blue-600 hover:underline min-w-0 flex-1 overflow-hidden"
+              style={{ display: "block", whiteSpace: "nowrap", textOverflow: "ellipsis", overflow: "hidden" }}
             >
-              {form.passportUrl.split("/").pop() || "View Document"}
+              {displayFileName || "View Document"}
             </a>
             <button
               type="button"
-              onClick={() => set("passportUrl", "")}
+              onClick={() => {
+                onChange({ ...form, passportUrl: "", passportFileName: "" })
+                setUploadedFileName("")
+                setUploadError(null)
+              }}
               className="text-gray-400 hover:text-gray-600 shrink-0"
             >
               <X className="w-3.5 h-3.5" />
             </button>
           </div>
-        ) : null}
+        )}
+
+        {/* Upload error */}
+        {uploadError && (
+          <p className="text-xs text-red-500">{uploadError}</p>
+        )}
+
         <Button
           type="button"
           variant="outline"
@@ -576,7 +624,7 @@ function MemberForm({
         </div>
         <Switch
           checked={!!(form.isResponsiblePerson ?? form.responsiblePerson)}
-          onCheckedChange={(v) => { set("isResponsiblePerson", v); set("responsiblePerson", v) }}
+          onCheckedChange={(v) => onChange({ ...form, isResponsiblePerson: v, responsiblePerson: v })}
         />
       </div>
     </div>

@@ -22,6 +22,11 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: "Missing userId" }, { status: 400 })
     }
 
+    // Validate that userId is a valid ObjectId before constructing one
+    if (!ObjectId.isValid(userId)) {
+      return NextResponse.json({ error: "Invalid userId format" }, { status: 400 })
+    }
+
     if (file.size > 10 * 1024 * 1024) {
       return NextResponse.json({ error: "File size exceeds 10MB limit" }, { status: 400 })
     }
@@ -36,7 +41,7 @@ export async function POST(req: NextRequest) {
 
     const passportData = {
       userId: new ObjectId(userId),
-      companyId: companyId && companyId !== "" && companyId !== "null" ? new ObjectId(companyId) : null,
+      companyId: companyId && companyId !== "" && companyId !== "null" && ObjectId.isValid(companyId) ? new ObjectId(companyId) : null,
       memberId: memberId || "0",
       memberName: memberName || "Unknown",
       fileName: file.name,
