@@ -69,39 +69,10 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
     company.businessId !== "BIZ-PENDING" &&
     company.businessId !== "N/A"
 
-  const hasITIN = company?.itin && company.itin.trim() !== "" && company.itin !== "N/A"
-
-  // Resolve member name: prefer entry.memberName from DB directly,
-  // only look up by memberId if memberName is missing
-  const resolveMemberName = (memberId: string | null, fallback: string): string => {
-    if (fallback && fallback.trim() !== "" && fallback !== "Member") return fallback
-    if (!memberId) return fallback && fallback.trim() !== "" ? fallback : "Primary Member"
-    const found = (company?.members || []).find(
-      (m: any) => (m._id?.toString() || m.id?.toString()) === memberId,
-    )
-    return found?.name || fallback || "Primary Member"
-  }
-
-  const itinMembers: { memberId: string | null; memberName: string; itin: string; assignedAt?: string }[] =
-    company?.itinMembers && Array.isArray(company.itinMembers) && company.itinMembers.length > 0
-      ? company.itinMembers.map((entry: any) => {
-          return {
-            ...entry,
-            memberName: resolveMemberName(entry.memberId, entry.memberName),
-          }
-        })
-      : hasITIN
-        ? [{
-            memberId: null,
-            memberName:
-              company?.members?.[0]?.name?.trim()
-                ? company.members[0].name.trim()
-                : company?.name?.trim()
-                  ? company.name.trim()
-                  : "Primary Member",
-            itin: company.itin,
-          }]
-        : []
+  const itinMembers: { memberName: string; itin: string; assignedAt?: string }[] =
+    Array.isArray(company?.itinMembers)
+      ? company.itinMembers.filter((entry: any) => entry?.itin && entry.itin.trim() !== "")
+      : []
 
   const mailingAddressString = hasMailing
     ? `${mailing.street}, ${mailing.city}, ${mailing.state} ${mailing.zip}`
@@ -267,14 +238,16 @@ export function AssignedInfoCards({ company }: AssignedInfoCardsProps) {
           <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
             {itinMembers.map((entry, idx) => (
               <div key={idx} className="px-4 py-3">
-                <div className="flex items-start gap-3 mb-2">
-                  <UserCheck className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 mb-0.5">Member Name</p>
-                    <p className="text-sm text-gray-900 font-medium break-words">{entry.memberName}</p>
+                {entry.memberName && entry.memberName.trim() !== "" && (
+                  <div className="flex items-start gap-3 mb-2">
+                    <UserCheck className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs text-gray-400 mb-0.5">Member Name</p>
+                      <p className="text-sm text-gray-900 font-medium break-words">{entry.memberName}</p>
+                    </div>
+                    <CopyButton value={entry.memberName} />
                   </div>
-                  <CopyButton value={entry.memberName} />
-                </div>
+                )}
                 <div className="flex items-start gap-3">
                   <Hash className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
