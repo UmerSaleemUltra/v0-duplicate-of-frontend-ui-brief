@@ -1,6 +1,6 @@
 "use client"
 
-import { Receipt, Calendar, CreditCard, CheckCircle, Clock } from "lucide-react"
+import { Receipt, Calendar, CheckCircle, Clock, Phone, ExternalLink } from "lucide-react"
 
 interface OrderPricingCardProps {
   order: any
@@ -12,6 +12,9 @@ export function OrderPricingCard({ order }: OrderPricingCardProps) {
   const addonsTotal = order?.pricing?.addonsTotal || order?.addonsTotal || 0
   const total = order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0
   const isPaid = order?.paymentInfo?.status === "paid"
+
+  const whatsappPhone = order?.whatsappPhone || order?.paymentInfo?.whatsappPhone
+  const receiptUrl = order?.receiptUrl || order?.paymentInfo?.receiptUrl
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -47,21 +50,6 @@ export function OrderPricingCard({ order }: OrderPricingCardProps) {
         {/* Payment details — bordered rows */}
         <div className="rounded-xl border border-gray-200 overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-            <CreditCard className="w-4 h-4 text-gray-300 shrink-0" />
-            <span className="text-xs text-gray-400 w-36 shrink-0">Payment Method</span>
-            <div>
-              <span className="text-sm text-gray-900 font-medium capitalize">
-                {order?.paymentInfo?.method || order?.paymentMethod || "Not specified"}
-              </span>
-              {(order?.paymentInfo?.method?.toLowerCase() === "whatsapp" ||
-                order?.paymentInfo?.method?.toLowerCase() === "whatsapp phone") &&
-                order?.paymentInfo?.phone && (
-                  <span className="text-xs text-gray-400 ml-2 font-mono">{order.paymentInfo.phone}</span>
-                )}
-            </div>
-          </div>
-
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
             {isPaid ? (
               <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />
             ) : (
@@ -79,17 +67,33 @@ export function OrderPricingCard({ order }: OrderPricingCardProps) {
             </span>
           </div>
 
-          {order?.paymentInfo?.receiptUrl && (
+          {whatsappPhone && (
+            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+              <Phone className="w-4 h-4 text-green-400 shrink-0" />
+              <span className="text-xs text-gray-400 w-36 shrink-0">WhatsApp Phone</span>
+              <a
+                href={`https://wa.me/${whatsappPhone.replace(/\D/g, "")}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm text-green-600 hover:underline font-mono font-medium"
+              >
+                {whatsappPhone}
+              </a>
+            </div>
+          )}
+
+          {receiptUrl && (
             <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
               <Receipt className="w-4 h-4 text-gray-300 shrink-0" />
               <span className="text-xs text-gray-400 w-36 shrink-0">Payment Receipt</span>
               <a
-                href={order.paymentInfo.receiptUrl}
+                href={receiptUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-sm text-blue-600 hover:underline font-medium flex items-center gap-1"
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
               >
-                View Receipt
+                <ExternalLink className="w-3 h-3" />
+                View File
               </a>
             </div>
           )}
