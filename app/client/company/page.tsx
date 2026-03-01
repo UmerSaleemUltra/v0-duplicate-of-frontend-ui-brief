@@ -598,8 +598,8 @@ export default function CompanyPage() {
           </div>
         )}
 
-        {/* Members & Owners */}
-        {companyData.members && companyData.members.length > 0 && (
+        {/* Members & Owners - HIDDEN */}
+        {false && companyData.members && companyData.members.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
             <h2 className="text-base sm:text-lg font-semibold mb-4">Company Members</h2>
             <div className="space-y-6">

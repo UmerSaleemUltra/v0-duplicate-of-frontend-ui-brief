@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -13,19 +13,30 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Users,
   User,
   UserCheck,
   FileText,
   AlertCircle,
-  Mail,
-  Phone,
   MapPin,
   Shield,
   Pencil,
   Plus,
   Loader2,
   ExternalLink,
+  Upload,
+  X,
+  Trash2,
 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
@@ -39,8 +50,6 @@ interface MembersCardProps {
 const emptyMember = () => ({
   id: Date.now().toString(),
   name: "",
-  email: "",
-  phone: "",
   address: "",
   city: "",
   state: "",
@@ -48,7 +57,7 @@ const emptyMember = () => ({
   country: "",
   ssn: "",
   passportUrl: "",
-  responsiblePerson: false,
+  isResponsiblePerson: false,
   itinAdded: false,
 })
 
@@ -57,11 +66,16 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // The member being edited
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<any>(emptyMember())
+
+  // Member to delete
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null)
 
   // New member form
   const [newMemberForm, setNewMemberForm] = useState<any>(emptyMember())
@@ -101,6 +115,7 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
           saving={saving}
           onClose={() => setAddDialogOpen(false)}
           onSave={() => handleSaveNewMember()}
+          companyId={companyId}
         />
       </div>
     )
@@ -145,6 +160,28 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
       toast({ title: "Save failed", description: "Could not save member details.", variant: "destructive" })
     } finally {
       setSaving(false)
+    }
+  }
+
+  const openDelete = (index: number) => {
+    setDeletingIndex(index)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteMember = async () => {
+    if (deletingIndex === null) return
+    try {
+      setDeleting(true)
+      const updatedMembers = members.filter((_, i) => i !== deletingIndex)
+      const saved = await saveToApi(updatedMembers)
+      onMembersUpdate?.(saved)
+      setDeleteDialogOpen(false)
+      setDeletingIndex(null)
+      toast({ title: "Member removed", description: "Member has been removed successfully." })
+    } catch {
+      toast({ title: "Delete failed", description: "Could not remove member.", variant: "destructive" })
+    } finally {
+      setDeleting(false)
     }
   }
 
@@ -209,14 +246,14 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                      member.responsiblePerson ? "bg-gray-900" : "bg-gray-100"
+                      (member.isResponsiblePerson || member.responsiblePerson) ? "bg-gray-900" : "bg-gray-100"
                     }`}
                   >
-                    <User className={`w-4.5 h-4.5 ${member.responsiblePerson ? "text-white" : "text-gray-400"}`} />
+                    <User className={`w-4.5 h-4.5 ${(member.isResponsiblePerson || member.responsiblePerson) ? "text-white" : "text-gray-400"}`} />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{member.name || "N/A"}</p>
-                    {member.responsiblePerson && (
+                    {(member.isResponsiblePerson || member.responsiblePerson) && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <UserCheck className="w-3 h-3 text-gray-500" />
                         <span className="text-xs text-gray-500 font-medium">Responsible Person</span>
@@ -229,35 +266,31 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
                     Member {index + 1}
                   </span>
                   {companyId && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openEdit(index)}
-                      className="h-7 px-2.5 text-xs border-gray-200 text-gray-600 hover:bg-gray-50"
-                    >
-                      <Pencil className="w-3 h-3 mr-1" />
-                      Edit
-                    </Button>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEdit(index)}
+                        className="h-7 px-2.5 text-xs border-gray-200 text-gray-600 hover:bg-gray-50"
+                      >
+                        <Pencil className="w-3 h-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openDelete(index)}
+                        className="h-7 px-2 text-xs border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
 
               {/* Info Fields */}
               <div className="rounded-xl border border-gray-200 overflow-hidden">
-                {member.email && (
-                  <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
-                    <Mail className="w-4 h-4 text-gray-300 shrink-0" />
-                    <span className="text-xs text-gray-400 w-24 shrink-0">Email</span>
-                    <span className="text-sm text-gray-800 font-medium truncate">{member.email}</span>
-                  </div>
-                )}
-                {member.phone && (
-                  <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
-                    <Phone className="w-4 h-4 text-gray-300 shrink-0" />
-                    <span className="text-xs text-gray-400 w-24 shrink-0">Phone</span>
-                    <span className="text-sm text-gray-800 font-medium">{member.phone}</span>
-                  </div>
-                )}
                 {member.address && (
                   <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
                     <MapPin className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
@@ -316,7 +349,7 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
             </DialogTitle>
           </DialogHeader>
 
-          <MemberForm form={editForm} onChange={setEditForm} />
+          <MemberForm form={editForm} onChange={setEditForm} companyId={companyId} />
 
           <DialogFooter className="pt-2">
             <Button variant="outline" onClick={() => setEditDialogOpen(false)} disabled={saving} className="text-sm">
@@ -337,49 +370,94 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
         saving={saving}
         onClose={() => setAddDialogOpen(false)}
         onSave={handleSaveNewMember}
+        companyId={companyId}
       />
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove{" "}
+              <span className="font-semibold text-gray-900">
+                {deletingIndex !== null ? members[deletingIndex]?.name || "this member" : "this member"}
+              </span>
+              ? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteMember}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleting ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Removing...</> : "Remove Member"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
 
 // ── Shared form ───────────────────────────────────────────────────────────────
 
-function MemberForm({ form, onChange }: { form: any; onChange: (v: any) => void }) {
+function MemberForm({
+  form,
+  onChange,
+  companyId,
+}: {
+  form: any
+  onChange: (v: any) => void
+  companyId?: string
+}) {
   const set = (key: string, value: any) => onChange({ ...form, [key]: value })
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [uploading, setUploading] = useState(false)
+
+  const handlePassportUpload = async (file: File) => {
+    try {
+      setUploading(true)
+      const token = authService.getToken()
+      const formData = new FormData()
+      formData.append("file", file)
+      formData.append("userId", form.userId || form.id || "admin")
+      if (companyId) formData.append("companyId", companyId)
+      formData.append("memberId", form.id || "0")
+      formData.append("memberName", form.name || "Unknown")
+
+      const res = await fetch("/api/passports/upload", {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      })
+
+      if (!res.ok) throw new Error("Upload failed")
+      const result = await res.json()
+      set("passportUrl", result.data?.fileUrl || "")
+    } catch {
+      // silently fail — the URL field still shows current value
+    } finally {
+      setUploading(false)
+    }
+  }
 
   return (
     <div className="space-y-4">
-      <div className="grid grid-cols-2 gap-3">
-        <div className="col-span-2 space-y-1.5">
-          <Label className="text-xs font-medium text-gray-700">Full Name</Label>
-          <Input
-            value={form.name || ""}
-            onChange={(e) => set("name", e.target.value)}
-            placeholder="John Doe"
-            className="h-9 text-sm"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium text-gray-700">Email</Label>
-          <Input
-            value={form.email || ""}
-            onChange={(e) => set("email", e.target.value)}
-            placeholder="john@example.com"
-            type="email"
-            className="h-9 text-sm"
-          />
-        </div>
-        <div className="space-y-1.5">
-          <Label className="text-xs font-medium text-gray-700">Phone</Label>
-          <Input
-            value={form.phone || ""}
-            onChange={(e) => set("phone", e.target.value)}
-            placeholder="+1 (555) 000-0000"
-            className="h-9 text-sm"
-          />
-        </div>
+      {/* Full Name */}
+      <div className="space-y-1.5">
+        <Label className="text-xs font-medium text-gray-700">Full Name</Label>
+        <Input
+          value={form.name || ""}
+          onChange={(e) => set("name", e.target.value)}
+          placeholder="John Doe"
+          className="h-9 text-sm"
+        />
       </div>
 
+      {/* Street Address */}
       <div className="space-y-1.5">
         <Label className="text-xs font-medium text-gray-700">Street Address</Label>
         <Input
@@ -429,6 +507,7 @@ function MemberForm({ form, onChange }: { form: any; onChange: (v: any) => void 
         </div>
       </div>
 
+      {/* SSN / ITIN */}
       <div className="space-y-1.5">
         <Label className="text-xs font-medium text-gray-700">SSN / ITIN</Label>
         <Input
@@ -439,25 +518,65 @@ function MemberForm({ form, onChange }: { form: any; onChange: (v: any) => void 
         />
       </div>
 
+      {/* Passport / ID Upload */}
       <div className="space-y-1.5">
-        <Label className="text-xs font-medium text-gray-700">Passport / ID URL</Label>
-        <Input
-          value={form.passportUrl || ""}
-          onChange={(e) => set("passportUrl", e.target.value)}
-          placeholder="https://..."
-          className="h-9 text-sm"
+        <Label className="text-xs font-medium text-gray-700">Passport / ID Document</Label>
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept="image/*,.pdf"
+          className="hidden"
+          onChange={(e) => {
+            const file = e.target.files?.[0]
+            if (file) handlePassportUpload(file)
+            e.target.value = ""
+          }}
         />
-        <p className="text-xs text-gray-400">Paste the document URL (e.g. from cloud storage)</p>
+        {form.passportUrl ? (
+          <div className="flex items-center gap-2 p-2.5 rounded-lg border border-gray-200 bg-gray-50">
+            <FileText className="w-4 h-4 text-gray-400 shrink-0" />
+            <a
+              href={form.passportUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-xs text-blue-600 hover:underline truncate flex-1"
+            >
+              {form.passportUrl.split("/").pop() || "View Document"}
+            </a>
+            <button
+              type="button"
+              onClick={() => set("passportUrl", "")}
+              className="text-gray-400 hover:text-gray-600 shrink-0"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        ) : null}
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={uploading}
+          onClick={() => fileInputRef.current?.click()}
+          className="h-8 px-3 text-xs border-gray-200 text-gray-700 hover:bg-gray-50 w-full"
+        >
+          {uploading ? (
+            <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Uploading...</>
+          ) : (
+            <><Upload className="w-3.5 h-3.5 mr-1.5" />{form.passportUrl ? "Replace Document" : "Upload Passport / ID"}</>
+          )}
+        </Button>
       </div>
 
+      {/* Responsible Person */}
       <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
         <div>
           <p className="text-sm font-medium text-gray-900">Responsible Person</p>
           <p className="text-xs text-gray-400 mt-0.5">Mark as the primary responsible member</p>
         </div>
         <Switch
-          checked={!!form.responsiblePerson}
-          onCheckedChange={(v) => set("responsiblePerson", v)}
+          checked={!!(form.isResponsiblePerson ?? form.responsiblePerson)}
+          onCheckedChange={(v) => { set("isResponsiblePerson", v); set("responsiblePerson", v) }}
         />
       </div>
     </div>
@@ -473,6 +592,7 @@ function AddMemberDialog({
   saving,
   onClose,
   onSave,
+  companyId,
 }: {
   open: boolean
   form: any
@@ -480,6 +600,7 @@ function AddMemberDialog({
   saving: boolean
   onClose: () => void
   onSave: () => void
+  companyId?: string
 }) {
   return (
     <Dialog open={open} onOpenChange={onClose}>
@@ -488,7 +609,7 @@ function AddMemberDialog({
           <DialogTitle className="text-base font-semibold">Add New Member</DialogTitle>
         </DialogHeader>
 
-        <MemberForm form={form} onChange={onChange} />
+        <MemberForm form={form} onChange={onChange} companyId={companyId} />
 
         <DialogFooter className="pt-2">
           <Button variant="outline" onClick={onClose} disabled={saving} className="text-sm">
