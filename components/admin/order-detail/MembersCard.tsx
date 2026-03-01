@@ -13,6 +13,16 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog"
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
+import {
   Users,
   User,
   UserCheck,
@@ -26,6 +36,7 @@ import {
   ExternalLink,
   Upload,
   X,
+  Trash2,
 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
@@ -55,11 +66,16 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
 
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [addDialogOpen, setAddDialogOpen] = useState(false)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
 
   // The member being edited
   const [editingIndex, setEditingIndex] = useState<number | null>(null)
   const [editForm, setEditForm] = useState<any>(emptyMember())
+
+  // Member to delete
+  const [deletingIndex, setDeletingIndex] = useState<number | null>(null)
 
   // New member form
   const [newMemberForm, setNewMemberForm] = useState<any>(emptyMember())
@@ -147,6 +163,28 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
     }
   }
 
+  const openDelete = (index: number) => {
+    setDeletingIndex(index)
+    setDeleteDialogOpen(true)
+  }
+
+  const handleDeleteMember = async () => {
+    if (deletingIndex === null) return
+    try {
+      setDeleting(true)
+      const updatedMembers = members.filter((_, i) => i !== deletingIndex)
+      const saved = await saveToApi(updatedMembers)
+      onMembersUpdate?.(saved)
+      setDeleteDialogOpen(false)
+      setDeletingIndex(null)
+      toast({ title: "Member removed", description: "Member has been removed successfully." })
+    } catch {
+      toast({ title: "Delete failed", description: "Could not remove member.", variant: "destructive" })
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   const handleSaveNewMember = async () => {
     if (!newMemberForm.name.trim()) {
       toast({ title: "Name required", description: "Please enter the member's name.", variant: "destructive" })
@@ -208,14 +246,14 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
                 <div className="flex items-center gap-3">
                   <div
                     className={`w-10 h-10 rounded-full flex items-center justify-center shrink-0 ${
-                      member.isResponsiblePerson ? "bg-gray-900" : "bg-gray-100"
+                      (member.isResponsiblePerson || member.responsiblePerson) ? "bg-gray-900" : "bg-gray-100"
                     }`}
                   >
-                    <User className={`w-4.5 h-4.5 ${member.isResponsiblePerson ? "text-white" : "text-gray-400"}`} />
+                    <User className={`w-4.5 h-4.5 ${(member.isResponsiblePerson || member.responsiblePerson) ? "text-white" : "text-gray-400"}`} />
                   </div>
                   <div>
                     <p className="text-sm font-semibold text-gray-900">{member.name || "N/A"}</p>
-                    {member.isResponsiblePerson && (
+                    {(member.isResponsiblePerson || member.responsiblePerson) && (
                       <div className="flex items-center gap-1 mt-0.5">
                         <UserCheck className="w-3 h-3 text-gray-500" />
                         <span className="text-xs text-gray-500 font-medium">Responsible Person</span>
@@ -228,15 +266,25 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
                     Member {index + 1}
                   </span>
                   {companyId && (
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      onClick={() => openEdit(index)}
-                      className="h-7 px-2.5 text-xs border-gray-200 text-gray-600 hover:bg-gray-50"
-                    >
-                      <Pencil className="w-3 h-3 mr-1" />
-                      Edit
-                    </Button>
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openEdit(index)}
+                        className="h-7 px-2.5 text-xs border-gray-200 text-gray-600 hover:bg-gray-50"
+                      >
+                        <Pencil className="w-3 h-3 mr-1" />
+                        Edit
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openDelete(index)}
+                        className="h-7 px-2 text-xs border-red-200 text-red-500 hover:bg-red-50 hover:border-red-300"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   )}
                 </div>
               </div>
@@ -324,6 +372,32 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
         onSave={handleSaveNewMember}
         companyId={companyId}
       />
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Remove Member</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to remove{" "}
+              <span className="font-semibold text-gray-900">
+                {deletingIndex !== null ? members[deletingIndex]?.name || "this member" : "this member"}
+              </span>
+              ? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteMember}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 text-white"
+            >
+              {deleting ? <><Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />Removing...</> : "Remove Member"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   )
 }
@@ -501,8 +575,8 @@ function MemberForm({
           <p className="text-xs text-gray-400 mt-0.5">Mark as the primary responsible member</p>
         </div>
         <Switch
-          checked={!!form.isResponsiblePerson}
-          onCheckedChange={(v) => set("isResponsiblePerson", v)}
+          checked={!!(form.isResponsiblePerson ?? form.responsiblePerson)}
+          onCheckedChange={(v) => { set("isResponsiblePerson", v); set("responsiblePerson", v) }}
         />
       </div>
     </div>
