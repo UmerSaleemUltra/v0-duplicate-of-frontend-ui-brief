@@ -2387,7 +2387,11 @@ export default function OrderDetailPage() {
 
           {/* ── MEMBERS TAB ── */}
           <TabsContent value="members" className="focus-visible:outline-none">
-            <MembersCard members={company?.members || []} />
+              <MembersCard
+                members={company?.members || []}
+                companyId={company?.id}
+                onMembersUpdate={(updatedMembers) => setCompany((prev: any) => prev ? { ...prev, members: updatedMembers } : prev)}
+              />
           </TabsContent>
 
           {/* ── PRICING TAB ── */}
