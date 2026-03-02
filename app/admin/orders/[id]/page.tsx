@@ -2428,7 +2428,28 @@ export default function OrderDetailPage() {
           {/* ── TAX & IDs TAB ── */}
           <TabsContent value="assigned" className="focus-visible:outline-none">
             <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-              <AssignedInfoCards company={company} />
+              <AssignedInfoCards
+                company={company}
+                onUpdateCompany={async (patch) => {
+                  const token = authService.getToken()
+                  if (!token || !company?.id) return
+                  const response = await fetch(`/api/companies/${company.id}`, {
+                    method: "PUT",
+                    headers: {
+                      "Content-Type": "application/json",
+                      Authorization: `Bearer ${token}`,
+                    },
+                    body: JSON.stringify(patch),
+                  })
+                  if (!response.ok) {
+                    toast({ title: "Update Failed", description: "Failed to update. Please try again.", variant: "destructive" })
+                    throw new Error("Update failed")
+                  }
+                  const result = await response.json()
+                  setCompany(result.data)
+                  toast({ title: "Updated", description: "Information has been updated successfully." })
+                }}
+              />
             </div>
           </TabsContent>
 
