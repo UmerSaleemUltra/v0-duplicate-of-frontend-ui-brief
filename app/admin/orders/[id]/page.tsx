@@ -2396,8 +2396,29 @@ export default function OrderDetailPage() {
 
           {/* ── PRICING TAB ── */}
           <TabsContent value="pricing" className="focus-visible:outline-none space-y-6">
-            <OrderPricingCard order={order} onOrderUpdate={(updated) => setOrder((prev: any) => ({ ...prev, ...updated }))} />
-            <AddonsCard order={order} onOrderUpdate={(updated) => setOrder((prev: any) => ({ ...prev, ...updated }))} />
+            <OrderPricingCard
+              order={order}
+              onOrderUpdate={(updated) =>
+                setOrder((prev: any) => ({
+                  ...prev,
+                  ...updated,
+                  // Ensure top-level fields are replaced, not merged
+                  purchasedAddons: updated.purchasedAddons ?? prev?.purchasedAddons,
+                  pricing: updated.pricing ?? prev?.pricing,
+                }))
+              }
+            />
+            <AddonsCard
+              order={order}
+              onOrderUpdate={(updated) =>
+                setOrder((prev: any) => ({
+                  ...prev,
+                  ...updated,
+                  purchasedAddons: updated.purchasedAddons ?? prev?.purchasedAddons,
+                  pricing: updated.pricing ?? prev?.pricing,
+                }))
+              }
+            />
           </TabsContent>
 
           {/* ── TAX & IDs TAB ── */}

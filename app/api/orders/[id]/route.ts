@@ -361,7 +361,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
-    const allowedUpdateFields = ["status", "paymentStatus", "paymentMethod", "notes", "pricing", "purchasedAddons", "selectedAddons"]
+    const allowedUpdateFields = ["status", "paymentStatus", "paymentMethod", "notes", "pricing", "purchasedAddons", "selectedAddons", "paymentInfo", "receiptUrl"]
     const updateData: any = {
       updatedAt: new Date().toISOString(),
     }

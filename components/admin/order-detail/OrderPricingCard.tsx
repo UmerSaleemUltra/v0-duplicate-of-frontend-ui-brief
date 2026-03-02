@@ -1,7 +1,7 @@
 "use client"
 
-import { useState } from "react"
-import { Receipt, Calendar, CheckCircle, Clock, Phone, ExternalLink, Pencil, Check, X } from "lucide-react"
+import { useState, useRef } from "react"
+import { Receipt, Calendar, Phone, ExternalLink, Pencil, Check, X, Upload, Loader2 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 
@@ -13,12 +13,11 @@ interface OrderPricingCardProps {
 interface EditablePriceProps {
   label: string
   value: number
-  dark?: boolean
   onSave: (val: number) => void
   saving: boolean
 }
 
-function EditablePrice({ label, value, dark, onSave, saving }: EditablePriceProps) {
+function EditablePrice({ label, value, onSave, saving }: EditablePriceProps) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState("")
 
@@ -37,11 +36,11 @@ function EditablePrice({ label, value, dark, onSave, saving }: EditablePriceProp
   }
 
   return (
-    <div className={`${dark ? "bg-gray-900" : "bg-white"} px-5 py-4`}>
-      <p className={`text-xs font-medium mb-2 ${dark ? "text-gray-400" : "text-gray-500"}`}>{label}</p>
+    <div className="bg-white px-5 py-4">
+      <p className="text-xs font-medium mb-2 text-gray-500">{label}</p>
       {editing ? (
         <div className="flex items-center gap-1.5">
-          <span className={`text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`}>$</span>
+          <span className="text-lg font-semibold text-gray-900">$</span>
           <input
             type="number"
             step="0.01"
@@ -53,9 +52,7 @@ function EditablePrice({ label, value, dark, onSave, saving }: EditablePriceProp
               if (e.key === "Escape") cancel()
             }}
             autoFocus
-            className={`w-28 text-xl font-semibold bg-transparent border-b-2 border-blue-500 outline-none ${
-              dark ? "text-white" : "text-gray-900"
-            }`}
+            className="w-28 text-xl font-semibold bg-transparent border-b-2 border-blue-500 outline-none text-gray-900"
           />
           <button
             onClick={confirm}
@@ -75,16 +72,10 @@ function EditablePrice({ label, value, dark, onSave, saving }: EditablePriceProp
         </div>
       ) : (
         <div className="flex items-center justify-between">
-          <p className={`text-xl font-semibold ${dark ? "text-white" : "text-gray-900"}`}>
-            ${value.toFixed(2)}
-          </p>
+          <p className="text-xl font-semibold text-gray-900">${value.toFixed(2)}</p>
           <button
             onClick={startEdit}
-            className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
-              dark
-                ? "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"
-                : "bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100"
-            }`}
+            className="flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100"
             title="Edit price"
           >
             <Pencil className="w-3 h-3" />
@@ -99,18 +90,20 @@ function EditablePrice({ label, value, dark, onSave, saving }: EditablePriceProp
 export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps) {
   const { toast } = useToast()
   const [saving, setSaving] = useState(false)
+  const [uploadingReceipt, setUploadingReceipt] = useState(false)
+  const receiptInputRef = useRef<HTMLInputElement>(null)
 
-  const packagePrice = order?.pricing?.packagePrice ?? order?.packagePrice ?? 0
-  const stateFee = order?.pricing?.stateFilingFee ?? order?.stateFilingFee ?? 0
-  const addonsTotal = order?.pricing?.addonsTotal ?? order?.addonsTotal ?? 0
-  const total = order?.pricing?.total ?? order?.pricing?.totalAmount ?? order?.amount ?? 0
-  const isPaid = order?.paymentInfo?.status === "paid"
+  // Use only order.pricing — no double-fallback to avoid duplicate display
+  const pricing = order?.pricing || {}
+  const packagePrice = pricing.packagePrice ?? 0
+  const stateFee = pricing.stateFilingFee ?? 0
+  const addonsTotal = pricing.addonsTotal ?? 0
 
   const whatsappPhone = order?.whatsappPhone || order?.paymentInfo?.whatsappPhone
   const receiptUrl = order?.receiptUrl || order?.paymentInfo?.receiptUrl
 
   const savePricingField = async (
-    field: "packagePrice" | "stateFilingFee" | "addonsTotal" | "total",
+    field: "packagePrice" | "stateFilingFee" | "addonsTotal",
     value: number,
   ) => {
     if (!order?.id) return
@@ -118,10 +111,7 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
     try {
       const token = authService.getToken()
       const updatedPricing = {
-        packagePrice: order?.pricing?.packagePrice ?? order?.packagePrice ?? 0,
-        stateFilingFee: order?.pricing?.stateFilingFee ?? order?.stateFilingFee ?? 0,
-        addonsTotal: order?.pricing?.addonsTotal ?? order?.addonsTotal ?? 0,
-        total: order?.pricing?.total ?? order?.pricing?.totalAmount ?? order?.amount ?? 0,
+        ...pricing,
         [field]: value,
       }
 
@@ -138,11 +128,55 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
 
       const result = await res.json()
       onOrderUpdate?.(result.data)
-      toast({ title: "Price updated", description: `${label(field)} saved successfully.` })
+      toast({ title: "Price updated", description: `${fieldLabel(field)} saved successfully.` })
     } catch {
       toast({ title: "Save failed", description: "Could not update the price.", variant: "destructive" })
     } finally {
       setSaving(false)
+    }
+  }
+
+  const handleReceiptUpload = async (file: File) => {
+    if (!order?.id) return
+    setUploadingReceipt(true)
+    try {
+      const formData = new FormData()
+      formData.append("receipt", file)
+      formData.append("orderId", order.id)
+
+      const uploadRes = await fetch("/api/payment-receipt/upload", {
+        method: "POST",
+        body: formData,
+      })
+      const uploadData = await uploadRes.json()
+      if (!uploadData.success) throw new Error(uploadData.error || "Upload failed")
+
+      const newReceiptUrl = uploadData.data.url
+      const token = authService.getToken()
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          paymentInfo: {
+            ...(order?.paymentInfo || {}),
+            receiptUrl: newReceiptUrl,
+          },
+          receiptUrl: newReceiptUrl,
+        }),
+      })
+
+      if (!res.ok) throw new Error("Failed to save receipt URL")
+      const result = await res.json()
+      onOrderUpdate?.(result.data)
+      toast({ title: "Receipt updated", description: "Payment receipt has been replaced." })
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err?.message || "Could not upload receipt.", variant: "destructive" })
+    } finally {
+      setUploadingReceipt(false)
+      if (receiptInputRef.current) receiptInputRef.current.value = ""
     }
   }
 
@@ -160,8 +194,8 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
       </div>
 
       <div className="px-6 py-6 space-y-5">
-        {/* Editable pricing grid */}
-        <div className="grid grid-cols-2 gap-px bg-gray-100 rounded-xl overflow-hidden">
+        {/* Editable pricing grid — 3 cells only: Package Price, State Fee, Add-ons Total */}
+        <div className="grid grid-cols-3 gap-px bg-gray-100 rounded-xl overflow-hidden">
           <EditablePrice
             label="Package Price"
             value={packagePrice}
@@ -180,35 +214,10 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
             saving={saving}
             onSave={(v) => savePricingField("addonsTotal", v)}
           />
-          <EditablePrice
-            label="Total Amount"
-            value={total}
-            dark
-            saving={saving}
-            onSave={(v) => savePricingField("total", v)}
-          />
         </div>
 
         {/* Payment details */}
         <div className="rounded-xl border border-gray-200 overflow-hidden">
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-            {isPaid ? (
-              <CheckCircle className="w-4 h-4 text-green-400 shrink-0" />
-            ) : (
-              <Clock className="w-4 h-4 text-amber-400 shrink-0" />
-            )}
-            <span className="text-xs text-gray-400 w-36 shrink-0">Payment Status</span>
-            <span
-              className={`text-xs font-semibold px-2.5 py-1 rounded-full capitalize ${
-                isPaid
-                  ? "bg-green-50 text-green-700 border border-green-200"
-                  : "bg-amber-50 text-amber-700 border border-amber-200"
-              }`}
-            >
-              {order?.paymentInfo?.status || "Pending"}
-            </span>
-          </div>
-
           {whatsappPhone && (
             <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
               <Phone className="w-4 h-4 text-green-400 shrink-0" />
@@ -224,21 +233,48 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
             </div>
           )}
 
-          {receiptUrl && (
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-              <Receipt className="w-4 h-4 text-gray-300 shrink-0" />
-              <span className="text-xs text-gray-400 w-36 shrink-0">Payment Receipt</span>
-              <a
-                href={receiptUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+          {/* Receipt row — view + edit/replace */}
+          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+            <Receipt className="w-4 h-4 text-gray-300 shrink-0" />
+            <span className="text-xs text-gray-400 w-36 shrink-0">Payment Receipt</span>
+            <div className="flex items-center gap-2 flex-wrap">
+              {receiptUrl ? (
+                <a
+                  href={receiptUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+                >
+                  <ExternalLink className="w-3 h-3" />
+                  View File
+                </a>
+              ) : (
+                <span className="text-xs text-gray-400 italic">No receipt uploaded</span>
+              )}
+              <button
+                onClick={() => receiptInputRef.current?.click()}
+                disabled={uploadingReceipt}
+                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-lg bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-colors disabled:opacity-50"
               >
-                <ExternalLink className="w-3 h-3" />
-                View File
-              </a>
+                {uploadingReceipt ? (
+                  <Loader2 className="w-3 h-3 animate-spin" />
+                ) : (
+                  <Upload className="w-3 h-3" />
+                )}
+                {receiptUrl ? "Replace" : "Upload"}
+              </button>
+              <input
+                ref={receiptInputRef}
+                type="file"
+                accept="image/jpeg,image/jpg,image/png,image/webp"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0]
+                  if (file) handleReceiptUpload(file)
+                }}
+              />
             </div>
-          )}
+          </div>
 
           <div className="flex items-center gap-3 px-4 py-3">
             <Calendar className="w-4 h-4 text-gray-300 shrink-0" />
@@ -259,12 +295,11 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
   )
 }
 
-function label(field: string) {
+function fieldLabel(field: string) {
   const map: Record<string, string> = {
     packagePrice: "Package Price",
     stateFilingFee: "State Filing Fee",
     addonsTotal: "Add-ons Total",
-    total: "Total Amount",
   }
   return map[field] || field
 }
