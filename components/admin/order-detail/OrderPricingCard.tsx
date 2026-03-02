@@ -93,14 +93,41 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
   const [uploadingReceipt, setUploadingReceipt] = useState(false)
   const receiptInputRef = useRef<HTMLInputElement>(null)
 
+  // Editable text field state
+  const [editingPhone, setEditingPhone] = useState(false)
+  const [draftPhone, setDraftPhone] = useState("")
+  const [editingDate, setEditingDate] = useState(false)
+  const [draftDate, setDraftDate] = useState("")
+
   // Use only order.pricing — no double-fallback to avoid duplicate display
   const pricing = order?.pricing || {}
   const packagePrice = pricing.packagePrice ?? 0
   const stateFee = pricing.stateFilingFee ?? 0
   const addonsTotal = pricing.addonsTotal ?? 0
 
-  const whatsappPhone = order?.whatsappPhone || order?.paymentInfo?.whatsappPhone
+  const whatsappPhone = order?.whatsappPhone || order?.paymentInfo?.whatsappPhone || ""
   const receiptUrl = order?.receiptUrl || order?.paymentInfo?.receiptUrl
+
+  // Compute the correct ISO date string for the input
+  const orderDateIso = order?.createdAt
+    ? new Date(order.createdAt).toISOString().slice(0, 10)
+    : ""
+
+  const putOrder = async (body: Record<string, any>) => {
+    const token = authService.getToken()
+    const res = await fetch(`/api/orders/${order.id}`, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(body),
+    })
+    if (!res.ok) throw new Error("Failed to save")
+    return res.json()
+  }
+
+  // ── Pricing save ─────────────────────────────────────────────────────────
 
   const savePricingField = async (
     field: "packagePrice" | "stateFilingFee" | "addonsTotal",
@@ -109,25 +136,15 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
     if (!order?.id) return
     setSaving(true)
     try {
-      const token = authService.getToken()
-      const updatedPricing = {
-        ...pricing,
-        [field]: value,
-      }
+      // Merge new value into current pricing, then recalculate subtotal & total
+      const newPricing = { ...pricing, [field]: value }
+      const newSubtotal = (newPricing.packagePrice ?? 0) + (newPricing.stateFilingFee ?? 0)
+      const newTotal = newSubtotal + (newPricing.addonsTotal ?? 0)
+      newPricing.subtotal = newSubtotal
+      newPricing.total = newTotal
 
-      const res = await fetch(`/api/orders/${order.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ pricing: updatedPricing }),
-      })
-
-      if (!res.ok) throw new Error("Failed to save")
-
-      const result = await res.json()
-      onOrderUpdate?.(result.data)
+      const result = await putOrder({ pricing: newPricing })
+      onOrderUpdate?.({ ...result.data, pricing: newPricing })
       toast({ title: "Price updated", description: `${fieldLabel(field)} saved successfully.` })
     } catch {
       toast({ title: "Save failed", description: "Could not update the price.", variant: "destructive" })
@@ -135,6 +152,60 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
       setSaving(false)
     }
   }
+
+  // ── WhatsApp phone edit ──────────────────────────────────────────────────
+
+  const startEditPhone = () => {
+    setDraftPhone(whatsappPhone)
+    setEditingPhone(true)
+  }
+
+  const cancelPhone = () => setEditingPhone(false)
+
+  const savePhone = async () => {
+    if (!order?.id) return
+    setSaving(true)
+    try {
+      const result = await putOrder({
+        whatsappPhone: draftPhone,
+        paymentInfo: { ...(order?.paymentInfo || {}), whatsappPhone: draftPhone },
+      })
+      onOrderUpdate?.({ ...result.data, whatsappPhone: draftPhone })
+      toast({ title: "Phone updated", description: "WhatsApp phone number saved." })
+      setEditingPhone(false)
+    } catch {
+      toast({ title: "Save failed", description: "Could not update phone.", variant: "destructive" })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // ── Order date edit ──────────────────────────────────────────────────────
+
+  const startEditDate = () => {
+    setDraftDate(orderDateIso)
+    setEditingDate(true)
+  }
+
+  const cancelDate = () => setEditingDate(false)
+
+  const saveDate = async () => {
+    if (!order?.id || !draftDate) return
+    setSaving(true)
+    try {
+      const newDate = new Date(draftDate).toISOString()
+      const result = await putOrder({ createdAt: newDate })
+      onOrderUpdate?.({ ...result.data, createdAt: newDate })
+      toast({ title: "Date updated", description: "Order date saved." })
+      setEditingDate(false)
+    } catch {
+      toast({ title: "Save failed", description: "Could not update order date.", variant: "destructive" })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  // ── Receipt upload ────────────────────────────────────────────────────────
 
   const handleReceiptUpload = async (file: File) => {
     if (!order?.id) return
@@ -152,25 +223,11 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
       if (!uploadData.success) throw new Error(uploadData.error || "Upload failed")
 
       const newReceiptUrl = uploadData.data.url
-      const token = authService.getToken()
-      const res = await fetch(`/api/orders/${order.id}`, {
-        method: "PUT",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          paymentInfo: {
-            ...(order?.paymentInfo || {}),
-            receiptUrl: newReceiptUrl,
-          },
-          receiptUrl: newReceiptUrl,
-        }),
+      const result = await putOrder({
+        paymentInfo: { ...(order?.paymentInfo || {}), receiptUrl: newReceiptUrl },
+        receiptUrl: newReceiptUrl,
       })
-
-      if (!res.ok) throw new Error("Failed to save receipt URL")
-      const result = await res.json()
-      onOrderUpdate?.(result.data)
+      onOrderUpdate?.({ ...result.data, receiptUrl: newReceiptUrl })
       toast({ title: "Receipt updated", description: "Payment receipt has been replaced." })
     } catch (err: any) {
       toast({ title: "Upload failed", description: err?.message || "Could not upload receipt.", variant: "destructive" })
@@ -189,12 +246,12 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
         </div>
         <div>
           <h2 className="text-base font-semibold text-gray-900">Order & Pricing Details</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Click Edit on any price to update it</p>
+          <p className="text-xs text-gray-400 mt-0.5">Click Edit on any field to update it</p>
         </div>
       </div>
 
       <div className="px-6 py-6 space-y-5">
-        {/* Editable pricing grid — 3 cells only: Package Price, State Fee, Add-ons Total */}
+        {/* Editable pricing grid — 3 cells: Package Price, State Fee, Add-ons Total */}
         <div className="grid grid-cols-3 gap-px bg-gray-100 rounded-xl overflow-hidden">
           <EditablePrice
             label="Package Price"
@@ -216,25 +273,71 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
           />
         </div>
 
-        {/* Payment details */}
-        <div className="rounded-xl border border-gray-200 overflow-hidden">
-          {whatsappPhone && (
-            <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
-              <Phone className="w-4 h-4 text-green-400 shrink-0" />
-              <span className="text-xs text-gray-400 w-36 shrink-0">WhatsApp Phone</span>
-              <a
-                href={`https://wa.me/${whatsappPhone.replace(/\D/g, "")}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-green-600 hover:underline font-mono font-medium"
-              >
-                {whatsappPhone}
-              </a>
-            </div>
-          )}
+        {/* Payment / order details */}
+        <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
 
-          {/* Receipt row — view + edit/replace */}
-          <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
+          {/* WhatsApp Phone — always shown, editable */}
+          <div className="flex items-center gap-3 px-4 py-3">
+            <Phone className="w-4 h-4 text-green-400 shrink-0" />
+            <span className="text-xs text-gray-400 w-36 shrink-0">WhatsApp Phone</span>
+            {editingPhone ? (
+              <div className="flex items-center gap-1.5 flex-1">
+                <input
+                  type="tel"
+                  value={draftPhone}
+                  onChange={(e) => setDraftPhone(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") savePhone()
+                    if (e.key === "Escape") cancelPhone()
+                  }}
+                  autoFocus
+                  placeholder="+1234567890"
+                  className="flex-1 text-sm font-mono bg-transparent border-b-2 border-blue-500 outline-none text-gray-900 py-0.5"
+                />
+                <button
+                  onClick={savePhone}
+                  disabled={saving}
+                  className="p-1.5 rounded-md bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 transition-colors"
+                  title="Save"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={cancelPhone}
+                  className="p-1.5 rounded-md bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors"
+                  title="Cancel"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 flex-1">
+                {whatsappPhone ? (
+                  <a
+                    href={`https://wa.me/${whatsappPhone.replace(/\D/g, "")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-green-600 hover:underline font-mono font-medium"
+                  >
+                    {whatsappPhone}
+                  </a>
+                ) : (
+                  <span className="text-sm text-gray-400 italic">Not set</span>
+                )}
+                <button
+                  onClick={startEditPhone}
+                  disabled={saving}
+                  className="ml-auto flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 disabled:opacity-50"
+                >
+                  <Pencil className="w-3 h-3" />
+                  Edit
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Receipt row */}
+          <div className="flex items-center gap-3 px-4 py-3">
             <Receipt className="w-4 h-4 text-gray-300 shrink-0" />
             <span className="text-xs text-gray-400 w-36 shrink-0">Payment Receipt</span>
             <div className="flex items-center gap-2 flex-wrap">
@@ -276,19 +379,62 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
             </div>
           </div>
 
+          {/* Order Date — editable */}
           <div className="flex items-center gap-3 px-4 py-3">
             <Calendar className="w-4 h-4 text-gray-300 shrink-0" />
             <span className="text-xs text-gray-400 w-36 shrink-0">Order Date</span>
-            <span className="text-sm text-gray-900 font-medium">
-              {order?.createdAt
-                ? new Date(order.createdAt).toLocaleDateString("en-US", {
-                    year: "numeric",
-                    month: "long",
-                    day: "numeric",
-                  })
-                : "N/A"}
-            </span>
+            {editingDate ? (
+              <div className="flex items-center gap-1.5 flex-1">
+                <input
+                  type="date"
+                  value={draftDate}
+                  onChange={(e) => setDraftDate(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") saveDate()
+                    if (e.key === "Escape") cancelDate()
+                  }}
+                  autoFocus
+                  className="text-sm bg-transparent border-b-2 border-blue-500 outline-none text-gray-900 py-0.5"
+                />
+                <button
+                  onClick={saveDate}
+                  disabled={saving}
+                  className="p-1.5 rounded-md bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 transition-colors"
+                  title="Save"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={cancelDate}
+                  className="p-1.5 rounded-md bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors"
+                  title="Cancel"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2 flex-1">
+                <span className="text-sm text-gray-900 font-medium">
+                  {order?.createdAt
+                    ? new Date(order.createdAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "long",
+                        day: "numeric",
+                      })
+                    : "N/A"}
+                </span>
+                <button
+                  onClick={startEditDate}
+                  disabled={saving}
+                  className="ml-auto flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 disabled:opacity-50"
+                >
+                  <Pencil className="w-3 h-3" />
+                  Edit
+                </button>
+              </div>
+            )}
           </div>
+
         </div>
       </div>
     </div>
