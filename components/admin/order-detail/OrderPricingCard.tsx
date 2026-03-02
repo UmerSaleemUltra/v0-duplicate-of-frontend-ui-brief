@@ -1,20 +1,144 @@
 "use client"
 
-import { Receipt, Calendar, CheckCircle, Clock, Phone, ExternalLink } from "lucide-react"
+import { useState } from "react"
+import { Receipt, Calendar, CheckCircle, Clock, Phone, ExternalLink, Pencil, Check, X } from "lucide-react"
+import { authService } from "@/lib/auth"
+import { useToast } from "@/hooks/use-toast"
 
 interface OrderPricingCardProps {
   order: any
+  onOrderUpdate?: (updatedOrder: any) => void
 }
 
-export function OrderPricingCard({ order }: OrderPricingCardProps) {
-  const packagePrice = order?.pricing?.packagePrice || order?.packagePrice || 0
-  const stateFee = order?.pricing?.stateFilingFee || order?.stateFilingFee || 0
-  const addonsTotal = order?.pricing?.addonsTotal || order?.addonsTotal || 0
-  const total = order?.pricing?.total || order?.pricing?.totalAmount || order?.amount || 0
+interface EditableFieldProps {
+  label: string
+  value: number
+  dark?: boolean
+  onSave: (val: number) => void
+  saving: boolean
+}
+
+function EditablePrice({ label, value, dark, onSave, saving }: EditableFieldProps) {
+  const [editing, setEditing] = useState(false)
+  const [draft, setDraft] = useState("")
+
+  const startEdit = () => {
+    setDraft(value.toFixed(2))
+    setEditing(true)
+  }
+
+  const cancel = () => setEditing(false)
+
+  const confirm = () => {
+    const num = parseFloat(draft)
+    if (isNaN(num) || num < 0) return
+    onSave(num)
+    setEditing(false)
+  }
+
+  return (
+    <div className={`${dark ? "bg-gray-900" : "bg-white"} px-5 py-4 group relative`}>
+      <p className={`text-xs font-medium mb-1 ${dark ? "text-gray-500" : "text-gray-400"}`}>{label}</p>
+      {editing ? (
+        <div className="flex items-center gap-1.5">
+          <span className={`text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`}>$</span>
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            value={draft}
+            onChange={(e) => setDraft(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") confirm()
+              if (e.key === "Escape") cancel()
+            }}
+            autoFocus
+            className={`w-28 text-xl font-semibold bg-transparent border-b-2 border-blue-500 outline-none ${
+              dark ? "text-white" : "text-gray-900"
+            }`}
+          />
+          <button
+            onClick={confirm}
+            disabled={saving}
+            className="p-1 rounded-md text-green-500 hover:bg-green-50 disabled:opacity-50 transition-colors"
+          >
+            <Check className="w-3.5 h-3.5" />
+          </button>
+          <button
+            onClick={cancel}
+            className="p-1 rounded-md text-gray-400 hover:bg-gray-100 transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <p className={`text-xl font-semibold ${dark ? "text-white" : "text-gray-900"}`}>
+            ${value.toFixed(2)}
+          </p>
+          <button
+            onClick={startEdit}
+            className={`opacity-0 group-hover:opacity-100 p-1 rounded-md transition-all ${
+              dark
+                ? "text-gray-400 hover:bg-gray-700"
+                : "text-gray-400 hover:bg-gray-100"
+            }`}
+            title="Edit price"
+          >
+            <Pencil className="w-3 h-3" />
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
+export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps) {
+  const { toast } = useToast()
+  const [saving, setSaving] = useState(false)
+
+  const packagePrice = order?.pricing?.packagePrice ?? order?.packagePrice ?? 0
+  const stateFee = order?.pricing?.stateFilingFee ?? order?.stateFilingFee ?? 0
+  const addonsTotal = order?.pricing?.addonsTotal ?? order?.addonsTotal ?? 0
+  const total = order?.pricing?.total ?? order?.pricing?.totalAmount ?? order?.amount ?? 0
   const isPaid = order?.paymentInfo?.status === "paid"
 
   const whatsappPhone = order?.whatsappPhone || order?.paymentInfo?.whatsappPhone
   const receiptUrl = order?.receiptUrl || order?.paymentInfo?.receiptUrl
+
+  const savePricingField = async (field: "packagePrice" | "stateFilingFee" | "addonsTotal" | "total", value: number) => {
+    if (!order?.id) return
+    setSaving(true)
+    try {
+      const token = authService.getToken()
+      const updatedPricing = {
+        packagePrice: order?.pricing?.packagePrice ?? order?.packagePrice ?? 0,
+        stateFilingFee: order?.pricing?.stateFilingFee ?? order?.stateFilingFee ?? 0,
+        addonsTotal: order?.pricing?.addonsTotal ?? order?.addonsTotal ?? 0,
+        total: order?.pricing?.total ?? order?.pricing?.totalAmount ?? order?.amount ?? 0,
+        [field]: value,
+      }
+
+      const res = await fetch(`/api/orders/${order.id}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ pricing: updatedPricing }),
+      })
+
+      if (!res.ok) throw new Error("Failed to save")
+
+      const result = await res.json()
+      onOrderUpdate?.(result.data)
+      toast({ title: "Price updated", description: `${field.replace(/([A-Z])/g, " $1")} saved successfully.` })
+    } catch {
+      toast({ title: "Save failed", description: "Could not update the price.", variant: "destructive" })
+    } finally {
+      setSaving(false)
+    }
+  }
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -23,31 +147,43 @@ export function OrderPricingCard({ order }: OrderPricingCardProps) {
         <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
           <Receipt className="w-4 h-4 text-gray-500" />
         </div>
-        <h2 className="text-base font-semibold text-gray-900">Order & Pricing Details</h2>
+        <div>
+          <h2 className="text-base font-semibold text-gray-900">Order & Pricing Details</h2>
+          <p className="text-xs text-gray-400 mt-0.5">Hover a price to edit it inline</p>
+        </div>
       </div>
 
       <div className="px-6 py-6 space-y-5">
-        {/* Pricing breakdown — Apple-style grid */}
+        {/* Editable pricing grid */}
         <div className="grid grid-cols-2 gap-px bg-gray-100 rounded-xl overflow-hidden">
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs text-gray-400 font-medium mb-1">Package Price</p>
-            <p className="text-xl font-semibold text-gray-900">${packagePrice.toFixed(2)}</p>
-          </div>
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs text-gray-400 font-medium mb-1">State Filing Fee</p>
-            <p className="text-xl font-semibold text-gray-900">${stateFee.toFixed(2)}</p>
-          </div>
-          <div className="bg-white px-5 py-4">
-            <p className="text-xs text-gray-400 font-medium mb-1">Add-ons Total</p>
-            <p className="text-xl font-semibold text-gray-900">${addonsTotal.toFixed(2)}</p>
-          </div>
-          <div className="bg-gray-900 px-5 py-4">
-            <p className="text-xs text-gray-500 font-medium mb-1">Total Amount</p>
-            <p className="text-xl font-semibold text-white">${total.toFixed(2)}</p>
-          </div>
+          <EditablePrice
+            label="Package Price"
+            value={packagePrice}
+            saving={saving}
+            onSave={(v) => savePricingField("packagePrice", v)}
+          />
+          <EditablePrice
+            label="State Filing Fee"
+            value={stateFee}
+            saving={saving}
+            onSave={(v) => savePricingField("stateFilingFee", v)}
+          />
+          <EditablePrice
+            label="Add-ons Total"
+            value={addonsTotal}
+            saving={saving}
+            onSave={(v) => savePricingField("addonsTotal", v)}
+          />
+          <EditablePrice
+            label="Total Amount"
+            value={total}
+            dark
+            saving={saving}
+            onSave={(v) => savePricingField("total", v)}
+          />
         </div>
 
-        {/* Payment details — bordered rows */}
+        {/* Payment details */}
         <div className="rounded-xl border border-gray-200 overflow-hidden">
           <div className="flex items-center gap-3 px-4 py-3 border-b border-gray-100">
             {isPaid ? (
