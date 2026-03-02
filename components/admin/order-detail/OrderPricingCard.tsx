@@ -10,7 +10,7 @@ interface OrderPricingCardProps {
   onOrderUpdate?: (updatedOrder: any) => void
 }
 
-interface EditableFieldProps {
+interface EditablePriceProps {
   label: string
   value: number
   dark?: boolean
@@ -18,7 +18,7 @@ interface EditableFieldProps {
   saving: boolean
 }
 
-function EditablePrice({ label, value, dark, onSave, saving }: EditableFieldProps) {
+function EditablePrice({ label, value, dark, onSave, saving }: EditablePriceProps) {
   const [editing, setEditing] = useState(false)
   const [draft, setDraft] = useState("")
 
@@ -37,8 +37,8 @@ function EditablePrice({ label, value, dark, onSave, saving }: EditableFieldProp
   }
 
   return (
-    <div className={`${dark ? "bg-gray-900" : "bg-white"} px-5 py-4 group relative`}>
-      <p className={`text-xs font-medium mb-1 ${dark ? "text-gray-500" : "text-gray-400"}`}>{label}</p>
+    <div className={`${dark ? "bg-gray-900" : "bg-white"} px-5 py-4`}>
+      <p className={`text-xs font-medium mb-2 ${dark ? "text-gray-400" : "text-gray-500"}`}>{label}</p>
       {editing ? (
         <div className="flex items-center gap-1.5">
           <span className={`text-lg font-semibold ${dark ? "text-white" : "text-gray-900"}`}>$</span>
@@ -60,32 +60,35 @@ function EditablePrice({ label, value, dark, onSave, saving }: EditableFieldProp
           <button
             onClick={confirm}
             disabled={saving}
-            className="p-1 rounded-md text-green-500 hover:bg-green-50 disabled:opacity-50 transition-colors"
+            className="p-1.5 rounded-md bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 transition-colors"
+            title="Save"
           >
             <Check className="w-3.5 h-3.5" />
           </button>
           <button
             onClick={cancel}
-            className="p-1 rounded-md text-gray-400 hover:bg-gray-100 transition-colors"
+            className="p-1.5 rounded-md bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors"
+            title="Cancel"
           >
             <X className="w-3.5 h-3.5" />
           </button>
         </div>
       ) : (
-        <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between">
           <p className={`text-xl font-semibold ${dark ? "text-white" : "text-gray-900"}`}>
             ${value.toFixed(2)}
           </p>
           <button
             onClick={startEdit}
-            className={`opacity-0 group-hover:opacity-100 p-1 rounded-md transition-all ${
+            className={`flex items-center gap-1 text-xs font-medium px-2.5 py-1.5 rounded-lg transition-colors ${
               dark
-                ? "text-gray-400 hover:bg-gray-700"
-                : "text-gray-400 hover:bg-gray-100"
+                ? "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"
+                : "bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100"
             }`}
             title="Edit price"
           >
             <Pencil className="w-3 h-3" />
+            Edit
           </button>
         </div>
       )}
@@ -106,7 +109,10 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
   const whatsappPhone = order?.whatsappPhone || order?.paymentInfo?.whatsappPhone
   const receiptUrl = order?.receiptUrl || order?.paymentInfo?.receiptUrl
 
-  const savePricingField = async (field: "packagePrice" | "stateFilingFee" | "addonsTotal" | "total", value: number) => {
+  const savePricingField = async (
+    field: "packagePrice" | "stateFilingFee" | "addonsTotal" | "total",
+    value: number,
+  ) => {
     if (!order?.id) return
     setSaving(true)
     try {
@@ -132,7 +138,7 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
 
       const result = await res.json()
       onOrderUpdate?.(result.data)
-      toast({ title: "Price updated", description: `${field.replace(/([A-Z])/g, " $1")} saved successfully.` })
+      toast({ title: "Price updated", description: `${label(field)} saved successfully.` })
     } catch {
       toast({ title: "Save failed", description: "Could not update the price.", variant: "destructive" })
     } finally {
@@ -149,7 +155,7 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
         </div>
         <div>
           <h2 className="text-base font-semibold text-gray-900">Order & Pricing Details</h2>
-          <p className="text-xs text-gray-400 mt-0.5">Hover a price to edit it inline</p>
+          <p className="text-xs text-gray-400 mt-0.5">Click Edit on any price to update it</p>
         </div>
       </div>
 
@@ -251,4 +257,14 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
       </div>
     </div>
   )
+}
+
+function label(field: string) {
+  const map: Record<string, string> = {
+    packagePrice: "Package Price",
+    stateFilingFee: "State Filing Fee",
+    addonsTotal: "Add-ons Total",
+    total: "Total Amount",
+  }
+  return map[field] || field
 }

@@ -29,11 +29,9 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
 
-  // Support both purchasedAddons and addons fields
   const addons: any[] = order?.purchasedAddons || order?.addons || order?.selectedAddons || []
-  const addonsTotal = order?.pricing?.addonsTotal ?? order?.addonsTotal ?? 0
 
-  // ── Helpers ───────────────────────────────────────────────────────────────
+  // ── Persist helper ────────────────────────────────────────────────────────
 
   const persistAddons = async (updated: any[]) => {
     if (!order?.id) return false
@@ -124,7 +122,7 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
 
   return (
     <>
-      <Card className="bg-white border-slate-200 shadow-sm hover:shadow-md transition-shadow">
+      <Card className="bg-white border-slate-200 shadow-sm">
         <CardHeader className="pb-3">
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg font-semibold text-slate-900 flex items-center gap-2">
@@ -135,7 +133,7 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
               <button
                 onClick={() => setDeleteAllOpen(true)}
                 disabled={saving}
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1.5 rounded-lg text-red-600 border border-red-200 bg-red-50 hover:bg-red-100 transition-colors disabled:opacity-50"
+                className="inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg text-white bg-red-500 hover:bg-red-600 border border-red-600 transition-colors disabled:opacity-50 shadow-sm"
               >
                 <Trash2 className="w-3.5 h-3.5" />
                 Delete All
@@ -157,13 +155,13 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
 
                 return (
                   <div key={index} className="rounded-xl border border-slate-200 overflow-hidden">
-                    {/* Addon name + price row */}
+                    {/* Addon name + action row */}
                     <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
-                      <p className="text-sm font-semibold text-slate-900">
+                      <p className="text-sm font-semibold text-slate-900 flex-1 min-w-0 truncate pr-3">
                         {addon.name || addon.title || addon}
                       </p>
 
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 shrink-0">
                         {/* Editable price */}
                         {addon.price != null && (
                           isEditing ? (
@@ -185,42 +183,49 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
                               <button
                                 onClick={() => confirmEdit(index)}
                                 disabled={saving}
-                                className="p-1 rounded text-green-500 hover:bg-green-50 disabled:opacity-50 transition-colors"
+                                className="p-1.5 rounded-md bg-green-500 text-white hover:bg-green-600 disabled:opacity-50 transition-colors"
+                                title="Save"
                               >
                                 <Check className="w-3.5 h-3.5" />
                               </button>
                               <button
                                 onClick={cancelEdit}
-                                className="p-1 rounded text-gray-400 hover:bg-gray-100 transition-colors"
+                                className="p-1.5 rounded-md bg-gray-200 text-gray-600 hover:bg-gray-300 transition-colors"
+                                title="Cancel"
                               >
                                 <X className="w-3.5 h-3.5" />
                               </button>
                             </div>
                           ) : (
-                            <div className="flex items-center gap-1.5 group">
+                            <div className="flex items-center gap-2">
                               <p className="text-sm font-bold text-slate-800">
                                 ${Number(addon.price).toFixed(2)}
                               </p>
                               <button
                                 onClick={() => startEdit(index, addon.price)}
-                                className="opacity-0 group-hover:opacity-100 p-1 rounded text-slate-400 hover:bg-slate-100 transition-all"
+                                disabled={saving}
+                                className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md bg-blue-50 text-blue-600 border border-blue-200 hover:bg-blue-100 transition-colors disabled:opacity-50"
                                 title="Edit price"
                               >
                                 <Pencil className="w-3 h-3" />
+                                Edit
                               </button>
                             </div>
                           )
                         )}
 
                         {/* Delete single addon */}
-                        <button
-                          onClick={() => setDeleteIndex(index)}
-                          disabled={saving}
-                          className="p-1 rounded text-red-400 hover:bg-red-50 hover:text-red-600 transition-colors disabled:opacity-50"
-                          title="Delete add-on"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
+                        {!isEditing && (
+                          <button
+                            onClick={() => setDeleteIndex(index)}
+                            disabled={saving}
+                            className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-100 hover:border-red-300 transition-colors disabled:opacity-50"
+                            title="Delete add-on"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            Delete
+                          </button>
+                        )}
                       </div>
                     </div>
 
@@ -264,25 +269,27 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
                           View File
                         </a>
                       </div>
-                    ) : (
-                      !phone && !method ? null : (
-                        <div className="flex items-center gap-3 px-4 py-2.5">
-                          <Receipt className="w-3.5 h-3.5 text-slate-300 shrink-0" />
-                          <span className="text-xs text-slate-400 w-32 shrink-0">Receipt</span>
-                          <span className="text-xs text-slate-400 italic">No receipt uploaded</span>
-                        </div>
-                      )
+                    ) : !phone && !method ? null : (
+                      <div className="flex items-center gap-3 px-4 py-2.5">
+                        <Receipt className="w-3.5 h-3.5 text-slate-300 shrink-0" />
+                        <span className="text-xs text-slate-400 w-32 shrink-0">Receipt</span>
+                        <span className="text-xs text-slate-400 italic">No receipt uploaded</span>
+                      </div>
                     )}
                   </div>
                 )
               })}
 
-              {addonsTotal > 0 && (
-                <div className="flex items-center justify-between pt-2 border-t border-slate-200 px-1">
-                  <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Add-ons Total</p>
-                  <p className="text-base font-bold text-slate-900">${addonsTotal.toFixed(2)}</p>
-                </div>
-              )}
+              {/* Addons total */}
+              {(() => {
+                const total = order?.pricing?.addonsTotal ?? order?.addonsTotal ?? 0
+                return total > 0 ? (
+                  <div className="flex items-center justify-between pt-2 border-t border-slate-200 px-1">
+                    <p className="text-xs text-slate-500 font-medium uppercase tracking-wide">Add-ons Total</p>
+                    <p className="text-base font-bold text-slate-900">${Number(total).toFixed(2)}</p>
+                  </div>
+                ) : null
+              })()}
             </div>
           ) : (
             <div className="p-4 rounded-lg bg-slate-50 border border-dashed border-slate-300 text-center">
@@ -322,8 +329,9 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete All Add-ons</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete all <strong>{addons.length}</strong> add-on
-              {addons.length !== 1 ? "s" : ""}? This action cannot be undone.
+              Are you sure you want to delete all{" "}
+              <strong>{addons.length}</strong> add-on{addons.length !== 1 ? "s" : ""}?
+              This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
