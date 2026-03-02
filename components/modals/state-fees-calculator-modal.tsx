@@ -131,7 +131,7 @@ export default function StateFeesCalculatorModal({ isOpen, onClose }: StateFeesC
 
           {/* Start Business Button */}
           <Link
-            href={selectedState ? "/coming-soon" : "#"}
+            href={selectedState ? "/checkout" : "#"}
             className={`w-full bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white rounded-full py-3 sm:py-4 px-6 text-base sm:text-lg font-semibold 
                         hover:shadow-lg hover:scale-[1.02] transition-all duration-200 flex items-center justify-center gap-2
                         ${!selectedState ? "opacity-50 cursor-not-allowed hover:scale-100 pointer-events-none" : "cursor-pointer"}`}
