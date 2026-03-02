@@ -41,9 +41,15 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
     if (!order?.id) return null
     const token = authService.getToken()
     const newTotal = updated.reduce((s: number, a: any) => s + (Number(a.price) || 0), 0)
+
+    // Recalculate subtotal and total so revenue stays in sync
+    const currentPricing = order?.pricing || {}
+    const newSubtotal = (currentPricing.packagePrice ?? 0) + (currentPricing.stateFilingFee ?? 0)
     const updatedPricing = {
-      ...(order?.pricing || {}),
+      ...currentPricing,
       addonsTotal: newTotal,
+      subtotal: newSubtotal,
+      total: newSubtotal + newTotal,
     }
 
     const res = await fetch(`/api/orders/${order.id}`, {
@@ -57,9 +63,11 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
 
     if (!res.ok) throw new Error("Failed to save")
     const result = await res.json()
-    // Notify parent with updated data — merge carefully so purchasedAddons is replaced
+
+    // Always use the locally-computed values — the server response for embedded
+    // orders may not echo back purchasedAddons/pricing fields directly.
     onOrderUpdate?.({
-      ...result.data,
+      ...(result.data || {}),
       purchasedAddons: updated,
       pricing: updatedPricing,
     })

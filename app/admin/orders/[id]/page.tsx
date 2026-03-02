@@ -2402,9 +2402,12 @@ export default function OrderDetailPage() {
                 setOrder((prev: any) => ({
                   ...prev,
                   ...updated,
-                  // Ensure top-level fields are replaced, not merged
+                  // Explicitly replace nested/top-level fields to avoid stale merges
                   purchasedAddons: updated.purchasedAddons ?? prev?.purchasedAddons,
                   pricing: updated.pricing ?? prev?.pricing,
+                  whatsappPhone: updated.whatsappPhone ?? prev?.whatsappPhone,
+                  createdAt: updated.createdAt ?? prev?.createdAt,
+                  receiptUrl: updated.receiptUrl ?? prev?.receiptUrl,
                 }))
               }
             />
@@ -2414,6 +2417,7 @@ export default function OrderDetailPage() {
                 setOrder((prev: any) => ({
                   ...prev,
                   ...updated,
+                  // purchasedAddons and pricing are always set explicitly by AddonsCard
                   purchasedAddons: updated.purchasedAddons ?? prev?.purchasedAddons,
                   pricing: updated.pricing ?? prev?.pricing,
                 }))
