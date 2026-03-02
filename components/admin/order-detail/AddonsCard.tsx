@@ -1,8 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Package, Phone, ExternalLink, Receipt, Pencil, Check, X, Trash2 } from "lucide-react"
+import { Package, Phone, ExternalLink, Receipt, Pencil, Check, X, Trash2, Upload, Loader2 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 import {
@@ -28,13 +28,17 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
   const [draftPrice, setDraftPrice] = useState("")
   const [deleteIndex, setDeleteIndex] = useState<number | null>(null)
   const [deleteAllOpen, setDeleteAllOpen] = useState(false)
+  const [uploadingReceiptIndex, setUploadingReceiptIndex] = useState<number | null>(null)
+  const receiptInputRef = useRef<HTMLInputElement>(null)
+  const pendingUploadIndexRef = useRef<number | null>(null)
 
+  // Read addons from the canonical location
   const addons: any[] = order?.purchasedAddons || order?.addons || order?.selectedAddons || []
 
   // ── Persist helper ────────────────────────────────────────────────────────
 
   const persistAddons = async (updated: any[]) => {
-    if (!order?.id) return false
+    if (!order?.id) return null
     const token = authService.getToken()
     const newTotal = updated.reduce((s: number, a: any) => s + (Number(a.price) || 0), 0)
     const updatedPricing = {
@@ -53,8 +57,13 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
 
     if (!res.ok) throw new Error("Failed to save")
     const result = await res.json()
-    onOrderUpdate?.(result.data)
-    return true
+    // Notify parent with updated data — merge carefully so purchasedAddons is replaced
+    onOrderUpdate?.({
+      ...result.data,
+      purchasedAddons: updated,
+      pricing: updatedPricing,
+    })
+    return result.data
   }
 
   // ── Edit price ────────────────────────────────────────────────────────────
@@ -118,6 +127,54 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
     }
   }
 
+  // ── Upload addon receipt ──────────────────────────────────────────────────
+
+  const triggerReceiptUpload = (index: number) => {
+    pendingUploadIndexRef.current = index
+    receiptInputRef.current?.click()
+  }
+
+  const handleReceiptFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    const index = pendingUploadIndexRef.current
+    if (!file || index === null || !order?.id) return
+
+    setUploadingReceiptIndex(index)
+    try {
+      const formData = new FormData()
+      formData.append("receipt", file)
+      formData.append("orderId", order.id)
+
+      const uploadRes = await fetch("/api/payment-receipt/upload", {
+        method: "POST",
+        body: formData,
+      })
+      const uploadData = await uploadRes.json()
+      if (!uploadData.success) throw new Error(uploadData.error || "Upload failed")
+
+      const newReceiptUrl = uploadData.data.url
+      const updated = addons.map((a, i) =>
+        i === index
+          ? {
+              ...a,
+              paymentDetails: {
+                ...(a.paymentDetails || {}),
+                receiptUrl: newReceiptUrl,
+              },
+            }
+          : a,
+      )
+      await persistAddons(updated)
+      toast({ title: "Receipt updated", description: `${addons[index]?.name || "Add-on"} receipt replaced.` })
+    } catch (err: any) {
+      toast({ title: "Upload failed", description: err?.message || "Could not upload receipt.", variant: "destructive" })
+    } finally {
+      setUploadingReceiptIndex(null)
+      pendingUploadIndexRef.current = null
+      if (receiptInputRef.current) receiptInputRef.current.value = ""
+    }
+  }
+
   // ── Render ────────────────────────────────────────────────────────────────
 
   return (
@@ -152,6 +209,7 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
                 const receiptUrl = payment?.receiptUrl
                 const method = payment?.paymentMethod
                 const isEditing = editingIndex === index
+                const isUploadingThisReceipt = uploadingReceiptIndex === index
 
                 return (
                   <div key={index} className="rounded-xl border border-slate-200 overflow-hidden">
@@ -255,27 +313,39 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
                       </div>
                     )}
 
-                    {receiptUrl ? (
-                      <div className="flex items-center gap-3 px-4 py-2.5">
-                        <Receipt className="w-3.5 h-3.5 text-slate-400 shrink-0" />
-                        <span className="text-xs text-slate-400 w-32 shrink-0">Receipt</span>
-                        <a
-                          href={receiptUrl}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+                    {/* Receipt row — view + replace upload */}
+                    <div className="flex items-center gap-3 px-4 py-2.5">
+                      <Receipt className="w-3.5 h-3.5 text-slate-400 shrink-0" />
+                      <span className="text-xs text-slate-400 w-32 shrink-0">Receipt</span>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {receiptUrl ? (
+                          <a
+                            href={receiptUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-1.5 text-xs font-medium px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 border border-blue-200 hover:bg-blue-100 transition-colors"
+                          >
+                            <ExternalLink className="w-3 h-3" />
+                            View File
+                          </a>
+                        ) : (
+                          <span className="text-xs text-slate-400 italic">No receipt</span>
+                        )}
+                        <button
+                          onClick={() => triggerReceiptUpload(index)}
+                          disabled={saving || isUploadingThisReceipt}
+                          className="inline-flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-md bg-slate-50 text-slate-600 border border-slate-200 hover:bg-slate-100 transition-colors disabled:opacity-50"
+                          title={receiptUrl ? "Replace receipt" : "Upload receipt"}
                         >
-                          <ExternalLink className="w-3 h-3" />
-                          View File
-                        </a>
+                          {isUploadingThisReceipt ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Upload className="w-3 h-3" />
+                          )}
+                          {receiptUrl ? "Replace" : "Upload"}
+                        </button>
                       </div>
-                    ) : !phone && !method ? null : (
-                      <div className="flex items-center gap-3 px-4 py-2.5">
-                        <Receipt className="w-3.5 h-3.5 text-slate-300 shrink-0" />
-                        <span className="text-xs text-slate-400 w-32 shrink-0">Receipt</span>
-                        <span className="text-xs text-slate-400 italic">No receipt uploaded</span>
-                      </div>
-                    )}
+                    </div>
                   </div>
                 )
               })}
@@ -298,6 +368,15 @@ export function AddonsCard({ order, onOrderUpdate }: AddonsCardProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Hidden file input for receipt uploads */}
+      <input
+        ref={receiptInputRef}
+        type="file"
+        accept="image/jpeg,image/jpg,image/png,image/webp"
+        className="hidden"
+        onChange={handleReceiptFileChange}
+      />
 
       {/* Confirm delete single */}
       <AlertDialog open={deleteIndex !== null} onOpenChange={(open) => !open && setDeleteIndex(null)}>
