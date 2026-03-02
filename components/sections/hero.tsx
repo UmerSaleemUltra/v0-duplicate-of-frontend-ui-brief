@@ -1,7 +1,5 @@
 "use client"
 import { ArrowRight } from "lucide-react"
-import type React from "react"
-
 import Link from "next/link"
 import { useState, useEffect } from "react"
 
@@ -36,20 +34,8 @@ export default function HeroSection() {
     }
   }, [])
 
-  const buttonLink = "/coming-soon"
+  const buttonLink = isAuthenticated ? (userRole === "admin" ? "/admin" : "/client/dashboard") : "/checkout"
   const buttonText = isAuthenticated ? "Go to Dashboard" : "Start Your Business"
-
-  const handleCalculatorClick = () => {
-    if (isAuthenticated) {
-      window.location.href = "/checkout"
-    } else {
-      setShowCalculator(true)
-    }
-  }
-
-  const handleStartBusinessClick = (e: React.MouseEvent) => {
-    // No additional logic needed, link will redirect to /coming-soon
-  }
 
   return (
     <>
@@ -73,7 +59,6 @@ export default function HeroSection() {
             <div className="flex flex-col sm:flex-row justify-center items-center gap-4 px-4">
               <Link
                 href={buttonLink}
-                onClick={handleStartBusinessClick}
                 className="flex items-center justify-center gap-2 text-sm sm:text-base md:text-lg 
                          text-[#ff0d13] bg-white rounded-full px-5 py-2.5 sm:px-7 sm:py-3 md:px-8 md:py-3.5 font-medium 
                          shadow-md hover:shadow-lg hover:bg-white/90 transition-all w-full sm:w-auto cursor-pointer"
