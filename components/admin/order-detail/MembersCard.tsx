@@ -121,6 +121,22 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
     )
   }
 
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  /**
+   * Ensures exactly one member is marked as responsible.
+   * If no member has the flag, the first member in the list is elected.
+   */
+  const ensureOneResponsible = (list: any[]): any[] => {
+    if (list.length === 0) return list
+    const hasResponsible = list.some((m) => m.isResponsiblePerson || m.responsiblePerson)
+    if (hasResponsible) return list
+    // Auto-elect the first member
+    return list.map((m, i) =>
+      i === 0 ? { ...m, isResponsiblePerson: true, responsiblePerson: true } : m,
+    )
+  }
+
   // ── Handlers ──────────────────────────────────────────────────────────────
 
   const openEdit = (index: number) => {
@@ -151,7 +167,7 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
       setSaving(true)
       // If this member is being marked as responsible, clear the flag on all others
       const isResponsible = !!(editForm.isResponsiblePerson || editForm.responsiblePerson)
-      const updatedMembers = members.map((m, i) => {
+      const mapped = members.map((m, i) => {
         if (i === editingIndex) return { ...m, ...editForm }
         if (isResponsible) {
           // Unmark responsible on all other members
@@ -159,6 +175,8 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
         }
         return m
       })
+      // If no one is responsible after the edit, auto-elect the first member
+      const updatedMembers = ensureOneResponsible(mapped)
       const saved = await saveToApi(updatedMembers)
       onMembersUpdate?.(saved)
       setEditDialogOpen(false)
@@ -179,7 +197,9 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
     if (deletingIndex === null) return
     try {
       setDeleting(true)
-      const updatedMembers = members.filter((_, i) => i !== deletingIndex)
+      const filtered = members.filter((_, i) => i !== deletingIndex)
+      // If the deleted member was responsible, auto-elect the first remaining member
+      const updatedMembers = ensureOneResponsible(filtered)
       const saved = await saveToApi(updatedMembers)
       onMembersUpdate?.(saved)
       setDeleteDialogOpen(false)
@@ -205,7 +225,8 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
       const base = isResponsible
         ? members.map((m) => ({ ...m, isResponsiblePerson: false, responsiblePerson: false }))
         : members
-      const updatedMembers = [...base, newEntry]
+      // Ensure one responsible is always set (auto-elect first if needed)
+      const updatedMembers = ensureOneResponsible([...base, newEntry])
       const saved = await saveToApi(updatedMembers)
       onMembersUpdate?.(saved)
       setAddDialogOpen(false)
