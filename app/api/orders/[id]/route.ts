@@ -407,18 +407,41 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
+    // Build company-level fields to sync when purchasedAddons or pricing are updated.
+    // The DB stores purchasedAddons, pricing, and revenue at the TOP-LEVEL company doc,
+    // not inside the embedded orders[] array — so we must update the company directly.
+    const companyLevelUpdate: any = { updatedAt: new Date().toISOString() }
+    if ("purchasedAddons" in body) {
+      companyLevelUpdate.purchasedAddons = body.purchasedAddons
+    }
+    if ("pricing" in body) {
+      companyLevelUpdate.pricing = body.pricing
+      // Recalculate revenue: subtotal (package+state) + addonsTotal
+      const addonsTotal = body.pricing?.addonsTotal ?? 0
+      const subtotal = body.pricing?.subtotal ?? (body.pricing?.packagePrice ?? 0) + (body.pricing?.stateFilingFee ?? 0)
+      companyLevelUpdate.revenue = subtotal + addonsTotal
+    }
+    const hasCompanyLevelChanges = "purchasedAddons" in body || "pricing" in body
+
     let result
     if (isEmbeddedOrder && companyId) {
       const companyIdObj =
         typeof companyId === "string" && ObjectId.isValid(companyId) ? new ObjectId(companyId) : companyId
 
-      const updatedCompany = await db.collection("companies").findOneAndUpdate(
+      // Build $set: update embedded order + any company-level fields together
+      const setPayload: any = {
+        ...companyLevelUpdate,
+      }
+
+      // Try matching by _id first
+      let updatedCompany = await db.collection("companies").findOneAndUpdate(
         {
           _id: companyIdObj,
           "orders._id": new ObjectId(id),
         },
         {
           $set: {
+            ...setPayload,
             "orders.$[elem]": { ...order, ...updateData },
           },
         },
@@ -430,10 +453,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
       if (!updatedCompany) {
         console.log("[v0] Update by _id failed, trying by id field")
-        const updatedCompanyByIdField = await db.collection("companies").findOneAndUpdate(
+        updatedCompany = await db.collection("companies").findOneAndUpdate(
           { _id: companyIdObj },
           {
             $set: {
+              ...setPayload,
               "orders.$[elem]": { ...order, ...updateData },
             },
           },
@@ -442,15 +466,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             returnDocument: "after",
           },
         )
-        result = updatedCompanyByIdField
-      } else {
-        result = updatedCompany
       }
+      result = updatedCompany
     } else {
       // Update standalone order
       result = await db
         .collection("orders")
         .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
+
+      // For standalone orders, also sync company-level fields if we have a companyId
+      if (hasCompanyLevelChanges && result?.companyId) {
+        const cId = result.companyId
+        const cObjId = typeof cId === "string" && ObjectId.isValid(cId) ? new ObjectId(cId) : cId
+        if (cObjId) {
+          await db.collection("companies").updateOne({ _id: cObjId }, { $set: companyLevelUpdate })
+        }
+      }
     }
 
     if (!result) {
@@ -460,6 +491,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const updatedOrder = { id: result._id?.toString() || id, ...result }
     broadcastUpdate("orders", "updated", updatedOrder)
+    if (hasCompanyLevelChanges) {
+      broadcastUpdate("companies", "updated", { id: result._id?.toString() })
+    }
 
     return addSecurityHeaders(
       NextResponse.json({
