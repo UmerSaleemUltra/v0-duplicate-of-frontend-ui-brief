@@ -149,9 +149,16 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
     if (editingIndex === null) return
     try {
       setSaving(true)
-      const updatedMembers = members.map((m, i) =>
-        i === editingIndex ? { ...m, ...editForm } : m,
-      )
+      // If this member is being marked as responsible, clear the flag on all others
+      const isResponsible = !!(editForm.isResponsiblePerson || editForm.responsiblePerson)
+      const updatedMembers = members.map((m, i) => {
+        if (i === editingIndex) return { ...m, ...editForm }
+        if (isResponsible) {
+          // Unmark responsible on all other members
+          return { ...m, isResponsiblePerson: false, responsiblePerson: false }
+        }
+        return m
+      })
       const saved = await saveToApi(updatedMembers)
       onMembersUpdate?.(saved)
       setEditDialogOpen(false)
@@ -193,7 +200,12 @@ export function MembersCard({ members, companyId, onMembersUpdate }: MembersCard
     try {
       setSaving(true)
       const newEntry = { ...newMemberForm, id: Date.now().toString() }
-      const updatedMembers = [...members, newEntry]
+      const isResponsible = !!(newEntry.isResponsiblePerson || newEntry.responsiblePerson)
+      // If this new member is responsible, unmark all existing members
+      const base = isResponsible
+        ? members.map((m) => ({ ...m, isResponsiblePerson: false, responsiblePerson: false }))
+        : members
+      const updatedMembers = [...base, newEntry]
       const saved = await saveToApi(updatedMembers)
       onMembersUpdate?.(saved)
       setAddDialogOpen(false)
@@ -617,15 +629,23 @@ function MemberForm({
       </div>
 
       {/* Responsible Person */}
-      <div className="flex items-center justify-between rounded-xl border border-gray-200 px-4 py-3">
-        <div>
-          <p className="text-sm font-medium text-gray-900">Responsible Person</p>
-          <p className="text-xs text-gray-400 mt-0.5">Mark as the primary responsible member</p>
+      <div className="rounded-xl border border-gray-200 px-4 py-3 space-y-1">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-gray-900">Responsible Person</p>
+            <p className="text-xs text-gray-400 mt-0.5">Only one member can be the responsible person</p>
+          </div>
+          <Switch
+            checked={!!(form.isResponsiblePerson ?? form.responsiblePerson)}
+            onCheckedChange={(v) => onChange({ ...form, isResponsiblePerson: v, responsiblePerson: v })}
+          />
         </div>
-        <Switch
-          checked={!!(form.isResponsiblePerson ?? form.responsiblePerson)}
-          onCheckedChange={(v) => onChange({ ...form, isResponsiblePerson: v, responsiblePerson: v })}
-        />
+        {!!(form.isResponsiblePerson || form.responsiblePerson) && (
+          <p className="text-xs text-amber-600 flex items-center gap-1 pt-0.5">
+            <AlertCircle className="w-3 h-3 shrink-0" />
+            Saving will remove this role from any other member
+          </p>
+        )}
       </div>
     </div>
   )

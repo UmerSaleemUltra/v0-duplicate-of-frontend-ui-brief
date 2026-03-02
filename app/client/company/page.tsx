@@ -118,7 +118,7 @@ export default function CompanyPage() {
               country: m.country || "US",
               zip: m.zip || "Not yet",
               ssn: m.ssn && m.ssn.trim() ? m.ssn : "Not yet",
-              isResponsiblePerson: !!m.isResponsiblePerson,
+              isResponsiblePerson: !!(m.isResponsiblePerson || m.responsiblePerson),
               itinAdded: !!m.needsItin,
               ownership: `${m.ownershipPercentage || 0}%`,
             }
@@ -598,18 +598,27 @@ export default function CompanyPage() {
           </div>
         )}
 
-        {/* Members & Owners - HIDDEN */}
-        {false && companyData.members && companyData.members.length > 0 && (
+        {/* Members & Owners */}
+        {companyData.members && companyData.members.length > 0 && (
           <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6 md:p-8 transition-shadow duration-200 hover:shadow-lg">
-            <h2 className="text-base sm:text-lg font-semibold mb-4">Company Members</h2>
+            <h2 className="text-base sm:text-lg font-semibold mb-4">
+              Company Members
+              <span className="ml-2 text-sm font-normal text-slate-500">
+                ({companyData.members.length} member{companyData.members.length !== 1 ? "s" : ""})
+              </span>
+            </h2>
             <div className="space-y-6">
-              {companyData.members.map((member: MemberUI) => {
-                return (
-                  <div key={member.id} className="space-y-3">
+              {companyData.members.map((member: MemberUI, idx: number) => (
+                <div key={member.id}>
+                  {/* Divider between members */}
+                  {idx > 0 && <div className="border-t border-slate-200 mb-6" />}
+
+                  <div className="space-y-3">
+                    {/* Name + responsible person badge */}
                     <div className="flex flex-col py-2 gap-2">
                       <span className="text-slate-600 text-sm sm:text-base text-left">Member Name</span>
                       <span className="font-medium text-slate-900 text-sm sm:text-base flex items-center gap-2 text-left">
-                        {member.name}
+                        {member.name || "N/A"}
                         {member.isResponsiblePerson && (
                           <Badge className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 text-xs">
                             Responsible Person
@@ -618,50 +627,37 @@ export default function CompanyPage() {
                       </span>
                     </div>
 
-                    {member.email && (
+                    {/* SSN/ITIN — only show if present */}
+                    {member.ssn && member.ssn !== "Not yet" && (
                       <div className="flex flex-col py-2 gap-2">
-                        <span className="text-slate-600 text-sm sm:text-base text-left">Email</span>
-                        <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                          {member.email}
+                        <span className="text-slate-600 text-sm sm:text-base text-left">SSN / ITIN</span>
+                        <span className="font-medium text-slate-900 text-sm sm:text-base text-left font-mono">
+                          {member.ssn}
+                          {member.itinAdded && (
+                            <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs ml-2 font-sans">
+                              ITIN Application Added
+                            </Badge>
+                          )}
                         </span>
                       </div>
                     )}
 
-                    {member.phone && (
+                    {/* Address — only show if at least street is available */}
+                    {member.address && member.address !== "Not yet" && (
                       <div className="flex flex-col py-2 gap-2">
-                        <span className="text-slate-600 text-sm sm:text-base text-left">Phone</span>
+                        <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
                         <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                          {member.phone}
+                          {member.address}
+                          {member.city && member.city !== "Not yet" && `, ${member.city}`}
+                          {member.state && member.state !== "Not yet" && `, ${member.state}`}
+                          {member.zip && member.zip !== "Not yet" && ` ${member.zip}`}
+                          {member.country && member.country !== "Not yet" && `, ${member.country}`}
                         </span>
                       </div>
                     )}
-
-                    <div className="flex flex-col py-2 gap-2">
-                      <span className="text-slate-600 text-sm sm:text-base text-left">SSN/ITIN</span>
-                      <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                        {member.ssn || "Not Yet"}
-                        {member.itinAdded && (
-                          <Badge className="bg-blue-50 text-blue-700 border-blue-200 text-xs ml-2">
-                            ITIN Application Added
-                          </Badge>
-                        )}
-                      </span>
-                    </div>
-
-                    <div className="flex flex-col py-2 gap-2">
-                      <span className="text-slate-600 text-sm sm:text-base text-left">Address</span>
-                      <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                        {member.address}, {member.city}, {member.state} {member.zip}, {member.country}
-                      </span>
-                    </div>
-
-                    {companyData.members.length > 1 &&
-                      member !== companyData.members[companyData.members.length - 1] && (
-                        <div className="border-t border-slate-200 pt-4 mt-4" />
-                      )}
                   </div>
-                )
-              })}
+                </div>
+              ))}
             </div>
           </div>
         )}
