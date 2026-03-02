@@ -2691,16 +2691,7 @@ export default function OrderDetailPage() {
                 value={einValue}
                 onChange={(e) => setEinValue(e.target.value)}
                 className="h-10 font-mono"
-                maxLength={10}
               />
-              <p className="text-xs text-slate-500">Format: XX-XXXXXXX (9 digits with hyphen)</p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> The EIN will be formatted automatically and the "EIN Successfully Processed"
-                milestone will be marked as complete.
-              </p>
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
@@ -2789,15 +2780,6 @@ export default function OrderDetailPage() {
                 onChange={(e) => setItinValue(e.target.value)}
                 className="h-10 font-mono"
               />
-              <p className="text-xs text-slate-500">
-                Format: 9XX-XX-XXXX (ITINs begin with the digit 9)
-              </p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-amber-50 border border-amber-200">
-              <p className="text-sm text-amber-800">
-                <strong>Note:</strong> ITIN is for individual members, not the company entity.
-              </p>
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
@@ -2842,16 +2824,6 @@ export default function OrderDetailPage() {
                 onChange={(e) => setBusinessIdValue(e.target.value)}
                 className="h-10 font-mono"
               />
-              <p className="text-xs text-slate-500">
-                Enter the business ID or filing number issued by the state (format varies by state)
-              </p>
-            </div>
-
-            <div className="p-3 rounded-lg bg-blue-50 border border-blue-200">
-              <p className="text-sm text-blue-800">
-                <strong>Note:</strong> This is the official state-issued identifier for the business entity, different
-                from the EIN.
-              </p>
             </div>
 
             <div className="flex justify-end gap-3 pt-4 border-t">
