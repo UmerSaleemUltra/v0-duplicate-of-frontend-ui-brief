@@ -537,16 +537,16 @@ Notes: ${mail.notes || "None"}
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900">Mailroom</h1>
-          <p className="mt-2 text-sm text-slate-600">Manage incoming mail and documents for all companies</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Mailroom</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Manage incoming mail and documents for all companies</p>
         </div>
         <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 cursor-pointer">
-              <Upload className="mr-2 h-4 w-4" />
+            <Button variant="outline" size="sm" className="h-9 border-slate-200 text-slate-700 text-xs rounded-xl">
+              <Upload className="mr-1.5 h-3.5 w-3.5" />
               Upload Mail
             </Button>
           </DialogTrigger>
@@ -675,66 +675,56 @@ Notes: ${mail.notes || "None"}
         </Dialog>
       </div>
 
-      <div className="glass-card rounded-2xl p-6">
-        <div className="flex flex-col lg:flex-row gap-4">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-            <Input
-              placeholder="Search by company, recipient, or subject..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 bg-white border-slate-200"
-            />
-          </div>
-
-          <Select value={typeFilter} onValueChange={setTypeFilter}>
-            <SelectTrigger className="w-full lg:w-[200px] h-10 bg-white border-slate-200">
-              <SelectValue placeholder="Mail Type" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Types</SelectItem>
-              <SelectItem value="letter">Letter</SelectItem>
-              <SelectItem value="package">Package</SelectItem>
-              <SelectItem value="legal">Legal</SelectItem>
-              <SelectItem value="tax">Tax</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
+      <div className="flex flex-col sm:flex-row gap-3">
+        <div className="relative flex-1">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+          <Input
+            placeholder="Search by company, sender, or subject..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-9 h-10 bg-white border-slate-200 rounded-xl text-sm"
+          />
         </div>
-
-        {selectedItems.length > 0 && (
-          <div className="mt-4 flex items-center gap-2 p-3 bg-slate-50 rounded-lg border border-slate-200">
-            <span className="text-sm text-slate-600">
-              {selectedItems.length} item{selectedItems.length > 1 ? "s" : ""} selected
-            </span>
-          </div>
-        )}
+        <Select value={typeFilter} onValueChange={setTypeFilter}>
+          <SelectTrigger className="w-full sm:w-44 h-10 bg-white border-slate-200 rounded-xl text-sm">
+            <SelectValue placeholder="All Types" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="letter">Letter</SelectItem>
+            <SelectItem value="package">Package</SelectItem>
+            <SelectItem value="legal">Legal</SelectItem>
+            <SelectItem value="tax">Tax</SelectItem>
+            <SelectItem value="other">Other</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
 
-      <div className="glass-card rounded-2xl overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <span className="text-sm font-medium text-slate-900">Mail Items</span>
+          <span className="text-xs text-slate-400">{filteredItems.length} total</span>
+        </div>
         <div className="overflow-x-auto">
           <Table>
             <TableHeader>
-              <TableRow className="border-slate-200">
-                <TableHead className="w-[50px]">
-                  <Checkbox
-                    checked={selectedItems.length === filteredItems.length && filteredItems.length > 0}
-                    onCheckedChange={toggleSelectAll}
-                  />
+              <TableRow className="border-slate-100">
+                <TableHead className="w-10 px-6">
+                  <Checkbox checked={selectedItems.length === filteredItems.length && filteredItems.length > 0} onCheckedChange={toggleSelectAll} />
                 </TableHead>
-                <TableHead className="text-slate-900 font-semibold">Company</TableHead>
-                <TableHead className="text-slate-900 font-semibold">From</TableHead>
-                <TableHead className="text-slate-900 font-semibold">Subject</TableHead>
-                <TableHead className="text-slate-900 font-semibold">Type</TableHead>
-                <TableHead className="text-slate-900 font-semibold">Notes</TableHead>
-                <TableHead className="text-slate-900 font-semibold">Date</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
+                <TableHead className="px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Company</TableHead>
+                <TableHead className="px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">From</TableHead>
+                <TableHead className="px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Subject</TableHead>
+                <TableHead className="px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Type</TableHead>
+                <TableHead className="px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Notes</TableHead>
+                <TableHead className="px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Date</TableHead>
+                <TableHead className="w-12 px-6" />
               </TableRow>
             </TableHeader>
             <TableBody>
               {paginatedItems.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center text-muted-foreground py-12">
+                  <TableCell colSpan={8} className="px-6 py-16 text-center text-sm text-slate-400">
                     No mail items found
                   </TableCell>
                 </TableRow>
@@ -742,61 +732,31 @@ Notes: ${mail.notes || "None"}
                 paginatedItems.map((item) => {
                   const company = companies.find((c) => c.id === item.companyId)
                   return (
-                    <TableRow
-                      key={item.id}
-                      className="border-slate-200 hover:!bg-transparent"
-                    >
-                      <TableCell>
-                        <Checkbox
-                          checked={selectedItems.includes(item.id)}
-                          onCheckedChange={() => {
-                            if (selectedItems.includes(item.id)) {
-                              setSelectedItems(selectedItems.filter((id) => id !== item.id))
-                            } else {
-                              setSelectedItems([...selectedItems, item.id])
-                            }
-                          }}
-                        />
+                    <TableRow key={item.id} className="border-slate-100 hover:bg-slate-50/50 transition-colors">
+                      <TableCell className="px-6">
+                        <Checkbox checked={selectedItems.includes(item.id)} onCheckedChange={() => toggleSelectItem(item.id)} />
                       </TableCell>
-                      <TableCell className="font-medium text-slate-900">{company?.name || "Unknown"}</TableCell>
-                      <TableCell className="text-slate-600">{item.from || item.sender}</TableCell>
-                      <TableCell className="text-slate-900">{item.subject}</TableCell>
-                      <TableCell className="text-slate-600 text-sm capitalize">{item.type}</TableCell>
-                      <TableCell className="text-slate-600 text-sm">
-                        {item.notes ? (
-                          <span className="line-clamp-2" title={item.notes}>
-                            {item.notes}
-                          </span>
-                        ) : (
-                          <span className="text-slate-400 italic">No notes</span>
-                        )}
+                      <TableCell className="px-6 py-4 text-sm font-medium text-slate-900">{company?.name || "—"}</TableCell>
+                      <TableCell className="px-6 py-4 text-sm text-slate-600">{item.from || item.sender}</TableCell>
+                      <TableCell className="px-6 py-4 text-sm text-slate-900">{item.subject}</TableCell>
+                      <TableCell className="px-6 py-4 text-xs text-slate-500 capitalize">{item.type}</TableCell>
+                      <TableCell className="px-6 py-4 text-xs text-slate-400 max-w-[160px]">
+                        {item.notes ? <span className="line-clamp-1">{item.notes}</span> : "—"}
                       </TableCell>
-                      <TableCell className="text-slate-600">
+                      <TableCell className="px-6 py-4 text-xs text-slate-400">
                         {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()}
                       </TableCell>
-                      <TableCell className="text-right">
+                      <TableCell className="px-6 py-4">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" size="icon" className="h-8 w-8 cursor-pointer">
+                            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600">
                               <MoreVertical className="h-4 w-4" />
                             </Button>
                           </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuItem onClick={() => handleDownloadDocument(item.id)}>
-                              <Download className="h-4 w-4 mr-2" />
-                              Download
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => handleEditMail(item)}>
-                              <Edit className="h-4 w-4 mr-2" />
-                              Edit
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                              onClick={() => handleDeleteMail(item.id)}
-                              className="text-red-600 focus:text-red-600"
-                            >
-                              <Trash2 className="h-4 w-4 mr-2" />
-                              Delete
-                            </DropdownMenuItem>
+                          <DropdownMenuContent align="end" className="w-36">
+                            <DropdownMenuItem onClick={() => handleDownloadDocument(item.id)}><Download className="h-4 w-4 mr-2" />Download</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleEditMail(item)}><Edit className="h-4 w-4 mr-2" />Edit</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleDeleteMail(item.id)} className="text-red-600"><Trash2 className="h-4 w-4 mr-2" />Delete</DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
                       </TableCell>
@@ -809,44 +769,17 @@ Notes: ${mail.notes || "None"}
         </div>
 
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-5 border-t border-slate-200 dark:border-slate-700">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Showing <span className="font-medium text-slate-900 dark:text-slate-100">{startIndex + 1}</span> to{" "}
-              <span className="font-medium text-slate-900 dark:text-slate-100">{Math.min(endIndex, filteredItems.length)}</span> of{" "}
-              <span className="font-medium text-slate-900 dark:text-slate-100">{filteredItems.length}</span> mail items
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
-                disabled={currentPage === 1}
-                className="h-9 px-4 cursor-pointer hover:bg-transparent"
-              >
-                Previous
-              </Button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className={`h-9 w-9 p-0 cursor-pointer hover:bg-transparent ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white" : ""}`}
-                  >
-                    {page}
-                  </Button>
-                ))}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
-                disabled={currentPage === totalPages}
-                className="h-9 px-4 cursor-pointer hover:bg-transparent"
-              >
-                Next
-              </Button>
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+            <p className="text-xs text-slate-400">{startIndex + 1}–{Math.min(endIndex, filteredItems.length)} of {filteredItems.length}</p>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs">Previous</Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button key={page} variant="ghost" size="sm" onClick={() => setCurrentPage(page)}
+                  className={`h-8 w-8 p-0 text-xs ${currentPage === page ? "bg-slate-900 text-white hover:bg-slate-800" : "text-slate-600"}`}>
+                  {page}
+                </Button>
+              ))}
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs">Next</Button>
             </div>
           </div>
         )}

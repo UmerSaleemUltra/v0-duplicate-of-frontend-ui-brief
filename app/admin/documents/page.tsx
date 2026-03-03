@@ -408,17 +408,16 @@ export default function DocumentsPage() {
   }
 
   return (
-    <div className="space-y-8">
-      {/* Header */}
+    <div className="space-y-6">
       <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-semibold text-slate-900">Documents</h1>
-          <p className="text-slate-600 mt-1">Manage and upload formation documents</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Documents</h1>
+          <p className="text-sm text-slate-500 mt-0.5">Manage and upload formation documents</p>
         </div>
         <Dialog open={uploadModalOpen} onOpenChange={setUploadModalOpen}>
           <DialogTrigger asChild>
-            <Button className="bg-primary hover:bg-primary/90 w-full md:w-auto">
-              <Upload className="mr-2 h-4 w-4" />
+            <Button variant="outline" size="sm" className="h-9 border-slate-200 text-slate-700 text-xs rounded-xl w-full md:w-auto">
+              <Upload className="mr-1.5 h-3.5 w-3.5" />
               Upload Documents
             </Button>
           </DialogTrigger>
@@ -527,63 +526,45 @@ export default function DocumentsPage() {
         </Dialog>
       </div>
 
-      {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <div className="glass-card p-6 rounded-2xl border border-white/10">
-          <div className="flex items-center gap-4">
-            <div className="h-14 w-14 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
-              <FileText className="h-7 w-7 text-white" />
-            </div>
-            <div>
-              <p className="text-sm text-muted-foreground">Total Documents</p>
-              <p className="text-3xl font-bold mt-1">{totalDocuments}</p>
-            </div>
-          </div>
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5">
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Documents</div>
+          <div className="mt-2 text-3xl font-semibold text-slate-900">{totalDocuments}</div>
         </div>
       </div>
 
-      {/* Filters */}
-      <div className="glass-card p-6 rounded-2xl border border-white/10">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search by customer, company, or document..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10 bg-background/50"
-          />
-        </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
+        <Input
+          placeholder="Search by customer, company, or document..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          className="pl-9 h-10 bg-white border-slate-200 rounded-xl text-sm"
+        />
       </div>
 
-      {/* Documents Table */}
-      <div className="glass-card rounded-2xl overflow-hidden">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <span className="text-sm font-medium text-slate-900">Documents</span>
+          <span className="text-xs text-slate-400">{filteredDocuments.length} total</span>
+        </div>
         <div className="overflow-x-auto">
           <table className="w-full">
-            <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-white/10">
-              <tr>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Document Name</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Customer</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Company</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Type</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Date</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Size</th>
-                <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Actions</th>
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Name</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Customer</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Company</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Type</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Date</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Size</th>
+                <th className="px-6 py-3 w-24" />
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100">
               {paginatedDocuments.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="p-16 text-center">
-                    <div className="flex flex-col items-center gap-4">
-                      <div className="h-16 w-16 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                        <FileText className="h-8 w-8 text-slate-400" />
-                      </div>
-                      <div className="space-y-1">
-                        <p className="text-lg font-medium text-slate-900 dark:text-slate-100">No documents found</p>
-                        <p className="text-sm text-muted-foreground">Upload your first document to get started</p>
-                      </div>
-                    </div>
-                  </td>
+                  <td colSpan={7} className="px-6 py-16 text-center text-sm text-slate-400">No documents found</td>
                 </tr>
               ) : (
                 paginatedDocuments.map((doc) => {
@@ -591,100 +572,54 @@ export default function DocumentsPage() {
                   const user = users.find((u) => u.id === doc.userId)
 
                   return (
-                    <tr key={doc.id} className="border-b border-white/5">
-                      <td className="p-4">
-                        <span className="font-medium">
-                          {doc.title || doc.fileName || doc.name || "Untitled Document"}
+                    <tr key={doc.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <span className="text-sm font-medium text-slate-900">
+                          {doc.title || doc.fileName || doc.name || "Untitled"}
                         </span>
                       </td>
-                      <td className="p-4">
-                        <span className="text-sm">{user?.name || "Unknown"}</span>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-600">{user?.name || "—"}</span>
                       </td>
-                      <td className="p-4">
-                        <span className="text-sm text-muted-foreground">{company?.name || "Unknown"}</span>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-500">{company?.name || "—"}</span>
                       </td>
-                      <td className="p-4">
-                        <span className="text-sm">{doc.documentType || doc.title || "Document"}</span>
+                      <td className="px-6 py-4">
+                        <span className="text-xs text-slate-500">{doc.documentType || "Document"}</span>
                       </td>
-                      <td className="p-4">
-                        <span className="text-sm text-muted-foreground">
-                          {doc.uploadedAt
-                            ? new Date(doc.uploadedAt).toLocaleDateString()
-                            : doc.createdAt
-                              ? new Date(doc.createdAt).toLocaleDateString()
-                              : "N/A"}
+                      <td className="px-6 py-4">
+                        <span className="text-xs text-slate-400">
+                          {doc.uploadedAt ? new Date(doc.uploadedAt).toLocaleDateString() : doc.createdAt ? new Date(doc.createdAt).toLocaleDateString() : "—"}
                         </span>
                       </td>
-                      <td className="p-4">
-                        <span className="text-sm text-muted-foreground">
-                          {doc.size
-                            ? `${(doc.size / 1024).toFixed(2)} KB`
-                            : doc.fileSize
-                              ? `${(doc.fileSize / 1024).toFixed(2)} KB`
-                              : "N/A"}
+                      <td className="px-6 py-4">
+                        <span className="text-xs text-slate-400">
+                          {doc.size ? `${(doc.size / 1024).toFixed(1)} KB` : doc.fileSize ? `${(doc.fileSize / 1024).toFixed(1)} KB` : "—"}
                         </span>
                       </td>
-                      <td className="p-4">
-                        <div className="flex gap-2">
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 p-0"
-                            onClick={() => handleEditDocument(doc)}
-                            title="Edit document"
-                          >
-                            <Pencil className="h-4 w-4" />
+                      <td className="px-6 py-4">
+                        <div className="flex gap-1">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600" onClick={() => handleEditDocument(doc)} title="Edit">
+                            <Pencil className="h-3.5 w-3.5" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 p-0"
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600"
                             onClick={async () => {
                               try {
                                 const token = authService.getToken()
-                                if (!token) {
-                                  toast({
-                                    title: "Authentication Required",
-                                    description: "Please log in to download documents.",
-                                    variant: "destructive",
-                                  })
-                                  return
-                                }
-
+                                if (!token) { toast({ title: "Authentication Required", description: "Please log in.", variant: "destructive" }); return }
                                 const blob = await ApiClient.documents.download(token, doc.id)
                                 if (blob) {
                                   const url = URL.createObjectURL(blob)
                                   const a = document.createElement("a")
-                                  a.href = url
-                                  a.download = doc.fileName || doc.title || "document"
-                                  a.click()
-                                  URL.revokeObjectURL(url)
-
-                                  toast({
-                                    title: "Download Started",
-                                    description: `Downloading ${doc.fileName || doc.title}`,
-                                  })
+                                  a.href = url; a.download = doc.fileName || doc.title || "document"; a.click(); URL.revokeObjectURL(url)
+                                  toast({ title: "Download Started", description: `Downloading ${doc.fileName || doc.title}` })
                                 }
-                              } catch (error) {
-                                toast({
-                                  title: "Download Failed",
-                                  description: "Failed to download document",
-                                  variant: "destructive",
-                                })
-                              }
-                            }}
-                            title="Download document"
-                          >
-                            <Download className="h-4 w-4" />
+                              } catch { toast({ title: "Download Failed", description: "Failed to download", variant: "destructive" }) }
+                            }} title="Download">
+                            <Download className="h-3.5 w-3.5" />
                           </Button>
-                          <Button
-                            size="sm"
-                            variant="ghost"
-                            className="h-8 w-8 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleDeleteDocument(doc.id, doc.fileName || doc.title)}
-                            title="Delete document"
-                          >
-                            <Trash2 className="h-4 w-4" />
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-red-500" onClick={() => handleDeleteDocument(doc.id, doc.fileName || doc.title)} title="Delete">
+                            <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
                       </td>
@@ -696,46 +631,18 @@ export default function DocumentsPage() {
           </table>
         </div>
 
-        {/* Pagination Controls */}
         {totalPages > 1 && (
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-5 border-t border-slate-200 dark:border-slate-700">
-            <p className="text-sm text-slate-600 dark:text-slate-400">
-              Showing <span className="font-medium text-slate-900 dark:text-slate-100">{startIndex + 1}</span> to{" "}
-              <span className="font-medium text-slate-900 dark:text-slate-100">{Math.min(endIndex, filteredDocuments.length)}</span> of{" "}
-              <span className="font-medium text-slate-900 dark:text-slate-100">{filteredDocuments.length}</span> documents
-            </p>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="h-9 px-4"
-              >
-                Previous
-              </Button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setCurrentPage(page)}
-                    className={`h-9 w-9 p-0 ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1d23] text-white" : ""}`}
-                  >
-                    {page}
-                  </Button>
-                ))}
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="h-9 px-4"
-              >
-                Next
-              </Button>
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+            <p className="text-xs text-slate-400">{startIndex + 1}–{Math.min(endIndex, filteredDocuments.length)} of {filteredDocuments.length}</p>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs">Previous</Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button key={page} variant="ghost" size="sm" onClick={() => setCurrentPage(page)}
+                  className={`h-8 w-8 p-0 text-xs ${currentPage === page ? "bg-slate-900 text-white hover:bg-slate-800" : "text-slate-600"}`}>
+                  {page}
+                </Button>
+              ))}
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs">Next</Button>
             </div>
           </div>
         )}
