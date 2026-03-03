@@ -544,99 +544,65 @@ export default function AdminAddonsPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
-              Addons Management
-            </h1>
-            <p className="text-slate-600 mt-1">Create and manage add-on services for clients</p>
+            <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Addons</h1>
+            <p className="text-sm text-slate-500 mt-0.5">Create and manage add-on services for clients</p>
           </div>
-          <Button
-            onClick={() => handleOpenDialog()}
-            className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 transition-opacity shadow-lg"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Add New Addon
+          <Button onClick={() => handleOpenDialog()} variant="outline" size="sm" className="h-9 border-slate-200 text-slate-700 text-xs rounded-xl">
+            <Plus className="w-3.5 h-3.5 mr-1.5" />
+            New Addon
           </Button>
         </div>
 
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {addons.map((addon) => (
-            <Card
+            <div
               key={addon.id}
-              className={`transition-all duration-300 hover:shadow-xl hover:scale-105 ${!addon.isActive ? "opacity-60" : "border-slate-200"}`}
+              className={`bg-white border border-slate-200 rounded-2xl p-5 transition-opacity ${!addon.isActive ? "opacity-50" : ""}`}
             >
-              <CardHeader>
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg">{addon.name}</CardTitle>
-                    <CardDescription className="mt-1">{addon.description}</CardDescription>
-                  </div>
-                  <Badge className={getCategoryColor(addon.category)}>{addon.category}</Badge>
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-slate-900 truncate">{addon.name}</p>
+                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{addon.description}</p>
                 </div>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-4 h-4 text-slate-500" />
-                      <span className="text-2xl font-bold text-slate-900">${addon.price}</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm text-slate-600">Active</span>
-                      <Switch checked={addon.isActive} onCheckedChange={() => handleToggleActive(addon)} />
-                    </div>
-                  </div>
+                <span className={`ml-3 shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getCategoryColor(addon.category)}`}>
+                  {addon.category}
+                </span>
+              </div>
 
-                  <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-xs">
-                      {addon.billingType === "one_time" && "One Time"}
-                      {addon.billingType === "recurring_monthly" && "Monthly"}
-                      {addon.billingType === "recurring_quarterly" && "Quarterly"}
-                      {addon.billingType === "recurring_annual" && "Annual"}
-                      {addon.billingType === "custom" && `${addon.customDuration} days`}
-                      {!addon.billingType && "One Time"}
-                    </Badge>
-                  </div>
-
-                  {addon.features && addon.features.length > 0 && (
-                    <div className="space-y-2">
-                      <p className="text-xs font-medium text-slate-700">Features:</p>
-                      <ul className="space-y-1">
-                        {addon.features.slice(0, 3).map((feature) => (
-                          <li key={feature} className="text-xs text-slate-600 flex items-start gap-1">
-                            <span className="text-[#ff0d13] mt-0.5">•</span>
-                            <span>{feature}</span>
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-
-                  <div className="flex gap-2 pt-2">
-                    <Button variant="outline" size="sm" onClick={() => handleOpenDialog(addon)} className="flex-1">
-                      <Edit className="w-3 h-3 mr-1" />
-                      Edit
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => handleDeleteClick(addon)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-3 h-3" />
-                    </Button>
-                  </div>
+              <div className="flex items-center justify-between py-3 border-t border-slate-100">
+                <span className="text-lg font-semibold text-slate-900">${addon.price}</span>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400">Active</span>
+                  <Switch checked={addon.isActive} onCheckedChange={() => handleToggleActive(addon)} />
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+
+              <div className="flex items-center justify-between pt-3">
+                <span className="text-xs text-slate-400">
+                  {addon.billingType === "one_time" && "One time"}
+                  {addon.billingType === "recurring_monthly" && "Monthly"}
+                  {addon.billingType === "recurring_quarterly" && "Quarterly"}
+                  {addon.billingType === "recurring_annual" && "Annual"}
+                  {addon.billingType === "custom" && `${addon.customDuration} days`}
+                  {!addon.billingType && "One time"}
+                </span>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600" onClick={() => handleOpenDialog(addon)}>
+                    <Edit className="w-3.5 h-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-red-500" onClick={() => handleDeleteClick(addon)}>
+                    <Trash2 className="w-3.5 h-3.5" />
+                  </Button>
+                </div>
+              </div>
+            </div>
           ))}
 
           {addons.length === 0 && (
-            <Card className="col-span-full">
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <Package className="w-12 h-12 text-slate-300 mb-4" />
-                <p className="text-slate-600 text-center">No addons yet. Create your first addon to get started.</p>
-              </CardContent>
-            </Card>
+            <div className="col-span-full bg-white border border-slate-200 rounded-2xl p-16 text-center">
+              <Package className="w-10 h-10 text-slate-300 mx-auto mb-3" />
+              <p className="text-sm text-slate-400">No addons yet. Create your first addon.</p>
+            </div>
           )}
         </div>
 

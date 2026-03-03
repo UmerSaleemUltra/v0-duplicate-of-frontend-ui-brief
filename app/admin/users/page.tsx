@@ -423,177 +423,109 @@ export default function UsersPage() {
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-semibold text-foreground">
-            User Management
-          </h1>
-          <p className="text-muted-foreground mt-1">Manage users, companies, and access control</p>
-        </div>
+    <div className="space-y-6">
+      <div>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Users</h1>
+        <p className="text-sm text-slate-500 mt-0.5">Manage users, companies, and access control</p>
       </div>
 
-      <div className="relative mb-6">
-        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
         <Input
           placeholder="Search users by name or email..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-10 h-11 max-w-md"
+          className="pl-9 h-10 bg-white border-slate-200 rounded-xl text-sm max-w-md"
         />
       </div>
 
-      <div className="border border-border rounded-lg overflow-hidden bg-background">
-        <div className="p-0">
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 dark:bg-slate-800/50 border-b border-slate-200 dark:border-white/10">
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full">
+            <thead>
+              <tr className="border-b border-slate-100">
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">User</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Email</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Companies</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Orders</th>
+                <th className="text-left px-6 py-3 text-xs font-medium text-slate-400 uppercase tracking-wide">Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100">
+              {filteredUsers.length === 0 ? (
                 <tr>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">User</th>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Email</th>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Companies</th>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Orders</th>
-                  <th className="text-left p-4 font-semibold text-sm text-slate-700 dark:text-slate-200">Actions</th>
+                  <td colSpan={5} className="px-6 py-16 text-center text-sm text-slate-400">
+                    No users found
+                  </td>
                 </tr>
-              </thead>
-              <tbody>
-                {filteredUsers.length === 0 ? (
-                  <tr>
-                    <td colSpan={5} className="p-8 text-center text-muted-foreground">
-                      No users found
-                    </td>
-                  </tr>
-                ) : (
-                  paginatedUsers.map((user) => {
-                    const userCompanies = getUserCompanies(user.id)
-                    const userOrders = getUserOrders(user.id)
+              ) : (
+                paginatedUsers.map((user) => {
+                  const userCompanies = getUserCompanies(user.id)
+                  const userOrders = getUserOrders(user.id)
 
-                    return (
-                      <tr key={user.id} className="border-b border-border">
-                        <td className="p-4">
-                          <div>
-                            <p className="font-semibold text-foreground">{user.name}</p>
-                            <p className="text-sm text-muted-foreground">{user.phone || "No phone"}</p>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <span className="text-sm text-foreground">{user.email}</span>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-opacity-10 flex items-center justify-center" style={{ backgroundColor: 'var(--brand-light)' }}>
-                              <Building2 className="h-4 w-4" style={{ color: 'var(--brand)' }} />
-                            </div>
-                            <span className="text-sm font-medium text-slate-900">{userCompanies.length}</span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex items-center gap-2">
-                            <div className="h-8 w-8 rounded-lg bg-opacity-10 flex items-center justify-center" style={{ backgroundColor: 'var(--brand-secondary)' }}>
-                              <FileText className="h-4 w-4" style={{ color: 'var(--brand-secondary)' }} />
-                            </div>
-                            <span className="text-sm font-medium text-slate-900">{userOrders.length}</span>
-                          </div>
-                        </td>
-                        <td className="p-4">
-                          <div className="flex gap-2">
-                            <Link href={`/admin/users/${user.id}`}>
-                              <Button size="sm" variant="ghost" className="h-9 px-3">
-                                View
+                  return (
+                    <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
+                      <td className="px-6 py-4">
+                        <p className="text-sm font-medium text-slate-900">{user.name}</p>
+                        <p className="text-xs text-slate-400">{user.phone || "—"}</p>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-600">{user.email}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-700 font-medium">{userCompanies.length}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-sm text-slate-700 font-medium">{userOrders.length}</span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex gap-1">
+                          <Link href={`/admin/users/${user.id}`}>
+                            <Button size="sm" variant="ghost" className="h-8 px-3 text-xs text-slate-600">View</Button>
+                          </Link>
+                          {userOrders.length > 0 && (
+                            <Link href={`/admin/orders/${userOrders[0].id}`}>
+                              <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600" title="View First Order">
+                                <ShoppingCart className="h-3.5 w-3.5" />
                               </Button>
                             </Link>
-                            {userOrders.length > 0 && (
-                              <Link href={`/admin/orders/${userOrders[0].id}`}>
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="h-9 w-9 p-0"
-                                  title="View First Order"
-                                >
-                                  <ShoppingCart className="h-4 w-4" />
-                                </Button>
-                              </Link>
-                            )}
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-9 w-9 p-0"
-                              onClick={() => handleEditUser(user)}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-9 w-9 p-0"
-                              onClick={() => handleOpenPasswordModal(user)}
-                              title="Change Password"
-                            >
-                              <Key className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              variant="ghost"
-                              className="h-9 w-9 p-0"
-                              onClick={() => handleLoginAsUser(user)}
-                              title="Login as User"
-                            >
-                              <LogIn className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })
-                )}
-              </tbody>
-            </table>
-          </div>
-
-          {/* Pagination Controls */}
-          {totalPages > 1 && (
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-3 p-5 border-t border-slate-200 dark:border-slate-700">
-              <p className="text-sm text-slate-600 dark:text-slate-400">
-                Showing <span className="font-medium text-slate-900 dark:text-slate-100">{startIndex + 1}</span> to{" "}
-                <span className="font-medium text-slate-900 dark:text-slate-100">{Math.min(endIndex, filteredUsers.length)}</span> of{" "}
-                <span className="font-medium text-slate-900 dark:text-slate-100">{filteredUsers.length}</span> users
-              </p>
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="h-9 px-4"
-                >
-                  Previous
-                </Button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                    <Button
-                      key={page}
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setCurrentPage(page)}
-                      className={`h-9 w-9 p-0 ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1d23] text-white" : ""}`}
-                    >
-                      {page}
-                    </Button>
-                  ))}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="h-9 px-4"
-                >
-                  Next
-                </Button>
-              </div>
-            </div>
-          )}
+                          )}
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600" onClick={() => handleEditUser(user)}>
+                            <Edit className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600" onClick={() => handleOpenPasswordModal(user)} title="Change Password">
+                            <Key className="h-3.5 w-3.5" />
+                          </Button>
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600" onClick={() => handleLoginAsUser(user)} title="Login as User">
+                            <LogIn className="h-3.5 w-3.5" />
+                          </Button>
+                        </div>
+                      </td>
+                    </tr>
+                  )
+                })
+              )}
+            </tbody>
+          </table>
         </div>
+
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100">
+            <p className="text-xs text-slate-400">
+              {startIndex + 1}–{Math.min(endIndex, filteredUsers.length)} of {filteredUsers.length} users
+            </p>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs">Previous</Button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <Button key={page} variant="ghost" size="sm" onClick={() => setCurrentPage(page)}
+                  className={`h-8 w-8 p-0 text-xs ${currentPage === page ? "bg-slate-900 text-white hover:bg-slate-800" : "text-slate-600"}`}>
+                  {page}
+                </Button>
+              ))}
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs">Next</Button>
+            </div>
+          </div>
+        )}
       </div>
 
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>

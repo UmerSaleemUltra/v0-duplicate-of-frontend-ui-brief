@@ -231,178 +231,116 @@ export default function CustomersPage() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-semibold text-slate-900">Customers</h1>
-        <p className="text-slate-600 mt-1">Manage your customer base and view their activity</p>
+        <h1 className="text-2xl font-semibold tracking-tight text-slate-900">Customers</h1>
+        <p className="text-sm text-slate-500 mt-0.5">Manage your customer base and view their activity</p>
       </div>
 
-      <div className="glass-card rounded-2xl p-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Search customers by name, email, or company..."
-            className="pl-10 h-10"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-          />
-        </div>
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+        <Input
+          placeholder="Search customers by name, email, or company..."
+          className="pl-9 h-10 bg-white border-slate-200 rounded-xl text-sm"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+        />
       </div>
 
-      <div className="grid gap-4 sm:gap-6 grid-cols-1 md:grid-cols-3">
-        <div className="glass-card p-6 rounded-2xl">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="text-sm font-medium text-slate-600">Total Customers</div>
-            <Building2 className="h-4 w-4 text-slate-600" />
-          </div>
-          <div className="pt-4">
-            <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">{customers.length}</div>
+      <div className="grid gap-3 grid-cols-1 md:grid-cols-3">
+        <div className="bg-white border border-slate-200 rounded-2xl p-5">
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Customers</div>
+          <div className="mt-2 text-3xl font-semibold text-slate-900">{customers.length}</div>
+        </div>
+
+        <div className="bg-white border border-slate-200 rounded-2xl p-5">
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Orders</div>
+          <div className="mt-2 text-3xl font-semibold text-slate-900">
+            {customers.reduce((sum, c) => sum + c.orders, 0)}
           </div>
         </div>
 
-        <div className="glass-card p-6 rounded-2xl">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="text-sm font-medium text-slate-600">Total Orders</div>
-            <Building2 className="h-4 w-4 text-slate-600" />
-          </div>
-          <div className="pt-4">
-            <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
-              {customers.reduce((sum, c) => sum + c.orders, 0)}
-            </div>
-          </div>
-        </div>
-
-        <div className="glass-card p-6 rounded-2xl">
-          <div className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <div className="text-sm font-medium text-slate-600">Total Revenue</div>
-            <Building2 className="h-4 w-4 text-slate-600" />
-          </div>
-          <div className="pt-4">
-            <div className="text-2xl font-semibold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
-              {customers.reduce((sum, c) => {
-                const spent = typeof c.totalSpent === 'string' ? parseFloat(c.totalSpent.replace('$', '')) || 0 : c.totalSpent || 0
-                return sum + spent
-              }, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
-            </div>
+        <div className="bg-white border border-slate-200 rounded-2xl p-5">
+          <div className="text-xs font-medium text-slate-500 uppercase tracking-wide">Total Revenue</div>
+          <div className="mt-2 text-3xl font-semibold text-slate-900">
+            {customers.reduce((sum, c) => {
+              const spent = typeof c.totalSpent === 'string' ? parseFloat(c.totalSpent.replace('$', '')) || 0 : c.totalSpent || 0
+              return sum + spent
+            }, 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' })}
           </div>
         </div>
       </div>
 
-      <div className="glass-card rounded-2xl overflow-hidden">
-        <div className="p-6">
-          <div className="text-lg font-semibold text-slate-900">
-            All Customers ({filteredCustomers.length})
-          </div>
+      <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
+        <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+          <span className="text-sm font-medium text-slate-900">All Customers</span>
+          <span className="text-xs text-slate-400">{filteredCustomers.length} total</span>
         </div>
-        <div className="px-6 pb-6">
+        <div className="divide-y divide-slate-100">
           {filteredCustomers.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-slate-600">No customers found</p>
-              <p className="text-sm text-slate-500 mt-2">Customers will appear here once they complete registration</p>
+            <div className="text-center py-16">
+              <p className="text-sm text-slate-500">No customers found</p>
             </div>
           ) : (
             <>
-              <div className="space-y-3">
-                {paginatedCustomers.map((customer) => (
-                  <div
-                    key={customer.id}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 rounded-lg border border-slate-200 gap-4"
-                  >
-                    <div className="flex items-center gap-4 flex-1 min-w-0">
-                      <Avatar className="h-12 w-12">
-                        <AvatarFallback className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white font-semibold">
-                          {customer.name
-                            .split(" ")
-                            .map((n: string) => n[0])
-                            .join("")}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <p className="text-sm font-semibold text-slate-900">{customer.name}</p>
-                          <Badge variant="outline" className="text-xs capitalize">
-                            {customer.status}
-                          </Badge>
-                        </div>
-                        <p className="text-sm text-slate-600">{customer.company}</p>
-                        <div className="flex flex-wrap items-center gap-3 mt-1 text-xs text-slate-500">
-                          <span className="flex items-center gap-1">
-                            <Mail className="h-3 w-3" />
-                            {customer.email}
-                          </span>
-                          {customer.phone && (
-                            <span className="flex items-center gap-1">
-                              <Phone className="h-3 w-3" />
-                              {customer.phone}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="text-sm font-semibold text-slate-900">{customer.totalSpent}</p>
-                        <p className="text-xs text-slate-500">{customer.orders} orders</p>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-10">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => router.push(`/admin/customers/${customer.id}`)}>
-                            <Eye className="h-4 w-4 mr-2" />
-                            View Profile
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteCustomer(customer.id)}>
-                            <Trash2 className="h-4 w-4 mr-2" />
-                            Delete Customer
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+              {paginatedCustomers.map((customer) => (
+                <div
+                  key={customer.id}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between px-6 py-4 hover:bg-slate-50/60 transition-colors gap-4"
+                >
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <Avatar className="h-9 w-9 shrink-0">
+                      <AvatarFallback className="bg-slate-100 text-slate-600 text-xs font-medium">
+                        {customer.name.split(" ").map((n: string) => n[0]).join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-slate-900 truncate">{customer.name}</p>
+                      <p className="text-xs text-slate-500 truncate">{customer.email}</p>
                     </div>
                   </div>
-                ))}
-              </div>
+                  <div className="flex items-center gap-6 shrink-0">
+                    <div className="text-right hidden sm:block">
+                      <p className="text-sm font-medium text-slate-900">{customer.totalSpent}</p>
+                      <p className="text-xs text-slate-400">{customer.orders} orders</p>
+                    </div>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600">
+                          <MoreVertical className="h-4 w-4" />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem onClick={() => router.push(`/admin/customers/${customer.id}`)}>
+                          <Eye className="h-4 w-4 mr-2" />
+                          View Profile
+                        </DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteCustomer(customer.id)}>
+                          <Trash2 className="h-4 w-4 mr-2" />
+                          Delete
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </div>
+                </div>
+              ))}
 
               {totalPages > 1 && (
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3 mt-6 pt-5 border-t border-slate-200 dark:border-slate-700">
-                  <p className="text-sm text-slate-600 dark:text-slate-400">
-                    Showing <span className="font-medium text-slate-900 dark:text-slate-100">{startIndex + 1}</span> to{" "}
-                    <span className="font-medium text-slate-900 dark:text-slate-100">{Math.min(endIndex, filteredCustomers.length)}</span> of{" "}
-                    <span className="font-medium text-slate-900 dark:text-slate-100">{filteredCustomers.length}</span> customers
+                <div className="flex items-center justify-between px-6 py-4">
+                  <p className="text-xs text-slate-400">
+                    {startIndex + 1}–{Math.min(endIndex, filteredCustomers.length)} of {filteredCustomers.length}
                   </p>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                      disabled={currentPage === 1}
-                      className="h-9 px-4"
-                    >
+                  <div className="flex items-center gap-1">
+                    <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} disabled={currentPage === 1} className="h-8 px-3 text-xs">
                       Previous
                     </Button>
-                    <div className="flex items-center gap-1">
-                      {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                        <Button
-                          key={page}
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => setCurrentPage(page)}
-                          className={`h-9 w-9 p-0 ${currentPage === page ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1d23] text-white" : ""}`}
-                        >
-                          {page}
-                        </Button>
-                      ))}
-                    </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                      disabled={currentPage === totalPages}
-                      className="h-9 px-4"
-                    >
+                    {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                      <Button key={page} variant="ghost" size="sm" onClick={() => setCurrentPage(page)}
+                        className={`h-8 w-8 p-0 text-xs ${currentPage === page ? "bg-slate-900 text-white hover:bg-slate-800" : "text-slate-600"}`}>
+                        {page}
+                      </Button>
+                    ))}
+                    <Button variant="ghost" size="sm" onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} className="h-8 px-3 text-xs">
                       Next
                     </Button>
                   </div>
