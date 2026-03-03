@@ -650,12 +650,12 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             </div>
           </div>
 
-          <div className="space-y-2 overflow-hidden">
+          <div className="space-y-2">
             <Label htmlFor="receipt-upload" className="text-sm font-semibold text-slate-900">
               Upload Payment Receipt
             </Label>
             <div className="space-y-3">
-              <div className="relative">
+              <div className="flex items-center gap-3">
                 <input
                   id="receipt-upload"
                   type="file"
@@ -666,7 +666,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                 />
                 <label
                   htmlFor="receipt-upload"
-                  className={`flex items-center justify-center gap-2 h-11 sm:h-12 px-4 sm:px-6 rounded-lg font-semibold transition-all text-sm sm:text-base ${
+                  className={`inline-flex items-center justify-center gap-2 h-10 px-5 rounded-lg font-semibold transition-all text-sm flex-shrink-0 ${
                     isUploadingReceipt || receiptFile
                       ? "bg-slate-200 text-slate-500 cursor-not-allowed"
                       : "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white cursor-pointer hover:from-[#990000] hover:to-[#ff1a1a]"
@@ -675,42 +675,40 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
                   {isUploadingReceipt ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                      <span className="hidden sm:inline">Uploading...</span>
-                      <span className="sm:hidden">Upload...</span>
+                      Uploading...
                     </>
                   ) : receiptFile ? (
                     <>
-                      <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="hidden sm:inline">Receipt Uploaded</span>
-                      <span className="sm:hidden">Uploaded</span>
+                      <CheckCircle2 className="w-4 h-4" />
+                      Uploaded
                     </>
                   ) : (
                     <>
-                      <Upload className="w-4 h-4 sm:w-5 sm:h-5" />
-                      <span className="hidden sm:inline">Choose Receipt File</span>
-                      <span className="sm:hidden">Choose File</span>
+                      <Upload className="w-4 h-4" />
+                      Choose File
                     </>
                   )}
                 </label>
-              </div>
 
-              {receiptFile?.name && (
-                <div className="flex items-center justify-between gap-2 p-2.5 sm:p-3 bg-green-50 border border-green-200 rounded-lg overflow-hidden">
-                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                    <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5 text-green-600 flex-shrink-0" />
-                    <span className="text-xs sm:text-sm font-medium text-green-700 truncate" title={receiptFile.name}>
-                      {truncateFilename(receiptFile.name, 15)}
+                {receiptFile?.name && (
+                  <div className="flex items-center gap-2 min-w-0 flex-1 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
+                    <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
+                    <span
+                      className="text-xs sm:text-sm font-medium text-green-700 truncate flex-1 min-w-0"
+                      title={receiptFile.name}
+                    >
+                      {receiptFile.name}
                     </span>
+                    <button
+                      type="button"
+                      onClick={handleRemoveReceipt}
+                      className="text-red-500 hover:text-red-700 flex-shrink-0 p-0.5 rounded"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
-                  <button
-                    type="button"
-                    onClick={handleRemoveReceipt}
-                    className="text-red-600 hover:text-red-700 flex-shrink-0 p-1"
-                  >
-                    <X className="w-4 h-4 sm:w-5 sm:h-5" />
-                  </button>
-                </div>
-              )}
+                )}
+              </div>
 
               {uploadError && (
                 <p className="text-xs sm:text-sm text-red-600 break-words leading-relaxed">{uploadError}</p>
