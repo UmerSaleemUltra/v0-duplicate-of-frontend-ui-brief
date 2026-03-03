@@ -14,7 +14,6 @@ import {
   Clock,
   AlertCircle,
   MoreVertical,
-  Building2,
   DollarSign,
   ShoppingCart,
   Search,
@@ -37,7 +36,6 @@ import {
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
-import { CompanyModal } from "@/components/company-modal"
 
 const US_STATES = [
   "Alabama",
@@ -104,8 +102,6 @@ export default function OrdersPage() {
   const [dateFilter, setDateFilter] = useState("all-time")
   const [dateRangeLabel, setDateRangeLabel] = useState("All Time")
   const router = useRouter()
-  const [companyModalOpen, setCompanyModalOpen] = useState(false)
-  const [selectedCompanyId, setSelectedCompanyId] = useState("")
   const [dataLoading, setDataLoading] = useState(true)
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -359,11 +355,6 @@ export default function OrdersPage() {
         variant: "destructive",
       })
     }
-  }
-
-  const handleViewCompanyDetails = (order: any) => {
-    setSelectedCompanyId(order.companyId)
-    setCompanyModalOpen(true)
   }
 
   const handleDeleteOrder = async (orderId: string) => {
@@ -690,9 +681,6 @@ export default function OrdersPage() {
                               <DropdownMenuItem onClick={() => router.push(`/admin/orders/${order.id}`)}>
                                 <Eye className="h-4 w-4 mr-2" />View Details
                               </DropdownMenuItem>
-                              <DropdownMenuItem onClick={() => handleViewCompanyDetails(order)}>
-                                <Building2 className="h-4 w-4 mr-2" />View Company
-                              </DropdownMenuItem>
                               <DropdownMenuItem className="text-red-600" onSelect={(e) => { e.preventDefault(); setOrderToDelete({ id: order.id, companyName: order.companyName || "this order" }); setDeleteConfirmOpen(true) }}>
                                 <Trash2 className="h-4 w-4 mr-2" />Delete
                               </DropdownMenuItem>
@@ -724,13 +712,6 @@ export default function OrdersPage() {
           )}
         </div>
       </div>
-
-      <CompanyModal
-        open={companyModalOpen}
-        onOpenChange={setCompanyModalOpen}
-        companyId={selectedCompanyId}
-        companies={companies}
-      />
 
       <AlertDialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
         <AlertDialogContent>
