@@ -2399,16 +2399,19 @@ export default function OrderDetailPage() {
             <OrderPricingCard
               order={order}
               onOrderUpdate={(updated) =>
-                setOrder((prev: any) => ({
-                  ...prev,
-                  ...updated,
-                  // Explicitly replace nested/top-level fields to avoid stale merges
-                  purchasedAddons: updated.purchasedAddons ?? prev?.purchasedAddons,
-                  pricing: updated.pricing ?? prev?.pricing,
-                  whatsappPhone: updated.whatsappPhone ?? prev?.whatsappPhone,
-                  createdAt: updated.createdAt ?? prev?.createdAt,
-                  receiptUrl: updated.receiptUrl ?? prev?.receiptUrl,
-                }))
+                setOrder((prev: any) => {
+                  if (!prev) return prev
+                  return {
+                    ...prev,
+                    // Only override a field if the updated payload explicitly includes it
+                    ...(updated.pricing !== undefined && { pricing: updated.pricing }),
+                    ...(updated.whatsappPhone !== undefined && { whatsappPhone: updated.whatsappPhone }),
+                    ...(updated.paymentInfo !== undefined && { paymentInfo: updated.paymentInfo }),
+                    ...(updated.createdAt !== undefined && { createdAt: updated.createdAt }),
+                    ...(updated.receiptUrl !== undefined && { receiptUrl: updated.receiptUrl }),
+                    ...(updated.purchasedAddons !== undefined && { purchasedAddons: updated.purchasedAddons }),
+                  }
+                })
               }
             />
             <AddonsCard
