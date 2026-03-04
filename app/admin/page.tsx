@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
 import { RevenueChartCarousel } from "@/components/admin/revenue-chart-carousel"
 import {
   DollarSign,
@@ -18,6 +19,8 @@ import {
   Calendar,
   ChevronLeft,
   ChevronRight,
+  MapPin,
+  LayoutList,
 } from "lucide-react"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
@@ -40,7 +43,9 @@ export default function AdminDashboard() {
   const [monthlyData, setMonthlyData] = useState<any[]>([])
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
   const [chartData, setChartData] = useState<any[]>([])
-  const [showAllStates, setShowAllStates] = useState(false)
+  const [statesDrawerOpen, setStatesDrawerOpen] = useState(false)
+  const [ordersDrawerOpen, setOrdersDrawerOpen] = useState(false)
+  const [allOrders, setAllOrders] = useState<any[]>([])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -118,9 +123,8 @@ export default function AdminDashboard() {
 
         console.log("[v0] Admin Dashboard: Total orders extracted:", allOrders.length)
 
-        const ordersWithDetails = allOrders
+        const sortedOrders = allOrders
           .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .slice(0, 4)
           .map((order: any) => {
             const user = allUsers.find((u: any) => u.id === order.userId)
             return {
@@ -129,8 +133,9 @@ export default function AdminDashboard() {
             }
           })
 
-        setOrders(ordersWithDetails)
-        console.log("[v0] Admin Dashboard: Recent orders set:", ordersWithDetails.length)
+        setAllOrders(sortedOrders)
+        setOrders(sortedOrders.slice(0, 5))
+        console.log("[v0] Admin Dashboard: Recent orders set:", sortedOrders.length)
 
         const now = new Date()
         const startOfYear = new Date(now.getFullYear(), 0, 1)
@@ -517,7 +522,7 @@ export default function AdminDashboard() {
               <p className="text-center text-slate-500 py-6 md:py-8 text-sm">No orders yet</p>
             ) : (
               <>
-                {orders.slice(0, 4).map((order) => (
+                {orders.slice(0, 5).map((order) => (
                   <div
                     key={order.id}
                     className="flex items-center justify-between p-3 md:p-4 rounded-lg md:rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:border-white/60 hover:bg-white/80 cursor-pointer transition-all duration-300 group hover:shadow-md"
@@ -537,12 +542,24 @@ export default function AdminDashboard() {
                 ))}
               </>
             )}
-            <Button 
-              className="w-full mt-3 md:mt-4 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 rounded-lg md:rounded-xl hover:shadow-lg transition-all text-sm md:text-base"
-              asChild
-            >
-              <a href="/admin/orders">View All Orders</a>
-            </Button>
+            <div className="flex gap-2 mt-3 md:mt-4">
+              {allOrders.length > 5 && (
+                <Button
+                  variant="outline"
+                  className="flex-1 border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg md:rounded-xl text-sm md:text-base"
+                  onClick={() => setOrdersDrawerOpen(true)}
+                >
+                  <LayoutList className="h-4 w-4 mr-2" />
+                  More Orders ({allOrders.length - 5})
+                </Button>
+              )}
+              <Button
+                className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 rounded-lg md:rounded-xl hover:shadow-lg transition-all text-sm md:text-base"
+                asChild
+              >
+                <a href="/admin/orders">View All Orders</a>
+              </Button>
+            </div>
           </div>
         </div>
 
@@ -553,35 +570,130 @@ export default function AdminDashboard() {
             <p className="text-xs md:text-sm text-slate-700 mt-1">Companies by location</p>
           </div>
           <div className="space-y-2 md:space-y-3">
-            {(showAllStates ? stateBreakdown : stateBreakdown.slice(0, 4)).map((state, index) => (
+            {stateBreakdown.slice(0, 5).map((state, index) => (
               <div key={index} className="flex items-center justify-between p-3 md:p-4 rounded-lg md:rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:bg-white/80 transition-all duration-300">
-                <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-slate-900 text-sm md:text-base">{state.state}</p>
-                  <p className="text-xs text-slate-600 mt-1">{state.count} {state.count === 1 ? 'company' : 'companies'}</p>
+                <div className="flex items-center gap-2 flex-1 min-w-0">
+                  <span className="text-xs font-bold text-slate-400 w-5 text-center flex-shrink-0">#{index + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-900 text-sm md:text-base">{state.state}</p>
+                    <p className="text-xs text-slate-600 mt-0.5">{state.count} {state.count === 1 ? 'company' : 'companies'}</p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 md:gap-3 flex-shrink-0 ml-2">
                   <div className="w-16 md:w-24 bg-white/40 rounded-full h-2">
-                    <div 
+                    <div
                       className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-2 rounded-full transition-all"
-                      style={{width: `${state.percentage}%`}}
+                      style={{ width: `${state.percentage}%` }}
                     ></div>
                   </div>
                   <span className="text-xs md:text-sm font-semibold text-slate-900 min-w-8 text-right">{state.percentage}%</span>
                 </div>
               </div>
             ))}
-            {stateBreakdown.length > 4 && (
-              <Button 
+            {stateBreakdown.length > 5 && (
+              <Button
                 variant="outline"
                 className="w-full mt-3 md:mt-4 border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg md:rounded-xl text-sm md:text-base"
-                onClick={() => setShowAllStates(!showAllStates)}
+                onClick={() => setStatesDrawerOpen(true)}
               >
-                {showAllStates ? "Show Less" : `View All (${stateBreakdown.length})`}
+                <MapPin className="h-4 w-4 mr-2" />
+                View Details ({stateBreakdown.length} states)
               </Button>
             )}
           </div>
         </div>
       </div>
+
+      {/* All States Drawer */}
+      <Sheet open={statesDrawerOpen} onOpenChange={setStatesDrawerOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-md bg-white/95 backdrop-blur-md border-l border-white/40 overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-[#880000]" />
+              All States Breakdown
+            </SheetTitle>
+            <p className="text-sm text-slate-600">{stateBreakdown.length} states — {stateBreakdown.reduce((s, x) => s + x.count, 0)} total companies</p>
+          </SheetHeader>
+          <div className="space-y-2">
+            {stateBreakdown.map((state, index) => (
+              <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <span className="text-xs font-bold text-slate-400 w-6 text-center flex-shrink-0">#{index + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-900 text-sm">{state.state}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex-1 bg-slate-200 rounded-full h-1.5">
+                        <div
+                          className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-1.5 rounded-full transition-all"
+                          style={{ width: `${state.percentage}%` }}
+                        ></div>
+                      </div>
+                      <span className="text-xs text-slate-500 flex-shrink-0">{state.percentage}%</span>
+                    </div>
+                  </div>
+                </div>
+                <Badge variant="outline" className="ml-3 flex-shrink-0 text-slate-700 border-slate-200">
+                  {state.count} {state.count === 1 ? 'co.' : 'cos.'}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </SheetContent>
+      </Sheet>
+
+      {/* All Orders Drawer */}
+      <Sheet open={ordersDrawerOpen} onOpenChange={setOrdersDrawerOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-lg bg-white/95 backdrop-blur-md border-l border-white/40 overflow-y-auto">
+          <SheetHeader className="mb-6">
+            <SheetTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <ShoppingCart className="h-5 w-5 text-[#880000]" />
+              All Recent Orders
+            </SheetTitle>
+            <p className="text-sm text-slate-600">{allOrders.length} orders total</p>
+          </SheetHeader>
+          <div className="space-y-2">
+            {allOrders.map((order) => (
+              <div
+                key={order.id}
+                className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 cursor-pointer transition-all group"
+                onClick={() => {
+                  setOrdersDrawerOpen(false)
+                  router.push(`/admin/orders/${order.id}`)
+                }}
+              >
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="p-1.5 rounded-lg bg-gradient-to-br from-[#880000]/15 to-[#ff0d13]/10 flex-shrink-0">
+                    <ShoppingCart className="h-4 w-4 text-[#880000]" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-[#880000] transition-colors">{order.companyName || "Unknown"}</p>
+                    <div className="flex items-center gap-2 mt-0.5">
+                      <p className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</p>
+                      {order.status && (
+                        <span className="text-xs text-slate-400">· {order.status}</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+                <Badge className="flex-shrink-0 ml-2 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 text-xs">
+                  +${(order.pricing?.total || order.amount || 0).toLocaleString()}
+                </Badge>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 pt-4 border-t border-slate-100">
+            <Button
+              className="w-full bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 rounded-xl hover:shadow-lg transition-all"
+              onClick={() => {
+                setOrdersDrawerOpen(false)
+                router.push("/admin/orders")
+              }}
+            >
+              Manage All Orders
+            </Button>
+          </div>
+        </SheetContent>
+      </Sheet>
     </div>
   )
 }
