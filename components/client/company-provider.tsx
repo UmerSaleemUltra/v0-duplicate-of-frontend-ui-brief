@@ -104,18 +104,6 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     }
   }, [])
 
-  const currentUser = authService.getCurrentUser()
-  if (loading && currentUser && !isPublicPage) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-          <p className="text-slate-600">Loading companies...</p>
-        </div>
-      </div>
-    )
-  }
-
   return (
     <CompanyContext.Provider value={{ selectedCompanyId, setSelectedCompanyId: handleSetSelectedCompanyId }}>
       {children}
