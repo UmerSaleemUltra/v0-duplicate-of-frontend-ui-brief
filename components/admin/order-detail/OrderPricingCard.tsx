@@ -143,8 +143,11 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
       newPricing.subtotal = newSubtotal
       newPricing.total = newTotal
 
-      const result = await putOrder({ pricing: newPricing })
-      onOrderUpdate?.({ ...result.data, pricing: newPricing })
+      await putOrder({ pricing: newPricing })
+      // Only update pricing on the local order state — do NOT spread result.data
+      // because for embedded orders the API returns the parent company document,
+      // not the order itself, which would corrupt every other order field.
+      onOrderUpdate?.({ pricing: newPricing })
       toast({ title: "Price updated", description: `${fieldLabel(field)} saved successfully.` })
     } catch {
       toast({ title: "Save failed", description: "Could not update the price.", variant: "destructive" })
@@ -166,11 +169,11 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
     if (!order?.id) return
     setSaving(true)
     try {
-      const result = await putOrder({
+      await putOrder({
         whatsappPhone: draftPhone,
         paymentInfo: { ...(order?.paymentInfo || {}), whatsappPhone: draftPhone },
       })
-      onOrderUpdate?.({ ...result.data, whatsappPhone: draftPhone })
+      onOrderUpdate?.({ whatsappPhone: draftPhone, paymentInfo: { ...(order?.paymentInfo || {}), whatsappPhone: draftPhone } })
       toast({ title: "Phone updated", description: "WhatsApp phone number saved." })
       setEditingPhone(false)
     } catch {
@@ -194,8 +197,8 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
     setSaving(true)
     try {
       const newDate = new Date(draftDate).toISOString()
-      const result = await putOrder({ createdAt: newDate })
-      onOrderUpdate?.({ ...result.data, createdAt: newDate })
+      await putOrder({ createdAt: newDate })
+      onOrderUpdate?.({ createdAt: newDate })
       toast({ title: "Date updated", description: "Order date saved." })
       setEditingDate(false)
     } catch {
