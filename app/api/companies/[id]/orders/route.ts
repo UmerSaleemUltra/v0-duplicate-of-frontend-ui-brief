@@ -64,22 +64,31 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
     }
 
-    if (company.userId !== decoded.userId && decoded.role !== "admin") {
-      return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 403 }))
+    // Only admins can create orders directly on a company (clients go through checkout flow)
+    if (decoded.role !== "admin") {
+      return addSecurityHeaders(NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 }))
     }
+
+    // Recalculate server-side to prevent a client from injecting inflated/deflated pricing
+    const packagePrice = Number(body.packagePrice) || 0
+    const stateFilingFee = Number(body.stateFilingFee) || 0
+    const addonsTotal = Number(body.addonsTotal) || 0
+    const subtotal = packagePrice + stateFilingFee
+    const total = subtotal + addonsTotal
 
     const newOrder = {
       id: new ObjectId().toString(),
       orderType: body.orderType || "Additional Service",
       packageType: body.packageType,
       state: body.state || company.state,
-      status: body.status || "pending",
+      // Only admins can set an initial status; default to pending
+      status: "pending",
       pricing: {
-        packagePrice: body.packagePrice || 0,
-        stateFilingFee: body.stateFilingFee || 0,
-        addonsTotal: body.addonsTotal || 0,
-        subtotal: body.subtotal || 0,
-        total: body.total || 0,
+        packagePrice,
+        stateFilingFee,
+        addonsTotal,
+        subtotal,
+        total,
       },
       selectedAddons: body.selectedAddons || [],
       paymentInfo: {
@@ -95,8 +104,11 @@ export async function POST(req: NextRequest, { params }: { params: { id: string 
     }
 
     const existingOrders = company.orders || []
-    const currentRevenue = company.revenue || 0
-    const newRevenue = currentRevenue + (newOrder.pricing.total || 0)
+    // Recalculate revenue from scratch — sum existing orders plus the new one
+    const baseRevenue = existingOrders.reduce((sum: number, o: any) => {
+      return sum + (o.pricing?.total ?? o.amount ?? o.total ?? 0)
+    }, 0)
+    const newRevenue = baseRevenue + total
 
     await db.collection("companies").updateOne(
       { _id: new ObjectId(params.id) },

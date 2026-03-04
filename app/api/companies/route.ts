@@ -88,19 +88,11 @@ export async function GET(req: NextRequest) {
     const result = {
       success: true,
       data: companies.map((company) => {
-        // Calculate revenue: base order total + purchased addons total (only after custom milestone completion)
-        let calculatedRevenue = company.revenue || 0
-        const baseOrderTotal = company.orders?.[0]?.pricing?.total || 0
-        const addonsTotal = (company.purchasedAddons || []).reduce((sum: number, addon: any) => sum + (addon.price || 0), 0)
-        
-        // If custom milestones are completed, include addons in revenue
-        const hasCompletedMilestones = (company.customMilestones || []).some((m: any) => m.completed)
-        if (hasCompletedMilestones && addonsTotal > 0) {
-          calculatedRevenue = baseOrderTotal + addonsTotal
-        } else if (!hasCompletedMilestones && addonsTotal > 0) {
-          // If no custom milestones exist yet, only count base order
-          calculatedRevenue = baseOrderTotal
-        }
+        // Use the stored revenue value — it is authoritative and maintained by all
+        // write paths (order create/update/delete). Do NOT recalculate here from
+        // partial data (e.g. first order only) as that would silently overwrite
+        // correct multi-order revenue with a wrong value.
+        const revenue = company.revenue ?? 0
 
         return {
           id: company._id.toString(),
@@ -118,8 +110,8 @@ export async function GET(req: NextRequest) {
           businessId: company.businessId,
           formationDate: company.formationDate,
           purchasedAddons: company.purchasedAddons || [],
-          orders: company.orders || [], // Include orders array
-          revenue: calculatedRevenue, // Include calculated revenue
+          orders: company.orders || [],
+          revenue: revenue,
           lastOrderDate: company.lastOrderDate || null, // Include last order date
           milestones: company.milestones || {}, // Include milestones
           customMilestones: company.customMilestones || [], // Include custom milestones

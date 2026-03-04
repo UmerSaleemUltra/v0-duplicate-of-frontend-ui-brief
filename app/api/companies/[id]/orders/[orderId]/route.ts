@@ -51,39 +51,36 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     const oldOrder = orders[orderIndex]
 
-    // Update the order with new data
+    // Role-based field whitelist — prevent clients from overwriting status, pricing, etc.
+    const adminOnlyFields = ["status", "pricing", "purchasedAddons", "selectedAddons", "paymentInfo"]
+    const clientAllowedFields = ["receiptUrl", "whatsappPhone", "notes"]
+    const allowedFields = decoded.role === "admin" ? [...adminOnlyFields, ...clientAllowedFields] : clientAllowedFields
+
+    const safeUpdates: Record<string, any> = {}
+    for (const field of allowedFields) {
+      if (field in body) safeUpdates[field] = body[field]
+    }
+
+    // Build the merged updated order using only whitelisted fields
     const updatedOrder = {
       ...oldOrder,
-      ...body,
+      ...safeUpdates,
       updatedAt: new Date().toISOString(),
     }
 
     orders[orderIndex] = updatedOrder
 
-    const oldTotal = oldOrder.pricing?.total || oldOrder.amount || oldOrder.total || 0
-    const newTotal = updatedOrder.pricing?.total || updatedOrder.amount || updatedOrder.total || 0
-    const revenueDifference = newTotal - oldTotal
-
-    const currentRevenue = company.revenue || 0
-    const updatedRevenue = currentRevenue + revenueDifference
-
-    console.log(
-      "[v0] Revenue update - Old total:",
-      oldTotal,
-      "New total:",
-      newTotal,
-      "Difference:",
-      revenueDifference,
-      "New revenue:",
-      updatedRevenue,
-    )
+    // Recalculate revenue from scratch by summing all orders to avoid drift
+    const recalcRevenue = orders.reduce((sum: number, o: any) => {
+      return sum + (o.pricing?.total ?? o.amount ?? o.total ?? 0)
+    }, 0)
 
     await db.collection("companies").updateOne(
       { _id: companyObjectId },
       {
         $set: {
           orders: orders,
-          revenue: updatedRevenue,
+          revenue: recalcRevenue,
           updatedAt: new Date().toISOString(),
         },
       },
@@ -168,26 +165,24 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       )
     }
 
-    // Calculate new revenue after removing the order
-    const currentRevenue = company.revenue || 0
-    const orderAmount = orderToDelete.pricing?.total || orderToDelete.amount || orderToDelete.total || 0
-    const newRevenue = Math.max(0, currentRevenue - orderAmount)
-
     // Remove the order from the orders array
     const updatedOrders = orders.filter((order: any) => order.id !== orderId)
+
+    // Recalculate revenue from scratch by summing remaining orders to avoid drift
+    const recalcRevenue = updatedOrders.reduce((sum: number, o: any) => {
+      return sum + (o.pricing?.total ?? o.amount ?? o.total ?? 0)
+    }, 0)
 
     await db.collection("companies").updateOne(
       { _id: companyObjectId },
       {
         $set: {
           orders: updatedOrders,
-          revenue: newRevenue,
+          revenue: recalcRevenue,
           updatedAt: new Date().toISOString(),
         },
       },
     )
-
-    console.log("[v0] Order deleted from company. Previous revenue:", currentRevenue, "New revenue:", newRevenue)
 
     broadcastUpdate("companies", "updated", { id: id, userId: company.userId })
 
