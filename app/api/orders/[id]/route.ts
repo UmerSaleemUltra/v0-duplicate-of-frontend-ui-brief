@@ -361,7 +361,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
-    const allowedUpdateFields = ["status", "paymentStatus", "paymentMethod", "notes", "pricing", "purchasedAddons", "selectedAddons", "paymentInfo", "receiptUrl", "whatsappPhone", "createdAt"]
+    // Role-based field whitelists.
+    // Admins can update everything; clients can only update safe payment/contact fields.
+    const adminOnlyFields = ["status", "pricing", "purchasedAddons", "selectedAddons", "paymentInfo"]
+    const clientAllowedFields = ["receiptUrl", "whatsappPhone", "notes"]
+    const allowedUpdateFields =
+      decoded.role === "admin" ? [...adminOnlyFields, ...clientAllowedFields] : clientAllowedFields
+
     const updateData: any = {
       updatedAt: new Date().toISOString(),
     }
@@ -370,6 +376,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       if (field in body) {
         updateData[field] = body[field]
       }
+    }
+
+    // Prevent clients from back-dating orders via createdAt
+    if (decoded.role !== "admin" && "createdAt" in body) {
+      return addSecurityHeaders(
+        NextResponse.json({ error: "Forbidden - cannot modify order creation date" }, { status: 403 }),
+      )
     }
 
     if (body.status === "completed" && (order.companyId || companyId)) {
@@ -411,17 +424,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     // The DB stores purchasedAddons, pricing, and revenue at the TOP-LEVEL company doc,
     // not inside the embedded orders[] array — so we must update the company directly.
     const companyLevelUpdate: any = { updatedAt: new Date().toISOString() }
-    if ("purchasedAddons" in body) {
-      companyLevelUpdate.purchasedAddons = body.purchasedAddons
+    if ("purchasedAddons" in updateData) {
+      companyLevelUpdate.purchasedAddons = updateData.purchasedAddons
     }
-    if ("pricing" in body) {
-      companyLevelUpdate.pricing = body.pricing
-      // Recalculate revenue: subtotal (package+state) + addonsTotal
-      const addonsTotal = body.pricing?.addonsTotal ?? 0
-      const subtotal = body.pricing?.subtotal ?? (body.pricing?.packagePrice ?? 0) + (body.pricing?.stateFilingFee ?? 0)
-      companyLevelUpdate.revenue = subtotal + addonsTotal
-    }
-    const hasCompanyLevelChanges = "purchasedAddons" in body || "pricing" in body
+    const hasCompanyLevelChanges = "purchasedAddons" in updateData || "pricing" in updateData
 
     let result
     if (isEmbeddedOrder && companyId) {
@@ -474,11 +480,22 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         .collection("orders")
         .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
 
-      // For standalone orders, also sync company-level fields if we have a companyId
+      // For standalone orders, also sync company-level fields if we have a companyId.
+      // Revenue is recalculated from scratch by summing ALL orders for the company to
+      // avoid drift caused by repeated delta arithmetic.
       if (hasCompanyLevelChanges && result?.companyId) {
         const cId = result.companyId
         const cObjId = typeof cId === "string" && ObjectId.isValid(cId) ? new ObjectId(cId) : cId
         if (cObjId) {
+          if ("pricing" in updateData) {
+            const allOrders = await db.collection("orders").find({ companyId: { $in: [cObjId, cId] } }).toArray()
+            const recalcRevenue = allOrders.reduce((sum: number, o: any) => {
+              const p = o.pricing
+              return sum + (p?.total ?? p?.subtotal ?? 0)
+            }, 0)
+            companyLevelUpdate.revenue = recalcRevenue
+            companyLevelUpdate.pricing = updateData.pricing
+          }
           await db.collection("companies").updateOne({ _id: cObjId }, { $set: companyLevelUpdate })
         }
       }

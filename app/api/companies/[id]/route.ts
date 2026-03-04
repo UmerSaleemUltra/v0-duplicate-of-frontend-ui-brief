@@ -125,9 +125,26 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
-    const updateData: Partial<Company> = {
-      ...body,
-      updatedAt: new Date().toISOString(),
+    // Role-based field whitelist for company updates.
+    // Clients can only edit safe profile fields; sensitive operational fields are admin-only.
+    const adminOnlyFields = [
+      "status", "companyStatus", "registeredAgentStatus", "businessAddressStatus", "serviceStatus",
+      "ein", "itin", "businessId", "registeredAgent", "mailingAddress",
+      "milestones", "customMilestones", "revenue", "orders",
+      "taxClassification", "annualReportFilingDate", "irsFilingDate",
+    ]
+    const clientAllowedFields = [
+      "name", "type", "state", "businessCategory", "businessDescription",
+      "businessWebsite", "packageType", "members",
+    ]
+
+    const allowedFields = decoded.role === "admin"
+      ? [...adminOnlyFields, ...clientAllowedFields]
+      : clientAllowedFields
+
+    const updateData: Partial<Company> = { updatedAt: new Date().toISOString() }
+    for (const field of allowedFields) {
+      if (field in body) (updateData as any)[field] = body[field]
     }
 
     if (body.members && Array.isArray(body.members)) {
@@ -137,15 +154,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }))
     }
 
-    if (body.orders && Array.isArray(body.orders)) {
-      const totalRevenue = body.orders.reduce((sum: number, order: any) => sum + (order.pricing?.total || 0), 0)
+    // Admin-only: recalculate revenue from scratch if orders array is being replaced
+    if (decoded.role === "admin" && body.orders && Array.isArray(body.orders)) {
+      const totalRevenue = body.orders.reduce((sum: number, order: any) => {
+        return sum + (order.pricing?.total ?? order.amount ?? order.total ?? 0)
+      }, 0)
       updateData.revenue = totalRevenue
       updateData.lastOrderDate = new Date().toISOString()
     }
 
     if (decoded.role === "admin" && body.status) {
       updateData.status = body.status
-      console.log("[v0] Admin updating company status to:", body.status)
     }
 
     if (body.milestones) {
