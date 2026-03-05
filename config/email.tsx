@@ -975,7 +975,7 @@ export const emailTemplates = {
     type: string,
     receivedDate: string,
   ) => ({
-    subject: "New Mail Received",
+    subject: "New Mail Received at Your Business Address",
     html: `
     <!DOCTYPE html>
     <html>
@@ -998,32 +998,27 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px;">
                     <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Dear ${name},
+                      Hello,
                     </p>
                     
                     <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      A new document has been uploaded for ${companyName}.
+                      A new document has been received at your business address.
                     </p>
                     
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #000000; font-weight: 600;">
-                      Mail Details:
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      The document has been scanned and uploaded to the Mailroom in your Buzz Filing Dashboard, where you can securely view and download it.
                     </p>
                     
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;">
-                      <strong>From:</strong> ${from}
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      Please log in to your dashboard to review the document.
                     </p>
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;">
-                      <strong>Subject:</strong> ${subject}
-                    </p>
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;">
-                      <strong>Type:</strong> ${type}
-                    </p>
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333;">
-                      <strong>Received:</strong> ${receivedDate}
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      If you have any questions, simply reply to this email.
                     </p>
                     
                     <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can view and download this document from your mailroom.
+                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
                     </p>
                   </td>
                 </tr>
