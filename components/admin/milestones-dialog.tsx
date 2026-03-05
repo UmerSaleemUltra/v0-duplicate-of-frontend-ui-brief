@@ -294,7 +294,7 @@ export function MilestonesDialog({
 
       {/* Notify customer modal — shown when toggling a custom milestone to completed */}
       <Dialog open={!!pendingToggle} onOpenChange={(v) => { if (!v) handleCancelModal() }}>
-        <DialogContent className="max-w-lg">
+        <DialogContent className="max-w-lg w-full overflow-hidden">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">Notify Customer</DialogTitle>
             <DialogDescription className="text-sm text-slate-500">
@@ -302,9 +302,9 @@ export function MilestonesDialog({
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5 py-2">
+          <div className="space-y-5 py-2 w-full min-w-0">
             {/* Email section */}
-            <div className="rounded-lg border border-slate-200 overflow-hidden">
+            <div className="rounded-lg border border-slate-200 overflow-hidden w-full">
               <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-slate-600" />
@@ -324,7 +324,7 @@ export function MilestonesDialog({
                       value={emailSubject}
                       onChange={(e) => setEmailSubject(e.target.value)}
                       placeholder="Email subject"
-                      className="h-9 text-sm"
+                      className="h-9 text-sm w-full"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -335,7 +335,7 @@ export function MilestonesDialog({
                       onChange={(e) => setEmailContent(e.target.value)}
                       placeholder="Email content"
                       rows={4}
-                      className="text-sm resize-none"
+                      className="text-sm resize-none w-full break-words"
                     />
                   </div>
                 </div>
@@ -343,7 +343,7 @@ export function MilestonesDialog({
             </div>
 
             {/* Notification section */}
-            <div className="rounded-lg border border-slate-200 overflow-hidden">
+            <div className="rounded-lg border border-slate-200 overflow-hidden w-full">
               <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-slate-600" />
@@ -364,7 +364,7 @@ export function MilestonesDialog({
                       onChange={(e) => setNotificationMessage(e.target.value)}
                       placeholder="Notification message"
                       rows={3}
-                      className="text-sm resize-none"
+                      className="text-sm resize-none w-full break-words"
                     />
                   </div>
                 </div>
