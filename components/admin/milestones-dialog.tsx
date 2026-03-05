@@ -294,26 +294,25 @@ export function MilestonesDialog({
 
       {/* Notify customer modal — shown when toggling a custom milestone to completed */}
       <Dialog open={!!pendingToggle} onOpenChange={(v) => { if (!v) handleCancelModal() }}>
-        <DialogContent className="max-w-lg w-full overflow-hidden">
+        <DialogContent className="w-full max-w-lg overflow-y-auto max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="text-base font-semibold">Notify Customer</DialogTitle>
-            <DialogDescription className="text-sm text-slate-500">
-              Milestone <span className="font-medium text-slate-700">&quot;{pendingToggle?.milestoneTitle}&quot;</span> will be marked as complete. Choose how to notify the customer.
+            <DialogDescription className="text-sm text-slate-500 break-words">
+              Milestone{" "}
+              <span className="font-medium text-slate-700 break-all">&quot;{pendingToggle?.milestoneTitle}&quot;</span>{" "}
+              will be marked as complete. Choose how to notify the customer.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-5 py-2 w-full min-w-0">
+          <div className="space-y-4 py-1 w-full min-w-0">
             {/* Email section */}
             <div className="rounded-lg border border-slate-200 overflow-hidden w-full">
               <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center gap-2">
-                  <Mail className="w-4 h-4 text-slate-600" />
+                  <Mail className="w-4 h-4 text-slate-600 flex-shrink-0" />
                   <span className="text-sm font-medium text-slate-800">Send Email</span>
                 </div>
-                <Switch
-                  checked={sendEmail}
-                  onCheckedChange={setSendEmail}
-                />
+                <Switch checked={sendEmail} onCheckedChange={setSendEmail} />
               </div>
               {sendEmail && (
                 <div className="p-4 space-y-3">
@@ -324,7 +323,7 @@ export function MilestonesDialog({
                       value={emailSubject}
                       onChange={(e) => setEmailSubject(e.target.value)}
                       placeholder="Email subject"
-                      className="h-9 text-sm w-full"
+                      className="h-9 text-sm w-full min-w-0"
                     />
                   </div>
                   <div className="space-y-1.5">
@@ -335,7 +334,7 @@ export function MilestonesDialog({
                       onChange={(e) => setEmailContent(e.target.value)}
                       placeholder="Email content"
                       rows={4}
-                      className="text-sm resize-none w-full break-words"
+                      className="text-sm resize-none w-full min-w-0"
                     />
                   </div>
                 </div>
@@ -346,13 +345,10 @@ export function MilestonesDialog({
             <div className="rounded-lg border border-slate-200 overflow-hidden w-full">
               <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center gap-2">
-                  <Bell className="w-4 h-4 text-slate-600" />
+                  <Bell className="w-4 h-4 text-slate-600 flex-shrink-0" />
                   <span className="text-sm font-medium text-slate-800">Send Notification</span>
                 </div>
-                <Switch
-                  checked={sendNotification}
-                  onCheckedChange={setSendNotification}
-                />
+                <Switch checked={sendNotification} onCheckedChange={setSendNotification} />
               </div>
               {sendNotification && (
                 <div className="p-4">
@@ -364,7 +360,7 @@ export function MilestonesDialog({
                       onChange={(e) => setNotificationMessage(e.target.value)}
                       placeholder="Notification message"
                       rows={3}
-                      className="text-sm resize-none w-full break-words"
+                      className="text-sm resize-none w-full min-w-0"
                     />
                   </div>
                 </div>
@@ -372,25 +368,26 @@ export function MilestonesDialog({
             </div>
           </div>
 
-          <div className="flex items-center justify-between pt-2 border-t border-slate-100">
+          {/* Footer: stacks vertically on mobile, row on sm+ */}
+          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-slate-100">
             <Button
               variant="ghost"
               size="sm"
               onClick={handleSkip}
-              className="text-slate-500 hover:text-slate-700 gap-1.5"
+              className="text-slate-500 hover:text-slate-700 gap-1.5 w-full sm:w-auto justify-center"
             >
-              <X className="w-3.5 h-3.5" />
+              <X className="w-3.5 h-3.5 flex-shrink-0" />
               Skip &amp; complete later
             </Button>
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" onClick={handleCancelModal}>
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:gap-2">
+              <Button variant="outline" size="sm" onClick={handleCancelModal} className="w-full sm:w-auto">
                 Cancel
               </Button>
               <Button
                 size="sm"
                 onClick={handleConfirm}
                 disabled={!sendEmail && !sendNotification}
-                className="bg-slate-900 text-white hover:bg-slate-800"
+                className="bg-slate-900 text-white hover:bg-slate-800 w-full sm:w-auto whitespace-nowrap"
               >
                 {sendEmail && sendNotification
                   ? "Send Email & Notification"
