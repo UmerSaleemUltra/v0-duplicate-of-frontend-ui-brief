@@ -13,6 +13,7 @@ type ReviewStepProps = {
   onBack: () => void
   onNext: () => void
   updateData?: (updates: Partial<CheckoutData>) => void
+  goToStep?: (step: number) => void
 }
 
 const truncateFilename = (filename: string, maxWords = 6): string => {
@@ -23,7 +24,7 @@ const truncateFilename = (filename: string, maxWords = 6): string => {
   return words.slice(0, maxWords).join(" ") + "..."
 }
 
-export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepProps) {
+export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: ReviewStepProps) {
   const { toast } = useToast()
   const [passportData, setPassportData] = useState<Record<string, PassportData | null>>({})
   const [isCreatingCompany, setIsCreatingCompany] = useState(false)
@@ -223,7 +224,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
             variant="ghost"
             size="sm"
             className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 h-9 px-3 self-start sm:self-auto cursor-pointer"
-            onClick={onBack}
+            onClick={() => goToStep ? goToStep(1) : onBack()}
           >
             <Edit2 className="w-4 h-4 mr-1" />
             Edit
@@ -252,7 +253,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
             variant="ghost"
             size="sm"
             className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 h-9 px-3 self-start sm:self-auto cursor-pointer"
-            onClick={onBack}
+            onClick={() => goToStep ? goToStep(2) : onBack()}
           >
             <Edit2 className="w-4 h-4 mr-1" />
             Edit
@@ -383,7 +384,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData }: ReviewStepP
             variant="ghost"
             size="sm"
             className="text-[#ff0d13] hover:text-[#d81c20] hover:bg-[#ff0d13]/5 h-9 px-3 self-start sm:self-auto cursor-pointer"
-            onClick={onBack}
+            onClick={() => goToStep ? goToStep(1) : onBack()}
           >
             <Edit2 className="w-4 h-4 mr-1" />
             Edit

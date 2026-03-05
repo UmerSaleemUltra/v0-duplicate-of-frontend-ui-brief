@@ -50,9 +50,10 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
   const [uploadError, setUploadError] = useState<string>("")
-  const [pkrRate, setPkrRate] = useState<number | null>(null)
-  const [isLoadingRate, setIsLoadingRate] = useState(true)
+  const PKR_FIXED_RATE = 285
+  const [pkrRate] = useState<number>(PKR_FIXED_RATE)
   const [showValidationError, setShowValidationError] = useState(false)
+
   const [errors, setErrors] = useState({ whatsappNumber: "", submit: "" })
 
   useEffect(() => {
@@ -71,34 +72,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     }
   }, [toast])
 
-  useEffect(() => {
-    async function convertUSDtoPKR() {
-      try {
-        const response = await fetch("/api/exchange-rate")
-        const data = await response.json()
 
-        if (data.success && data.rate) {
-          return data.rate
-        } else {
-          throw new Error("Currency conversion failed")
-        }
-      } catch (error) {
-        console.log("Error converting USD to PKR:", error)
-        return null
-      }
-    }
-
-    convertUSDtoPKR()
-      .then((rate) => {
-        if (rate) {
-          setPkrRate(rate)
-        }
-        setIsLoadingRate(false)
-      })
-      .catch(() => {
-        setIsLoadingRate(false)
-      })
-  }, [])
 
   const getAddonName = (addon: any) => {
     if (!addon) return "Unknown Add-on"
@@ -456,7 +430,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     return totalAmount.toFixed(2)
   }
 
-  const PKR_RATE = pkrRate || 1
+  const PKR_RATE = pkrRate
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8 pb-6 md:pb-10">
