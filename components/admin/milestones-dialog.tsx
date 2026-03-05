@@ -109,6 +109,7 @@ export function MilestonesDialog({
     setPendingToggle(null)
   }
 
+
   const handleSkip = () => {
     if (!pendingToggle) return
     onCustomMilestoneToggle?.(pendingToggle.milestoneId, false, undefined, undefined, false, undefined)
@@ -315,7 +316,7 @@ export function MilestonesDialog({
                 <Switch checked={sendEmail} onCheckedChange={setSendEmail} />
               </div>
               {sendEmail && (
-                <div className="p-4 space-y-3">
+                <div className="p-4">
                   <div className="space-y-1.5">
                     <Label htmlFor="email-subject" className="text-xs font-medium text-slate-600">Subject</Label>
                     <Input
@@ -324,17 +325,6 @@ export function MilestonesDialog({
                       onChange={(e) => setEmailSubject(e.target.value)}
                       placeholder="Email subject"
                       className="h-9 text-sm w-full min-w-0"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label htmlFor="email-content" className="text-xs font-medium text-slate-600">Content</Label>
-                    <Textarea
-                      id="email-content"
-                      value={emailContent}
-                      onChange={(e) => setEmailContent(e.target.value)}
-                      placeholder="Email content"
-                      rows={4}
-                      className="text-sm resize-none w-full min-w-0"
                     />
                   </div>
                 </div>
