@@ -2338,6 +2338,7 @@ export default function OrderDetailPage() {
                   onCustomMilestoneToggle={handleCustomMilestoneToggle}
                   onDeleteCustomMilestone={handleDeleteCustomMilestone}
                   deletingMilestoneId={deletingMilestoneId}
+                  customerEmail={customer?.email || order?.email || ""}
                 />
 
               </div>
