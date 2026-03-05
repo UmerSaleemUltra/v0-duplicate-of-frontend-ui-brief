@@ -37,11 +37,16 @@ export default function BlogManagement() {
 
   const loadPosts = async () => {
     try {
-      const response = await fetch("/api/blog")
+      const response = await fetch("/api/blog?limit=100")
       const data = await response.json()
 
       if (data.success) {
-        setPosts(data.data)
+        // Normalize _id to a plain string so it works in hrefs and keys
+        const normalized = (data.data || []).map((p: any) => ({
+          ...p,
+          _id: p._id?.$oid || p._id?.toString?.() || String(p._id),
+        }))
+        setPosts(normalized)
       } else {
         toast.error("Failed to load blog posts")
       }

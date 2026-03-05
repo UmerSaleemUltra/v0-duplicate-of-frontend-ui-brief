@@ -99,7 +99,7 @@ export default function EditBlogPost() {
       const data = await response.json()
 
       if (data.success) {
-        setFormData({ ...formData, featuredImage: data.data.url })
+        setFormData((prev) => ({ ...prev, featuredImage: data.data.url }))
         setImagePreview(data.data.url)
         toast.success("Image uploaded successfully")
       } else {
