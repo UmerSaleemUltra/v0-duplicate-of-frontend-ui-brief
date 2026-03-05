@@ -2507,10 +2507,11 @@ export default function OrderDetailPage() {
         completionPercentage={completionPercentage}
         completedMilestonesWithCustom={completedMilestonesWithCustom}
         totalMilestonesWithCustom={totalMilestonesWithCustom}
-        onMilestoneToggle={handleMilestoneToggle}
-        onDeleteCustomMilestone={handleDeleteCustomMilestone}
-        deletingMilestoneId={deletingMilestoneId}
-      />
+  onMilestoneToggle={handleMilestoneToggle}
+  onCustomMilestoneToggle={handleCustomMilestoneToggle}
+  onDeleteCustomMilestone={handleDeleteCustomMilestone}
+  deletingMilestoneId={deletingMilestoneId}
+/>
 
       {/* Custom Milestone Dialog */}
       <Dialog open={customMilestoneDialogOpen} onOpenChange={handleCloseCustomMilestoneDialog}>

@@ -37,6 +37,7 @@ interface MilestonesDialogProps {
   completedMilestonesWithCustom: number
   totalMilestonesWithCustom: number
   onMilestoneToggle: (milestone: keyof MilestoneState) => void
+  onCustomMilestoneToggle?: (id: string) => void
   onDeleteCustomMilestone: (id: string) => void
   deletingMilestoneId: string | null
 }
@@ -53,6 +54,7 @@ export function MilestonesDialog({
   completedMilestonesWithCustom,
   totalMilestonesWithCustom,
   onMilestoneToggle,
+  onCustomMilestoneToggle,
   onDeleteCustomMilestone,
   deletingMilestoneId,
 }: MilestonesDialogProps) {
@@ -184,10 +186,12 @@ export function MilestonesDialog({
                 {company.customMilestones.map((customMilestone) => (
                   <div
                     key={customMilestone.id}
-                    className="flex items-center justify-between p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
+                    className="flex items-center justify-between gap-3 p-4 rounded-lg border border-slate-200 hover:bg-slate-50 transition-colors"
                   >
                     <div className="flex items-center gap-3 flex-1 min-w-0">
-                      <CheckCircle2 className="w-5 h-5 text-slate-600 flex-shrink-0" />
+                      <CheckCircle2
+                        className={`w-5 h-5 flex-shrink-0 ${(customMilestone as any).completed ? "text-green-600" : "text-slate-400"}`}
+                      />
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-slate-900">{customMilestone.title}</p>
                         {customMilestone.description && (
@@ -195,15 +199,22 @@ export function MilestonesDialog({
                         )}
                       </div>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => onDeleteCustomMilestone(customMilestone.id)}
-                      disabled={deletingMilestoneId === customMilestone.id}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Switch
+                        checked={(customMilestone as any).completed ?? false}
+                        onCheckedChange={() => onCustomMilestoneToggle?.(customMilestone.id)}
+                        disabled={milestoneUpdating}
+                      />
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => onDeleteCustomMilestone(customMilestone.id)}
+                        disabled={deletingMilestoneId === customMilestone.id}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 ))}
               </>
