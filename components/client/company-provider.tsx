@@ -105,7 +105,14 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   }, [])
 
   return (
-    <CompanyContext.Provider value={{ selectedCompanyId, setSelectedCompanyId: handleSetSelectedCompanyId }}>
+    <CompanyContext.Provider
+      value={{
+        selectedCompanyId,
+        setSelectedCompanyId: handleSetSelectedCompanyId,
+        companiesLoading: loading,
+        hasCompanies: companies.length > 0,
+      }}
+    >
       {children}
     </CompanyContext.Provider>
   )
