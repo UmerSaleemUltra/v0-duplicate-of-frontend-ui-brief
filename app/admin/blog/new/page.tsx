@@ -172,123 +172,113 @@ export default function NewBlogPost() {
     }, 0)
   }
 
+  const inputCls = "h-11 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-[#0071e3] focus-visible:border-[#0071e3] placeholder:text-[#86868b] text-[#1d1d1f] text-[15px]"
+  const textareaCls = "w-full px-3 py-2.5 rounded-xl border border-[#d2d2d7] bg-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-[#0071e3] focus:border-[#0071e3] text-[#1d1d1f] text-[15px] placeholder:text-[#86868b] resize-none"
+  const labelCls = "text-[13px] font-medium text-[#1d1d1f]"
+  const selectTriggerCls = "h-11 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-[#1d1d1f] text-[15px] focus:ring-[#0071e3]"
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="ghost" size="icon" asChild>
-          <Link href="/admin/blog">
-            <ArrowLeft className="h-4 w-4" />
-          </Link>
-        </Button>
+    <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() => router.back()}
+          className="h-9 w-9 rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#1d1d1f] flex items-center justify-center transition-colors"
+        >
+          <ArrowLeft className="h-4 w-4" />
+        </button>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-semibold text-slate-900">New Blog Post</h1>
-          <p className="text-sm sm:text-base text-slate-600 mt-1">Create a new blog post</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-[#1d1d1f]">New Post</h1>
+          <p className="text-[14px] text-[#6e6e73] mt-0.5">Create a new blog post</p>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Post Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
-              <Input
-                id="title"
-                value={formData.title}
-                onChange={(e) => handleTitleChange(e.target.value)}
-                placeholder="Enter post title"
-                required
-              />
+        <div className="rounded-2xl border border-[#d2d2d7] bg-white divide-y divide-[#f5f5f7] overflow-hidden">
+          {/* Content section */}
+          <div className="px-8 py-6 space-y-5">
+            <p className="text-[13px] font-semibold text-[#6e6e73] uppercase tracking-widest">Content</p>
+
+            <div className="space-y-1.5">
+              <Label htmlFor="title" className={labelCls}>Title</Label>
+              <Input id="title" value={formData.title} onChange={(e) => handleTitleChange(e.target.value)} placeholder="Post title" required className={inputCls} />
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="slug">Slug *</Label>
-              <Input
-                id="slug"
-                value={formData.slug}
-                onChange={(e) => setFormData({ ...formData, slug: e.target.value })}
-                placeholder="post-url-slug"
-                required
-              />
-              <p className="text-xs text-slate-500">URL-friendly version of the title</p>
+            <div className="space-y-1.5">
+              <Label htmlFor="slug" className={labelCls}>Slug</Label>
+              <Input id="slug" value={formData.slug} onChange={(e) => setFormData({ ...formData, slug: e.target.value })} placeholder="post-url-slug" required className={inputCls} />
+              <p className="text-[12px] text-[#86868b]">URL-friendly version of the title</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="content">Content *</Label>
-              <div className="flex items-center gap-1 p-2 bg-slate-50 border border-slate-200 rounded-t-md">
-                <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting("bold")}>
-                  <Bold className="h-4 w-4" />
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting("italic")}>
-                  <Italic className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-6 bg-slate-300 mx-1" />
-                <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting("h1")}>
-                  <Heading1 className="h-4 w-4" />
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting("h2")}>
-                  <Heading2 className="h-4 w-4" />
-                </Button>
-                <div className="w-px h-6 bg-slate-300 mx-1" />
-                <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting("ul")}>
-                  <List className="h-4 w-4" />
-                </Button>
-                <Button type="button" variant="ghost" size="sm" onClick={() => insertFormatting("ol")}>
-                  <ListOrdered className="h-4 w-4" />
-                </Button>
+            <div className="space-y-1.5">
+              <Label htmlFor="content" className={labelCls}>Content</Label>
+              <div className="flex items-center gap-0.5 px-2 py-1.5 bg-[#f5f5f7] border border-[#d2d2d7] rounded-t-xl border-b-0">
+                {[
+                  { icon: <Bold className="h-3.5 w-3.5" />, fmt: "bold" },
+                  { icon: <Italic className="h-3.5 w-3.5" />, fmt: "italic" },
+                  null,
+                  { icon: <Heading1 className="h-3.5 w-3.5" />, fmt: "h1" },
+                  { icon: <Heading2 className="h-3.5 w-3.5" />, fmt: "h2" },
+                  null,
+                  { icon: <List className="h-3.5 w-3.5" />, fmt: "ul" },
+                  { icon: <ListOrdered className="h-3.5 w-3.5" />, fmt: "ol" },
+                ].map((item, idx) =>
+                  item === null ? (
+                    <div key={idx} className="w-px h-4 bg-[#d2d2d7] mx-1" />
+                  ) : (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => insertFormatting(item.fmt)}
+                      className="p-1.5 rounded-lg text-[#1d1d1f] hover:bg-[#e8e8ed] transition-colors"
+                    >
+                      {item.icon}
+                    </button>
+                  )
+                )}
               </div>
               <Textarea
                 id="content"
                 value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 placeholder="Write your blog post content here... (Supports Markdown)"
-                rows={15}
+                rows={14}
                 required
-                className="font-mono text-sm"
+                className="rounded-t-none rounded-b-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-[#0071e3] focus-visible:border-[#0071e3] placeholder:text-[#86868b] text-[#1d1d1f] font-mono text-[14px]"
               />
-              <p className="text-xs text-slate-500">Use ** for bold, * for italic, # for headings, - for lists</p>
+              <p className="text-[12px] text-[#86868b]">Supports Markdown: **bold**, *italic*, # heading, - list</p>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="excerpt">Excerpt</Label>
-              <Textarea
-                id="excerpt"
-                value={formData.excerpt}
-                onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })}
-                placeholder="Short summary of the post"
-                rows={3}
-              />
+            <div className="space-y-1.5">
+              <Label htmlFor="excerpt" className={labelCls}>Excerpt</Label>
+              <textarea id="excerpt" value={formData.excerpt} onChange={(e) => setFormData({ ...formData, excerpt: e.target.value })} placeholder="Short summary of the post" rows={3} className={textareaCls} />
             </div>
+          </div>
+
+          {/* Settings section */}
+          <div className="px-8 py-6 space-y-5">
+            <p className="text-[13px] font-semibold text-[#6e6e73] uppercase tracking-widest">Settings</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
-                <Select
-                  value={formData.category}
-                  onValueChange={(value) => setFormData({ ...formData, category: value })}
-                >
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
+              <div className="space-y-1.5">
+                <Label className={labelCls}>Category</Label>
+                <Select value={formData.category} onValueChange={(value) => setFormData({ ...formData, category: value })}>
+                  <SelectTrigger className={selectTriggerCls}><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-xl border-[#d2d2d7]">
                     <SelectItem value="Business Formation">Business Formation</SelectItem>
                     <SelectItem value="LLC Guide">LLC Guide</SelectItem>
-                    <SelectItem value="Tax & Compliance">Tax & Compliance</SelectItem>
+                    <SelectItem value="Tax & Compliance">Tax &amp; Compliance</SelectItem>
                     <SelectItem value="State Guides">State Guides</SelectItem>
                     <SelectItem value="News">News</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="status">Status</Label>
+              <div className="space-y-1.5">
+                <Label className={labelCls}>Status</Label>
                 <Select value={formData.status} onValueChange={(value) => setFormData({ ...formData, status: value })}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
+                  <SelectTrigger className={selectTriggerCls}><SelectValue /></SelectTrigger>
+                  <SelectContent className="rounded-xl border-[#d2d2d7]">
                     <SelectItem value="draft">Draft</SelectItem>
                     <SelectItem value="published">Published</SelectItem>
                   </SelectContent>
@@ -296,105 +286,85 @@ export default function NewBlogPost() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="tags">Tags</Label>
-              <Input
-                id="tags"
-                value={formData.tags}
-                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                placeholder="llc, business, startup (comma-separated)"
-              />
+            <div className="space-y-1.5">
+              <Label htmlFor="tags" className={labelCls}>Tags</Label>
+              <Input id="tags" value={formData.tags} onChange={(e) => setFormData({ ...formData, tags: e.target.value })} placeholder="llc, business, startup (comma-separated)" className={inputCls} />
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label>Featured Image</Label>
-              <div className="space-y-4">
-                {imagePreview ? (
-                  <div className="relative">
-                    <img
-                      src={imagePreview || "/placeholder.svg"}
-                      alt="Featured preview"
-                      className="w-full h-48 object-cover rounded-lg border"
-                    />
-                    <Button
-                      type="button"
-                      variant="destructive"
-                      size="icon"
-                      className="absolute top-2 right-2"
-                      onClick={handleRemoveImage}
-                    >
-                      <X className="h-4 w-4" />
-                    </Button>
-                  </div>
-                ) : (
-                  <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-slate-400 transition-colors">
-                    <Upload className="h-8 w-8 mx-auto mb-2 text-slate-400" />
-                    <p className="text-sm text-slate-600 mb-2">Upload a featured image</p>
-                    <p className="text-xs text-slate-500 mb-4">PNG, JPG, WebP or GIF (max 5MB)</p>
-                    <Input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleImageUpload}
-                      disabled={uploading}
-                      className="hidden"
-                      id="image-upload"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => document.getElementById("image-upload")?.click()}
-                      disabled={uploading}
-                    >
-                      {uploading ? "Uploading..." : "Choose File"}
-                    </Button>
-                  </div>
-                )}
-                <div className="flex items-center gap-2">
-                  <span className="text-xs text-slate-500">Or enter URL manually:</span>
+          {/* Image section */}
+          <div className="px-8 py-6 space-y-5">
+            <p className="text-[13px] font-semibold text-[#6e6e73] uppercase tracking-widest">Featured Image</p>
+            <div className="space-y-3">
+              {imagePreview ? (
+                <div className="relative rounded-xl overflow-hidden">
+                  <img src={imagePreview || "/placeholder.svg"} alt="Featured preview" className="w-full h-48 object-cover" />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    className="absolute top-2 right-2 h-7 w-7 rounded-full bg-black/50 hover:bg-black/70 text-white flex items-center justify-center transition-colors"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 </div>
-                <Input
-                  value={formData.featuredImage}
-                  onChange={(e) => {
-                    setFormData({ ...formData, featuredImage: e.target.value })
-                    setImagePreview(e.target.value || null)
-                  }}
-                  placeholder="https://example.com/image.jpg"
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="metaTitle">Meta Title (SEO)</Label>
+              ) : (
+                <div className="rounded-xl border-2 border-dashed border-[#d2d2d7] bg-[#f5f5f7] p-8 text-center hover:border-[#0071e3] transition-colors">
+                  <Upload className="h-7 w-7 mx-auto mb-2 text-[#86868b]" />
+                  <p className="text-[14px] text-[#1d1d1f] font-medium mb-1">Upload a featured image</p>
+                  <p className="text-[12px] text-[#86868b] mb-4">PNG, JPG, WebP or GIF — max 5 MB</p>
+                  <Input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" id="image-upload" />
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById("image-upload")?.click()}
+                    disabled={uploading}
+                    className="inline-flex items-center px-4 py-2 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-[13px] font-medium transition-colors disabled:opacity-50"
+                  >
+                    {uploading ? "Uploading..." : "Choose File"}
+                  </button>
+                </div>
+              )}
+              <p className="text-[12px] text-[#86868b]">Or paste an image URL:</p>
               <Input
-                id="metaTitle"
-                value={formData.metaTitle}
-                onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })}
-                placeholder="Leave empty to use post title"
+                value={formData.featuredImage}
+                onChange={(e) => { setFormData({ ...formData, featuredImage: e.target.value }); setImagePreview(e.target.value || null) }}
+                placeholder="https://example.com/image.jpg"
+                className={inputCls}
               />
             </div>
+          </div>
 
-            <div className="space-y-2">
-              <Label htmlFor="metaDescription">Meta Description (SEO)</Label>
-              <Textarea
-                id="metaDescription"
-                value={formData.metaDescription}
-                onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })}
-                placeholder="Leave empty to use excerpt"
-                rows={3}
-              />
+          {/* SEO section */}
+          <div className="px-8 py-6 space-y-5">
+            <p className="text-[13px] font-semibold text-[#6e6e73] uppercase tracking-widest">SEO</p>
+            <div className="space-y-1.5">
+              <Label htmlFor="metaTitle" className={labelCls}>Meta Title</Label>
+              <Input id="metaTitle" value={formData.metaTitle} onChange={(e) => setFormData({ ...formData, metaTitle: e.target.value })} placeholder="Leave empty to use post title" className={inputCls} />
             </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="metaDescription" className={labelCls}>Meta Description</Label>
+              <Textarea id="metaDescription" value={formData.metaDescription} onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })} placeholder="Leave empty to use excerpt" rows={3} className="rounded-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-[#0071e3] focus-visible:border-[#0071e3] placeholder:text-[#86868b] text-[#1d1d1f]" />
+            </div>
+          </div>
 
-            <div className="flex justify-end gap-3">
-              <Button type="button" variant="outline" onClick={() => router.back()}>
-                Cancel
-              </Button>
-              <Button type="submit" disabled={loading} className="bg-[#ff0d13] hover:bg-[#d81c20]">
-                <Save className="h-4 w-4 mr-2" />
-                {loading ? "Creating..." : "Create Post"}
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+          {/* Footer actions */}
+          <div className="px-8 py-5 flex justify-end gap-3 bg-[#fafafa]">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              className="inline-flex items-center px-5 py-2.5 rounded-full border border-[#d2d2d7] bg-white hover:bg-[#f5f5f7] text-[#1d1d1f] text-[14px] font-medium transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={loading}
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-medium transition-colors disabled:opacity-50"
+            >
+              <Save className="h-4 w-4" />
+              {loading ? "Creating..." : "Publish Post"}
+            </button>
+          </div>
+        </div>
       </form>
     </div>
   )

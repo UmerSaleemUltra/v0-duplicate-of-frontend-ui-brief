@@ -91,57 +91,31 @@ export default function BlogManagement() {
 
   if (loading) {
     return (
-      <div className="space-y-6 p-6 animate-pulse">
-        {/* Header Skeleton */}
+      <div className="max-w-7xl mx-auto px-6 py-10 space-y-8 animate-pulse">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <div className="h-8 bg-slate-200 rounded w-48"></div>
-            <div className="h-4 bg-slate-100 rounded w-64"></div>
+            <div className="h-8 bg-[#f5f5f7] rounded-xl w-52"></div>
+            <div className="h-4 bg-[#f5f5f7] rounded-lg w-64"></div>
           </div>
-          <div className="h-10 bg-slate-200 rounded w-40"></div>
+          <div className="h-10 bg-[#f5f5f7] rounded-full w-32"></div>
         </div>
-
-        {/* Stats Cards Skeleton */}
-        <div className="grid gap-4 md:grid-cols-4">
-          {[1, 2, 3, 4].map((i) => (
-            <div key={i} className="border rounded-lg p-6">
-              <div className="space-y-2">
-                <div className="h-4 bg-slate-100 rounded w-24"></div>
-                <div className="h-8 bg-slate-200 rounded w-16"></div>
-              </div>
-            </div>
-          ))}
+        <div className="flex gap-3">
+          <div className="flex-1 h-10 bg-[#f5f5f7] rounded-xl"></div>
+          <div className="h-10 bg-[#f5f5f7] rounded-xl w-36"></div>
+          <div className="h-10 bg-[#f5f5f7] rounded-xl w-44"></div>
         </div>
-
-        {/* Filters Skeleton */}
-        <div className="flex flex-col md:flex-row gap-4">
-          <div className="flex-1 h-10 bg-slate-200 rounded"></div>
-          <div className="h-10 bg-slate-100 rounded w-32"></div>
-          <div className="h-10 bg-slate-100 rounded w-32"></div>
-        </div>
-
-        {/* Blog Posts Grid Skeleton */}
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
           {[1, 2, 3, 4, 5, 6].map((i) => (
-            <div key={i} className="border rounded-lg overflow-hidden">
-              <div className="h-48 bg-slate-200"></div>
-              <div className="p-6 space-y-4">
-                <div className="flex gap-2">
-                  <div className="h-6 bg-slate-200 rounded-full w-20"></div>
-                  <div className="h-6 bg-slate-100 rounded-full w-24"></div>
-                </div>
-                <div className="space-y-2">
-                  <div className="h-6 bg-slate-200 rounded w-full"></div>
-                  <div className="h-4 bg-slate-100 rounded w-full"></div>
-                  <div className="h-4 bg-slate-100 rounded w-3/4"></div>
-                </div>
-                <div className="flex items-center justify-between pt-4 border-t">
-                  <div className="h-4 bg-slate-100 rounded w-24"></div>
-                  <div className="flex gap-2">
-                    <div className="h-8 w-8 bg-slate-200 rounded"></div>
-                    <div className="h-8 w-8 bg-slate-200 rounded"></div>
-                    <div className="h-8 w-8 bg-slate-200 rounded"></div>
-                  </div>
+            <div key={i} className="rounded-2xl overflow-hidden bg-[#f5f5f7]">
+              <div className="h-44 bg-[#e8e8ed]"></div>
+              <div className="p-5 space-y-3">
+                <div className="h-4 bg-[#e8e8ed] rounded-lg w-20"></div>
+                <div className="h-5 bg-[#e8e8ed] rounded-lg w-full"></div>
+                <div className="h-4 bg-[#e8e8ed] rounded-lg w-3/4"></div>
+                <div className="flex gap-2 pt-3">
+                  <div className="h-8 bg-[#e8e8ed] rounded-xl flex-1"></div>
+                  <div className="h-8 bg-[#e8e8ed] rounded-xl flex-1"></div>
+                  <div className="h-8 w-8 bg-[#e8e8ed] rounded-xl"></div>
                 </div>
               </div>
             </div>
@@ -152,153 +126,155 @@ export default function BlogManagement() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="max-w-7xl mx-auto px-6 py-10 space-y-8">
+      {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold bg-gradient-to-r from-[#880000] to-[#ff0d13] bg-clip-text text-transparent">
-            Blog Management
-          </h1>
-          <p className="text-sm sm:text-base text-slate-600 mt-1">Create and manage blog posts</p>
+          <h1 className="text-3xl font-semibold tracking-tight text-[#1d1d1f]">Blog</h1>
+          <p className="text-[15px] text-[#6e6e73] mt-1">Create and manage your blog posts</p>
         </div>
         <Button
           asChild
-          className="bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 transition-opacity shadow-lg"
+          className="rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white font-medium px-5 h-10 shadow-none transition-colors"
         >
           <Link href="/admin/blog/new">
-            <Plus className="h-4 w-4 mr-2" />
+            <Plus className="h-4 w-4 mr-1.5" />
             New Post
           </Link>
         </Button>
       </div>
 
-      <Card className="border-slate-200 shadow-lg">
-        <CardHeader>
-          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-            <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-              <Input
-                placeholder="Search blog posts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-[140px]">
-                <SelectValue placeholder="All Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="published">Published</SelectItem>
-                <SelectItem value="draft">Draft</SelectItem>
-              </SelectContent>
-            </Select>
-            <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-              <SelectTrigger className="w-[180px]">
-                <SelectValue placeholder="All Categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Categories</SelectItem>
-                {categories.map((cat) => (
-                  <SelectItem key={cat} value={cat}>
-                    {cat}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        </CardHeader>
-        <CardContent>
-          {filteredPosts.length === 0 ? (
-            <div className="text-center py-12">
-              <p className="text-slate-500">No blog posts found</p>
-              <Button
-                asChild
-                className="mt-4 bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:opacity-90 transition-opacity shadow-lg"
-              >
-                <Link href="/admin/blog/new">Create your first post</Link>
-              </Button>
-            </div>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredPosts.map((post) => (
-                <div
-                  key={post._id}
-                  className="group bg-white rounded-2xl overflow-hidden border border-slate-200 hover:shadow-2xl hover:scale-105 transition-all duration-300"
-                >
-                  {/* Featured Image */}
-                  <div className="relative aspect-[16/10] overflow-hidden bg-gradient-to-br from-slate-100 to-slate-200">
-                    {post.featuredImage ? (
-                      <img
-                        src={post.featuredImage || "/placeholder.svg"}
-                        alt={post.title}
-                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-[#880000] via-[#ff0d13] to-[#ff6b6f]">
-                        <span className="text-white text-5xl font-bold opacity-30">BF</span>
-                      </div>
-                    )}
+      {/* Filters */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+        <div className="relative flex-1 max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-[#86868b]" />
+          <Input
+            placeholder="Search posts..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-9 h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-[#0071e3] focus-visible:border-[#0071e3] placeholder:text-[#86868b] text-[#1d1d1f]"
+          />
+        </div>
+        <Select value={statusFilter} onValueChange={setStatusFilter}>
+          <SelectTrigger className="w-[140px] h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-[#1d1d1f] focus:ring-[#0071e3]">
+            <SelectValue placeholder="All Status" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl border-[#d2d2d7]">
+            <SelectItem value="all">All Status</SelectItem>
+            <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={categoryFilter} onValueChange={setCategoryFilter}>
+          <SelectTrigger className="w-[180px] h-10 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-[#1d1d1f] focus:ring-[#0071e3]">
+            <SelectValue placeholder="All Categories" />
+          </SelectTrigger>
+          <SelectContent className="rounded-xl border-[#d2d2d7]">
+            <SelectItem value="all">All Categories</SelectItem>
+            {categories.map((cat) => (
+              <SelectItem key={cat} value={cat}>
+                {cat}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
 
-                    {/* Status & NEW badges */}
-                    <div className="absolute top-4 left-4 flex gap-2">
-                      <Badge
-                        variant={post.status === "published" ? "default" : "secondary"}
-                        className="text-xs font-semibold"
-                      >
-                        {post.status}
-                      </Badge>
-                      {isNewPost(post.createdAt) && (
-                        <Badge className="text-xs bg-[#ff0d13] hover:bg-[#d81c20] font-semibold">NEW</Badge>
-                      )}
-                    </div>
+      {/* Posts Grid */}
+      {filteredPosts.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-24 text-center">
+          <p className="text-[17px] font-medium text-[#1d1d1f]">No posts found</p>
+          <p className="text-[15px] text-[#6e6e73] mt-1 mb-6">Get started by creating your first blog post.</p>
+          <Button
+            asChild
+            className="rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white font-medium px-5 h-10 shadow-none"
+          >
+            <Link href="/admin/blog/new">Create Post</Link>
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filteredPosts.map((post) => (
+            <div
+              key={post._id}
+              className="group bg-white rounded-2xl overflow-hidden border border-[#d2d2d7] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300"
+            >
+              {/* Featured Image */}
+              <div className="relative aspect-[16/10] overflow-hidden bg-[#f5f5f7]">
+                {post.featuredImage ? (
+                  <img
+                    src={post.featuredImage || "/placeholder.svg"}
+                    alt={post.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-[#e8e8ed]">
+                    <span className="text-[#86868b] text-4xl font-semibold tracking-tight select-none">Blog</span>
                   </div>
-
-                  {/* Content */}
-                  <div className="p-6">
-                    {/* Category */}
-                    <Badge variant="outline" className="text-xs mb-3">
-                      {post.category}
-                    </Badge>
-
-                    {/* Title */}
-                    <h3 className="text-lg font-bold text-slate-900 mb-2 line-clamp-2 leading-tight">{post.title}</h3>
-
-                    {/* Meta info */}
-                    <p className="text-xs text-slate-500 mb-4">
-                      {new Date(post.createdAt).toLocaleDateString()}
-                    </p>
-
-                    {/* Actions */}
-                    <div className="flex items-center gap-2 pt-4 border-t border-slate-100">
-                      <Button variant="outline" size="sm" asChild className="flex-1 bg-transparent">
-                        <Link href={`/blog/${post.slug}`} target="_blank">
-                          <Eye className="h-3.5 w-3.5 mr-1.5" />
-                          View
-                        </Link>
-                      </Button>
-                      <Button variant="outline" size="sm" asChild className="flex-1 bg-transparent">
-                        <Link href={`/admin/blog/${post._id}`}>
-                          <Edit className="h-3.5 w-3.5 mr-1.5" />
-                          Edit
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(post._id)}
-                        className="text-red-500 hover:text-red-600 hover:bg-red-50"
-                      >
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  </div>
+                )}
+                {/* Status pill */}
+                <div className="absolute top-3 left-3 flex gap-1.5">
+                  <span
+                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium ${
+                      post.status === "published"
+                        ? "bg-[#d1fae5] text-[#065f46]"
+                        : "bg-[#f5f5f7] text-[#6e6e73]"
+                    }`}
+                  >
+                    {post.status}
+                  </span>
+                  {isNewPost(post.createdAt) && (
+                    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-[#0071e3] text-white">
+                      New
+                    </span>
+                  )}
                 </div>
-              ))}
+              </div>
+
+              {/* Content */}
+              <div className="p-5">
+                <p className="text-[12px] font-medium text-[#0071e3] mb-2 uppercase tracking-wide">{post.category}</p>
+                <h3 className="text-[15px] font-semibold text-[#1d1d1f] line-clamp-2 leading-snug mb-1">{post.title}</h3>
+                <p className="text-[12px] text-[#86868b]">{new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
+
+                {/* Actions */}
+                <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#f5f5f7]">
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="flex-1 h-8 rounded-xl text-[#0071e3] hover:bg-[#f5f5f7] text-[13px] font-medium"
+                  >
+                    <Link href={`/blog/${post.slug}`} target="_blank">
+                      <Eye className="h-3.5 w-3.5 mr-1.5" />
+                      View
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    asChild
+                    className="flex-1 h-8 rounded-xl text-[#1d1d1f] hover:bg-[#f5f5f7] text-[13px] font-medium"
+                  >
+                    <Link href={`/admin/blog/${post._id}`}>
+                      <Edit className="h-3.5 w-3.5 mr-1.5" />
+                      Edit
+                    </Link>
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => handleDelete(post._id)}
+                    className="h-8 w-8 rounded-xl text-[#ff3b30] hover:bg-[#fff1f0] p-0"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          ))}
+        </div>
+      )}
     </div>
   )
 }
