@@ -84,13 +84,17 @@ export function MilestonesDialog({
       return
     }
 
-    // If toggling ON, open the drawer — admin fills in their own subject/content
+    // Close the outer Dialog first to avoid nested Radix Dialog conflict,
+    // then open the Sheet drawer after a tick so they don't overlap.
     setEmailSubject("")
     setEmailContent("")
     setNotificationMessage("")
     setSendEmail(true)
     setSendNotification(true)
-    setPendingToggle({ milestoneId: milestone.id, milestoneTitle: milestone.title })
+    onOpenChange(false)
+    setTimeout(() => {
+      setPendingToggle({ milestoneId: milestone.id, milestoneTitle: milestone.title })
+    }, 0)
   }
 
   const handleConfirm = () => {
@@ -104,17 +108,22 @@ export function MilestonesDialog({
       sendNotification ? notificationMessage : undefined,
     )
     setPendingToggle(null)
+    setTimeout(() => { onOpenChange(true) }, 300)
   }
-
 
   const handleSkip = () => {
     if (!pendingToggle) return
     onCustomMilestoneToggle?.(pendingToggle.milestoneId, false, undefined, undefined, false, undefined)
     setPendingToggle(null)
+    setTimeout(() => { onOpenChange(true) }, 300)
   }
 
   const handleCancelModal = () => {
     setPendingToggle(null)
+    // Reopen the milestones dialog after the sheet closes
+    setTimeout(() => {
+      onOpenChange(true)
+    }, 300)
   }
 
   return (
