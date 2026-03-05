@@ -1046,7 +1046,7 @@ export const emailTemplates = {
   }),
 
   addonPurchaseConfirmation: (name: string, addonName: string, price: string) => ({
-    subject: `Add-on Purchased: ${addonName}`,
+    subject: `${addonName} Add-On Successfully Added`,
     html: `
     <!DOCTYPE html>
     <html>
@@ -1069,19 +1069,27 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px;">
                     <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Dear ${name},
+                      Hello,
                     </p>
                     
                     <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for purchasing the <strong>${addonName}</strong> add-on!
+                      We're writing to confirm that the following add-on service has been successfully purchased:
                     </p>
                     
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333;">
-                      <strong>Price:</strong> ${price}
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      <strong>Service Name:</strong> ${addonName}
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      Our team will begin processing this service, and progress updates will be available in your Buzz Filing Dashboard.
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      If you have any questions, simply reply to this email.
                     </p>
                     
                     <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Your add-on has been activated and is now available in your account.
+                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
                     </p>
                   </td>
                 </tr>
