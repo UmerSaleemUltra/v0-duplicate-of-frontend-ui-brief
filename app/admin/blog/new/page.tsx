@@ -172,10 +172,10 @@ export default function NewBlogPost() {
     }, 0)
   }
 
-  const inputCls = "h-11 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-[#0071e3] focus-visible:border-[#0071e3] placeholder:text-[#86868b] text-[#1d1d1f] text-[15px]"
-  const textareaCls = "w-full px-3 py-2.5 rounded-xl border border-[#d2d2d7] bg-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-[#0071e3] focus:border-[#0071e3] text-[#1d1d1f] text-[15px] placeholder:text-[#86868b] resize-none"
+  const inputCls = "h-11 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-primary focus-visible:border-primary placeholder:text-[#86868b] text-[#1d1d1f] text-[15px]"
+  const textareaCls = "w-full px-3 py-2.5 rounded-xl border border-[#d2d2d7] bg-[#f5f5f7] focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary text-[#1d1d1f] text-[15px] placeholder:text-[#86868b] resize-none"
   const labelCls = "text-[13px] font-medium text-[#1d1d1f]"
-  const selectTriggerCls = "h-11 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-[#1d1d1f] text-[15px] focus:ring-[#0071e3]"
+  const selectTriggerCls = "h-11 rounded-xl border-[#d2d2d7] bg-[#f5f5f7] text-[#1d1d1f] text-[15px] focus:ring-primary"
 
   return (
     <div className="max-w-3xl mx-auto px-6 py-10 space-y-8">
@@ -184,7 +184,7 @@ export default function NewBlogPost() {
         <button
           type="button"
           onClick={() => router.back()}
-          className="h-9 w-9 rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#1d1d1f] flex items-center justify-center transition-colors"
+          className="h-9 w-9 rounded-full bg-[#f5f5f7] hover:bg-[#e8e8ed] text-[#1d1d1f] flex items-center justify-center transition-colors cursor-pointer"
         >
           <ArrowLeft className="h-4 w-4" />
         </button>
@@ -231,7 +231,7 @@ export default function NewBlogPost() {
                       key={idx}
                       type="button"
                       onClick={() => insertFormatting(item.fmt)}
-                      className="p-1.5 rounded-lg text-[#1d1d1f] hover:bg-[#e8e8ed] transition-colors"
+                      className="p-1.5 rounded-lg text-[#1d1d1f] hover:bg-[#e8e8ed] transition-colors cursor-pointer"
                     >
                       {item.icon}
                     </button>
@@ -245,7 +245,7 @@ export default function NewBlogPost() {
                 placeholder="Write your blog post content here... (Supports Markdown)"
                 rows={14}
                 required
-                className="rounded-t-none rounded-b-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-[#0071e3] focus-visible:border-[#0071e3] placeholder:text-[#86868b] text-[#1d1d1f] font-mono text-[14px]"
+                className="rounded-t-none rounded-b-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-primary focus-visible:border-primary placeholder:text-[#86868b] text-[#1d1d1f] font-mono text-[14px]"
               />
               <p className="text-[12px] text-[#86868b]">Supports Markdown: **bold**, *italic*, # heading, - list</p>
             </div>
@@ -308,7 +308,7 @@ export default function NewBlogPost() {
                   </button>
                 </div>
               ) : (
-                <div className="rounded-xl border-2 border-dashed border-[#d2d2d7] bg-[#f5f5f7] p-8 text-center hover:border-[#0071e3] transition-colors">
+                <div className="rounded-xl border-2 border-dashed border-[#d2d2d7] bg-[#f5f5f7] p-8 text-center hover:border-primary transition-colors">
                   <Upload className="h-7 w-7 mx-auto mb-2 text-[#86868b]" />
                   <p className="text-[14px] text-[#1d1d1f] font-medium mb-1">Upload a featured image</p>
                   <p className="text-[12px] text-[#86868b] mb-4">PNG, JPG, WebP or GIF — max 5 MB</p>
@@ -317,7 +317,7 @@ export default function NewBlogPost() {
                     type="button"
                     onClick={() => document.getElementById("image-upload")?.click()}
                     disabled={uploading}
-                    className="inline-flex items-center px-4 py-2 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-[13px] font-medium transition-colors disabled:opacity-50"
+                    className="inline-flex items-center px-4 py-2 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[13px] font-medium transition-colors disabled:opacity-50 cursor-pointer"
                   >
                     {uploading ? "Uploading..." : "Choose File"}
                   </button>
@@ -342,7 +342,7 @@ export default function NewBlogPost() {
             </div>
             <div className="space-y-1.5">
               <Label htmlFor="metaDescription" className={labelCls}>Meta Description</Label>
-              <Textarea id="metaDescription" value={formData.metaDescription} onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })} placeholder="Leave empty to use excerpt" rows={3} className="rounded-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-[#0071e3] focus-visible:border-[#0071e3] placeholder:text-[#86868b] text-[#1d1d1f]" />
+              <Textarea id="metaDescription" value={formData.metaDescription} onChange={(e) => setFormData({ ...formData, metaDescription: e.target.value })} placeholder="Leave empty to use excerpt" rows={3} className="rounded-xl border-[#d2d2d7] bg-[#f5f5f7] focus-visible:ring-primary focus-visible:border-primary placeholder:text-[#86868b] text-[#1d1d1f]" />
             </div>
           </div>
 
@@ -351,14 +351,14 @@ export default function NewBlogPost() {
             <button
               type="button"
               onClick={() => router.back()}
-              className="inline-flex items-center px-5 py-2.5 rounded-full border border-[#d2d2d7] bg-white hover:bg-[#f5f5f7] text-[#1d1d1f] text-[14px] font-medium transition-colors"
+              className="inline-flex items-center px-5 py-2.5 rounded-full border border-[#d2d2d7] bg-white hover:bg-[#f5f5f7] text-[#1d1d1f] text-[14px] font-medium transition-colors cursor-pointer"
             >
               Cancel
             </button>
             <button
               type="submit"
               disabled={loading}
-              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-[#0071e3] hover:bg-[#0077ed] text-white text-[14px] font-medium transition-colors disabled:opacity-50"
+              className="inline-flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground text-[14px] font-medium transition-colors disabled:opacity-50 cursor-pointer"
             >
               <Save className="h-4 w-4" />
               {loading ? "Creating..." : "Publish Post"}
