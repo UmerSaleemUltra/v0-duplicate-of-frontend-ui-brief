@@ -48,8 +48,6 @@ export default function NewBlogPost() {
 
     setUploading(true)
 
-    console.log("[v0] Starting image upload:", file.name, file.type, file.size)
-
     try {
       const uploadFormData = new FormData()
       uploadFormData.append("file", file)
@@ -59,18 +57,14 @@ export default function NewBlogPost() {
         body: uploadFormData,
       })
 
-      console.log("[v0] Upload response status:", response.status)
       const data = await response.json()
-      console.log("[v0] Upload response data:", data)
 
       if (data.success) {
-        setFormData({ ...formData, featuredImage: data.data.url })
+        setFormData((prev) => ({ ...prev, featuredImage: data.data.url }))
         setImagePreview(data.data.url)
         toast.success("Image uploaded successfully")
-        console.log("[v0] Image uploaded to:", data.data.url)
       } else {
         toast.error(data.error || "Failed to upload image")
-        console.error("[v0] Upload failed:", data.error)
       }
     } catch (error) {
       console.error("[v0] Error uploading image:", error)

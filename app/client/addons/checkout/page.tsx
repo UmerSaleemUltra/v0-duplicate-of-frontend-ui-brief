@@ -273,9 +273,9 @@ function AddonCheckoutContent() {
     }
 
     return (
-      <form onSubmit={handlePurchase} className="space-y-6">
-        <div className="pb-4 border-b">
-          <h3 className="font-semibold flex items-center gap-2">
+      <form onSubmit={handlePurchase} className="space-y-5">
+        <div className="pb-3 border-b">
+          <h3 className="font-semibold flex items-center gap-2 text-base">
             <MessageCircle className="w-5 h-5 text-green-600" />
             WhatsApp Payment
           </h3>
@@ -349,19 +349,19 @@ function AddonCheckoutContent() {
 
         <Separator />
 
-        <div className="space-y-3">
-          <div className="flex justify-between text-sm">
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
             <span className="text-slate-600">Subtotal</span>
-            <span className="font-medium">${addon?.price}</span>
+            <span className="font-medium">${addon?.price?.toFixed(2)}</span>
           </div>
-          <div className="flex justify-between text-sm">
+          <div className="flex justify-between">
             <span className="text-slate-600">Processing Fee</span>
             <span className="font-medium">$0</span>
           </div>
-          <Separator />
-          <div className="flex justify-between">
+          <Separator className="my-1" />
+          <div className="flex justify-between pt-1">
             <span className="font-semibold text-slate-900">Total</span>
-            <span className="font-bold text-xl text-slate-900">${addon?.price}</span>
+            <span className="font-bold text-base text-slate-900">${addon?.price?.toFixed(2)}</span>
           </div>
         </div>
 
@@ -409,35 +409,34 @@ function AddonCheckoutContent() {
   return (
     <ClientShell>
       <div className="max-w-4xl mx-auto space-y-6">
-        <Button variant="ghost" onClick={() => router.back()} className="gap-2 cursor-pointer">
-          <ArrowLeft className="w-4 h-4 cursor-pointer" />
+        <Button variant="ghost" onClick={() => router.back()} className="gap-2 cursor-pointer -ml-2">
+          <ArrowLeft className="w-4 h-4" />
           Back to Addons
         </Button>
 
-        <div className="grid md:grid-cols-2 gap-6">
-          {/* Addon Details */}
-          <Card>
-            <CardHeader>
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-12 h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
+        <div className="grid md:grid-cols-2 gap-6 items-start">
+          {/* Addon Details — compact left card */}
+          <Card className="h-fit">
+            <CardContent className="pt-6 space-y-0">
+              {/* Icon + name row */}
+              <div className="flex items-center gap-3 mb-5">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
                   <Package className="w-6 h-6 text-white" />
                 </div>
                 <div>
-                  <CardTitle>{addon.name}</CardTitle>
-                  <CardDescription>{addon.category}</CardDescription>
+                  <p className="font-semibold text-slate-900 text-base leading-tight">{addon.name}</p>
+                  <p className="text-sm text-slate-500">{addon.category}</p>
                 </div>
               </div>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-slate-600">{addon.description}</p>
 
+              {/* Features list — compact, scrollable if many items */}
               {addon.features && addon.features.length > 0 && (
-                <div className="space-y-2 pt-4 border-t">
-                  <p className="font-medium text-slate-900">What's included:</p>
-                  <ul className="space-y-2">
+                <div className="mb-5">
+                  <p className="text-sm font-medium text-slate-700 mb-2">{addon.name}</p>
+                  <ul className="space-y-1.5 max-h-48 overflow-y-auto pr-1">
                     {addon.features.map((feature, index) => (
                       <li key={index} className="text-sm text-slate-600 flex items-start gap-2">
-                        <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
+                        <Check className="w-3.5 h-3.5 text-[#ff0d13] flex-shrink-0 mt-0.5" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -445,23 +444,22 @@ function AddonCheckoutContent() {
                 </div>
               )}
 
-              <div className="pt-4 border-t">
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-medium text-slate-900">Total</span>
-                  <div className="flex items-center gap-1">
-                    <DollarSign className="w-5 h-5 text-slate-500" />
-                    <span className="text-3xl font-bold text-slate-900">{addon.price}</span>
-                  </div>
+              {/* Total row */}
+              <div className="pt-4 border-t flex items-center justify-between">
+                <span className="font-semibold text-slate-900">Total</span>
+                <div className="flex items-baseline gap-0.5">
+                  <span className="text-slate-500 text-sm">$</span>
+                  <span className="text-4xl font-bold text-slate-900 leading-none">{addon.price}</span>
                 </div>
               </div>
             </CardContent>
           </Card>
 
           {/* WhatsApp Payment Form */}
-          <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <MessageCircle className="w-5 h-5 text-green-600" />
+          <Card className="h-fit">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <MessageCircle className="w-4 h-4 text-green-600" />
                 Payment Information
               </CardTitle>
               <CardDescription>Enter your phone number or upload a payment receipt</CardDescription>
