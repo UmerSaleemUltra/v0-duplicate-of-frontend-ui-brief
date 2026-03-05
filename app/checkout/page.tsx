@@ -442,6 +442,14 @@ export default function CheckoutPage() {
     }
   }
 
+  const goToStep = (step: number) => {
+    if (step >= 0 && step < STEPS.length) {
+      setCurrentStep(step)
+      saveCheckoutStep(step)
+      window.scrollTo(0, 0)
+    }
+  }
+
   const nextStep = () => {
     if (currentStep < STEPS.length - 1) {
       const newStep = currentStep + 1
@@ -475,7 +483,7 @@ export default function CheckoutPage() {
       case 3:
         return <OwnerInfoStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
       case 4:
-        return <ReviewStep formData={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
+        return <ReviewStep formData={data} updateData={updateData} onNext={nextStep} onBack={prevStep} goToStep={goToStep} />
       case 5:
         return <PaymentStep data={data} onBack={prevStep} onSubmit={handlePaymentSubmit} />
       default:
