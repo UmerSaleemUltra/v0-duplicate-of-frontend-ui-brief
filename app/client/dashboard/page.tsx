@@ -31,7 +31,7 @@ import { toast } from "@/components/ui/use-toast"
 import { OrderCelebration } from "@/components/celebration/order-celebration"
 
 export default function ClientDashboard() {
-  const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
+  const { selectedCompanyId, setSelectedCompanyId, companiesLoading, hasCompanies } = useSelectedCompany()
   const [company, setCompany] = useState<any>(null)
   const [order, setOrder] = useState<any>(null)
   const [documents, setDocuments] = useState<any[]>([])
@@ -85,9 +85,11 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (isAuthenticating) return
 
+    // Wait until the company provider has finished loading before deciding there are no companies
+    if (companiesLoading) return
+
     if (!selectedCompanyId) {
-      console.log("[v0] No company selected, showing no-company state")
-      setHasNoCompanies(true)
+      setHasNoCompanies(!hasCompanies)
       setIsLoadingData(false)
       return
     }
@@ -149,7 +151,7 @@ export default function ClientDashboard() {
     }
 
     loadData()
-  }, [isAuthenticating, selectedCompanyId, lastLoadedCompanyId, dataLoaded, router])
+  }, [isAuthenticating, companiesLoading, hasCompanies, selectedCompanyId, lastLoadedCompanyId, dataLoaded, router])
 
   useEffect(() => {
     if (!company) return
@@ -247,7 +249,7 @@ export default function ClientDashboard() {
     )
   }
 
-  if (isAuthenticating || isLoadingData) {
+  if (isAuthenticating || companiesLoading || isLoadingData) {
     return (
       <ClientShell>
         <DashboardSkeleton />

@@ -329,7 +329,14 @@ export default function OrderDetailPage() {
     }
   }
 
-  const handleCustomMilestoneToggle = async (milestoneId: string) => {
+  const handleCustomMilestoneToggle = async (
+    milestoneId: string,
+    sendEmail?: boolean,
+    emailSubject?: string,
+    emailContent?: string,
+    sendNotification?: boolean,
+    notificationMessage?: string,
+  ) => {
     if (!company) return
 
     try {
@@ -375,10 +382,62 @@ export default function OrderDetailPage() {
       setCompany(result.data)
 
       const milestone = updatedCustomMilestones.find((m) => m.id === milestoneId)
+      const isNowCompleted = milestone?.completed
+
       toast({
         title: "Milestone Updated",
-        description: `${milestone?.title} has been ${milestone?.completed ? "completed" : "uncompleted"}`,
+        description: `${milestone?.title} has been ${isNowCompleted ? "completed" : "uncompleted"}`,
       })
+
+      // Send email and/or notification when completing a milestone
+      if (isNowCompleted) {
+        const customerEmail = customer?.email || order?.email || ""
+
+        if (sendEmail && emailSubject && emailContent && customerEmail) {
+          try {
+            await fetch("/api/email/milestone", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                to: customerEmail,
+                subject: emailSubject,
+                content: emailContent,
+              }),
+            })
+          } catch (emailErr) {
+            console.log("[v0] Error sending milestone email:", emailErr)
+          }
+        }
+
+        if (sendNotification && notificationMessage && customerEmail) {
+          try {
+            await fetch("/api/notifications", {
+              method: "POST",
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                userId: customer?.id || order?.userId,
+                type: "milestone_completed",
+                title: milestone?.title || "Milestone Completed",
+                message: notificationMessage,
+                metadata: {
+                  companyId: company.id,
+                  companyName: company.name,
+                  milestoneId,
+                  milestoneName: milestone?.title,
+                },
+              }),
+            })
+          } catch (notifErr) {
+            console.log("[v0] Error sending milestone notification:", notifErr)
+          }
+        }
+      }
     } catch (error) {
       console.log("[v0] Error updating custom milestone:", error)
       toast({

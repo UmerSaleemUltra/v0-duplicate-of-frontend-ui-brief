@@ -5,6 +5,8 @@ import { createContext, useContext } from "react"
 interface CompanyContextType {
   selectedCompanyId: string | null
   setSelectedCompanyId: (id: string | null) => void
+  companiesLoading: boolean
+  hasCompanies: boolean
 }
 
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined)
