@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
 import { Input } from "@/components/ui/input"
@@ -83,14 +84,10 @@ export function MilestonesDialog({
       return
     }
 
-    // If toggling ON, show the send options modal
-    const defaultSubject = `Milestone Completed: ${milestone.title}`
-    const defaultContent = `Great news! The milestone "${milestone.title}" for your company ${company?.name || ""} has been completed.${milestone.description ? `\n\nDetails: ${milestone.description}` : ""}`
-    const defaultNotification = `Milestone "${milestone.title}" has been completed for ${company?.name || "your company"}.`
-
-    setEmailSubject(defaultSubject)
-    setEmailContent(defaultContent)
-    setNotificationMessage(defaultNotification)
+    // If toggling ON, open the drawer — admin fills in their own subject/content
+    setEmailSubject("")
+    setEmailContent("")
+    setNotificationMessage("")
     setSendEmail(true)
     setSendNotification(true)
     setPendingToggle({ milestoneId: milestone.id, milestoneTitle: milestone.title })
@@ -293,21 +290,22 @@ export function MilestonesDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Notify customer modal — shown when toggling a custom milestone to completed */}
-      <Dialog open={!!pendingToggle} onOpenChange={(v) => { if (!v) handleCancelModal() }}>
-        <DialogContent className="w-full max-w-lg overflow-y-auto max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle className="text-base font-semibold">Notify Customer</DialogTitle>
-            <DialogDescription className="text-sm text-slate-500 break-words">
+      {/* Notify customer drawer — opens from the right when toggling a custom milestone to completed */}
+      <Sheet open={!!pendingToggle} onOpenChange={(v) => { if (!v) handleCancelModal() }}>
+        <SheetContent side="right" className="w-full sm:max-w-md flex flex-col p-0">
+          <SheetHeader className="px-6 pt-6 pb-4 border-b border-slate-100 flex-shrink-0">
+            <SheetTitle className="text-base font-semibold">Notify Customer</SheetTitle>
+            <SheetDescription className="text-sm text-slate-500">
               Milestone{" "}
-              <span className="font-medium text-slate-700 break-all">&quot;{pendingToggle?.milestoneTitle}&quot;</span>{" "}
+              <span className="font-medium text-slate-700">&quot;{pendingToggle?.milestoneTitle}&quot;</span>{" "}
               will be marked as complete. Choose how to notify the customer.
-            </DialogDescription>
-          </DialogHeader>
+            </SheetDescription>
+          </SheetHeader>
 
-          <div className="space-y-4 py-1 w-full min-w-0">
+          {/* Scrollable body */}
+          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
             {/* Email section */}
-            <div className="rounded-lg border border-slate-200 overflow-hidden w-full">
+            <div className="rounded-lg border border-slate-200 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-slate-600 flex-shrink-0" />
@@ -316,15 +314,26 @@ export function MilestonesDialog({
                 <Switch checked={sendEmail} onCheckedChange={setSendEmail} />
               </div>
               {sendEmail && (
-                <div className="p-4">
+                <div className="p-4 space-y-3">
                   <div className="space-y-1.5">
                     <Label htmlFor="email-subject" className="text-xs font-medium text-slate-600">Subject</Label>
                     <Input
                       id="email-subject"
                       value={emailSubject}
                       onChange={(e) => setEmailSubject(e.target.value)}
-                      placeholder="Email subject"
-                      className="h-9 text-sm w-full min-w-0"
+                      placeholder="Enter email subject"
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email-content" className="text-xs font-medium text-slate-600">Content</Label>
+                    <Textarea
+                      id="email-content"
+                      value={emailContent}
+                      onChange={(e) => setEmailContent(e.target.value)}
+                      placeholder="Write the email content for the customer..."
+                      rows={6}
+                      className="text-sm resize-none"
                     />
                   </div>
                 </div>
@@ -332,7 +341,7 @@ export function MilestonesDialog({
             </div>
 
             {/* Notification section */}
-            <div className="rounded-lg border border-slate-200 overflow-hidden w-full">
+            <div className="rounded-lg border border-slate-200 overflow-hidden">
               <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-slate-600 flex-shrink-0" />
@@ -348,9 +357,9 @@ export function MilestonesDialog({
                       id="notification-message"
                       value={notificationMessage}
                       onChange={(e) => setNotificationMessage(e.target.value)}
-                      placeholder="Notification message"
+                      placeholder="Write the in-app notification message..."
                       rows={3}
-                      className="text-sm resize-none w-full min-w-0"
+                      className="text-sm resize-none"
                     />
                   </div>
                 </div>
@@ -358,8 +367,8 @@ export function MilestonesDialog({
             </div>
           </div>
 
-          {/* Footer: stacks vertically on mobile, row on sm+ */}
-          <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between pt-3 border-t border-slate-100">
+          {/* Sticky footer */}
+          <div className="flex-shrink-0 px-6 py-4 border-t border-slate-100 bg-white flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
             <Button
               variant="ghost"
               size="sm"
@@ -382,15 +391,15 @@ export function MilestonesDialog({
                 {sendEmail && sendNotification
                   ? "Send Email & Notification"
                   : sendEmail
-                  ? "Send Email"
-                  : sendNotification
-                  ? "Send Notification"
-                  : "Complete Milestone"}
+                    ? "Send Email"
+                    : sendNotification
+                      ? "Send Notification"
+                      : "Complete Milestone"}
               </Button>
             </div>
           </div>
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </>
   )
 }
