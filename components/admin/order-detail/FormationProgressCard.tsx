@@ -29,6 +29,7 @@ interface FormationProgressCardProps {
   completedMilestonesWithCustom: number
   totalMilestonesWithCustom: number
   onCustomMilestoneToggle: (id: string) => void
+  onCustomMilestoneComplete?: (milestone: { id: string; title: string; description?: string }) => void
   onDeleteCustomMilestone: (id: string) => void
   deletingMilestoneId: string | null
 }
