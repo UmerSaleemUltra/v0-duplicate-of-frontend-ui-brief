@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { blobStorage, validateFileType, validateFileSize, FILE_TYPES, MAX_FILE_SIZE } from "@/config/storage"
 
 export async function POST(request: NextRequest) {
   try {
@@ -9,27 +10,27 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 })
     }
 
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "image/gif"]
-    if (!allowedTypes.includes(file.type)) {
+    if (!validateFileType(file, FILE_TYPES.IMAGES)) {
       return NextResponse.json(
         { success: false, error: "Invalid file type. Only images are allowed." },
         { status: 400 },
       )
     }
 
-    if (file.size > 5 * 1024 * 1024) {
+    if (!validateFileSize(file, MAX_FILE_SIZE.IMAGE)) {
       return NextResponse.json({ success: false, error: "File size exceeds 5MB limit" }, { status: 400 })
     }
 
-    // Convert file to base64 data URL so it can be stored directly in the database
-    const arrayBuffer = await file.arrayBuffer()
-    const base64 = Buffer.from(arrayBuffer).toString("base64")
-    const dataUrl = `data:${file.type};base64,${base64}`
+    const result = await blobStorage.upload(file, {
+      folder: "blog",
+      filename: `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, "_")}`,
+      access: "public",
+    })
 
     return NextResponse.json({
       success: true,
       data: {
-        url: dataUrl,
+        url: result.url,
         filename: file.name,
         size: file.size,
       },
