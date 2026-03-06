@@ -41,9 +41,6 @@ export async function POST(request: NextRequest) {
 
                   <tr>
                     <td style="padding: 0 40px 40px 40px; text-align: left;">
-                      <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000; text-align: left;">
-                        Hello,
-                      </p>
                       <div style="font-size: 14px; color: #333333; line-height: 1.6; text-align: left; white-space: pre-wrap;">${content.replace(/\n/g, "<br/>")}</div>
                     </td>
                   </tr>
