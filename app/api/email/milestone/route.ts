@@ -41,16 +41,9 @@ export async function POST(request: NextRequest) {
 
                   <tr>
                     <td style="padding: 0 40px 40px 40px;">
-                      <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">Hello,</p>
                       <div style="font-size: 14px; color: #333333; line-height: 1.6; white-space: pre-wrap;">
                         ${content.replace(/\n/g, "<br/>")}
                       </div>
-                      <p style="margin: 24px 0 0 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        If you have any questions, simply reply to this email.
-                      </p>
-                      <p style="margin: 16px 0 0 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                      </p>
                     </td>
                   </tr>
 
