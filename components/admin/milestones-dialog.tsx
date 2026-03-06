@@ -313,7 +313,7 @@ export function MilestonesDialog({
               {sendEmail && (
                 <div className="p-4 space-y-3">
                   <div className="space-y-1.5">
-                    <Label htmlFor="email-subject" className="text-xs font-medium text-slate-600">Subject</Label>
+                    <Label htmlFor="email-subject" className="text-xs font-medium text-slate-600 text-left block">Subject</Label>
                     <Input
                       id="email-subject"
                       value={emailSubject}
@@ -323,65 +323,16 @@ export function MilestonesDialog({
                     />
                   </div>
                   <div className="space-y-1.5">
-                    <Label htmlFor="email-content" className="text-xs font-medium text-slate-600">Content</Label>
+                    <Label htmlFor="email-content" className="text-xs font-medium text-slate-600 text-left block">Content</Label>
                     <Textarea
                       id="email-content"
                       value={emailContent}
                       onChange={(e) => setEmailContent(e.target.value)}
                       placeholder="Write the email content for the customer..."
                       rows={4}
-                      className="text-sm resize-none"
+                      className="text-sm resize-none text-left"
                     />
                   </div>
-
-                  {/* Email Preview */}
-                  {(emailContent || emailSubject) && (
-                    <div className="space-y-1.5">
-                      <Label className="text-xs font-medium text-slate-600">Email Preview</Label>
-                      <div style={{ backgroundColor: "#f5f5f5", padding: "16px", borderRadius: "6px" }}>
-                        <div style={{
-                          backgroundColor: "#ffffff",
-                          borderRadius: "8px",
-                          overflow: "hidden",
-                          maxWidth: "100%",
-                          border: "1px solid #e5e7eb",
-                        }}>
-                          {/* Logo header */}
-                          <div style={{ padding: "20px 24px 16px 24px", textAlign: "center" }}>
-                            <img
-                              src="/images/buzz-filing-logo.png"
-                              alt="Buzz Filing"
-                              style={{ height: "32px", width: "auto" }}
-                            />
-                          </div>
-                          {/* Divider */}
-                          <div style={{ height: "1px", backgroundColor: "#f0f0f0", margin: "0 24px" }} />
-                          {/* Body */}
-                          <div style={{ padding: "16px 24px 16px 24px" }}>
-                            <p style={{
-                              margin: 0,
-                              fontSize: "13px",
-                              color: "#333333",
-                              lineHeight: "1.6",
-                              whiteSpace: "pre-wrap",
-                              wordBreak: "break-word",
-                            }}>
-                              {emailContent || <span style={{ color: "#aaa" }}>Email body will appear here...</span>}
-                            </p>
-                          </div>
-                          {/* Footer */}
-                          <div style={{ padding: "12px 24px", textAlign: "center", borderTop: "1px solid #f0f0f0" }}>
-                            <p style={{ margin: 0, fontSize: "11px", color: "#999999" }}>
-                              All rights reserved &copy; 2026 |{" "}
-                              <span style={{ color: "#880000", fontWeight: 600 }}>Buzz Filing</span>
-                            </p>
-                          </div>
-                          {/* Bottom accent bar */}
-                          <div style={{ backgroundColor: "#880000", height: "6px" }} />
-                        </div>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </div>
