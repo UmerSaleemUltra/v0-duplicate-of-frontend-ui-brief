@@ -364,26 +364,18 @@ export function MilestonesDialog({
             </div>
           </div>
 
-          {/* Footer — skip on left, cancel+confirm on right */}
-          <div className="pt-4 border-t border-slate-100 flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={handleSkip}
-              className="text-slate-500 hover:text-slate-700 gap-1.5 w-full sm:w-auto justify-center"
-            >
-              <X className="w-3.5 h-3.5 flex-shrink-0" />
-              Skip &amp; complete later
-            </Button>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:gap-2">
-              <Button variant="outline" size="sm" onClick={handleCancelModal} className="w-full sm:w-auto">
+          {/* Footer */}
+          <div className="pt-4 border-t border-slate-100 flex flex-col gap-2">
+            {/* Primary actions row */}
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" onClick={handleCancelModal} className="flex-1">
                 Cancel
               </Button>
               <Button
                 size="sm"
                 onClick={handleConfirm}
                 disabled={!sendEmail && !sendNotification}
-                className="bg-slate-900 text-white hover:bg-slate-800 w-full sm:w-auto whitespace-nowrap"
+                className="flex-1 bg-slate-900 text-white hover:bg-slate-800"
               >
                 {sendEmail && sendNotification
                   ? "Send Email & Notification"
@@ -394,6 +386,16 @@ export function MilestonesDialog({
                       : "Complete Milestone"}
               </Button>
             </div>
+            {/* Secondary action */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleSkip}
+              className="text-slate-500 hover:text-slate-700 gap-1.5 w-full justify-center"
+            >
+              <X className="w-3.5 h-3.5 flex-shrink-0" />
+              Skip &amp; complete later
+            </Button>
           </div>
         </DialogContent>
       </Dialog>
