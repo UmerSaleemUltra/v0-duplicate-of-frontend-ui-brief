@@ -996,12 +996,12 @@ export const emailTemplates = {
                 </tr>
                 
                 <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
+                  <td style="padding: 0 40px 40px 40px; text-align: left;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000; text-align: left;">
                       Hello,
                     </p>
                     
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6; text-align: left;">
                       A new document has been received at your business address.
                     </p>
                     
