@@ -1,10 +1,12 @@
 "use client"
 
 import { useState } from "react"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "@/components/ui/sheet"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
 import { Switch } from "@/components/ui/switch"
+import { Input } from "@/components/ui/input"
+import { Textarea } from "@/components/ui/textarea"
+import { Label } from "@/components/ui/label"
 import { Package, UserCheck, Home, FileCheck, HashIcon, CheckCircle2, Trash2, Mail, Bell, X } from "lucide-react"
 
 interface MilestoneState {
@@ -66,6 +68,9 @@ export function MilestonesDialog({
   deletingMilestoneId,
 }: MilestonesDialogProps) {
   const [pendingToggle, setPendingToggle] = useState<PendingToggle | null>(null)
+  const [emailSubject, setEmailSubject] = useState("")
+  const [emailContent, setEmailContent] = useState("")
+  const [notificationMessage, setNotificationMessage] = useState("")
   const [sendEmail, setSendEmail] = useState(true)
   const [sendNotification, setSendNotification] = useState(true)
 
@@ -78,14 +83,12 @@ export function MilestonesDialog({
       return
     }
 
-    // Close the outer Dialog first to avoid nested Radix Dialog conflict,
-    // then open the Sheet drawer after a tick so they don't overlap.
+    setEmailSubject("")
+    setEmailContent("")
+    setNotificationMessage("")
     setSendEmail(true)
     setSendNotification(true)
-    onOpenChange(false)
-    setTimeout(() => {
-      setPendingToggle({ milestoneId: milestone.id, milestoneTitle: milestone.title })
-    }, 0)
+    setPendingToggle({ milestoneId: milestone.id, milestoneTitle: milestone.title })
   }
 
   const handleConfirm = () => {
@@ -93,28 +96,22 @@ export function MilestonesDialog({
     onCustomMilestoneToggle?.(
       pendingToggle.milestoneId,
       sendEmail,
-      undefined,
-      undefined,
+      sendEmail ? emailSubject : undefined,
+      sendEmail ? emailContent : undefined,
       sendNotification,
-      undefined,
+      sendNotification ? notificationMessage : undefined,
     )
     setPendingToggle(null)
-    setTimeout(() => { onOpenChange(true) }, 300)
   }
 
   const handleSkip = () => {
     if (!pendingToggle) return
     onCustomMilestoneToggle?.(pendingToggle.milestoneId, false, undefined, undefined, false, undefined)
     setPendingToggle(null)
-    setTimeout(() => { onOpenChange(true) }, 300)
   }
 
   const handleCancelModal = () => {
     setPendingToggle(null)
-    // Reopen the milestones dialog after the sheet closes
-    setTimeout(() => {
-      onOpenChange(true)
-    }, 300)
   }
 
   return (
@@ -290,45 +287,85 @@ export function MilestonesDialog({
         </DialogContent>
       </Dialog>
 
-      {/* Notify customer drawer — opens from the right when toggling a custom milestone to completed */}
-      <Sheet open={!!pendingToggle} onOpenChange={(v) => { if (!v) handleCancelModal() }}>
-        <SheetContent side="left" className="w-full sm:max-w-md flex flex-col p-0">
-          <SheetHeader className="px-6 pt-6 pb-4 border-b border-slate-100 flex-shrink-0">
-            <SheetTitle className="text-base font-semibold">Notify Customer</SheetTitle>
-            <SheetDescription className="text-sm text-slate-500">
+      {/* Notify customer modal — opens when toggling a custom milestone to completed */}
+      <Dialog open={!!pendingToggle} onOpenChange={(v) => { if (!v) handleCancelModal() }}>
+        <DialogContent className="w-full max-w-lg max-h-[90vh] overflow-y-auto p-0 gap-0">
+          <DialogHeader className="px-6 pt-6 pb-4 border-b border-slate-100">
+            <DialogTitle className="text-base font-semibold">Notify Customer</DialogTitle>
+            <DialogDescription className="text-sm text-slate-500">
               Milestone{" "}
               <span className="font-medium text-slate-700">&quot;{pendingToggle?.milestoneTitle}&quot;</span>{" "}
               will be marked as complete. Choose how to notify the customer.
-            </SheetDescription>
-          </SheetHeader>
+            </DialogDescription>
+          </DialogHeader>
 
           {/* Scrollable body */}
-          <div className="flex-1 overflow-y-auto px-6 py-5 space-y-4">
+          <div className="px-6 py-5 space-y-4">
             {/* Email section */}
             <div className="rounded-lg border border-slate-200 overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 bg-slate-50">
+              <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center gap-2">
                   <Mail className="w-4 h-4 text-slate-600 flex-shrink-0" />
                   <span className="text-sm font-medium text-slate-800">Send Email</span>
                 </div>
                 <Switch checked={sendEmail} onCheckedChange={setSendEmail} />
               </div>
+              {sendEmail && (
+                <div className="p-4 space-y-3">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email-subject" className="text-xs font-medium text-slate-600">Subject</Label>
+                    <Input
+                      id="email-subject"
+                      value={emailSubject}
+                      onChange={(e) => setEmailSubject(e.target.value)}
+                      placeholder="Enter email subject"
+                      className="h-9 text-sm"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="email-content" className="text-xs font-medium text-slate-600">Content</Label>
+                    <Textarea
+                      id="email-content"
+                      value={emailContent}
+                      onChange={(e) => setEmailContent(e.target.value)}
+                      placeholder="Write the email content for the customer..."
+                      rows={6}
+                      className="text-sm resize-none"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Notification section */}
             <div className="rounded-lg border border-slate-200 overflow-hidden">
-              <div className="flex items-center justify-between px-4 py-3 bg-slate-50">
+              <div className="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
                 <div className="flex items-center gap-2">
                   <Bell className="w-4 h-4 text-slate-600 flex-shrink-0" />
                   <span className="text-sm font-medium text-slate-800">Send Notification</span>
                 </div>
                 <Switch checked={sendNotification} onCheckedChange={setSendNotification} />
               </div>
+              {sendNotification && (
+                <div className="p-4">
+                  <div className="space-y-1.5">
+                    <Label htmlFor="notification-message" className="text-xs font-medium text-slate-600">Message</Label>
+                    <Textarea
+                      id="notification-message"
+                      value={notificationMessage}
+                      onChange={(e) => setNotificationMessage(e.target.value)}
+                      placeholder="Write the in-app notification message..."
+                      rows={3}
+                      className="text-sm resize-none"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Sticky footer */}
-          <div className="flex-shrink-0 px-6 py-4 border-t border-slate-100 bg-white flex flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
+          {/* Footer */}
+          <DialogFooter className="px-6 py-4 border-t border-slate-100 flex-col-reverse gap-2 sm:flex-row sm:items-center sm:justify-between">
             <Button
               variant="ghost"
               size="sm"
@@ -338,7 +375,7 @@ export function MilestonesDialog({
               <X className="w-3.5 h-3.5 flex-shrink-0" />
               Skip &amp; complete later
             </Button>
-            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:gap-2">
+            <div className="flex flex-col-reverse gap-2 sm:flex-row sm:gap-2 w-full sm:w-auto">
               <Button variant="outline" size="sm" onClick={handleCancelModal} className="w-full sm:w-auto">
                 Cancel
               </Button>
@@ -357,9 +394,9 @@ export function MilestonesDialog({
                       : "Complete Milestone"}
               </Button>
             </div>
-          </div>
-        </SheetContent>
-      </Sheet>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </>
   )
 }
