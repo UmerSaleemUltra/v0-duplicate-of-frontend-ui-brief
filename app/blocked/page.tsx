@@ -1,12 +1,21 @@
+import { redirect } from "next/navigation"
+
 export default async function BlockedPage({
   searchParams,
 }: {
   searchParams: Promise<{ reason?: string; until?: string; ip?: string; permanent?: string }>
 }) {
   const params = await searchParams
+
+  // Guard: only the middleware redirects here with an `ip` param.
+  // If someone navigates directly without that param, send them home.
+  if (!params.ip) {
+    redirect("/")
+  }
+
   const reason = params.reason || "Security policy violation"
   const until = params.until
-  const ip = params.ip || "Unknown"
+  const ip = params.ip
   const isPermanent = params.permanent === "true"
 
   return (
