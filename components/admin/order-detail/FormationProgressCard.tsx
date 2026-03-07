@@ -199,47 +199,43 @@ export function FormationProgressCard({
           {company?.customMilestones && company.customMilestones.length > 0 && (
             <div className="mt-4 pt-4 border-t border-stone-100">
               <p className="text-xs font-medium text-stone-400 uppercase tracking-widest mb-3">Custom</p>
-              <div className="space-y-1">
-                {company.customMilestones.map((m: any) => (
+              <div className="space-y-0">
+                {company.customMilestones.map((m: any, i: number) => (
                   <div
                     key={m.id}
-                    className="flex items-center justify-between py-2.5 px-3 rounded-xl hover:bg-stone-50 transition-colors group"
+                    className="flex gap-4 group"
                   >
-                    <div className="flex items-center gap-3">
+                    <div className="flex flex-col items-center">
                       <button
                         onClick={() => handleCustomMilestoneClick(m)}
-                        className={`w-4 h-4 rounded border flex items-center justify-center transition-colors ${
-                          m.completed ? "bg-stone-900 border-stone-900" : "border-stone-300 hover:border-stone-500"
+                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                          m.completed ? "bg-stone-900" : "bg-stone-100"
                         }`}
                       >
-                        {m.completed && (
-                          <svg className="w-2.5 h-2.5 text-white" fill="none" viewBox="0 0 10 8">
-                            <path
-                              d="M1 4l3 3 5-6"
-                              stroke="currentColor"
-                              strokeWidth="1.5"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        )}
+                        <Hash className={`w-3.5 h-3.5 ${m.completed ? "text-white" : "text-stone-400"}`} />
                       </button>
+                      {i < company.customMilestones.length - 1 && (
+                        <div className={`w-px flex-1 mt-1 mb-1 min-h-[1.25rem] ${m.completed ? "bg-stone-300" : "bg-stone-100"}`} />
+                      )}
+                    </div>
+                    <div className={`${i < company.customMilestones.length - 1 ? "pb-4" : "pb-0"} pt-0.5 flex-1 flex items-start justify-between`}>
                       <div>
-                        <p
-                          className={`text-sm font-medium leading-none ${m.completed ? "text-stone-400 line-through" : "text-stone-800"}`}
-                        >
+                        <p className={`text-sm leading-tight font-medium ${m.completed ? "text-stone-900" : "text-stone-400"}`}>
                           {m.title}
                         </p>
-                        {m.description && <p className="text-xs text-stone-400 mt-0.5">{m.description}</p>}
+                        {m.completed
+                          ? <p className="text-xs text-stone-400 mt-0.5">Completed</p>
+                          : m.description && <p className="text-xs text-stone-400 mt-0.5">{m.description}</p>
+                        }
                       </div>
+                      <button
+                        onClick={() => onDeleteCustomMilestone(m.id)}
+                        disabled={deletingMilestoneId === m.id}
+                        className="opacity-0 group-hover:opacity-100 transition-opacity text-stone-300 hover:text-red-400 mt-0.5 shrink-0"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
-                    <button
-                      onClick={() => onDeleteCustomMilestone(m.id)}
-                      disabled={deletingMilestoneId === m.id}
-                      className="opacity-0 group-hover:opacity-100 transition-opacity text-stone-300 hover:text-red-400"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
                   </div>
                 ))}
               </div>
