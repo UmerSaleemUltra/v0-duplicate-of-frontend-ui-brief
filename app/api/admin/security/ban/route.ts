@@ -46,7 +46,8 @@ export async function POST(request: Request) {
     let durationMs: number | undefined
     if (duration === "30min") {
       durationMs = 30 * 60 * 1000
-    } else if (duration === "24h") {
+    } else if (duration === "24hr" || duration === "24h") {
+      // Accept both "24hr" (sent by frontend) and "24h" for backwards compat
       durationMs = 24 * 60 * 60 * 1000
     } else if (duration === "permanent") {
       durationMs = undefined
