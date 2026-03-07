@@ -3,7 +3,7 @@ import { redirect } from "next/navigation"
 export default async function BlockedPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reason?: string; until?: string; ip?: string; permanent?: string }>
+  searchParams: Promise<{ reason?: string; until?: string; ip?: string; permanent?: string; vpn?: string }>
 }) {
   const params = await searchParams
 
@@ -17,6 +17,7 @@ export default async function BlockedPage({
   const until = params.until
   const ip = params.ip
   const isPermanent = params.permanent === "true"
+  const isVpn = params.vpn === "true"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-950 via-red-900 to-black flex items-center justify-center p-4">
@@ -104,6 +105,29 @@ export default async function BlockedPage({
               </div>
             )}
           </div>
+
+          {isVpn && (
+            <div className="bg-orange-950/50 border border-orange-500/40 rounded-xl p-5 mb-6 flex gap-4 items-start">
+              <div className="shrink-0 mt-0.5">
+                <svg className="w-6 h-6 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"
+                  />
+                </svg>
+              </div>
+              <div>
+                <p className="text-orange-200 font-bold text-sm mb-1">VPN / Proxy Detected</p>
+                <p className="text-orange-300 text-sm leading-relaxed">
+                  A VPN or proxy connection was detected on your request. Your IP has been blocked and using a
+                  VPN or proxy will not bypass this restriction. All routed IP addresses associated with this
+                  session have been logged.
+                </p>
+              </div>
+            </div>
+          )}
 
           <div className="text-center space-y-2 pt-4 border-t border-red-500/20">
             <p className="text-gray-400 text-sm font-mono">Request ID: {Date.now()}</p>

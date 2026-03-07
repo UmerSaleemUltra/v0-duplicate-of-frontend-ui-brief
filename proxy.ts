@@ -88,6 +88,24 @@ export async function proxy(request: NextRequest) {
           blockedUrl.searchParams.set("permanent", "true")
         }
 
+        // VPN / proxy detection:
+        // x-forwarded-for with multiple hops indicates a proxy/VPN chain.
+        // Cloudflare populates cf-connecting-ip with the real visitor IP;
+        // if it differs from x-forwarded-for's first entry the request passed
+        // through an intermediate proxy or VPN.
+        const xForwardedFor = request.headers.get("x-forwarded-for") || ""
+        const cfConnectingIp = request.headers.get("cf-connecting-ip") || ""
+        const xRealIp = request.headers.get("x-real-ip") || ""
+        const forwardedIps = xForwardedFor.split(",").map((s) => s.trim()).filter(Boolean)
+        const isVpn =
+          forwardedIps.length > 1 ||
+          (cfConnectingIp && forwardedIps[0] && cfConnectingIp !== forwardedIps[0]) ||
+          (xRealIp && forwardedIps[0] && xRealIp !== forwardedIps[0])
+
+        if (isVpn) {
+          blockedUrl.searchParams.set("vpn", "true")
+        }
+
         return NextResponse.redirect(blockedUrl, 307)
       }
 
