@@ -31,15 +31,16 @@ function logThreat(threat: ThreatLog) {
     threatLogs.pop()
   }
 
-  // Save to MongoDB
+  // Save to MongoDB — thresholds aligned with auto-block trigger (200 req/min)
+  // Any automated DDoS block fires at >=200 requests so severity is always medium+
   const severity =
-    threat.requestCount > 500
+    threat.requestCount > 400
       ? "critical"
       : threat.requestCount > 200
         ? "high"
-        : threat.requestCount > 50
+        : threat.requestCount > 20
           ? "medium"
-          : "low"
+          : "medium" // floor at medium — low is never used for actual blocked requests
 
   logSecurityThreat({
     ip: threat.ip,
@@ -60,7 +61,7 @@ const DDOS_CONFIG = {
   // Requests per minute threshold (reasonable limit)
   MAX_REQUESTS_PER_MINUTE: 200,
   // Aggressive threshold for immediate blocking
-  AGGRESSIVE_BLOCK_THRESHOLD: 500, // Lower threshold to catch DDoS attacks
+  AGGRESSIVE_BLOCK_THRESHOLD: 200, // Block at 200 req/min — matches user expectation
   // Window for tracking requests (1 minute)
   TRACKING_WINDOW: 60000,
   // Auto-block duration (30 minutes)
