@@ -1,21 +1,6 @@
 "use client"
 
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-  DialogDescription,
-} from "@/components/ui/dialog"
-import { Package, UserCheck, Home, FileCheck, FileText, Hash, Trash2, Mail, Loader2 } from "lucide-react"
-import { authService } from "@/lib/auth"
-import { useToast } from "@/hooks/use-toast"
+import { Package, UserCheck, Home, FileCheck, FileText, Hash, Trash2 } from "lucide-react"
 
 interface Milestones {
   orderSuccessfullyProcessed: boolean
@@ -34,11 +19,9 @@ interface FormationProgressCardProps {
   completionPercentage: number
   completedMilestonesWithCustom: number
   totalMilestonesWithCustom: number
-  onCustomMilestoneToggle: (id: string) => void
-  onCustomMilestoneComplete?: (milestone: { id: string; title: string; description?: string }) => void
+  onCustomMilestoneToggle?: (id: string) => void
   onDeleteCustomMilestone: (id: string) => void
   deletingMilestoneId: string | null
-  customerEmail?: string
 }
 
 function MilestoneStep({
@@ -84,75 +67,9 @@ export function FormationProgressCard({
   completionPercentage,
   completedMilestonesWithCustom,
   totalMilestonesWithCustom,
-  onCustomMilestoneToggle,
   onDeleteCustomMilestone,
   deletingMilestoneId,
-  customerEmail,
 }: FormationProgressCardProps) {
-  const { toast } = useToast()
-
-  const [emailModalOpen, setEmailModalOpen] = useState(false)
-  const [pendingMilestoneId, setPendingMilestoneId] = useState<string | null>(null)
-  const [emailTo, setEmailTo] = useState("")
-  const [emailSubject, setEmailSubject] = useState("")
-  const [emailContent, setEmailContent] = useState("")
-  const [emailSending, setEmailSending] = useState(false)
-
-  const handleCustomMilestoneClick = (m: any) => {
-    if (!m.completed) {
-      // Marking as complete — open email modal
-      setEmailTo(customerEmail || "")
-      setEmailSubject(`Milestone Completed: ${m.title}`)
-      setEmailContent(
-        `Dear Customer,\n\nWe are pleased to inform you that the following milestone has been completed:\n\n${m.title}${m.description ? `\n${m.description}` : ""}\n\nThank you for your business.\n\nBuzz Filing Team`,
-      )
-      setPendingMilestoneId(m.id)
-      setEmailModalOpen(true)
-    } else {
-      // Uncompleting — just toggle
-      onCustomMilestoneToggle(m.id)
-    }
-  }
-
-  const handleConfirmComplete = async (sendEmail: boolean) => {
-    if (!pendingMilestoneId) return
-
-    // Save the milestone completion
-    onCustomMilestoneToggle(pendingMilestoneId)
-
-    if (sendEmail) {
-      if (!emailTo || !emailSubject || !emailContent) {
-        toast({ title: "Missing fields", description: "Please fill in all email fields.", variant: "destructive" })
-        return
-      }
-      setEmailSending(true)
-      try {
-        const token = authService.getToken()
-        const res = await fetch("/api/email/milestone", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ to: emailTo, subject: emailSubject, content: emailContent }),
-        })
-        const data = await res.json()
-        if (data.success) {
-          toast({ title: "Email Sent", description: `Notification sent to ${emailTo}` })
-        } else {
-          toast({ title: "Email Failed", description: data.error || "Failed to send email", variant: "destructive" })
-        }
-      } catch {
-        toast({ title: "Email Failed", description: "Could not send email", variant: "destructive" })
-      } finally {
-        setEmailSending(false)
-      }
-    }
-
-    setEmailModalOpen(false)
-    setPendingMilestoneId(null)
-  }
-
   const coreMilestones = [
     { icon: <Package className="w-3.5 h-3.5" />, label: "Order Processed", done: milestones.orderSuccessfullyProcessed },
     { icon: <UserCheck className="w-3.5 h-3.5" />, label: "Registered Agent Assigned", done: milestones.registeredAgentAssigned },
@@ -206,14 +123,13 @@ export function FormationProgressCard({
                     className="flex gap-4 group"
                   >
                     <div className="flex flex-col items-center">
-                      <button
-                        onClick={() => handleCustomMilestoneClick(m)}
-                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
+                      <div
+                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
                           m.completed ? "bg-stone-900" : "bg-stone-100"
                         }`}
                       >
                         <Hash className={`w-3.5 h-3.5 ${m.completed ? "text-white" : "text-stone-400"}`} />
-                      </button>
+                      </div>
                       {i < company.customMilestones.length - 1 && (
                         <div className={`w-px flex-1 mt-1 mb-1 min-h-[1.25rem] ${m.completed ? "bg-stone-300" : "bg-stone-100"}`} />
                       )}
@@ -244,80 +160,6 @@ export function FormationProgressCard({
         </div>
       </div>
 
-      {/* Email notification modal */}
-      <Dialog open={emailModalOpen} onOpenChange={(v) => { if (!emailSending) setEmailModalOpen(v) }}>
-        <DialogContent className="max-w-lg">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Mail className="w-5 h-5 text-stone-600" />
-              Send Milestone Notification
-            </DialogTitle>
-            <DialogDescription>
-              Milestone marked as completed. Optionally send an email notification to the customer.
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-2">
-            <div className="space-y-1.5">
-              <Label htmlFor="email-to">To</Label>
-              <Input
-                id="email-to"
-                type="email"
-                placeholder="customer@example.com"
-                value={emailTo}
-                onChange={(e) => setEmailTo(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="email-subject">Subject</Label>
-              <Input
-                id="email-subject"
-                placeholder="Email subject"
-                value={emailSubject}
-                onChange={(e) => setEmailSubject(e.target.value)}
-              />
-            </div>
-            <div className="space-y-1.5">
-              <Label htmlFor="email-content">Content</Label>
-              <Textarea
-                id="email-content"
-                placeholder="Email body..."
-                rows={6}
-                value={emailContent}
-                onChange={(e) => setEmailContent(e.target.value)}
-                className="resize-none"
-              />
-            </div>
-          </div>
-
-          <DialogFooter className="gap-2">
-            <Button
-              variant="outline"
-              onClick={() => handleConfirmComplete(false)}
-              disabled={emailSending}
-            >
-              Skip, just complete
-            </Button>
-            <Button
-              onClick={() => handleConfirmComplete(true)}
-              disabled={emailSending}
-              className="bg-stone-900 hover:bg-stone-800 text-white"
-            >
-              {emailSending ? (
-                <>
-                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                  Sending...
-                </>
-              ) : (
-                <>
-                  <Mail className="w-4 h-4 mr-2" />
-                  Send & Complete
-                </>
-              )}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
     </>
   )
 }
