@@ -44,6 +44,9 @@ export default function ClientDashboard() {
   const [dataLoaded, setDataLoaded] = useState(false)
   const [isAuthenticating, setIsAuthenticating] = useState(true)
   const [hasNoCompanies, setHasNoCompanies] = useState(false)
+  // Track whether the company-loading sequence has truly settled to avoid
+  // flashing "no companies" while the provider is still fetching on a fresh login.
+  const [companyCheckSettled, setCompanyCheckSettled] = useState(false)
   const [isFirstVisit, setIsFirstVisit] = useState(false)
   const router = useRouter()
   const [showCelebration, setShowCelebration] = useState(false)
@@ -85,8 +88,15 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (isAuthenticating) return
 
-    // Wait until the company provider has finished loading before deciding there are no companies
-    if (companiesLoading) return
+    // Wait until the company provider has finished loading before deciding there are no companies.
+    // This prevents a flash of the "no company" state on a fresh login while the async fetch is in flight.
+    if (companiesLoading) {
+      setCompanyCheckSettled(false)
+      return
+    }
+
+    // Provider has finished loading — mark as settled so the no-company state can be shown if needed
+    setCompanyCheckSettled(true)
 
     if (!selectedCompanyId) {
       setHasNoCompanies(!hasCompanies)
@@ -241,7 +251,10 @@ export default function ClientDashboard() {
 
 
 
-  if (!isAuthenticating && hasNoCompanies) {
+  // Only show the no-company state once both auth and the company provider have fully settled.
+  // Without this guard the page briefly flashes "no companies" for ~3 s on a fresh login while
+  // the provider's async fetch is in flight.
+  if (!isAuthenticating && companyCheckSettled && hasNoCompanies) {
     return (
       <ClientShell>
         <NoCompanyState />
@@ -249,7 +262,7 @@ export default function ClientDashboard() {
     )
   }
 
-  if (isAuthenticating || companiesLoading || isLoadingData) {
+  if (isAuthenticating || companiesLoading || !companyCheckSettled || isLoadingData) {
     return (
       <ClientShell>
         <DashboardSkeleton />

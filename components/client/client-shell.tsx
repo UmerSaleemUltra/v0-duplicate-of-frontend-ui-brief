@@ -23,7 +23,24 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Badge } from "@/components/ui/badge"
 import { BusinessNameDisplay } from "@/components/ui/business-name-display"
 import { useSelectedCompany } from "@/lib/company-context"
@@ -54,6 +71,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isPageReady, setIsPageReady] = useState(true)
   const [hasNoCompanies, setHasNoCompanies] = useState(false)
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
 
   const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
@@ -264,11 +282,17 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
   const handleLogout = () => {
     if (isAdminView) {
+      // Admin exit mode doesn't need a confirmation dialog
       handleExitAdminMode()
     } else {
-      authService.logout()
-      router.push("/")
+      setLogoutConfirmOpen(true)
     }
+  }
+
+  const confirmLogout = () => {
+    setLogoutConfirmOpen(false)
+    authService.logout()
+    router.push("/")
   }
 
   return (
@@ -495,6 +519,26 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
               </div>
             </DialogContent>
           </Dialog>
+
+          <AlertDialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
+            <AlertDialogContent className="max-w-sm">
+              <AlertDialogHeader>
+                <AlertDialogTitle>Sign out of your account?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  You will be redirected to the home page and will need to log in again to access your dashboard.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={confirmLogout}
+                  className="bg-red-600 hover:bg-red-700 text-white"
+                >
+                  Sign Out
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
 
           <div className="flex-1 flex flex-col min-w-0">
             <div className="z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
