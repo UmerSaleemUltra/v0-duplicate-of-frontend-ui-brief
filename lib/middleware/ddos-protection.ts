@@ -22,6 +22,47 @@ const whitelistedIPs = new Set<string>([
   // Add your IPs here to whitelist them
 ])
 
+// Cache of manual bans loaded from DB — refreshed periodically
+// Key: ip, Value: { permanent: boolean, expiresAt?: number }
+const manualBanCache = new Map<string, { permanent: boolean; expiresAt?: number; reason: string }>()
+let lastManualBanCacheRefresh = 0
+const MANUAL_BAN_CACHE_TTL = 30 * 1000 // re-check DB every 30 seconds
+
+async function refreshManualBanCache() {
+  const now = Date.now()
+  if (now - lastManualBanCacheRefresh < MANUAL_BAN_CACHE_TTL) return
+
+  try {
+    const dbBannedIPs = await getBannedIPs()
+    manualBanCache.clear()
+    for (const ban of dbBannedIPs) {
+      manualBanCache.set(ban.ip, {
+        permanent: ban.permanent,
+        expiresAt: ban.expiresAt ? new Date(ban.expiresAt).getTime() : undefined,
+        reason: ban.reason,
+      })
+      // Also keep in-memory blacklist in sync
+      blacklistedIPs.add(ban.ip)
+    }
+    lastManualBanCacheRefresh = now
+    console.log(`[DDOS] Manual ban cache refreshed — ${manualBanCache.size} active bans`)
+  } catch (err) {
+    console.error("[DDOS] Failed to refresh manual ban cache:", err)
+  }
+}
+
+function getManualBan(ip: string): { permanent: boolean; expiresAt?: number; reason: string } | null {
+  const ban = manualBanCache.get(ip)
+  if (!ban) return null
+  // If temporary and expired, remove from cache
+  if (!ban.permanent && ban.expiresAt && Date.now() > ban.expiresAt) {
+    manualBanCache.delete(ip)
+    blacklistedIPs.delete(ip)
+    return null
+  }
+  return ban
+}
+
 const threatLogs: ThreatLog[] = []
 const MAX_THREAT_LOGS = 100
 
@@ -81,39 +122,47 @@ export function addToWhitelist(ip: string) {
   console.log(`[DDOS] IP ${ip} added to whitelist`)
 }
 
-let bannedIPsLoaded = false
-async function loadBannedIPsFromDB() {
-  if (bannedIPsLoaded) return
-
-  try {
-    const dbBannedIPs = await getBannedIPs()
-    for (const ban of dbBannedIPs) {
-      blacklistedIPs.add(ban.ip)
-
-      // Also restore to tracker if temporary
-      if (!ban.permanent && ban.expiresAt) {
-        const tracker = requestTrackers.get(ban.ip) || {
-          requests: [],
-          suspiciousActivity: 0,
-          blocked: true,
-        }
-        tracker.blocked = true
-        tracker.blockedUntil = new Date(ban.expiresAt).getTime()
-        requestTrackers.set(ban.ip, tracker)
-      }
-    }
-    bannedIPsLoaded = true
-    console.log(`[DDOS] Loaded ${dbBannedIPs.length} banned IPs from database`)
-  } catch (error) {
-    console.error("[DDOS] Failed to load banned IPs from DB:", error)
-  }
-}
-
 export async function ddosProtection(req: NextRequest) {
-  await loadBannedIPsFromDB()
+  // Always refresh the manual ban cache from DB (30s TTL) so manual bans
+  // are enforced even on fresh serverless cold-starts
+  await refreshManualBanCache()
 
   const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
 
+  // --- Check DB-backed manual ban cache first ---
+  const manualBan = getManualBan(ip)
+  if (manualBan) {
+    console.log("\n")
+    console.log("╔════════════════════════════════════════════════════════════╗")
+    console.log("║         🛑 MANUALLY BANNED IP BLOCKED                      ║")
+    console.log("╚════════════════════════════════════════════════════════════╝")
+    console.log(`IP Address: ${ip}`)
+    console.log(`Permanent: ${manualBan.permanent}`)
+    console.log(`Reason: ${manualBan.reason}`)
+    console.log(`Timestamp: ${new Date().toISOString()}`)
+    console.log(`URL Attempted: ${req.url}`)
+    console.log("════════════════════════════════════════════════════════════\n")
+
+    logThreat({
+      ip,
+      timestamp: Date.now(),
+      requestCount: 0,
+      reason: manualBan.reason || "Manually banned IP attempted access",
+      action: "BLOCKED",
+    })
+
+    return {
+      blocked: true,
+      permanent: manualBan.permanent,
+      reason: manualBan.permanent
+        ? "Your IP has been permanently blocked by the administrator"
+        : "Your IP has been temporarily blocked by the administrator",
+      blockedUntil: manualBan.expiresAt,
+      ip,
+    }
+  }
+
+  // --- Fall through to in-memory blacklist (DDoS auto-blocks) ---
   if (blacklistedIPs.has(ip)) {
     const tracker = requestTrackers.get(ip)
 
@@ -361,6 +410,18 @@ export async function ddosProtection(req: NextRequest) {
 export async function blockIP(ip: string, duration?: number, reason?: string) {
   blacklistedIPs.add(ip)
 
+  const expiresAt = duration ? Date.now() + duration : undefined
+
+  // Immediately update the manual ban cache so the block takes effect
+  // on this serverless instance without waiting for the next TTL refresh
+  manualBanCache.set(ip, {
+    permanent: !duration,
+    expiresAt,
+    reason: reason || "Manually banned by admin",
+  })
+  // Force next request to re-read from DB on other instances
+  lastManualBanCacheRefresh = 0
+
   const tracker = requestTrackers.get(ip) || {
     requests: [],
     suspiciousActivity: 0,
@@ -409,6 +470,9 @@ export async function blockIP(ip: string, duration?: number, reason?: string) {
 // Admin function to unblock an IP
 export async function unblockIP(ip: string) {
   blacklistedIPs.delete(ip)
+  manualBanCache.delete(ip)
+  // Force next request to re-read from DB on other instances
+  lastManualBanCacheRefresh = 0
   const tracker = requestTrackers.get(ip)
   if (tracker) {
     tracker.blocked = false

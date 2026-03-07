@@ -1,12 +1,13 @@
-export default function BlockedPage({
+export default async function BlockedPage({
   searchParams,
 }: {
-  searchParams: { reason?: string; until?: string; ip?: string; permanent?: string }
+  searchParams: Promise<{ reason?: string; until?: string; ip?: string; permanent?: string }>
 }) {
-  const reason = searchParams.reason || "Security policy violation"
-  const until = searchParams.until
-  const ip = searchParams.ip || "Unknown"
-  const isPermanent = searchParams.permanent === "true"
+  const params = await searchParams
+  const reason = params.reason || "Security policy violation"
+  const until = params.until
+  const ip = params.ip || "Unknown"
+  const isPermanent = params.permanent === "true"
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-red-950 via-red-900 to-black flex items-center justify-center p-4">
