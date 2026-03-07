@@ -5,7 +5,14 @@ import { checkDDoS } from "@/lib/middleware/ddos-protection"
 
 export async function proxy(request: NextRequest) {
   try {
-    const ip = request.ip || request.headers.get("x-forwarded-for") || request.headers.get("x-real-ip") || "unknown"
+    // Normalise to a single canonical IP — take the first entry from
+    // x-forwarded-for so it always matches what ddos-protection stores in DB.
+    const rawForwardedFor = request.headers.get("x-forwarded-for") || ""
+    const ip =
+      (rawForwardedFor.split(",")[0].trim() || null) ||
+      request.ip ||
+      request.headers.get("x-real-ip") ||
+      "unknown"
     const url = new URL(request.url)
 
     if (request.method === "OPTIONS") {

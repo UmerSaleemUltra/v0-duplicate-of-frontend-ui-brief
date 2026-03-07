@@ -127,7 +127,14 @@ export async function ddosProtection(req: NextRequest) {
   // are enforced even on fresh serverless cold-starts
   await refreshManualBanCache()
 
-  const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
+  // Always use the first (leftmost) IP from x-forwarded-for so the key
+  // stored in the DB and the in-memory maps is a single canonical IP address,
+  // not a comma-separated list that would never match admin lookups.
+  const rawForwardedFor = req.headers.get("x-forwarded-for") || ""
+  const ip =
+    rawForwardedFor.split(",")[0].trim() ||
+    req.headers.get("x-real-ip") ||
+    "unknown"
 
   // --- Check DB-backed manual ban cache first ---
   const manualBan = getManualBan(ip)
