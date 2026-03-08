@@ -115,7 +115,7 @@ export default async function BlogPostPage({
           {/* Category Badge */}
           {post.category && (
             <div className="mb-4">
-              <span className="inline-block rounded-full bg-[#ff0d13] px-3 py-1 text-xs font-semibold text-white sm:px-4 sm:py-1.5 sm:text-sm">
+              <span className="inline-block rounded-full bg-[#d81c20] px-3 py-1 text-xs font-semibold text-white sm:px-4 sm:py-1.5 sm:text-sm">
                 {post.category}
               </span>
             </div>
@@ -159,12 +159,12 @@ export default async function BlogPostPage({
               prose-h3:text-sm prose-h3:mb-2 md:prose-h3:text-lg lg:prose-h3:text-xl
               prose-p:text-foreground prose-p:leading-relaxed prose-p:mb-4
               prose-p:text-sm md:prose-p:text-base lg:prose-p:text-lg
-              prose-a:text-[#ff0d13] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
+              prose-a:text-[#d81c20] prose-a:font-medium prose-a:no-underline hover:prose-a:underline
               prose-strong:text-foreground prose-strong:font-semibold
               prose-ul:pl-5 prose-ol:pl-5
-              prose-li:text-foreground prose-li:marker:text-[#ff0d13] prose-li:my-1
+              prose-li:text-foreground prose-li:marker:text-[#d81c20] prose-li:my-1
               prose-li:text-sm md:prose-li:text-base lg:prose-li:text-lg
-              prose-blockquote:border-l-4 prose-blockquote:border-[#ff0d13] prose-blockquote:pl-4
+              prose-blockquote:border-l-4 prose-blockquote:border-[#d81c20] prose-blockquote:pl-4
               prose-blockquote:italic prose-blockquote:text-muted-foreground
               prose-code:text-xs md:prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
               prose-pre:bg-slate-900 prose-pre:text-slate-50 prose-pre:p-3 md:prose-pre:p-4
@@ -180,7 +180,7 @@ export default async function BlogPostPage({
           <div className="mt-8 border-t border-border pt-6 md:mt-10 md:pt-8">
             <Link
               href="/blog"
-              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#ff0d13] px-5 py-3 text-sm font-medium text-white transition-all hover:bg-[#d81c20] sm:w-auto sm:text-base"
+              className="inline-flex w-full items-center justify-center gap-2 rounded-lg bg-[#d81c20] px-5 py-3 text-sm font-medium text-white transition-all hover:bg-[#b91518] sm:w-auto sm:text-base"
             >
               <svg className="h-4 w-4 sm:h-5 sm:w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
