@@ -3,7 +3,6 @@ import Link from "next/link"
 import Navbar from "@/components/sections/navbar"
 import Footer from "@/components/sections/footer"
 import { Badge } from "@/components/ui/badge"
-import { getDatabase } from "@/config/database"
 
 export const metadata: Metadata = {
   title: "Business Formation Blog | LLC Guides & Expert Resources - Buzz Filing",
@@ -35,15 +34,13 @@ export const metadata: Metadata = {
 
 async function getBlogPosts() {
   try {
-    const db = await getDatabase()
-    const collection = db.collection("blog_posts")
-
-    const posts = await collection.find({ status: "published" }).sort({ createdAt: -1 }).toArray()
-
-    return posts.map((post) => ({
-      ...post,
-      _id: post._id.toString(),
-    }))
+    const res = await fetch("https://www.buzzfiling.com/api/blog", {
+      next: { revalidate: 60 },
+    })
+    if (!res.ok) return []
+    const json = await res.json()
+    if (!json.success || !Array.isArray(json.data)) return []
+    return json.data
   } catch (error) {
     console.error("Error fetching blog posts:", error)
     return []
