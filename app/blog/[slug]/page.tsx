@@ -125,11 +125,15 @@ export default async function BlogPostPage({
             {post.title}
           </h1>
 
-          <div className="mb-6 flex flex-col gap-2 text-sm text-muted-foreground sm:mb-8 sm:flex-row sm:flex-wrap sm:items-center sm:gap-3 md:text-base">
-            <span className="font-medium text-foreground">By {post.author}</span>
-            <span className="hidden sm:inline">•</span>
+          <div className="mb-4 flex items-center gap-2 text-sm text-muted-foreground md:text-base">
             <time dateTime={post.createdAt}>{publishDate}</time>
           </div>
+
+          {post.excerpt && (
+            <p className="mb-6 text-sm leading-relaxed text-muted-foreground italic sm:mb-8 sm:text-base md:text-lg">
+              {post.excerpt}
+            </p>
+          )}
 
           {/* Featured Image */}
           {post.featuredImage && (
@@ -171,23 +175,6 @@ export default async function BlogPostPage({
               prose-td:p-2 prose-td:border prose-td:border-border"
             dangerouslySetInnerHTML={{ __html: htmlContent }}
           />
-
-          {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="mt-8 border-t border-border pt-6 md:mt-10 md:pt-8">
-              <h3 className="mb-3 text-base font-semibold text-foreground md:text-lg">Tags</h3>
-              <div className="flex flex-wrap gap-2">
-                {post.tags.map((tag: string) => (
-                  <span
-                    key={tag}
-                    className="rounded-md bg-muted px-3 py-1.5 text-sm font-medium text-foreground transition-all hover:bg-muted/80"
-                  >
-                    #{tag}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
 
           {/* Back to Blog Button */}
           <div className="mt-8 border-t border-border pt-6 md:mt-10 md:pt-8">
