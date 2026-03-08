@@ -119,7 +119,7 @@ export default async function BlogPage() {
 
                     {/* Footer with Explore button */}
                     <div className="flex items-center justify-center pt-3 sm:pt-4 border-t border-slate-100">
-                      <div className="inline-flex items-center justify-center px-4 py-1.5 sm:px-6 sm:py-2 bg-slate-900 text-white text-xs sm:text-sm font-semibold rounded-full group-hover:bg-[#ff0d13] transition-colors">
+                      <div className="inline-flex items-center justify-center px-4 py-1.5 sm:px-6 sm:py-2 bg-[#ff0d13] text-white text-xs sm:text-sm font-semibold rounded-full group-hover:bg-[#d81c20] transition-colors">
                         Explore
                       </div>
                     </div>
