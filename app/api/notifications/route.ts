@@ -73,7 +73,14 @@ export async function POST(req: NextRequest) {
       return addSecurityHeaders(NextResponse.json({ error: "Missing required fields" }, { status: 400 }))
     }
 
-    if (type === "system") {
+    if (type === "admin_message") {
+      // Admins can send a custom notification to any user
+      if (decoded.role !== "admin") {
+        return addSecurityHeaders(
+          NextResponse.json({ error: "Only admins can send admin_message notifications" }, { status: 403 }),
+        )
+      }
+    } else if (type === "system") {
       if (userId !== decoded.userId && decoded.role !== "admin") {
         return addSecurityHeaders(
           NextResponse.json({ error: "You can only create system notifications for yourself" }, { status: 403 }),

@@ -14,6 +14,7 @@ import {
   Loader2,
   ChevronRight,
   Megaphone,
+  Bell,
 } from "lucide-react"
 
 interface AdminActionsCardProps {
@@ -38,6 +39,7 @@ interface AdminActionsCardProps {
   onDownloadInvoice: () => void
   onDeleteOrder: () => void
   onSetBanner: () => void
+  onSendNotification: () => void
 }
 
 function ActionRow({
@@ -92,6 +94,7 @@ export function AdminActionsCard({
   onDownloadInvoice,
   onDeleteOrder,
   onSetBanner,
+  onSendNotification,
 }: AdminActionsCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -167,6 +170,7 @@ export function AdminActionsCard({
         />
         <ActionRow icon={<Download className="w-4 h-4" />} label="Download Invoice" onClick={onDownloadInvoice} />
         <ActionRow icon={<Megaphone className="w-4 h-4" />} label="Set Client Dashboard Banner" onClick={onSetBanner} />
+        <ActionRow icon={<Bell className="w-4 h-4" />} label="Send Client Notification" onClick={onSendNotification} />
       </div>
 
       {/* Destructive zone */}
