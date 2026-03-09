@@ -182,6 +182,12 @@ export default function OrderDetailPage() {
   const [bannerSaving, setBannerSaving] = useState(false)
   const [existingBanner, setExistingBanner] = useState<any>(null)
 
+  // Send Notification state
+  const [notifDialogOpen, setNotifDialogOpen] = useState(false)
+  const [notifTitle, setNotifTitle] = useState("")
+  const [notifMessage, setNotifMessage] = useState("")
+  const [notifSending, setNotifSending] = useState(false)
+
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
   const [itinSelectedMemberId, setItinSelectedMemberId] = useState("")
@@ -2091,6 +2097,37 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleSendNotification = async () => {
+    if (!customer?.id || !notifTitle.trim() || !notifMessage.trim()) return
+    setNotifSending(true)
+    try {
+      const token = authService.getToken()
+      const res = await fetch("/api/notifications", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({
+          userId: customer.id,
+          type: "admin_message",
+          title: notifTitle.trim(),
+          message: notifMessage.trim(),
+          metadata: { companyId: company?.id, companyName: company?.name },
+        }),
+      })
+      if (!res.ok) throw new Error("Failed to send notification")
+      toast({ title: "Notification sent", description: `A notification has been sent to ${customer.name || customer.email}.` })
+      setNotifDialogOpen(false)
+      setNotifTitle("")
+      setNotifMessage("")
+    } catch {
+      toast({ title: "Error", description: "Failed to send notification. Please try again.", variant: "destructive" })
+    } finally {
+      setNotifSending(false)
+    }
+  }
+
   const generateInvoice = () => {
     if (!order) return
 
@@ -2625,6 +2662,11 @@ export default function OrderDetailPage() {
                 setDeleteDialogOpen(true)
               }}
               onSetBanner={handleOpenBannerDialog}
+              onSendNotification={() => {
+                setNotifTitle("")
+                setNotifMessage("")
+                setNotifDialogOpen(true)
+              }}
             />
           </TabsContent>
         </Tabs>
@@ -2707,6 +2749,53 @@ export default function OrderDetailPage() {
             >
               {bannerSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Save Banner
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Send Client Notification Dialog */}
+      <Dialog open={notifDialogOpen} onOpenChange={setNotifDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Send Client Notification</DialogTitle>
+            <DialogDescription>
+              This notification will appear in {customer?.name || customer?.email || "the client"}&apos;s notification bar on their dashboard.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="notifTitle">Title</Label>
+              <Input
+                id="notifTitle"
+                placeholder="e.g., Action Required"
+                value={notifTitle}
+                onChange={(e) => setNotifTitle(e.target.value)}
+                className="h-10"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="notifMessage">Message</Label>
+              <Textarea
+                id="notifMessage"
+                placeholder="e.g., Your documents are ready. Please log in to review them."
+                value={notifMessage}
+                onChange={(e) => setNotifMessage(e.target.value)}
+                className="min-h-[100px] resize-none"
+              />
+            </div>
+          </div>
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setNotifDialogOpen(false)} disabled={notifSending}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleSendNotification}
+              disabled={notifSending || !notifTitle.trim() || !notifMessage.trim()}
+              className="bg-[#d81c20] hover:bg-[#b91518] text-white"
+            >
+              {notifSending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Send Notification
             </Button>
           </DialogFooter>
         </DialogContent>
