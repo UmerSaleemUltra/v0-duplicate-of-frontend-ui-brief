@@ -13,6 +13,7 @@ import {
   Trash2,
   Loader2,
   ChevronRight,
+  Megaphone,
 } from "lucide-react"
 
 interface AdminActionsCardProps {
@@ -36,6 +37,7 @@ interface AdminActionsCardProps {
   onManageMilestones: () => void
   onDownloadInvoice: () => void
   onDeleteOrder: () => void
+  onSetBanner: () => void
 }
 
 function ActionRow({
@@ -89,6 +91,7 @@ export function AdminActionsCard({
   onManageMilestones,
   onDownloadInvoice,
   onDeleteOrder,
+  onSetBanner,
 }: AdminActionsCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -163,6 +166,7 @@ export function AdminActionsCard({
           loadingLabel="Loading..."
         />
         <ActionRow icon={<Download className="w-4 h-4" />} label="Download Invoice" onClick={onDownloadInvoice} />
+        <ActionRow icon={<Megaphone className="w-4 h-4" />} label="Set Client Dashboard Banner" onClick={onSetBanner} />
       </div>
 
       {/* Destructive zone */}

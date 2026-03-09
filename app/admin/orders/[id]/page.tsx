@@ -175,6 +175,13 @@ export default function OrderDetailPage() {
   const [agentModalOpen, setAgentModalOpen] = useState(false)
   const [addressModalOpen, setAddressModalOpen] = useState(false)
 
+  // Banner state
+  const [bannerDialogOpen, setBannerDialogOpen] = useState(false)
+  const [bannerMessage, setBannerMessage] = useState("")
+  const [bannerType, setBannerType] = useState<"info" | "warning" | "success" | "error">("info")
+  const [bannerSaving, setBannerSaving] = useState(false)
+  const [existingBanner, setExistingBanner] = useState<any>(null)
+
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
   const [itinSelectedMemberId, setItinSelectedMemberId] = useState("")
@@ -2016,6 +2023,74 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleOpenBannerDialog = async () => {
+    if (!company) return
+    try {
+      const token = authService.getToken()
+      const res = await fetch(`/api/banners?companyId=${company.id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const data = await res.json()
+      if (data.data) {
+        setExistingBanner(data.data)
+        setBannerMessage(data.data.message)
+        setBannerType(data.data.type || "info")
+      } else {
+        setExistingBanner(null)
+        setBannerMessage("")
+        setBannerType("info")
+      }
+    } catch {
+      setExistingBanner(null)
+      setBannerMessage("")
+      setBannerType("info")
+    }
+    setBannerDialogOpen(true)
+  }
+
+  const handleSaveBanner = async () => {
+    if (!company || !bannerMessage.trim()) return
+    setBannerSaving(true)
+    try {
+      const token = authService.getToken()
+      const res = await fetch("/api/banners", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ companyId: company.id, message: bannerMessage.trim(), type: bannerType }),
+      })
+      if (!res.ok) throw new Error("Failed to save banner")
+      toast({ title: "Banner saved", description: "The client dashboard banner has been updated." })
+      setBannerDialogOpen(false)
+    } catch {
+      toast({ title: "Error", description: "Failed to save banner. Please try again.", variant: "destructive" })
+    } finally {
+      setBannerSaving(false)
+    }
+  }
+
+  const handleRemoveBanner = async () => {
+    if (!company) return
+    setBannerSaving(true)
+    try {
+      const token = authService.getToken()
+      const res = await fetch(`/api/banners?companyId=${company.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error("Failed to remove banner")
+      toast({ title: "Banner removed", description: "The client dashboard banner has been cleared." })
+      setBannerDialogOpen(false)
+      setExistingBanner(null)
+    } catch {
+      toast({ title: "Error", description: "Failed to remove banner. Please try again.", variant: "destructive" })
+    } finally {
+      setBannerSaving(false)
+    }
+  }
+
   const generateInvoice = () => {
     if (!order) return
 
@@ -2549,6 +2624,7 @@ export default function OrderDetailPage() {
               onDeleteOrder={() => {
                 setDeleteDialogOpen(true)
               }}
+              onSetBanner={handleOpenBannerDialog}
             />
           </TabsContent>
         </Tabs>
@@ -2571,6 +2647,70 @@ export default function OrderDetailPage() {
   onDeleteCustomMilestone={handleDeleteCustomMilestone}
   deletingMilestoneId={deletingMilestoneId}
 />
+
+      {/* Set Client Dashboard Banner Dialog */}
+      <Dialog open={bannerDialogOpen} onOpenChange={setBannerDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Set Client Dashboard Banner</DialogTitle>
+            <DialogDescription>
+              This banner will appear at the top of {company?.name}&apos;s dashboard. Leave blank to remove it.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="bannerType">Banner Type</Label>
+              <Select value={bannerType} onValueChange={(v: any) => setBannerType(v)}>
+                <SelectTrigger id="bannerType" className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="info">Info (Blue)</SelectItem>
+                  <SelectItem value="success">Success (Green)</SelectItem>
+                  <SelectItem value="warning">Warning (Yellow)</SelectItem>
+                  <SelectItem value="error">Alert (Red)</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="bannerMessage">Message</Label>
+              <Textarea
+                id="bannerMessage"
+                placeholder="e.g., Your EIN has been approved. Please check the details below."
+                value={bannerMessage}
+                onChange={(e) => setBannerMessage(e.target.value)}
+                className="min-h-[100px] resize-none"
+              />
+            </div>
+            {existingBanner && (
+              <p className="text-xs text-gray-500">
+                Current banner: &quot;{existingBanner.message}&quot;
+              </p>
+            )}
+          </div>
+          <DialogFooter className="gap-2">
+            {existingBanner && (
+              <Button
+                variant="outline"
+                onClick={handleRemoveBanner}
+                disabled={bannerSaving}
+                className="text-red-600 border-red-200 hover:bg-red-50"
+              >
+                {bannerSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                Remove Banner
+              </Button>
+            )}
+            <Button
+              onClick={handleSaveBanner}
+              disabled={bannerSaving || !bannerMessage.trim()}
+              className="bg-[#d81c20] hover:bg-[#b91518] text-white"
+            >
+              {bannerSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+              Save Banner
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Custom Milestone Dialog */}
       <Dialog open={customMilestoneDialogOpen} onOpenChange={handleCloseCustomMilestoneDialog}>
