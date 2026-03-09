@@ -40,6 +40,7 @@ interface AdminActionsCardProps {
   onDeleteOrder: () => void
   onSetBanner: () => void
   onSendNotification: () => void
+  onViewNotifications: () => void
 }
 
 function ActionRow({
@@ -95,6 +96,7 @@ export function AdminActionsCard({
   onDeleteOrder,
   onSetBanner,
   onSendNotification,
+  onViewNotifications,
 }: AdminActionsCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -171,6 +173,7 @@ export function AdminActionsCard({
         <ActionRow icon={<Download className="w-4 h-4" />} label="Download Invoice" onClick={onDownloadInvoice} />
         <ActionRow icon={<Megaphone className="w-4 h-4" />} label="Set Client Dashboard Banner" onClick={onSetBanner} />
         <ActionRow icon={<Bell className="w-4 h-4" />} label="Send Client Notification" onClick={onSendNotification} />
+        <ActionRow icon={<Bell className="w-4 h-4" />} label="View Sent Notifications" onClick={onViewNotifications} />
       </div>
 
       {/* Destructive zone */}

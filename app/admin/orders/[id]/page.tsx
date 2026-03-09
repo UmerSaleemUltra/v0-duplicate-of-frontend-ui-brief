@@ -52,6 +52,7 @@ import {
   Receipt,
   Calendar,
   ChevronRight,
+  Pencil,
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
@@ -187,6 +188,16 @@ export default function OrderDetailPage() {
   const [notifTitle, setNotifTitle] = useState("")
   const [notifMessage, setNotifMessage] = useState("")
   const [notifSending, setNotifSending] = useState(false)
+
+  // View/Edit Notifications state
+  const [viewNotifsDialogOpen, setViewNotifsDialogOpen] = useState(false)
+  const [sentNotifications, setSentNotifications] = useState<any[]>([])
+  const [notifsLoading, setNotifsLoading] = useState(false)
+  const [editingNotifId, setEditingNotifId] = useState<string | null>(null)
+  const [editNotifTitle, setEditNotifTitle] = useState("")
+  const [editNotifMessage, setEditNotifMessage] = useState("")
+  const [notifUpdating, setNotifUpdating] = useState(false)
+  const [notifDeleting, setNotifDeleting] = useState<string | null>(null)
 
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
@@ -2128,6 +2139,64 @@ export default function OrderDetailPage() {
     }
   }
 
+  const fetchSentNotifications = async () => {
+    if (!customer?.id) return
+    setNotifsLoading(true)
+    try {
+      const token = authService.getToken()
+      const res = await fetch(`/api/notifications?userId=${customer.id}&type=admin_message`, {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (res.ok) {
+        const data = await res.json()
+        setSentNotifications(data.data || [])
+      }
+    } catch {
+      toast({ title: "Error", description: "Failed to fetch notifications.", variant: "destructive" })
+    } finally {
+      setNotifsLoading(false)
+    }
+  }
+
+  const handleUpdateNotification = async () => {
+    if (!editingNotifId || !editNotifTitle.trim() || !editNotifMessage.trim()) return
+    setNotifUpdating(true)
+    try {
+      const token = authService.getToken()
+      const res = await fetch(`/api/notifications/${editingNotifId}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ title: editNotifTitle.trim(), message: editNotifMessage.trim() }),
+      })
+      if (!res.ok) throw new Error("Failed to update")
+      toast({ title: "Updated", description: "Notification updated successfully." })
+      setEditingNotifId(null)
+      fetchSentNotifications()
+    } catch {
+      toast({ title: "Error", description: "Failed to update notification.", variant: "destructive" })
+    } finally {
+      setNotifUpdating(false)
+    }
+  }
+
+  const handleDeleteNotification = async (id: string) => {
+    setNotifDeleting(id)
+    try {
+      const token = authService.getToken()
+      const res = await fetch(`/api/notifications/${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (!res.ok) throw new Error("Failed to delete")
+      toast({ title: "Deleted", description: "Notification deleted successfully." })
+      setSentNotifications((prev) => prev.filter((n) => n.id !== id))
+    } catch {
+      toast({ title: "Error", description: "Failed to delete notification.", variant: "destructive" })
+    } finally {
+      setNotifDeleting(null)
+    }
+  }
+
   const generateInvoice = () => {
     if (!order) return
 
@@ -2667,6 +2736,10 @@ export default function OrderDetailPage() {
                 setNotifMessage("")
                 setNotifDialogOpen(true)
               }}
+              onViewNotifications={() => {
+                setViewNotifsDialogOpen(true)
+                fetchSentNotifications()
+              }}
             />
           </TabsContent>
         </Tabs>
@@ -2796,6 +2869,106 @@ export default function OrderDetailPage() {
             >
               {notifSending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
               Send Notification
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Sent Notifications Dialog */}
+      <Dialog open={viewNotifsDialogOpen} onOpenChange={setViewNotifsDialogOpen}>
+        <DialogContent className="max-w-lg max-h-[80vh] overflow-hidden flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-semibold">Sent Notifications</DialogTitle>
+            <DialogDescription>
+              Admin notifications sent to {customer?.name || customer?.email || "this client"}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex-1 overflow-y-auto py-4 space-y-3">
+            {notifsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <Loader2 className="w-6 h-6 animate-spin text-gray-400" />
+              </div>
+            ) : sentNotifications.length === 0 ? (
+              <p className="text-center text-gray-500 py-8">No notifications sent yet.</p>
+            ) : (
+              sentNotifications.map((notif) => (
+                <div key={notif.id} className="border border-gray-200 rounded-lg p-4 space-y-2">
+                  {editingNotifId === notif.id ? (
+                    <>
+                      <Input
+                        value={editNotifTitle}
+                        onChange={(e) => setEditNotifTitle(e.target.value)}
+                        placeholder="Title"
+                        className="mb-2"
+                      />
+                      <Textarea
+                        value={editNotifMessage}
+                        onChange={(e) => setEditNotifMessage(e.target.value)}
+                        placeholder="Message"
+                        className="min-h-[80px] resize-none"
+                      />
+                      <div className="flex gap-2 mt-2">
+                        <Button
+                          size="sm"
+                          onClick={handleUpdateNotification}
+                          disabled={notifUpdating || !editNotifTitle.trim() || !editNotifMessage.trim()}
+                          className="bg-[#d81c20] hover:bg-[#b91518] text-white"
+                        >
+                          {notifUpdating ? <Loader2 className="w-3 h-3 animate-spin mr-1" /> : null}
+                          Save
+                        </Button>
+                        <Button size="sm" variant="outline" onClick={() => setEditingNotifId(null)} disabled={notifUpdating}>
+                          Cancel
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1">
+                          <h4 className="font-medium text-gray-900">{notif.title}</h4>
+                          <p className="text-sm text-gray-600 mt-1">{notif.message}</p>
+                          <p className="text-xs text-gray-400 mt-2">
+                            {notif.createdAt ? new Date(notif.createdAt).toLocaleString() : ""}
+                          </p>
+                        </div>
+                        <div className="flex gap-1 ml-2">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setEditingNotifId(notif.id)
+                              setEditNotifTitle(notif.title)
+                              setEditNotifMessage(notif.message)
+                            }}
+                            className="h-8 w-8 p-0"
+                          >
+                            <Pencil className="w-4 h-4" />
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleDeleteNotification(notif.id)}
+                            disabled={notifDeleting === notif.id}
+                            className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50"
+                          >
+                            {notifDeleting === notif.id ? (
+                              <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                              <Trash2 className="w-4 h-4" />
+                            )}
+                          </Button>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setViewNotifsDialogOpen(false)}>
+              Close
             </Button>
           </DialogFooter>
         </DialogContent>
