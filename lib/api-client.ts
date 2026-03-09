@@ -278,6 +278,16 @@ export class ApiClient {
       this.request(`/dashboard/client/${userId}`, { token, cache: true, cacheTime: 60000 }),
   }
 
+  // Banner APIs
+  static banners = {
+    getByCompany: (companyId: string, token: string) =>
+      this.request(`/banners?companyId=${companyId}`, { token, cache: false }),
+    create: (data: { companyId: string; message: string; type?: string }, token: string) =>
+      this.request("/banners", { method: "POST", body: data, token }),
+    remove: (companyId: string, token: string) =>
+      this.request(`/banners?companyId=${companyId}`, { method: "DELETE", token }),
+  }
+
   // Payment APIs
   static payments = {
     createIntent: (data: { amount: number; orderId: string; email?: string; name?: string }, token: string) =>

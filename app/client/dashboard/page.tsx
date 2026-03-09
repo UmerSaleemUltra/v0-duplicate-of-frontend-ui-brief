@@ -16,6 +16,10 @@ import {
   FileCheck,
   HashIcon,
   FileBarChart,
+  Info,
+  AlertTriangle,
+  XCircle,
+  X,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider } from "@/components/ui/tooltip"
@@ -29,6 +33,54 @@ import { useRouter } from "next/navigation"
 import { NoCompanyState } from "@/components/client/no-company-state"
 import { toast } from "@/components/ui/use-toast"
 import { OrderCelebration } from "@/components/celebration/order-celebration"
+
+const BANNER_STYLES = {
+  info: {
+    wrapper: "bg-blue-50 border-blue-200 text-blue-800",
+    icon: <Info className="w-4 h-4 shrink-0 text-blue-500" />,
+    dismiss: "text-blue-400 hover:text-blue-600",
+  },
+  warning: {
+    wrapper: "bg-amber-50 border-amber-200 text-amber-800",
+    icon: <AlertTriangle className="w-4 h-4 shrink-0 text-amber-500" />,
+    dismiss: "text-amber-400 hover:text-amber-600",
+  },
+  success: {
+    wrapper: "bg-green-50 border-green-200 text-green-800",
+    icon: <Check className="w-4 h-4 shrink-0 text-green-500" />,
+    dismiss: "text-green-400 hover:text-green-600",
+  },
+  error: {
+    wrapper: "bg-red-50 border-red-200 text-red-800",
+    icon: <XCircle className="w-4 h-4 shrink-0 text-red-500" />,
+    dismiss: "text-red-400 hover:text-red-600",
+  },
+}
+
+function BannerBar({
+  message,
+  type,
+  onDismiss,
+}: {
+  message: string
+  type: "info" | "warning" | "success" | "error"
+  onDismiss: () => void
+}) {
+  const styles = BANNER_STYLES[type] ?? BANNER_STYLES.info
+  return (
+    <div className={`flex items-start gap-3 rounded-xl border px-4 py-3 text-sm font-medium ${styles.wrapper}`}>
+      {styles.icon}
+      <p className="flex-1 leading-relaxed">{message}</p>
+      <button
+        onClick={onDismiss}
+        aria-label="Dismiss banner"
+        className={`shrink-0 transition-colors ${styles.dismiss}`}
+      >
+        <X className="w-4 h-4" />
+      </button>
+    </div>
+  )
+}
 
 export default function ClientDashboard() {
   const { selectedCompanyId, setSelectedCompanyId, companiesLoading, hasCompanies } = useSelectedCompany()
@@ -53,6 +105,8 @@ export default function ClientDashboard() {
   const [notifications, setNotifications] = useState<any[]>([])
   const [celebrationShown, setCelebrationShown] = useState(false)
   const [lastLoadedCompanyId, setLastLoadedCompanyId] = useState<string | null>(null)
+  const [banner, setBanner] = useState<{ message: string; type: "info" | "warning" | "success" | "error" } | null>(null)
+  const [bannerDismissed, setBannerDismissed] = useState(false)
 
   useEffect(() => {
     const checkAuth = () => {
@@ -125,15 +179,20 @@ export default function ClientDashboard() {
           return
         }
 
-        const [selectedComp, companyDocuments, companyMail, companyNotifications] = await Promise.all([
+        const [selectedComp, companyDocuments, companyMail, companyNotifications, bannerRes] = await Promise.all([
           ApiClient.companies.getById(selectedCompanyId, token),
           ApiClient.documents.getAll(token, selectedCompanyId),
           ApiClient.mail.getAll(token, selectedCompanyId),
           ApiClient.notifications.getAll(token, selectedCompanyId),
+          fetch(`/api/banners?companyId=${selectedCompanyId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((r) => r.json()),
         ])
 
         setCompany(selectedComp.data)
         setNotifications(companyNotifications.data || [])
+        setBanner(bannerRes?.data ?? null)
+        setBannerDismissed(false)
 
         const companyOrders = selectedComp.data?.orders || []
         if (companyOrders.length > 0) {
@@ -457,6 +516,14 @@ export default function ClientDashboard() {
         <OrderCelebration show={showCelebration} onClose={handleCloseCelebration} companyName={company?.name} />
 
         <div className="space-y-6 pb-16 sm:pb-24 lg:pb-8">
+          {banner && !bannerDismissed && (
+            <BannerBar
+              message={banner.message}
+              type={banner.type}
+              onDismiss={() => setBannerDismissed(true)}
+            />
+          )}
+
           <div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-2 text-slate-900 break-words">
               {isFirstVisit ? `Welcome, ${responsibleMemberName}!` : `Welcome back, ${responsibleMemberName}!`}
