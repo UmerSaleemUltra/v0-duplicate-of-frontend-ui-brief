@@ -20,12 +20,21 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url)
     const companyId = searchParams.get("companyId")
+    const targetUserId = searchParams.get("userId")
+    const type = searchParams.get("type")
 
     const { db } = await connectDB()
 
-    const query: any = { userId: decoded.userId }
+    // Admin can query notifications for any user
+    let query: any = { userId: decoded.userId }
+    if (decoded.role === "admin" && targetUserId) {
+      query = { userId: targetUserId }
+    }
     if (companyId) {
       query.$or = [{ "metadata.companyId": companyId }, { companyId: companyId }]
+    }
+    if (type) {
+      query.type = type
     }
 
     const notifications = await db.collection("notifications").find(query).sort({ createdAt: -1 }).limit(50).toArray()
