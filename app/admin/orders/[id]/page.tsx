@@ -2853,29 +2853,42 @@ export default function OrderDetailPage() {
                   <p className="text-xs text-muted-foreground">This link never expires.</p>
                 )}
 
-                <p className="text-xs text-muted-foreground">
-                  Anyone with this link can view the order status. Generating a new link will invalidate any previous links.
-                </p>
+  <p className="text-xs text-muted-foreground">
+  Anyone with this link can view the order status. Creating a new link will expire this one immediately.
+  </p>
               </div>
             ) : null}
           </div>
 
-          {/* Footer — stacked on mobile, row on sm+ */}
-          <div className="px-5 pb-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
-            <Button variant="outline" className="w-full sm:w-auto" onClick={() => setShareLinkDialogOpen(false)}>
-              Close
-            </Button>
-            {!shareUrl && !shareLinkLoading && (
-              <Button className="w-full sm:w-auto bg-[#ff0d13] hover:bg-[#e00b11] text-white" onClick={() => handleShareLink()}>
-                Generate Link
-              </Button>
-            )}
-            {shareUrl && (
-              <Button className="w-full sm:w-auto bg-[#ff0d13] hover:bg-[#e00b11] text-white" onClick={handleCopyShareLink}>
-                {shareLinkCopied ? "Copied!" : "Copy Link"}
-              </Button>
-            )}
-          </div>
+  {/* Footer — stacked on mobile, row on sm+ */}
+  <div className="px-5 pb-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+  <Button variant="outline" className="w-full sm:w-auto" onClick={() => setShareLinkDialogOpen(false)}>
+  Close
+  </Button>
+  {!shareUrl && !shareLinkLoading && (
+  <Button className="w-full sm:w-auto bg-[#ff0d13] hover:bg-[#e00b11] text-white" onClick={() => handleShareLink()}>
+  Generate Link
+  </Button>
+  )}
+  {shareUrl && (
+  <>
+  <Button
+  variant="outline"
+  className="w-full sm:w-auto"
+  onClick={() => {
+  setShareUrl(null)
+  setShareExpiresAt(null)
+  setShareExpiryDays("30")
+  }}
+  >
+  Create New Link
+  </Button>
+  <Button className="w-full sm:w-auto bg-[#ff0d13] hover:bg-[#e00b11] text-white" onClick={handleCopyShareLink}>
+  {shareLinkCopied ? "Copied!" : "Copy Link"}
+  </Button>
+  </>
+  )}
+  </div>
         </DialogContent>
       </Dialog>
 

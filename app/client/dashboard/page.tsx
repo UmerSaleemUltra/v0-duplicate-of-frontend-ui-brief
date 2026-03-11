@@ -660,6 +660,45 @@ export default function ClientDashboard() {
             </div>
           </div>
 
+          {/* ── Order Tracking ── */}
+          {order && (
+            <div className="bg-white rounded-2xl border border-slate-200 p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <Clock className="w-4 h-4 text-slate-500" />
+                <h2 className="text-sm font-semibold text-slate-700">Order Tracking</h2>
+                <span className="ml-auto text-xs text-slate-400 font-mono">{order.id}</span>
+              </div>
+              <div className="flex items-center gap-2 flex-wrap">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border capitalize ${
+                    order.status === "completed"
+                      ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                      : order.status === "processing"
+                        ? "bg-blue-50 border-blue-200 text-blue-700"
+                        : order.status === "cancelled"
+                          ? "bg-red-50 border-red-200 text-red-700"
+                          : "bg-amber-50 border-amber-200 text-amber-700"
+                  }`}
+                >
+                  {order.status === "processing" ? "In Progress" : order.status || "Pending"}
+                </span>
+                {order.packageType && (
+                  <span className="text-xs text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full">
+                    {order.packageType}
+                  </span>
+                )}
+                {order.state && (
+                  <span className="text-xs text-slate-500 bg-slate-50 border border-slate-200 px-2.5 py-1 rounded-full">
+                    {order.state}
+                  </span>
+                )}
+                <span className="text-xs text-slate-400 ml-auto">
+                  Updated {new Date(order.updatedAt || order.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </span>
+              </div>
+            </div>
+          )}
+
           <div className="bg-white rounded-2xl border border-slate-200 p-6 hover:shadow-lg transition-all duration-300">
             <div className="flex items-center justify-between mb-6">
               <div>
