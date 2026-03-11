@@ -199,6 +199,12 @@ export default function OrderDetailPage() {
   const [notifUpdating, setNotifUpdating] = useState(false)
   const [notifDeleting, setNotifDeleting] = useState<string | null>(null)
 
+  // Share Order Status Link state
+  const [shareLinkDialogOpen, setShareLinkDialogOpen] = useState(false)
+  const [shareUrl, setShareUrl] = useState<string | null>(null)
+  const [shareLinkLoading, setShareLinkLoading] = useState(false)
+  const [shareLinkCopied, setShareLinkCopied] = useState(false)
+
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
   const [itinSelectedMemberId, setItinSelectedMemberId] = useState("")
@@ -2040,6 +2046,41 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleShareLink = async () => {
+    if (!orderId) return
+    try {
+      setShareLinkLoading(true)
+      setShareLinkDialogOpen(true)
+      setShareUrl(null)
+      const token = authService.getToken()
+      if (!token) { router.push("/login"); return }
+
+      const res = await fetch(`/api/orders/${orderId}/share-token`, {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const json = await res.json()
+      if (!res.ok || !json.success) throw new Error(json.error || "Failed to generate link")
+      setShareUrl(json.data.shareUrl)
+    } catch (err: any) {
+      toast({ title: "Error", description: err.message || "Could not generate share link", variant: "destructive" })
+      setShareLinkDialogOpen(false)
+    } finally {
+      setShareLinkLoading(false)
+    }
+  }
+
+  const handleCopyShareLink = async () => {
+    if (!shareUrl) return
+    try {
+      await navigator.clipboard.writeText(shareUrl)
+      setShareLinkCopied(true)
+      setTimeout(() => setShareLinkCopied(false), 2000)
+    } catch {
+      toast({ title: "Copy failed", description: "Please copy the link manually", variant: "destructive" })
+    }
+  }
+
   const handleOpenBannerDialog = async () => {
     if (!company) return
     try {
@@ -2740,10 +2781,52 @@ export default function OrderDetailPage() {
                 setViewNotifsDialogOpen(true)
                 fetchSentNotifications()
               }}
+              onShareLink={handleShareLink}
             />
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Share Order Status Link Dialog */}
+      <Dialog open={shareLinkDialogOpen} onOpenChange={setShareLinkDialogOpen}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>Share Order Status Link</DialogTitle>
+            <DialogDescription>
+              Share this link with your client so they can track their order status without logging in.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {shareLinkLoading ? (
+              <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground text-sm">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Generating link&hellip;
+              </div>
+            ) : shareUrl ? (
+              <div className="space-y-3">
+                <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
+                  <span className="flex-1 text-xs text-foreground truncate select-all">{shareUrl}</span>
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Anyone with this link can view the order status. Generating a new link will invalidate any previous links.
+                </p>
+              </div>
+            ) : null}
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button variant="outline" onClick={() => setShareLinkDialogOpen(false)}>
+              Close
+            </Button>
+            {shareUrl && (
+              <Button onClick={handleCopyShareLink}>
+                {shareLinkCopied ? "Copied!" : "Copy Link"}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Manage Milestones Dialog */}
       <MilestonesDialog
