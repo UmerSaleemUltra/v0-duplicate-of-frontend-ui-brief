@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Package, LogOut, Shield } from "lucide-react"
 import { authService } from "@/lib/auth"
+import { AdminNotificationDropdown } from "@/components/admin/admin-notification-dropdown"
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -176,7 +177,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
         <div className="flex-1 text-sm font-semibold leading-6 text-gray-900">BuzzFiling Admin</div>
 
-        <div className="flex items-center gap-x-3">
+        <div className="flex items-center gap-x-2">
+          <AdminNotificationDropdown />
           <Avatar className="h-8 w-8">
             <AvatarFallback className="bg-[#ff3b30]/10 text-[#ff3b30] text-xs font-medium">
               {userInitials}
@@ -191,7 +193,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <div className="lg:pl-72">
         <div className="sticky top-0 z-40 hidden lg:flex h-16 shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-8 shadow-sm">
           <div className="flex flex-1 items-center justify-end gap-x-6">
-            <div className="flex items-center gap-x-3">
+            <div className="flex items-center gap-x-4">
+              <AdminNotificationDropdown />
+              <div className="h-6 w-px bg-gray-200" />
               <Avatar className="h-8 w-8">
                 <AvatarFallback className="bg-[#ff3b30]/10 text-[#ff3b30] text-xs font-medium">
                   {userInitials}
