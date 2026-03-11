@@ -87,13 +87,21 @@ export function AdminNotificationDropdown() {
       const token = authService.getToken()
       if (!token) return
 
-      await fetch(`/api/notifications/${id}/mark-read`, {
-        method: "POST",
+      // Optimistically update UI first
+      setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true, isRead: true } : n)))
+
+      const res = await fetch(`/api/admin/notifications/${id}/mark-read`, {
+        method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
         },
       })
-      setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true, isRead: true } : n)))
+
+      if (!res.ok) {
+        // Revert optimistic update on failure
+        setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: false, isRead: false } : n)))
+        console.error("Error marking notification as read:", await res.text())
+      }
     } catch (error) {
       console.error("Error marking notification as read:", error)
     }
@@ -104,21 +112,24 @@ export function AdminNotificationDropdown() {
       const token = authService.getToken()
       if (!token) return
 
-      const unreadNotifications = notifications.filter((n) => !n.read && !n.isRead)
-      await Promise.all(
-        unreadNotifications.map((n) =>
-          fetch(`/api/notifications/${n.id}/mark-read`, {
-            method: "POST",
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          })
-        )
-      )
+      // Optimistically update UI first
+      setNotifications((prev) => prev.map((n) => ({ ...n, read: true, isRead: true })))
 
-      setNotifications(notifications.map((n) => ({ ...n, read: true, isRead: true })))
+      const res = await fetch(`/api/admin/notifications/mark-all-read`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!res.ok) {
+        // Revert optimistic update on failure by reloading
+        loadNotifications()
+        console.error("Error marking all notifications as read:", await res.text())
+      }
     } catch (error) {
       console.error("Error marking all as read:", error)
+      loadNotifications()
     }
   }
 
