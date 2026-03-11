@@ -39,13 +39,16 @@ export default function PricingSection() {
       <section id="pricing" className="w-full flex items-center justify-center px-4 sm:px-6 py-16 md:py-20 lg:py-24">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12 sm:mb-16 lg:mb-20">
-            <div className="flex justify-center mb-4">
-              <div className="inline-flex items-center gap-2 px-0 py-2">
-                <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Pricing Plans</span>
-              </div>
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium mb-8 border border-red-200 text-[#d81c20] bg-white">
+              <span className="w-2 h-2 rounded-full bg-emerald-500" />
+              Pricing Plans
             </div>
-            <h2 className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4">Simple, Transparent Pricing</h2>
-            <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-6">
+
+            <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-balance mb-4 text-slate-900">
+              Simple, <span className="text-[#d81c20]">Transparent</span> Pricing
+            </h2>
+            <p className="text-base leading-relaxed max-w-lg mx-auto text-slate-500">
               Transparent plans with no hidden fees or surprises.
             </p>
           </div>

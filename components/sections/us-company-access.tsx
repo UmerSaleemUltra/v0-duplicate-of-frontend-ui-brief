@@ -13,7 +13,7 @@ const platforms = [
 
 export default function UsCompanyAccess() {
   return (
-    <section className="py-20 px-4 bg-white">
+    <section className="pt-16 pb-8 px-4 bg-white">
       <div className="max-w-5xl mx-auto text-center">
         {/* Badge */}
         <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium mb-8 border border-red-200 text-[#d81c20] bg-white">
