@@ -52,23 +52,7 @@ export default function UsCompanyAccess() {
           ))}
         </div>
 
-        {/* CTA Link */}
-        <div className="mt-10">
-          <div className="inline-flex items-center gap-2 px-6 py-3 rounded-full text-sm border border-slate-200 bg-white">
-            <span className="w-2 h-2 rounded-full bg-emerald-500" />
-            <span className="text-slate-500">Ready to get started?</span>
-            <a
-              href="#home"
-              onClick={(e) => {
-                e.preventDefault()
-                document.querySelector("#home")?.scrollIntoView({ behavior: "smooth" })
-              }}
-              className="font-bold text-[#d81c20] transition-opacity hover:opacity-80"
-            >
-              Start Your US Company
-            </a>
-          </div>
-        </div>
+
       </div>
     </section>
   )
