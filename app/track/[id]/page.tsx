@@ -15,6 +15,8 @@ import {
   XCircle,
   AlertCircle,
   RefreshCw,
+  LayoutDashboard,
+  ArrowRight,
 } from "lucide-react"
 
 // ─────────────────────────────────────────────
@@ -45,6 +47,7 @@ interface TrackData {
     state?: string
     createdAt: string
     updatedAt: string
+    shareTokenExpiresAt?: string | null
   }
   company: {
     name: string
@@ -391,6 +394,45 @@ export default function TrackOrderPage() {
               )}
             </dl>
           </div>
+        )}
+
+        {/* ─── Dashboard CTA ──────────────────────── */}
+        <div className="bg-stone-900 rounded-2xl overflow-hidden">
+          <div className="px-6 py-5 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <div className="w-9 h-9 rounded-lg bg-white/10 flex items-center justify-center shrink-0 mt-0.5">
+                <LayoutDashboard className="w-4.5 h-4.5 text-white" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-white leading-snug">Access Your Dashboard</p>
+                <p className="text-xs text-stone-400 mt-0.5 leading-relaxed">
+                  Log in to your Buzz Filing account for documents, mailroom, and full order details.
+                </p>
+              </div>
+            </div>
+            <a
+              href="https://www.buzzfiling.com/login"
+              className="inline-flex items-center justify-center gap-1.5 shrink-0 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-stone-900 hover:bg-stone-100 transition-colors"
+            >
+              Go to Dashboard
+              <ArrowRight className="w-3.5 h-3.5" />
+            </a>
+          </div>
+        </div>
+
+        {/* ─── Link expiry notice ─────────────────── */}
+        {data.order.shareTokenExpiresAt && (
+          <p className="text-center text-xs text-stone-400">
+            This tracking link expires on{" "}
+            <span className="font-medium text-stone-500">
+              {new Date(data.order.shareTokenExpiresAt).toLocaleDateString("en-US", {
+                year: "numeric",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+            .
+          </p>
         )}
 
         {/* ─── Footer ─────────────────────────────── */}
