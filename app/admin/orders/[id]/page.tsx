@@ -204,6 +204,8 @@ export default function OrderDetailPage() {
   const [shareUrl, setShareUrl] = useState<string | null>(null)
   const [shareLinkLoading, setShareLinkLoading] = useState(false)
   const [shareLinkCopied, setShareLinkCopied] = useState(false)
+  const [shareExpiryDays, setShareExpiryDays] = useState<string>("30")
+  const [shareExpiresAt, setShareExpiresAt] = useState<string | null>(null)
 
   const [einValue, setEinValue] = useState("")
   const [itinValue, setItinValue] = useState("")
@@ -2046,22 +2048,29 @@ export default function OrderDetailPage() {
     }
   }
 
-  const handleShareLink = async () => {
+  const handleShareLink = async (expiryDays?: string) => {
     if (!orderId) return
     try {
       setShareLinkLoading(true)
       setShareLinkDialogOpen(true)
       setShareUrl(null)
+      setShareExpiresAt(null)
       const token = authService.getToken()
       if (!token) { router.push("/login"); return }
 
+      const days = expiryDays ?? shareExpiryDays
+      const body: Record<string, any> = {}
+      if (days !== "never") body.expiryDays = Number(days)
+
       const res = await fetch(`/api/orders/${orderId}/share-token`, {
         method: "POST",
-        headers: { Authorization: `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify(body),
       })
       const json = await res.json()
       if (!res.ok || !json.success) throw new Error(json.error || "Failed to generate link")
       setShareUrl(json.data.shareUrl)
+      setShareExpiresAt(json.data.shareTokenExpiresAt ?? null)
     } catch (err: any) {
       toast({ title: "Error", description: err.message || "Could not generate share link", variant: "destructive" })
       setShareLinkDialogOpen(false)
@@ -2789,25 +2798,61 @@ export default function OrderDetailPage() {
 
       {/* Share Order Status Link Dialog */}
       <Dialog open={shareLinkDialogOpen} onOpenChange={setShareLinkDialogOpen}>
-        <DialogContent className="max-w-md">
-          <DialogHeader>
-            <DialogTitle>Share Order Status Link</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="w-[calc(100vw-2rem)] max-w-md rounded-xl p-0 overflow-hidden">
+          <DialogHeader className="px-5 pt-5 pb-0">
+            <DialogTitle className="text-base font-semibold">Share Order Status Link</DialogTitle>
+            <DialogDescription className="text-sm mt-1">
               Share this link with your client so they can track their order status without logging in.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4 py-2">
+          <div className="px-5 py-4 space-y-4">
+            {/* Expiry selector — shown before link is generated */}
+            {!shareUrl && !shareLinkLoading && (
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-muted-foreground">Link Expiry</label>
+                <Select value={shareExpiryDays} onValueChange={setShareExpiryDays}>
+                  <SelectTrigger className="w-full h-9 text-sm">
+                    <SelectValue placeholder="Select expiry" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="7">7 days</SelectItem>
+                    <SelectItem value="30">30 days</SelectItem>
+                    <SelectItem value="90">90 days</SelectItem>
+                    <SelectItem value="never">Never expires</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
             {shareLinkLoading ? (
-              <div className="flex items-center justify-center py-6 gap-2 text-muted-foreground text-sm">
-                <Loader2 className="w-4 h-4 animate-spin" />
-                Generating link&hellip;
+              <div className="flex items-center justify-center py-8 gap-2 text-muted-foreground text-sm">
+                <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+                <span>Generating link&hellip;</span>
               </div>
             ) : shareUrl ? (
               <div className="space-y-3">
-                <div className="flex items-center gap-2 rounded-lg border bg-muted/40 px-3 py-2">
-                  <span className="flex-1 text-xs text-foreground truncate select-all">{shareUrl}</span>
+                {/* URL box — wraps on small screens, selectable */}
+                <div className="rounded-lg border bg-muted/40 px-3 py-2.5">
+                  <p className="text-xs text-foreground break-all select-all leading-relaxed">{shareUrl}</p>
                 </div>
+
+                {/* Expiry badge */}
+                {shareExpiresAt ? (
+                  <p className="text-xs text-muted-foreground">
+                    Expires:{" "}
+                    <span className="font-medium text-foreground">
+                      {new Date(shareExpiresAt).toLocaleDateString("en-US", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </p>
+                ) : (
+                  <p className="text-xs text-muted-foreground">This link never expires.</p>
+                )}
+
                 <p className="text-xs text-muted-foreground">
                   Anyone with this link can view the order status. Generating a new link will invalidate any previous links.
                 </p>
@@ -2815,16 +2860,22 @@ export default function OrderDetailPage() {
             ) : null}
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setShareLinkDialogOpen(false)}>
+          {/* Footer — stacked on mobile, row on sm+ */}
+          <div className="px-5 pb-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button variant="outline" className="w-full sm:w-auto" onClick={() => setShareLinkDialogOpen(false)}>
               Close
             </Button>
+            {!shareUrl && !shareLinkLoading && (
+              <Button className="w-full sm:w-auto bg-[#ff0d13] hover:bg-[#e00b11] text-white" onClick={() => handleShareLink()}>
+                Generate Link
+              </Button>
+            )}
             {shareUrl && (
-              <Button onClick={handleCopyShareLink}>
+              <Button className="w-full sm:w-auto bg-[#ff0d13] hover:bg-[#e00b11] text-white" onClick={handleCopyShareLink}>
                 {shareLinkCopied ? "Copied!" : "Copy Link"}
               </Button>
             )}
-          </DialogFooter>
+          </div>
         </DialogContent>
       </Dialog>
 

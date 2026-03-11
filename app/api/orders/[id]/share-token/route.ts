@@ -36,12 +36,30 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     // Generate a cryptographically secure random token
     const shareToken = randomBytes(24).toString("hex")
 
+    // Parse optional expiry from body (days: 7 | 30 | 90 | null = never)
+    let shareTokenExpiresAt: string | null = null
+    try {
+      const body = await req.json().catch(() => ({}))
+      const days = body?.expiryDays
+      if (days && typeof days === "number" && days > 0) {
+        const exp = new Date()
+        exp.setDate(exp.getDate() + days)
+        shareTokenExpiresAt = exp.toISOString()
+      }
+    } catch (_) {}
+
+    const tokenFields = {
+      shareToken,
+      shareTokenExpiresAt,
+      updatedAt: new Date().toISOString(),
+    }
+
     // Try updating standalone orders collection
     let result = await db
       .collection("orders")
       .findOneAndUpdate(
         { _id: new ObjectId(id) },
-        { $set: { shareToken, updatedAt: new Date().toISOString() } },
+        { $set: tokenFields },
         { returnDocument: "after" },
       )
 
@@ -61,8 +79,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           const updatedOrders = [...company.orders]
           updatedOrders[embeddedIndex] = {
             ...updatedOrders[embeddedIndex],
-            shareToken,
-            updatedAt: new Date().toISOString(),
+            ...tokenFields,
           }
 
           await db.collection("companies").updateOne(
@@ -86,7 +103,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return addSecurityHeaders(
       NextResponse.json({
         success: true,
-        data: { shareToken, shareUrl },
+        data: { shareToken, shareUrl, shareTokenExpiresAt },
       }),
     )
   } catch (error) {

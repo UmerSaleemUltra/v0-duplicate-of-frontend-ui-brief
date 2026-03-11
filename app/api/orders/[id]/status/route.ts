@@ -60,6 +60,17 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return addSecurityHeaders(NextResponse.json({ error: "Invalid or expired token" }, { status: 403 }))
     }
 
+    // Check expiry if set
+    if (orderDoc.shareTokenExpiresAt) {
+      const expiresAt = new Date(orderDoc.shareTokenExpiresAt)
+      if (expiresAt < new Date()) {
+        return addSecurityHeaders(NextResponse.json({ error: "This tracking link has expired." }, { status: 410 }))
+      }
+    }
+
+    // Expose expiry to client (so tracking page can show it)
+    const shareTokenExpiresAt = orderDoc.shareTokenExpiresAt ?? null
+
     // Fetch associated company if not already loaded
     if (!companyDoc && orderDoc.companyId) {
       try {
@@ -79,6 +90,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       state: orderDoc.state,
       createdAt: orderDoc.createdAt,
       updatedAt: orderDoc.updatedAt,
+      shareTokenExpiresAt,
     }
 
     const safeCompany = companyDoc
