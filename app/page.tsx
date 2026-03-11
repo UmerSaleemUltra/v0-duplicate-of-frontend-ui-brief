@@ -1,6 +1,7 @@
 import Navbar from "@/components/sections/navbar"
 import HeroSection from "@/components/sections/hero"
 import Brands from "@/components/sections/brands"
+import UsCompanyAccess from "@/components/sections/us-company-access"
 import HowItWorks from "@/components/sections/how-it-works"
 import GlobalFounders from "@/components/sections/global-founders"
 import PricingSection from "@/components/sections/pricing"
@@ -210,6 +211,7 @@ export default function LandingPage() {
       <Navbar />
       <HeroSection />
       <Brands />
+      <UsCompanyAccess />
       <PricingSection />
       <ServicesSection />
       <HowItWorks />
