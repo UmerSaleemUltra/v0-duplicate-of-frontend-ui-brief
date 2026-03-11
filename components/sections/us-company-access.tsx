@@ -13,27 +13,8 @@ const platforms = [
 
 export default function UsCompanyAccess() {
   return (
-    <section className="pt-16 pb-8 px-4 bg-white">
+    <section className="pt-8 pb-16 px-4 bg-white">
       <div className="max-w-5xl mx-auto text-center">
-        {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-medium mb-8 border border-red-200 text-[#d81c20] bg-white">
-          <span className="w-2 h-2 rounded-full bg-emerald-500" />
-          Trusted by Global Entrepreneurs
-        </div>
-
-        {/* Heading with brand gradient on accent */}
-        <h2 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold leading-tight text-balance mb-4 text-slate-900">
-          With a{" "}
-          <span className="text-[#d81c20]">US Company</span>
-          <br />
-          you can access
-        </h2>
-
-        {/* Subtitle */}
-        <p className="text-base leading-relaxed max-w-lg mx-auto mb-12 text-slate-500">
-          Unlock the power of US business infrastructure and access the world&apos;s leading platforms and services
-        </p>
-
         {/* Platform Grid */}
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
           {platforms.map(({ name, src, filter }) => (
