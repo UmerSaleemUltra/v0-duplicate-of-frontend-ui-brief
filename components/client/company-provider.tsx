@@ -8,7 +8,6 @@ import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 
 const SELECTED_COMPANY_KEY = "selectedCompanyId"
-const COMPANIES_LOADED_KEY = "companiesLoaded"
 
 const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing", "/services", "/auth", "/login", "/checkout", "/forgot-password", "/reset-password", "/blog"]
 
@@ -16,8 +15,9 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
   const [companies, setCompanies] = useState<any[]>([])
+  // loading is only true for the very first fetch — never reset on tab-switch or refresh
   const [loading, setLoading] = useState(true)
-  const [companiesLoaded, setCompaniesLoaded] = useState(false)
+  const [initialLoadDone, setInitialLoadDone] = useState(false)
 
   const isPublicPage = PUBLIC_PAGES.includes(pathname)
 
@@ -27,8 +27,8 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
-    if (companiesLoaded) {
-      setLoading(false)
+    // Only run the full loading sequence once per session
+    if (initialLoadDone) {
       return
     }
 
@@ -39,10 +39,9 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
         if (!currentUser || !token) {
           setLoading(false)
+          setInitialLoadDone(true)
           return
         }
-
-        console.log("[v0] CompanyProvider: Loading companies for user", currentUser.id)
 
         const response = await ApiClient.companies.getAll(token)
 
@@ -53,47 +52,37 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
           return companyUserId === currentUser.id
         })
 
-        console.log("[v0] CompanyProvider: Found", userCompanies.length, "companies")
-
         setCompanies(userCompanies)
-        setCompaniesLoaded(true)
 
-        // Auto-select company logic: if selectedCompanyId exists, use it; otherwise use first company
+        // Auto-select company logic: prefer stored, then first
         if (userCompanies.length > 0) {
           const storedCompanyId = localStorage.getItem(SELECTED_COMPANY_KEY)
           
           if (storedCompanyId) {
-            // Check if stored company exists in user's companies
             const companyExists = userCompanies.some((c: any) => (c.id || c._id) === storedCompanyId)
             if (companyExists) {
-              console.log("[v0] CompanyProvider: Using stored company", storedCompanyId)
               setSelectedCompanyId(storedCompanyId)
             } else {
-              // Stored company not found, select first company
               const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
-              console.log("[v0] CompanyProvider: Stored company not found, selecting first", firstCompanyId)
               setSelectedCompanyId(firstCompanyId)
               localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
             }
           } else {
-            // No stored company, select first company
             const firstCompanyId = userCompanies[0].id || userCompanies[0]._id
-            console.log("[v0] CompanyProvider: No stored company, selecting first", firstCompanyId)
             setSelectedCompanyId(firstCompanyId)
             localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
           }
-        } else {
-          console.log("[v0] CompanyProvider: No companies found for user")
         }
       } catch (error) {
         console.error("[v0] CompanyProvider: Error loading companies:", error)
       } finally {
         setLoading(false)
+        setInitialLoadDone(true)
       }
     }
 
     loadCompanies()
-  }, [isPublicPage, companiesLoaded])
+  }, [isPublicPage, initialLoadDone])
 
   const handleSetSelectedCompanyId = useCallback((id: string | null) => {
     setSelectedCompanyId(id)

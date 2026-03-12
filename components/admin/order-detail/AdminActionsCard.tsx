@@ -15,7 +15,6 @@ import {
   ChevronRight,
   Megaphone,
   Bell,
-  Link2,
 } from "lucide-react"
 
 interface AdminActionsCardProps {
@@ -42,7 +41,6 @@ interface AdminActionsCardProps {
   onSetBanner: () => void
   onSendNotification: () => void
   onViewNotifications: () => void
-  onShareLink: () => void
 }
 
 function ActionRow({
@@ -99,7 +97,6 @@ export function AdminActionsCard({
   onSetBanner,
   onSendNotification,
   onViewNotifications,
-  onShareLink,
 }: AdminActionsCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -174,7 +171,6 @@ export function AdminActionsCard({
           loadingLabel="Loading..."
         />
         <ActionRow icon={<Download className="w-4 h-4" />} label="Download Invoice" onClick={onDownloadInvoice} />
-        <ActionRow icon={<Link2 className="w-4 h-4" />} label="Share Order Status Link" onClick={onShareLink} />
         <ActionRow icon={<Megaphone className="w-4 h-4" />} label="Set Client Dashboard Banner" onClick={onSetBanner} />
         <ActionRow icon={<Bell className="w-4 h-4" />} label="Send Client Notification" onClick={onSendNotification} />
         <ActionRow icon={<Bell className="w-4 h-4" />} label="View Sent Notifications" onClick={onViewNotifications} />
