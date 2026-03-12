@@ -205,16 +205,10 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     }
   }, [selectedCompanyId, setSelectedCompanyId])
 
-  useEffect(() => {
-    const handleFocus = () => {
-      if (document.visibilityState === "visible") {
-        window.dispatchEvent(new Event("client-dashboard-refresh"))
-      }
-    }
-
-    document.addEventListener("visibilitychange", handleFocus)
-    return () => document.removeEventListener("visibilitychange", handleFocus)
-  }, [])
+  // Intentionally removed: the visibilitychange listener was triggering a full
+  // company re-fetch (and skeleton re-render) every time the user switched tabs.
+  // The topbar refresh button still dispatches "client-dashboard-refresh" for
+  // manual data refreshes without showing the skeleton.
 
   useEffect(() => {
     let ticking = false

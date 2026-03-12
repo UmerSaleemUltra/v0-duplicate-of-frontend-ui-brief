@@ -107,6 +107,7 @@ export default function ClientDashboard() {
   const [lastLoadedCompanyId, setLastLoadedCompanyId] = useState<string | null>(null)
   const [banner, setBanner] = useState<{ message: string; type: "info" | "warning" | "success" | "error" } | null>(null)
   const [bannerDismissed, setBannerDismissed] = useState(false)
+  const [isSilentRefreshing, setIsSilentRefreshing] = useState(false)
 
   useEffect(() => {
     const checkAuth = () => {
@@ -165,7 +166,6 @@ export default function ClientDashboard() {
     }
 
     if (dataLoaded && selectedCompanyId === lastLoadedCompanyId) {
-      console.log("[v0] Data already loaded for company:", selectedCompanyId)
       return
     }
 
@@ -222,6 +222,50 @@ export default function ClientDashboard() {
     loadData()
   }, [isAuthenticating, companiesLoading, hasCompanies, selectedCompanyId, lastLoadedCompanyId, dataLoaded, router])
 
+  // Silent background refresh — no skeleton, just update data in place
+  useEffect(() => {
+    const silentRefresh = async () => {
+      if (!selectedCompanyId || isSilentRefreshing) return
+      const token = authService.getToken()
+      if (!token) return
+
+      setIsSilentRefreshing(true)
+      try {
+        const [selectedComp, companyDocuments, companyMail, companyNotifications, bannerRes] = await Promise.all([
+          ApiClient.companies.getById(selectedCompanyId, token),
+          ApiClient.documents.getAll(token, selectedCompanyId),
+          ApiClient.mail.getAll(token, selectedCompanyId),
+          ApiClient.notifications.getAll(token, selectedCompanyId),
+          fetch(`/api/banners?companyId=${selectedCompanyId}`, {
+            headers: { Authorization: `Bearer ${token}` },
+          }).then((r) => r.json()),
+        ])
+
+        setCompany(selectedComp.data)
+        setNotifications(companyNotifications.data || [])
+        setBanner(bannerRes?.data ?? null)
+
+        const companyOrders = selectedComp.data?.orders || []
+        if (companyOrders.length > 0) {
+          setOrder(companyOrders[0])
+        }
+
+        setDocuments(companyDocuments.data || [])
+        setMailItems(companyMail.data || [])
+        setLastLoadedCompanyId(selectedCompanyId)
+        setDataLoaded(true)
+      } catch (error) {
+        console.error("[v0] Silent refresh failed:", error)
+      } finally {
+        setIsSilentRefreshing(false)
+      }
+    }
+
+    const handleRefresh = () => silentRefresh()
+    window.addEventListener("client-dashboard-refresh", handleRefresh)
+    return () => window.removeEventListener("client-dashboard-refresh", handleRefresh)
+  }, [selectedCompanyId, isSilentRefreshing])
+
   useEffect(() => {
     if (!company) return
 
@@ -235,32 +279,19 @@ export default function ClientDashboard() {
   ]
 
     const customMilestoneValues = Object.values(company.milestones?.custom || {}).map((m: any) => m.completed)
-    const allMilestones = [...defaultMilestones, ...customMilestoneValues]
 
-    console.log("[v0] All milestones values:", allMilestones)
-    console.log("[v0] Company milestones:", company.milestones)
-    console.log("[v0] Default milestones:", defaultMilestones)
-    console.log("[v0] Custom milestone values:", customMilestoneValues)
-
-  const allDefaultMilestonesComplete =
-    defaultMilestones.length === 6 &&
-    defaultMilestones.every((m) => m === true) &&
-    defaultMilestones.filter((m) => m === undefined || m === null).length === 0
-
-    console.log("[v0] All default milestones complete?", allDefaultMilestonesComplete)
-    console.log("[v0] Celebration already shown?", celebrationShown)
+    const allDefaultMilestonesComplete =
+      defaultMilestones.length === 6 &&
+      defaultMilestones.every((m) => m === true) &&
+      defaultMilestones.filter((m) => m === undefined || m === null).length === 0
 
     if (allDefaultMilestonesComplete && !celebrationShown) {
       const celebrationKey = `celebration_shown_${company.id}`
       const wasShown = localStorage.getItem(celebrationKey)
 
-      console.log("[v0] Celebration key:", celebrationKey, "Was shown:", wasShown)
-
       if (!wasShown) {
-        console.log("[v0] All milestones completed! Showing celebration...")
         setShowCelebration(true)
         setCelebrationShown(true)
-
         localStorage.setItem(celebrationKey, "true")
 
         const sendCompletionNotification = async () => {
@@ -284,27 +315,16 @@ export default function ClientDashboard() {
               )
             }
           } catch (error) {
-            console.log("[v0] Error sending completion notification:", error)
+            console.error("[v0] Error sending completion notification:", error)
           }
         }
 
         sendCompletionNotification()
-      } else {
-        console.log("[v0] Celebration already shown for this company")
       }
-    } else {
-      console.log("[v0] Celebration conditions not met:")
-      console.log("  - Milestones length:", defaultMilestones.length)
-      console.log(
-        "  - All true:",
-        defaultMilestones.every((m) => m === true),
-      )
-      console.log("  - No undefined/null:", defaultMilestones.filter((m) => m === undefined || m === null).length === 0)
     }
   }, [company, celebrationShown])
 
   const handleCloseCelebration = () => {
-    console.log("[v0] Closing celebration modal")
     setShowCelebration(false)
   }
 
@@ -451,8 +471,6 @@ export default function ClientDashboard() {
   }
 
   const handleExitAdminMode = () => {
-    console.log("[v0] Exiting admin mode")
-
     if (typeof window !== "undefined") {
       const adminToken = sessionStorage.getItem("admin_impersonation_token")
       const adminDataStr = sessionStorage.getItem("admin_impersonation_data")
@@ -460,8 +478,6 @@ export default function ClientDashboard() {
       if (adminToken && adminDataStr) {
         try {
           const adminData = JSON.parse(adminDataStr)
-          console.log("[v0] Restoring admin session:", adminData.email)
-
           authService.setAuth(adminToken, adminData)
 
           sessionStorage.removeItem("admin_impersonation_token")
@@ -470,8 +486,6 @@ export default function ClientDashboard() {
           sessionStorage.removeItem("impersonating_user_name")
           sessionStorage.removeItem("impersonating_user_email")
           localStorage.removeItem("selectedCompanyId")
-
-          console.log("[v0] Admin session restored successfully")
 
           router.push("/admin")
           return
