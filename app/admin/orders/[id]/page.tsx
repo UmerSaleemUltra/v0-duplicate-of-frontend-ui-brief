@@ -2199,11 +2199,6 @@ export default function OrderDetailPage() {
 
   const generateInvoice = () => {
     if (!order) return
-    router.push(`/admin/orders/${order.id}/invoice`)
-  }
-
-  const _generateInvoice_legacy = () => {
-    if (!order) return
 
     const invoiceHTML = `
 <!DOCTYPE html>
