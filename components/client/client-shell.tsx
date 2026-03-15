@@ -290,7 +290,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-background">
+    <div className="min-h-screen flex bg-[#fff9f0]">
       {!isPageReady && (
         <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
           <div className="w-full max-w-md space-y-4 p-4">
@@ -534,15 +534,14 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             </AlertDialogContent>
           </AlertDialog>
 
-          <div className="flex-1 flex flex-col min-w-0">
-            <div className="z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
+          <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-br from-[#fff5f5] via-white to-[#fff9f0]">
+            <div className="z-20 bg-white/80 backdrop-blur-sm border-b border-slate-200/70 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
               <div className="flex items-center justify-end gap-2">
                 <Button
                   variant="ghost"
                   size="icon"
                   onClick={async () => {
                     setIsRefreshing(true)
-                    console.log("[v0] Manual refresh triggered")
                     window.dispatchEvent(new Event("client-dashboard-refresh"))
                     setTimeout(() => {
                       setIsRefreshing(false)
@@ -567,7 +566,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                 </Button>
               </div>
             </div>
-            <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full bg-white">{children}</main>
+            <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">{children}</main>
           </div>
         </>
       )}
