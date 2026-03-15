@@ -683,7 +683,8 @@ export default function AdminDashboard() {
           </div>
           <div className="mt-4 pt-4 border-t border-slate-100">
             <Button
-              className="w-full bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white border-0 rounded-xl hover:shadow-lg transition-all"
+              variant="outline"
+              className="w-full"
               onClick={() => {
                 setOrdersDrawerOpen(false)
                 router.push("/admin/orders")
