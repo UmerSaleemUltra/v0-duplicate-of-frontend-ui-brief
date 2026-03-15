@@ -36,6 +36,7 @@ import {
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 
 const US_STATES = [
   "Alabama",
@@ -643,16 +644,44 @@ export default function OrdersPage() {
                     return (
                       <tr key={order.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-6 py-4">
-                          <code className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
-                            {order.id?.substring(0, 8)}…
-                          </code>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <code className="text-xs text-slate-500 bg-slate-100 px-2 py-0.5 rounded cursor-default select-none">
+                                {order.id?.substring(0, 8)}…
+                              </code>
+                            </TooltipTrigger>
+                            <TooltipContent side="top" className="font-mono text-xs max-w-xs break-all">
+                              {order.id || "N/A"}
+                            </TooltipContent>
+                          </Tooltip>
                         </td>
                         <td className="px-6 py-4">
-                          <p className="text-sm font-medium text-slate-900">{order.customerName || "N/A"}</p>
-                          <p className="text-xs text-slate-400">{order.customerEmail || "N/A"}</p>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="text-sm font-medium text-slate-900 max-w-[140px] truncate cursor-default">{order.customerName || "N/A"}</p>
+                            </TooltipTrigger>
+                            {(order.customerName?.length ?? 0) > 18 && (
+                              <TooltipContent side="top">{order.customerName}</TooltipContent>
+                            )}
+                          </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <p className="text-xs text-slate-400 max-w-[140px] truncate cursor-default">{order.customerEmail || "N/A"}</p>
+                            </TooltipTrigger>
+                            {(order.customerEmail?.length ?? 0) > 20 && (
+                              <TooltipContent side="top">{order.customerEmail}</TooltipContent>
+                            )}
+                          </Tooltip>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-slate-700">{order.companyName || "N/A"}</span>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="text-sm text-slate-700 max-w-[130px] truncate block cursor-default">{order.companyName || "N/A"}</span>
+                            </TooltipTrigger>
+                            {(order.companyName?.length ?? 0) > 18 && (
+                              <TooltipContent side="top">{order.companyName}</TooltipContent>
+                            )}
+                          </Tooltip>
                         </td>
                         <td className="px-6 py-4">
                           <span className="text-xs text-slate-500">{order.state || "—"}</span>
