@@ -53,6 +53,7 @@ import {
   Calendar,
   ChevronRight,
   Pencil,
+  UploadCloud,
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
@@ -207,6 +208,8 @@ export default function OrderDetailPage() {
   const [newMilestoneTitle, setNewMilestoneTitle] = useState("")
   const [newMilestoneDescription, setNewMilestoneDescription] = useState("")
   const [uploadDocType, setUploadDocType] = useState("general")
+  const [uploadDocTitle, setUploadDocTitle] = useState("")
+  const [uploadDocFiles, setUploadDocFiles] = useState<FileList | null>(null)
 
   const [mailingAddress, setMailingAddress] = useState({
     street: "",
@@ -818,15 +821,16 @@ export default function OrderDetailPage() {
     }
   }
 
-  const handleDocumentUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file || !company) return
+  const handleDocumentUpload = async () => {
+    if (!uploadDocFiles || uploadDocFiles.length === 0 || !company) return
 
     setDocUploading(true)
     try {
       const formData = new FormData()
-      formData.append("file", file)
+      Array.from(uploadDocFiles).forEach((file) => formData.append("files", file))
+      if (uploadDocTitle.trim()) formData.append("title", uploadDocTitle.trim())
       formData.append("type", uploadDocType)
+      formData.append("category", uploadDocType)
       formData.append("companyId", company.id)
       formData.append("userId", customer?.id || "")
       formData.append("orderId", order?.id || "")
@@ -844,12 +848,22 @@ export default function OrderDetailPage() {
         throw new Error(errorData.message || "Failed to upload document")
       }
 
+      const fileNames =
+        uploadDocFiles.length === 1
+          ? uploadDocFiles[0].name
+          : `${uploadDocFiles.length} files`
+
       toast({
         title: "Document Uploaded",
-        description: `${file.name} has been uploaded successfully`,
+        description: `${fileNames} uploaded successfully`,
       })
 
       setUploadDocDialogOpen(false)
+      setUploadDocTitle("")
+      setUploadDocFiles(null)
+      setUploadDocType("general")
+
+      const file = uploadDocFiles[0]
 
       await loadOrderData()
 
@@ -2740,6 +2754,12 @@ export default function OrderDetailPage() {
                 setViewNotifsDialogOpen(true)
                 fetchSentNotifications()
               }}
+              onUploadDocument={() => {
+                setUploadDocTitle("")
+                setUploadDocFiles(null)
+                setUploadDocType("general")
+                setUploadDocDialogOpen(true)
+              }}
             />
           </TabsContent>
         </Tabs>
@@ -3397,6 +3417,134 @@ export default function OrderDetailPage() {
         passportDocuments={passportDocuments}
         orderDate={order?.createdAt}
       />
+
+      {/* Upload Document Dialog */}
+      <Dialog
+        open={uploadDocDialogOpen}
+        onOpenChange={(open) => {
+          if (!docUploading) {
+            setUploadDocDialogOpen(open)
+            if (!open) {
+              setUploadDocTitle("")
+              setUploadDocFiles(null)
+              setUploadDocType("general")
+            }
+          }
+        }}
+      >
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl font-semibold">
+              <UploadCloud className="w-5 h-5 text-[#dc2626]" />
+              Upload Document
+            </DialogTitle>
+            <DialogDescription>
+              Upload one or more documents for{" "}
+              <span className="font-medium text-gray-700">{company?.name || "this order"}</span>. The document will be
+              visible in the client portal.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            {/* Title */}
+            <div className="space-y-1.5">
+              <Label htmlFor="uploadDocTitle">Document Title</Label>
+              <Input
+                id="uploadDocTitle"
+                placeholder="e.g. Articles of Organization"
+                value={uploadDocTitle}
+                onChange={(e) => setUploadDocTitle(e.target.value)}
+                disabled={docUploading}
+              />
+            </div>
+
+            {/* Type */}
+            <div className="space-y-1.5">
+              <Label htmlFor="uploadDocType">Document Type</Label>
+              <Select value={uploadDocType} onValueChange={setUploadDocType} disabled={docUploading}>
+                <SelectTrigger id="uploadDocType" className="h-10">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="general">General</SelectItem>
+                  <SelectItem value="formation">Formation</SelectItem>
+                  <SelectItem value="legal">Legal</SelectItem>
+                  <SelectItem value="tax">Tax</SelectItem>
+                  <SelectItem value="compliance">Compliance</SelectItem>
+                  <SelectItem value="identity">Identity</SelectItem>
+                  <SelectItem value="other">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* File picker */}
+            <div className="space-y-1.5">
+              <Label htmlFor="uploadDocFiles">Files *</Label>
+              <div
+                className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
+                  uploadDocFiles && uploadDocFiles.length > 0
+                    ? "border-[#880000]/40 bg-red-50/30"
+                    : "border-gray-200 hover:border-gray-300"
+                }`}
+              >
+                <input
+                  id="uploadDocFiles"
+                  type="file"
+                  multiple
+                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
+                  onChange={(e) => setUploadDocFiles(e.target.files)}
+                  disabled={docUploading}
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.xlsx,.csv,.txt"
+                />
+                {uploadDocFiles && uploadDocFiles.length > 0 ? (
+                  <div className="space-y-1">
+                    <UploadCloud className="w-5 h-5 text-[#880000] mx-auto" />
+                    <p className="text-sm font-medium text-gray-800">
+                      {uploadDocFiles.length === 1
+                        ? uploadDocFiles[0].name
+                        : `${uploadDocFiles.length} files selected`}
+                    </p>
+                    <p className="text-xs text-gray-400">Click to change</p>
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    <UploadCloud className="w-6 h-6 text-gray-300 mx-auto" />
+                    <p className="text-sm text-gray-500">Click to select files</p>
+                    <p className="text-xs text-gray-400">PDF, DOC, PNG, JPG, XLSX and more (max 200MB each)</p>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setUploadDocDialogOpen(false)}
+              disabled={docUploading}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={handleDocumentUpload}
+              disabled={docUploading || !uploadDocFiles || uploadDocFiles.length === 0}
+              className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white"
+            >
+              {docUploading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Uploading...
+                </>
+              ) : (
+                <>
+                  <UploadCloud className="w-4 h-4 mr-2" />
+                  Upload
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
