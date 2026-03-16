@@ -25,7 +25,8 @@ import {
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -495,7 +496,7 @@ export default function AdminDashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.2)" />
               <XAxis dataKey="month" stroke="rgba(55,65,81,0.7)" tick={{ fontSize: 12 }} />
               <YAxis stroke="rgba(55,65,81,0.7)" tick={{ fontSize: 12 }} />
-              <Tooltip 
+              <RechartsTooltip
                 contentStyle={{
                   backgroundColor: "rgba(255,255,255,0.95)",
                   border: "1px solid rgba(100,116,139,0.3)",
@@ -533,7 +534,14 @@ export default function AdminDashboard() {
                         <ShoppingCart className="h-4 md:h-5 w-4 md:w-5 text-[#880000]" />
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs md:text-sm font-semibold text-slate-900 truncate group-hover:text-[#880000] transition-colors">{order.companyName || "Unknown"}</p>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <p className="text-xs md:text-sm font-semibold text-slate-900 truncate group-hover:text-[#880000] transition-colors cursor-default">{order.companyName || "Unknown"}</p>
+                          </TooltipTrigger>
+                          {(order.companyName?.length ?? 0) > 20 && (
+                            <TooltipContent side="top">{order.companyName}</TooltipContent>
+                          )}
+                        </Tooltip>
                         <p className="text-xs text-slate-600">{new Date(order.createdAt).toLocaleDateString()}</p>
                       </div>
                     </div>
@@ -661,17 +669,32 @@ export default function AdminDashboard() {
                   router.push(`/admin/orders/${order.id}`)
                 }}
               >
-                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="p-1.5 rounded-lg bg-gradient-to-br from-[#880000]/15 to-[#ff0d13]/10 flex-shrink-0">
                     <ShoppingCart className="h-4 w-4 text-[#880000]" />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-[#880000] transition-colors">{order.companyName || "Unknown"}</p>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="text-sm font-semibold text-slate-900 truncate group-hover:text-[#880000] transition-colors cursor-default">{order.companyName || "Unknown"}</p>
+                      </TooltipTrigger>
+                      {(order.companyName?.length ?? 0) > 22 && (
+                        <TooltipContent side="top">{order.companyName}</TooltipContent>
+                      )}
+                    </Tooltip>
                     <div className="flex items-center gap-2 mt-0.5">
                       <p className="text-xs text-slate-500">{new Date(order.createdAt).toLocaleDateString()}</p>
                       {order.status && (
                         <span className="text-xs text-slate-400">· {order.status}</span>
                       )}
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <span className="text-xs text-slate-300 font-mono cursor-default">{order.id?.substring(0, 8)}…</span>
+                        </TooltipTrigger>
+                        <TooltipContent side="bottom" className="font-mono text-xs max-w-xs break-all">
+                          {order.id}
+                        </TooltipContent>
+                      </Tooltip>
                     </div>
                   </div>
                 </div>
