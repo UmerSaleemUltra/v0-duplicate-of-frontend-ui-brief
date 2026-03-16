@@ -15,6 +15,7 @@ import {
   ChevronRight,
   Megaphone,
   Bell,
+  UploadCloud,
 } from "lucide-react"
 
 interface AdminActionsCardProps {
@@ -41,6 +42,7 @@ interface AdminActionsCardProps {
   onSetBanner: () => void
   onSendNotification: () => void
   onViewNotifications: () => void
+  onUploadDocument: () => void
 }
 
 function ActionRow({
@@ -97,6 +99,7 @@ export function AdminActionsCard({
   onSetBanner,
   onSendNotification,
   onViewNotifications,
+  onUploadDocument,
 }: AdminActionsCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -170,6 +173,7 @@ export function AdminActionsCard({
           loading={milestoneUpdating}
           loadingLabel="Loading..."
         />
+        <ActionRow icon={<UploadCloud className="w-4 h-4" />} label="Upload Document" onClick={onUploadDocument} />
         <ActionRow icon={<Download className="w-4 h-4" />} label="Download Invoice" onClick={onDownloadInvoice} />
         <ActionRow icon={<Megaphone className="w-4 h-4" />} label="Set Client Dashboard Banner" onClick={onSetBanner} />
         <ActionRow icon={<Bell className="w-4 h-4" />} label="Send Client Notification" onClick={onSendNotification} />
