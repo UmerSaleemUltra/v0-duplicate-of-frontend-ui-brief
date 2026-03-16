@@ -26,7 +26,7 @@ import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -496,7 +496,7 @@ export default function AdminDashboard() {
               <CartesianGrid strokeDasharray="3 3" stroke="rgba(100,116,139,0.2)" />
               <XAxis dataKey="month" stroke="rgba(55,65,81,0.7)" tick={{ fontSize: 12 }} />
               <YAxis stroke="rgba(55,65,81,0.7)" tick={{ fontSize: 12 }} />
-              <Tooltip 
+              <RechartsTooltip
                 contentStyle={{
                   backgroundColor: "rgba(255,255,255,0.95)",
                   border: "1px solid rgba(100,116,139,0.3)",
