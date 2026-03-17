@@ -73,10 +73,15 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [hasNoCompanies, setHasNoCompanies] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
 
-  const { selectedCompanyId, setSelectedCompanyId, companiesLoading } = useSelectedCompany()
-  const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
-  // Only use the provider's loading flag — avoids a double-loading flicker
-  // caused by the shell's own allCompanies fetch completing after the provider.
+  const { selectedCompanyId, setSelectedCompanyId, companiesLoading, companies: providerCompanies } = useSelectedCompany()
+  // Prefer the provider's already-fetched list for the sidebar company name —
+  // this resolves immediately once companiesLoading is false, without waiting
+  // for the shell's own allCompanies fetch to finish.
+  const selectedCompany =
+    selectedCompanyId
+      ? (providerCompanies.find((c: any) => (c.id || c._id) === selectedCompanyId) ||
+         allCompanies.find((c: any) => c.id === selectedCompanyId))
+      : null
   const isCompanyLoading = companiesLoading
 
   useEffect(() => {

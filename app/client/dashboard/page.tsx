@@ -95,6 +95,9 @@ export default function ClientDashboard() {
   const [dataLoaded, setDataLoaded] = useState(false)
   const [isAuthenticating, setIsAuthenticating] = useState(true)
   const [hasNoCompanies, setHasNoCompanies] = useState(false)
+  // Delay showing the no-company UI by ~1.5s so it doesn't flash on a brief
+  // network hiccup or while the provider is still resolving on first render.
+  const [noCompanyVisible, setNoCompanyVisible] = useState(false)
   // Track whether the company-loading sequence has truly settled to avoid
   // flashing "no companies" while the provider is still fetching on a fresh login.
   const [companyCheckSettled, setCompanyCheckSettled] = useState(false)
@@ -138,6 +141,17 @@ export default function ClientDashboard() {
 
     checkAuth()
   }, [router])
+
+  // Show the no-company state only after a 1–2 s grace period so it never
+  // flickers on a brief load or fast network response.
+  useEffect(() => {
+    if (!hasNoCompanies) {
+      setNoCompanyVisible(false)
+      return
+    }
+    const timer = setTimeout(() => setNoCompanyVisible(true), 1500)
+    return () => clearTimeout(timer)
+  }, [hasNoCompanies])
 
   useEffect(() => {
     if (isAuthenticating) return
@@ -332,7 +346,9 @@ export default function ClientDashboard() {
   // Only show the no-company state once both auth and the company provider have fully settled.
   // Without this guard the page briefly flashes "no companies" for ~3 s on a fresh login while
   // the provider's async fetch is in flight.
-  if (!isAuthenticating && companyCheckSettled && hasNoCompanies) {
+  // Gate the no-company state behind noCompanyVisible which is delayed by 1.5s
+  // to prevent a brief flash on fresh logins where the provider hasn't resolved yet.
+  if (!isAuthenticating && companyCheckSettled && hasNoCompanies && noCompanyVisible) {
     return (
       <ClientShell>
         <NoCompanyState />
