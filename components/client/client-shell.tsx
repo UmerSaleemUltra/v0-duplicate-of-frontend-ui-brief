@@ -290,9 +290,9 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#fff9f0]">
+    <div className="min-h-screen flex bg-white">
       {!isPageReady && (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="flex items-center justify-center min-h-screen bg-white">
           <div className="w-full max-w-md space-y-4 p-4">
             <div className="h-12 bg-slate-200 rounded-lg animate-pulse"></div>
             <div className="space-y-3">
@@ -534,7 +534,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             </AlertDialogContent>
           </AlertDialog>
 
-          <div className="flex-1 flex flex-col min-w-0 bg-gradient-to-br from-[#fff5f5] via-white to-[#fff9f0]">
+          <div className="flex-1 flex flex-col min-w-0 bg-white">
             <div className="z-20 bg-white/80 backdrop-blur-sm border-b border-slate-200/70 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
               <div className="flex items-center justify-end gap-2">
                 <Button
