@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn, Users, UserCheck, Clock, ShoppingCart, DollarSign } from "lucide-react"
+import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn, Users, UserCheck, Clock, ShoppingCart, DollarSign, Copy, Check } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
@@ -13,6 +14,43 @@ import { useToast } from "@/hooks/use-toast"
 import { authService } from "@/lib/auth"
 import { useRouter } from "next/navigation"
 import type { User, Company, Order } from "@/lib/types"
+
+const MAX_LEN = 28
+
+function TruncatedCell({ text, maxLen = MAX_LEN }: { text: string; maxLen?: number }) {
+  const [copied, setCopied] = useState(false)
+  if (!text || text === "—") return <span className="text-slate-400">—</span>
+  const isTruncated = text.length > maxLen
+  const display = isTruncated ? text.slice(0, maxLen) + "…" : text
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  if (!isTruncated) return <span>{text}</span>
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="flex items-center gap-1 cursor-default">
+          <span className="truncate max-w-[160px]">{display}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleCopy() }}
+            className="shrink-0 text-slate-300 hover:text-slate-600 transition-colors"
+            title="Copy"
+          >
+            {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+          </button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs break-words">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 export default function UsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -439,6 +477,7 @@ export default function UsersPage() {
         />
       </div>
 
+      <TooltipProvider delayDuration={300}>
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -466,11 +505,13 @@ export default function UsersPage() {
                   return (
                     <tr key={user.id} className="hover:bg-slate-50/50 transition-colors">
                       <td className="px-6 py-4">
-                        <p className="text-sm font-medium text-slate-900">{user.name}</p>
+                        <p className="text-sm font-medium text-slate-900">
+                          <TruncatedCell text={user.name} />
+                        </p>
                         <p className="text-xs text-slate-400">{user.phone || "—"}</p>
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-slate-600">{user.email}</span>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        <TruncatedCell text={user.email} maxLen={30} />
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-sm text-slate-700 font-medium">{userCompanies.length}</span>
@@ -527,6 +568,7 @@ export default function UsersPage() {
           </div>
         )}
       </div>
+      </TooltipProvider>
 
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
         <DialogContent>

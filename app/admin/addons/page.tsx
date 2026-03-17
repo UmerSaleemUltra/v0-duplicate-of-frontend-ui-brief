@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Package, DollarSign, Search, X, Check } from "lucide-react"
+import { Plus, Edit, Trash2, Package, DollarSign, Search, X, Check, Copy } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -44,6 +45,43 @@ interface User {
   email: string
   name?: string
   companyNames?: string[]
+}
+
+const MAX_LEN = 30
+
+function TruncatedCell({ text, maxLen = MAX_LEN }: { text: string; maxLen?: number }) {
+  const [copied, setCopied] = useState(false)
+  if (!text) return null
+  const isTruncated = text.length > maxLen
+  const display = isTruncated ? text.slice(0, maxLen) + "…" : text
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  if (!isTruncated) return <span>{text}</span>
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="flex items-center gap-1 cursor-default min-w-0">
+          <span className="truncate">{display}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleCopy() }}
+            className="shrink-0 text-slate-300 hover:text-slate-600 transition-colors"
+            title="Copy"
+          >
+            {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+          </button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs break-words">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  )
 }
 
 export default function AdminAddonsPage() {
@@ -553,6 +591,7 @@ export default function AdminAddonsPage() {
           </Button>
         </div>
 
+        <TooltipProvider delayDuration={300}>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
           {addons.map((addon) => (
             <div
@@ -561,8 +600,12 @@ export default function AdminAddonsPage() {
             >
               <div className="flex items-start justify-between mb-3">
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-slate-900 truncate">{addon.name}</p>
-                  <p className="text-xs text-slate-500 mt-0.5 line-clamp-2">{addon.description}</p>
+                  <p className="text-sm font-medium text-slate-900">
+                    <TruncatedCell text={addon.name} maxLen={28} />
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    <TruncatedCell text={addon.description || ""} maxLen={50} />
+                  </p>
                 </div>
                 <span className={`ml-3 shrink-0 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${getCategoryColor(addon.category)}`}>
                   {addon.category}
@@ -605,6 +648,7 @@ export default function AdminAddonsPage() {
             </div>
           )}
         </div>
+        </TooltipProvider>
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="w-[95vw] sm:max-w-2xl md:max-w-3xl max-h-[90vh] overflow-y-auto">

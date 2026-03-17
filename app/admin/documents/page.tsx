@@ -684,6 +684,7 @@ export default function DocumentsPage() {
           </div>
         )}
       </div>
+      </TooltipProvider>
 
       {/* Edit Document Dialog */}
       <Dialog open={editModalOpen} onOpenChange={setEditModalOpen}>
