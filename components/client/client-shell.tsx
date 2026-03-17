@@ -73,8 +73,10 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [hasNoCompanies, setHasNoCompanies] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
 
-  const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
+  const { selectedCompanyId, setSelectedCompanyId, companiesLoading } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
+  // True while either the provider or the shell is still fetching companies
+  const isCompanyLoading = companiesLoading || (!!selectedCompanyId && allCompanies.length === 0)
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -359,12 +361,16 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                   </div>
                   <div className="flex-1 min-w-0 text-left overflow-hidden">
                     <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-0.5 truncate">Current Company</p>
-                    <BusinessNameDisplay
-                      name={selectedCompany?.name || "Select company"}
-                      maxLength={18}
-                      className="text-xs sm:text-sm font-semibold text-white truncate"
-                      truncateMode="smart"
-                    />
+                    {isCompanyLoading ? (
+                      <div className="h-4 w-28 bg-white/20 rounded animate-pulse" />
+                    ) : (
+                      <BusinessNameDisplay
+                        name={selectedCompany?.name || "Select company"}
+                        maxLength={18}
+                        className="text-xs sm:text-sm font-semibold text-white truncate"
+                        truncateMode="smart"
+                      />
+                    )}
                   </div>
                 </div>
                 <ChevronDown className="w-4 h-4 text-white/70 group-hover:text-white transition-colors flex-shrink-0 ml-1" />
