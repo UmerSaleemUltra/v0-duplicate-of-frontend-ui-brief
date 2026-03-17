@@ -9,44 +9,57 @@ interface UseAuthGuardOptions {
   redirectTo?: string
 }
 
-export function useAuthGuard(options: UseAuthGuardOptions = {}) {
+export function useAuthGuard(options: UseAuthGuardOptions | string = {}) {
   const router = useRouter()
-  const [isLoading, setIsLoading] = useState(true)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+
+  // Normalise: accept useAuthGuard("client") shorthand
+  const opts: UseAuthGuardOptions = typeof options === "string" ? { requiredRole: options } : options
+
+  // Run the auth check synchronously on first render so pages that are
+  // already authenticated don't flash a skeleton for even one tick.
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window === "undefined") return true
+    const authenticated = authService.isAuthenticated()
+    if (!authenticated) return true
+    if (opts.requiredRole) {
+      const user = authService.getCurrentUser()
+      if (!user || user.role !== opts.requiredRole) return true
+    }
+    return false
+  })
+
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof window === "undefined") return false
+    const authenticated = authService.isAuthenticated()
+    if (!authenticated) return false
+    if (opts.requiredRole) {
+      const user = authService.getCurrentUser()
+      return !!(user && user.role === opts.requiredRole)
+    }
+    return true
+  })
 
   useEffect(() => {
-    const checkAuth = () => {
-      console.log("[v0] Checking authentication...")
+    const authenticated = authService.isAuthenticated()
 
-      // Check if user is authenticated
-      const authenticated = authService.isAuthenticated()
+    if (!authenticated) {
+      const redirectPath = opts.redirectTo || "/login"
+      router.push(redirectPath)
+      return
+    }
 
-      if (!authenticated) {
-        console.log("[v0] Not authenticated, redirecting to login")
-        const redirectPath = options.redirectTo || "/login"
+    if (opts.requiredRole) {
+      const user = authService.getCurrentUser()
+      if (!user || user.role !== opts.requiredRole) {
+        const redirectPath = user?.role === "admin" ? "/admin" : "/client/dashboard"
         router.push(redirectPath)
         return
       }
-
-      // Check role if required
-      if (options.requiredRole) {
-        const user = authService.getCurrentUser()
-
-        if (!user || user.role !== options.requiredRole) {
-          console.log("[v0] Unauthorized role, redirecting")
-          const redirectPath = user?.role === "admin" ? "/admin" : "/client/dashboard"
-          router.push(redirectPath)
-          return
-        }
-      }
-
-      console.log("[v0] Authentication successful")
-      setIsAuthenticated(true)
-      setIsLoading(false)
     }
 
-    checkAuth()
-  }, [router, options.requiredRole, options.redirectTo])
+    setIsAuthenticated(true)
+    setIsLoading(false)
+  }, [router, opts.requiredRole, opts.redirectTo])
 
   return { isLoading, isAuthenticated }
 }

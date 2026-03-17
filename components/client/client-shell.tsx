@@ -75,8 +75,9 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
   const { selectedCompanyId, setSelectedCompanyId, companiesLoading } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
-  // True while either the provider or the shell is still fetching companies
-  const isCompanyLoading = companiesLoading || (!!selectedCompanyId && allCompanies.length === 0)
+  // Only use the provider's loading flag — avoids a double-loading flicker
+  // caused by the shell's own allCompanies fetch completing after the provider.
+  const isCompanyLoading = companiesLoading
 
   useEffect(() => {
     const loadUserData = async () => {

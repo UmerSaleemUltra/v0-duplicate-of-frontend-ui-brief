@@ -340,7 +340,10 @@ export default function ClientDashboard() {
     )
   }
 
-  if (isAuthenticating || companiesLoading || !companyCheckSettled || isLoadingData) {
+  // Show skeleton only during auth or the initial company-provider load.
+  // Once companiesLoading is false and the company check has settled, render
+  // the page — company data fills in quickly without an extra skeleton pass.
+  if (isAuthenticating || companiesLoading || !companyCheckSettled) {
     return (
       <ClientShell>
         <DashboardSkeleton />
