@@ -290,9 +290,9 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen flex bg-[#fff9f0]">
+    <div className="min-h-screen flex bg-white">
       {!isPageReady && (
-        <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
+        <div className="flex items-center justify-center min-h-screen bg-white">
           <div className="w-full max-w-md space-y-4 p-4">
             <div className="h-12 bg-slate-200 rounded-lg animate-pulse"></div>
             <div className="space-y-3">
