@@ -105,6 +105,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         setSelectedCompanyId: handleSetSelectedCompanyId,
         companiesLoading: loading,
         hasCompanies: companies.length > 0,
+        companies,
       }}
     >
       {children}
