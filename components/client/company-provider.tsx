@@ -13,7 +13,12 @@ const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing
 
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
-  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(null)
+  const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem(SELECTED_COMPANY_KEY) || null
+    }
+    return null
+  })
   const [companies, setCompanies] = useState<any[]>([])
   // loading is only true for the very first fetch — never reset on tab-switch or refresh
   const [loading, setLoading] = useState(true)
