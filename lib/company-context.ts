@@ -7,7 +7,6 @@ interface CompanyContextType {
   setSelectedCompanyId: (id: string | null) => void
   companiesLoading: boolean
   hasCompanies: boolean
-  companies: any[]
 }
 
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined)
