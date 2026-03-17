@@ -295,6 +295,21 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen flex bg-white">
+      <style>{`
+        #whatsapp-chat-widget,
+        #wati-chat-widget,
+        .wati-chat-widget,
+        .whatsapp-chat-button,
+        [id^="wati"],
+        [class^="wati"],
+        [id*="whatsapp-widget"],
+        [class*="whatsapp-widget"] {
+          display: none !important;
+          visibility: hidden !important;
+          opacity: 0 !important;
+          pointer-events: none !important;
+        }
+      `}</style>
       {!isPageReady && (
         <div className="flex items-center justify-center min-h-screen bg-white">
           <div className="w-full max-w-md space-y-4 p-4">
