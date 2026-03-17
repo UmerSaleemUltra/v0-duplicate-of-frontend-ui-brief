@@ -135,7 +135,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
               const userData = JSON.parse(storedUserData)
               userId = userData.id
             } catch (e) {
-              console.error("[v0] Sidebar: Error parsing stored user data:", e)
+              // ignore parse errors
             }
           }
 
@@ -147,7 +147,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                 userId = payload.userId || payload.id
               }
             } catch (e) {
-              console.error("[v0] Sidebar: Error decoding token:", e)
+              // ignore decode errors
             }
           }
         }
@@ -173,23 +173,24 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
         setAllCompanies(userCompanies)
         setHasNoCompanies(userCompanies.length === 0)
 
-        // Check localStorage for last selected company
+        // Read the current selection directly from localStorage to avoid
+        // stale closure issues and prevent dependency on selectedCompanyId.
         const lastSelectedCompanyId = localStorage.getItem("selectedCompanyId")
-        
+
         if (lastSelectedCompanyId && userCompanies.some((c: any) => c.id === lastSelectedCompanyId)) {
           // Restore previously selected company
           setSelectedCompanyId(lastSelectedCompanyId)
-        } else if (!selectedCompanyId && userCompanies.length > 0) {
-          // Auto-select first company if no selection exists
+        } else if (userCompanies.length > 0) {
+          // Auto-select first company when nothing valid is stored
           const firstCompanyId = userCompanies[0].id
           setSelectedCompanyId(firstCompanyId)
           localStorage.setItem("selectedCompanyId", firstCompanyId)
-        } else if (userCompanies.length === 0) {
+        } else {
           setSelectedCompanyId(null)
           localStorage.removeItem("selectedCompanyId")
         }
       } catch (error) {
-        console.error("[v0] Sidebar: Error loading companies:", error)
+        console.error("Sidebar: Error loading companies:", error)
       }
     }
 
@@ -203,7 +204,8 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     return () => {
       window.removeEventListener("client-dashboard-refresh", handleRefresh)
     }
-  }, [selectedCompanyId, setSelectedCompanyId])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   // Intentionally removed: the visibilitychange listener was triggering a full
   // company re-fetch (and skeleton re-render) every time the user switched tabs.
