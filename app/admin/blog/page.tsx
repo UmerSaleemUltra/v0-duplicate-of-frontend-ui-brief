@@ -5,10 +5,48 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Edit, Trash2, Eye } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, Copy, Check } from "lucide-react"
 import { toast } from "react-toastify"
 import Link from "next/link"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+
+const MAX_TITLE_LEN = 55
+const MAX_CAT_LEN = 22
+
+function TruncatedText({ text, maxLen }: { text: string; maxLen: number }) {
+  const [copied, setCopied] = useState(false)
+  if (!text) return null
+  if (text.length <= maxLen) return <span>{text}</span>
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center gap-1 cursor-default min-w-0">
+          <span className="truncate">{text.slice(0, maxLen) + "…"}</span>
+          <button
+            onClick={handleCopy}
+            className="shrink-0 text-[#86868b] hover:text-[#1d1d1f] transition-colors"
+            title="Copy"
+          >
+            {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+          </button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs break-words text-xs">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 export default function BlogManagement() {
   const [posts, setPosts] = useState<any[]>([])
@@ -198,6 +236,7 @@ export default function BlogManagement() {
           </Button>
         </div>
       ) : (
+        <TooltipProvider delayDuration={300}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {filteredPosts.map((post) => (
             <div
@@ -238,8 +277,12 @@ export default function BlogManagement() {
 
               {/* Content */}
               <div className="p-5">
-                <p className="text-[12px] font-medium text-[#0071e3] mb-2 uppercase tracking-wide">{post.category}</p>
-                <h3 className="text-[15px] font-semibold text-[#1d1d1f] line-clamp-2 leading-snug mb-1">{post.title}</h3>
+                <p className="text-[12px] font-medium text-[#0071e3] mb-2 uppercase tracking-wide">
+                  <TruncatedText text={post.category || ""} maxLen={MAX_CAT_LEN} />
+                </p>
+                <h3 className="text-[15px] font-semibold text-[#1d1d1f] leading-snug mb-1">
+                  <TruncatedText text={post.title || ""} maxLen={MAX_TITLE_LEN} />
+                </h3>
                 <p className="text-[12px] text-[#86868b]">{new Date(post.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}</p>
 
                 {/* Actions */}
@@ -279,6 +322,7 @@ export default function BlogManagement() {
             </div>
           ))}
         </div>
+        </TooltipProvider>
       )}
     </div>
   )

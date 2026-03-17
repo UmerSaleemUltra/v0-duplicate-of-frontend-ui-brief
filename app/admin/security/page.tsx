@@ -20,9 +20,49 @@ import {
   Lock,
   Unlock,
   Wifi,
+  Copy,
+  Check,
 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+
+const MAX_REASON_LEN = 48
+const MAX_TYPE_LEN = 20
+
+function TruncatedText({ text, maxLen }: { text: string; maxLen: number }) {
+  const [copied, setCopied] = useState(false)
+  if (!text) return null
+  if (text.length <= maxLen) return <span>{text}</span>
+
+  const handleCopy = async (e: React.MouseEvent) => {
+    e.preventDefault()
+    e.stopPropagation()
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="inline-flex items-center gap-1 cursor-default min-w-0">
+          <span className="truncate">{text.slice(0, maxLen) + "…"}</span>
+          <button
+            onClick={handleCopy}
+            className="shrink-0 text-gray-400 hover:text-gray-700 transition-colors"
+            title="Copy"
+          >
+            {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+          </button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs break-words text-xs">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 interface SecurityStats {
   blockedIPs: number
@@ -470,6 +510,7 @@ function SecurityDashboardContent() {
       </div>
 
       {/* IP Management */}
+      <TooltipProvider delayDuration={300}>
       <div className="bg-white rounded-2xl border border-gray-200 p-5">
         <SectionHeading title="IP Management" description="View and manage all tracked IP addresses" />
         <Tabs value={activeTab} onValueChange={setActiveTab}>
@@ -521,7 +562,9 @@ function SecurityDashboardContent() {
                             {sev.label}
                           </span>
                         </div>
-                        <p className="text-xs text-gray-500 truncate">{blockedIP.reason}</p>
+                        <p className="text-xs text-gray-500">
+                          <TruncatedText text={blockedIP.reason || ""} maxLen={MAX_REASON_LEN} />
+                        </p>
                         <p className="text-xs text-gray-400 mt-0.5 flex items-center gap-1">
                           <Clock className="h-3 w-3" />
                           {new Date(blockedIP.blockedAt).toLocaleString()}
@@ -620,11 +663,13 @@ function SecurityDashboardContent() {
                       <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${sev.className}`}>
                         {sev.label}
                       </span>
-                      <span className="text-xs text-gray-400 px-2 py-0.5 rounded-full bg-gray-100">
-                        {threat.type}
+                      <span className="text-xs text-gray-400 px-2 py-0.5 rounded-full bg-gray-100 inline-flex items-center gap-1">
+                        <TruncatedText text={threat.type || ""} maxLen={MAX_TYPE_LEN} />
                       </span>
                     </div>
-                    <p className="text-xs text-gray-600 mb-0.5">{threat.reason}</p>
+                    <p className="text-xs text-gray-600 mb-0.5">
+                      <TruncatedText text={threat.reason || ""} maxLen={MAX_REASON_LEN} />
+                    </p>
                     <div className="flex items-center gap-3 text-xs text-gray-400 flex-wrap">
                       <span className="flex items-center gap-1">
                         <Clock className="h-3 w-3" />
@@ -646,6 +691,7 @@ function SecurityDashboardContent() {
           </div>
         )}
       </div>
+      </TooltipProvider>
     </div>
   )
 }
