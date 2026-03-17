@@ -2,7 +2,8 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Search, Upload, Download, FileText, CheckCircle2, X, Pencil, Trash2, Clock } from "lucide-react"
+import { Search, Upload, Download, FileText, CheckCircle2, X, Pencil, Trash2, Clock, Copy, Check } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import {
@@ -18,6 +19,43 @@ import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
+
+const MAX_LEN = 28
+
+function TruncatedCell({ text, maxLen = MAX_LEN }: { text: string; maxLen?: number }) {
+  const [copied, setCopied] = useState(false)
+  if (!text || text === "—") return <span className="text-slate-400">—</span>
+  const isTruncated = text.length > maxLen
+  const display = isTruncated ? text.slice(0, maxLen) + "…" : text
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  if (!isTruncated) return <span>{text}</span>
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="flex items-center gap-1 cursor-default">
+          <span className="truncate max-w-[160px]">{display}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleCopy() }}
+            className="shrink-0 text-slate-300 hover:text-slate-600 transition-colors"
+            title="Copy"
+          >
+            {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+          </button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs break-words">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 export default function DocumentsPage() {
   const { toast } = useToast()
@@ -543,6 +581,7 @@ export default function DocumentsPage() {
         />
       </div>
 
+      <TooltipProvider delayDuration={300}>
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <span className="text-sm font-medium text-slate-900">Documents</span>
@@ -573,16 +612,14 @@ export default function DocumentsPage() {
 
                   return (
                     <tr key={doc.id} className="hover:bg-slate-50/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <span className="text-sm font-medium text-slate-900">
-                          {doc.title || doc.fileName || doc.name || "Untitled"}
-                        </span>
+                      <td className="px-6 py-4 text-sm font-medium text-slate-900">
+                        <TruncatedCell text={doc.title || doc.fileName || doc.name || "Untitled"} />
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-slate-600">{user?.name || "—"}</span>
+                      <td className="px-6 py-4 text-sm text-slate-600">
+                        <TruncatedCell text={user?.name || "—"} />
                       </td>
-                      <td className="px-6 py-4">
-                        <span className="text-sm text-slate-500">{company?.name || "—"}</span>
+                      <td className="px-6 py-4 text-sm text-slate-500">
+                        <TruncatedCell text={company?.name || "—"} />
                       </td>
                       <td className="px-6 py-4">
                         <span className="text-xs text-slate-500">{doc.documentType || "Document"}</span>

@@ -12,8 +12,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Search, MoreVertical, Upload, X, Trash2, Copy, Check } from "lucide-react"
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import {
   Dialog,
   DialogContent,
@@ -37,6 +37,43 @@ import type { MailItem } from "@/lib/types"
 import { useToast } from "@/hooks/use-toast"
 import { authService } from "@/lib/auth"
 import { ApiClient } from "@/lib/api-client"
+
+const MAX_LEN = 28
+
+function TruncatedCell({ text, maxLen = MAX_LEN }: { text: string; maxLen?: number }) {
+  const [copied, setCopied] = useState(false)
+  if (!text || text === "—") return <span className="text-slate-400">—</span>
+  const isTruncated = text.length > maxLen
+  const display = isTruncated ? text.slice(0, maxLen) + "…" : text
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(text)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 1500)
+  }
+
+  if (!isTruncated) return <span>{text}</span>
+
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <span className="flex items-center gap-1 cursor-default">
+          <span className="truncate max-w-[160px]">{display}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); handleCopy() }}
+            className="shrink-0 text-slate-300 hover:text-slate-600 transition-colors"
+            title="Copy"
+          >
+            {copied ? <Check className="w-3 h-3 text-green-500" /> : <Copy className="w-3 h-3" />}
+          </button>
+        </span>
+      </TooltipTrigger>
+      <TooltipContent side="top" className="max-w-xs break-words">
+        {text}
+      </TooltipContent>
+    </Tooltip>
+  )
+}
 
 export default function AdminMailroomPage() {
   const [searchQuery, setSearchQuery] = useState("")
@@ -701,6 +738,7 @@ Notes: ${mail.notes || "None"}
         </Select>
       </div>
 
+      <TooltipProvider delayDuration={300}>
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
         <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
           <span className="text-sm font-medium text-slate-900">Mail Items</span>
@@ -737,12 +775,18 @@ Notes: ${mail.notes || "None"}
                       <TableCell className="px-6">
                         <Checkbox checked={selectedItems.includes(item.id)} onCheckedChange={() => toggleSelectItem(item.id)} />
                       </TableCell>
-                      <TableCell className="px-6 py-4 text-sm font-medium text-slate-900">{company?.name || "—"}</TableCell>
-                      <TableCell className="px-6 py-4 text-sm text-slate-600">{item.from || item.sender}</TableCell>
-                      <TableCell className="px-6 py-4 text-sm text-slate-900">{item.subject}</TableCell>
+                      <TableCell className="px-6 py-4 text-sm font-medium text-slate-900">
+                        <TruncatedCell text={company?.name || "—"} />
+                      </TableCell>
+                      <TableCell className="px-6 py-4 text-sm text-slate-600">
+                        <TruncatedCell text={item.from || item.sender || "—"} />
+                      </TableCell>
+                      <TableCell className="px-6 py-4 text-sm text-slate-900">
+                        <TruncatedCell text={item.subject || "—"} />
+                      </TableCell>
                       <TableCell className="px-6 py-4 text-xs text-slate-500 capitalize">{item.type}</TableCell>
                       <TableCell className="px-6 py-4 text-xs text-slate-400 max-w-[160px]">
-                        {item.notes ? <span className="line-clamp-1">{item.notes}</span> : "—"}
+                        <TruncatedCell text={item.notes || "—"} maxLen={24} />
                       </TableCell>
                       <TableCell className="px-6 py-4 text-xs text-slate-400">
                         {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()}
@@ -785,6 +829,7 @@ Notes: ${mail.notes || "None"}
           </div>
         )}
       </div>
+      </TooltipProvider>
 
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>

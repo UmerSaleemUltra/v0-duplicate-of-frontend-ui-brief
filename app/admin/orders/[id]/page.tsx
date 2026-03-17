@@ -55,7 +55,6 @@ import {
   Pencil,
   UploadCloud,
   Mail,
-  Copy,
   X,
 } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -214,13 +213,13 @@ export default function OrderDetailPage() {
   const [uploadDocTitle, setUploadDocTitle] = useState("")
   const [uploadDocFiles, setUploadDocFiles] = useState<FileList | null>(null)
 
-  // Mail upload state
+  // Upload Mail state
   const [uploadMailDialogOpen, setUploadMailDialogOpen] = useState(false)
-  const [mailUploadFrom, setMailUploadFrom] = useState("")
-  const [mailUploadSubject, setMailUploadSubject] = useState("")
-  const [mailUploadType, setMailUploadType] = useState("general")
-  const [mailUploadNotes, setMailUploadNotes] = useState("")
-  const [mailUploadFiles, setMailUploadFiles] = useState<FileList | null>(null)
+  const [uploadMailFrom, setUploadMailFrom] = useState("")
+  const [uploadMailSubject, setUploadMailSubject] = useState("")
+  const [uploadMailType, setUploadMailType] = useState("general")
+  const [uploadMailNotes, setUploadMailNotes] = useState("")
+  const [uploadMailFiles, setUploadMailFiles] = useState<File[]>([])
   const [mailUploading, setMailUploading] = useState(false)
 
   const [mailingAddress, setMailingAddress] = useState({
@@ -939,10 +938,10 @@ export default function OrderDetailPage() {
   }
 
   const handleMailUpload = async () => {
-    if (!mailUploadFrom.trim() || !mailUploadSubject.trim() || !mailUploadType || !company) {
+    if (!uploadMailFrom || !uploadMailSubject || !uploadMailType || !company) {
       toast({
         title: "Missing Information",
-        description: "Please fill in From, Subject, and Mail Type fields",
+        description: "Please fill in all required fields",
         variant: "destructive",
       })
       return
@@ -950,44 +949,42 @@ export default function OrderDetailPage() {
 
     setMailUploading(true)
     try {
+      const token = authService.getToken()
+      if (!token) throw new Error("No auth token")
+
       const formData = new FormData()
-      formData.append("userId", customer?.id || company.userId || "")
+      formData.append("userId", customer?.id || "")
       formData.append("companyId", company.id)
       formData.append("companyName", company.name)
-      formData.append("from", mailUploadFrom.trim())
-      formData.append("subject", mailUploadSubject.trim())
-      formData.append("type", mailUploadType)
-      if (mailUploadNotes.trim()) formData.append("notes", mailUploadNotes.trim())
-      if (mailUploadFiles) {
-        Array.from(mailUploadFiles).forEach((file) => formData.append("files", file))
-      }
+      formData.append("from", uploadMailFrom)
+      formData.append("subject", uploadMailSubject)
+      formData.append("type", uploadMailType)
+      if (uploadMailNotes) formData.append("notes", uploadMailNotes)
+      uploadMailFiles.forEach((file) => formData.append("files", file))
 
       const response = await fetch("/api/mail", {
         method: "POST",
-        headers: { Authorization: `Bearer ${authService.getToken()}` },
+        headers: { Authorization: `Bearer ${token}` },
         body: formData,
       })
 
-      if (!response.ok) {
-        const err = await response.json().catch(() => ({}))
-        throw new Error(err.message || "Failed to upload mail")
-      }
+      if (!response.ok) throw new Error("Failed to upload mail")
 
       toast({
-        title: "Mail Uploaded",
-        description: `Mail "${mailUploadSubject.trim()}" has been added to the mailroom`,
+        title: "Mail Uploaded Successfully",
+        description: `Mail has been added to ${company.name}'s mailroom`,
       })
 
       setUploadMailDialogOpen(false)
-      setMailUploadFrom("")
-      setMailUploadSubject("")
-      setMailUploadType("general")
-      setMailUploadNotes("")
-      setMailUploadFiles(null)
+      setUploadMailFrom("")
+      setUploadMailSubject("")
+      setUploadMailType("general")
+      setUploadMailNotes("")
+      setUploadMailFiles([])
     } catch (error) {
       toast({
         title: "Upload Failed",
-        description: error instanceof Error ? error.message : "Failed to upload mail. Please try again.",
+        description: "Failed to upload mail. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -2830,11 +2827,11 @@ export default function OrderDetailPage() {
                 setUploadDocDialogOpen(true)
               }}
               onUploadMail={() => {
-                setMailUploadFrom("")
-                setMailUploadSubject("")
-                setMailUploadType("general")
-                setMailUploadNotes("")
-                setMailUploadFiles(null)
+                setUploadMailFrom("")
+                setUploadMailSubject("")
+                setUploadMailType("general")
+                setUploadMailNotes("")
+                setUploadMailFiles([])
                 setUploadMailDialogOpen(true)
               }}
             />
@@ -3630,11 +3627,11 @@ export default function OrderDetailPage() {
           if (!mailUploading) {
             setUploadMailDialogOpen(open)
             if (!open) {
-              setMailUploadFrom("")
-              setMailUploadSubject("")
-              setMailUploadType("general")
-              setMailUploadNotes("")
-              setMailUploadFiles(null)
+              setUploadMailFrom("")
+              setUploadMailSubject("")
+              setUploadMailType("general")
+              setUploadMailNotes("")
+              setUploadMailFiles([])
             }
           }
         }}
@@ -3647,18 +3644,18 @@ export default function OrderDetailPage() {
             </DialogTitle>
             <DialogDescription>
               Add a mail item to{" "}
-              <span className="font-medium text-gray-700">{company?.name || "this company"}</span>&apos;s mailroom.
+              <span className="font-medium text-gray-700">{company?.name || "this company"}</span>'s mailroom.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2">
             <div className="space-y-1.5">
-              <Label htmlFor="mailUploadFrom">From (Sender) *</Label>
+              <Label htmlFor="uploadMailFrom">From (Sender) *</Label>
               <Input
-                id="mailUploadFrom"
+                id="uploadMailFrom"
                 placeholder="e.g., IRS, Delaware Secretary of State"
-                value={mailUploadFrom}
-                onChange={(e) => setMailUploadFrom(e.target.value)}
+                value={uploadMailFrom}
+                onChange={(e) => setUploadMailFrom(e.target.value)}
                 disabled={mailUploading}
                 list="mailSenderSuggestions"
               />
@@ -3666,84 +3663,83 @@ export default function OrderDetailPage() {
                 <option value="IRS" />
                 <option value="Secretary of State" />
                 <option value="State Tax Authority" />
+                <option value="Buzz Filing" />
                 <option value="Local Government" />
-                <option value="Federal Agency" />
               </datalist>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="mailUploadSubject">Subject *</Label>
+              <Label htmlFor="uploadMailSubject">Subject *</Label>
               <Input
-                id="mailUploadSubject"
+                id="uploadMailSubject"
                 placeholder="e.g., Certificate of Formation"
-                value={mailUploadSubject}
-                onChange={(e) => setMailUploadSubject(e.target.value)}
+                value={uploadMailSubject}
+                onChange={(e) => setUploadMailSubject(e.target.value)}
                 disabled={mailUploading}
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="mailUploadType">Mail Type *</Label>
-              <Select value={mailUploadType} onValueChange={setMailUploadType} disabled={mailUploading}>
-                <SelectTrigger id="mailUploadType" className="h-10">
+              <Label htmlFor="uploadMailType">Mail Type *</Label>
+              <Select value={uploadMailType} onValueChange={setUploadMailType} disabled={mailUploading}>
+                <SelectTrigger id="uploadMailType" className="h-10">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="official">Official</SelectItem>
-                  <SelectItem value="legal">Legal</SelectItem>
-                  <SelectItem value="tax">Tax</SelectItem>
                   <SelectItem value="general">General</SelectItem>
                   <SelectItem value="letter">Letter</SelectItem>
                   <SelectItem value="package">Package</SelectItem>
+                  <SelectItem value="legal">Legal</SelectItem>
+                  <SelectItem value="tax">Tax</SelectItem>
                   <SelectItem value="other">Other</SelectItem>
                 </SelectContent>
               </Select>
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="mailUploadNotes">Notes (Optional)</Label>
+              <Label htmlFor="uploadMailNotes">Notes (Optional)</Label>
               <Input
-                id="mailUploadNotes"
+                id="uploadMailNotes"
                 placeholder="Additional notes about this mail"
-                value={mailUploadNotes}
-                onChange={(e) => setMailUploadNotes(e.target.value)}
+                value={uploadMailNotes}
+                onChange={(e) => setUploadMailNotes(e.target.value)}
                 disabled={mailUploading}
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label htmlFor="mailUploadFiles">Attach Files (Optional)</Label>
+              <Label htmlFor="uploadMailFiles">Attachments (Optional)</Label>
               <div
                 className={`relative border-2 border-dashed rounded-xl p-6 text-center transition-colors ${
-                  mailUploadFiles && mailUploadFiles.length > 0
+                  uploadMailFiles.length > 0
                     ? "border-[#880000]/40 bg-red-50/30"
                     : "border-gray-200 hover:border-gray-300"
                 }`}
               >
                 <input
-                  id="mailUploadFiles"
+                  id="uploadMailFiles"
                   type="file"
                   multiple
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer disabled:cursor-not-allowed"
-                  onChange={(e) => setMailUploadFiles(e.target.files)}
+                  onChange={(e) => setUploadMailFiles(e.target.files ? Array.from(e.target.files) : [])}
                   disabled={mailUploading}
-                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg,.xlsx,.csv,.txt"
+                  accept=".pdf,.doc,.docx,.png,.jpg,.jpeg"
                 />
-                {mailUploadFiles && mailUploadFiles.length > 0 ? (
+                {uploadMailFiles.length > 0 ? (
                   <div className="space-y-1">
                     <Mail className="w-5 h-5 text-[#880000] mx-auto" />
                     <p className="text-sm font-medium text-gray-800">
-                      {mailUploadFiles.length === 1
-                        ? mailUploadFiles[0].name
-                        : `${mailUploadFiles.length} files selected`}
+                      {uploadMailFiles.length === 1
+                        ? uploadMailFiles[0].name
+                        : `${uploadMailFiles.length} files selected`}
                     </p>
                     <p className="text-xs text-gray-400">Click to change</p>
                   </div>
                 ) : (
                   <div className="space-y-1">
                     <UploadCloud className="w-6 h-6 text-gray-300 mx-auto" />
-                    <p className="text-sm text-gray-500">Click to select files</p>
-                    <p className="text-xs text-gray-400">PDF, DOC, PNG, JPG and more</p>
+                    <p className="text-sm text-gray-500">Click to attach files</p>
+                    <p className="text-xs text-gray-400">PDF, DOC, PNG, JPG supported</p>
                   </div>
                 )}
               </div>
@@ -3760,7 +3756,7 @@ export default function OrderDetailPage() {
             </Button>
             <Button
               onClick={handleMailUpload}
-              disabled={mailUploading || !mailUploadFrom.trim() || !mailUploadSubject.trim()}
+              disabled={mailUploading || !uploadMailFrom || !uploadMailSubject}
               className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white"
             >
               {mailUploading ? (
