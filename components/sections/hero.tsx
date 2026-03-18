@@ -78,6 +78,7 @@ export default function HeroSection() {
                     src="https://www.youtube.com/embed/bQ5oFpQiIS4"
                     title="YouTube video player"
                     frameBorder="0"
+                    loading="lazy"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                     referrerPolicy="strict-origin-when-cross-origin"
                     allowFullScreen

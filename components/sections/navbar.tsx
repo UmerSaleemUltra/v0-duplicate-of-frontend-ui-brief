@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react"
 import { ArrowRight, Menu, X } from "lucide-react"
 import Link from "next/link"
+import Image from "next/image"
 
 function getCookie(name: string): string | null {
   if (typeof window === "undefined") return null
@@ -42,9 +43,12 @@ export default function Navbar() {
         <div className="mx-auto w-full lg:px-8 max-w-[1600px]">
           <div className="flex lg:grid lg:grid-cols-[auto_1fr_auto] items-center justify-between gap-4 lg:gap-8 h-[75px] sm:h-[80px] lg:h-[85px] xl:h-[90px]">
             <Link href="/" className="flex items-center flex-shrink-0 pl-0 lg:pl-0">
-              <img
+              <Image
                 src="/images/buzz-filing-logo-white.png"
                 alt="BuzzFiling Logo"
+                width={240}
+                height={60}
+                priority
                 className="h-auto w-[180px] sm:w-[200px] md:w-[220px] lg:w-[240px]"
               />
             </Link>
@@ -119,9 +123,11 @@ export default function Navbar() {
             <div className="absolute right-0 top-0 h-full w-[300px] sm:w-[340px] max-w-[85vw] bg-gradient-to-r from-[#880000] to-[#ff0d13] shadow-2xl transform transition-transform duration-300 ease-in-out translate-x-0 overflow-y-auto">
               <div className="flex justify-between items-center p-4 sm:p-5 md:p-6 border-b border-white/20">
                 <Link href="/" onClick={() => setIsMenuOpen(false)}>
-                  <img
+                  <Image
                     src="/images/buzz-filing-logo-white.png"
                     alt="BuzzFiling Logo"
+                    width={180}
+                    height={45}
                     className="h-auto w-[140px] sm:w-[160px] md:w-[180px]"
                   />
                 </Link>

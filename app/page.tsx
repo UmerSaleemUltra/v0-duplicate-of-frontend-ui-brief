@@ -1,18 +1,21 @@
+import dynamic from "next/dynamic"
 import Navbar from "@/components/sections/navbar"
 import HeroSection from "@/components/sections/hero"
-import Brands from "@/components/sections/brands"
-import HowItWorks from "@/components/sections/how-it-works"
-import GlobalFounders from "@/components/sections/global-founders"
-import PricingSection from "@/components/sections/pricing"
-import ServicesSection from "@/components/sections/services"
-import Footer from "@/components/sections/footer"
-import WhyChooseUs from "@/components/sections/why-choose-us"
-import ComplianceSection from "@/components/sections/compliance"
-import ClientDashboardSection from "@/components/sections/client-dashboard"
-import TrustSocialProof from "@/components/sections/trust-social-proof"
-import ContactSection from "@/components/sections/contact"
-import FAQSection from "@/components/sections/faq"
 import type { Metadata } from "next"
+
+// Below-the-fold sections loaded lazily to reduce initial JS bundle
+const Brands = dynamic(() => import("@/components/sections/brands"))
+const PricingSection = dynamic(() => import("@/components/sections/pricing"))
+const ServicesSection = dynamic(() => import("@/components/sections/services"))
+const HowItWorks = dynamic(() => import("@/components/sections/how-it-works"))
+const ClientDashboardSection = dynamic(() => import("@/components/sections/client-dashboard"))
+const ComplianceSection = dynamic(() => import("@/components/sections/compliance"))
+const WhyChooseUs = dynamic(() => import("@/components/sections/why-choose-us"))
+const GlobalFounders = dynamic(() => import("@/components/sections/global-founders"))
+const TrustSocialProof = dynamic(() => import("@/components/sections/trust-social-proof"))
+const FAQSection = dynamic(() => import("@/components/sections/faq"))
+const ContactSection = dynamic(() => import("@/components/sections/contact"))
+const Footer = dynamic(() => import("@/components/sections/footer"))
 
 export const metadata: Metadata = {
   title: "Buzz Filing | Top LLC Formation Company in Karachi, Pakistan | US Business Registration",
