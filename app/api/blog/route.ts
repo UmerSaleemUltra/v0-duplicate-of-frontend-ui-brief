@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateTag } from "next/cache"
 import { getDatabase } from "@/config/database"
 
 export async function GET(request: NextRequest) {
@@ -91,6 +92,12 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await collection.insertOne(newPost)
+
+    // If the post is published immediately, invalidate the sitemap cache
+    // so the new URL appears in real-time without waiting for the interval.
+    if (newPost.status === "published") {
+      revalidateTag("sitemap")
+    }
 
     return NextResponse.json({
       success: true,
