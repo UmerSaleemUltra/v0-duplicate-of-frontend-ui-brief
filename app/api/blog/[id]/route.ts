@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server"
+import { revalidateTag } from "next/cache"
 import { getDatabase } from "@/config/database"
 import { ObjectId } from "mongodb"
 
@@ -78,6 +79,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ success: false, error: "Blog post not found" }, { status: 404 })
     }
 
+    // Any publish status change (published ↔ draft) affects the sitemap URL list.
+    revalidateTag("sitemap")
+
     return NextResponse.json({ success: true, data: result })
   } catch (error) {
     console.error("Error updating blog post:", error)
@@ -101,6 +105,9 @@ export async function DELETE(request: NextRequest, { params }: { params: Promise
     if (result.deletedCount === 0) {
       return NextResponse.json({ success: false, error: "Blog post not found" }, { status: 404 })
     }
+
+    // Remove the deleted post's URL from the sitemap immediately.
+    revalidateTag("sitemap")
 
     return NextResponse.json({ success: true, message: "Blog post deleted successfully" })
   } catch (error) {
