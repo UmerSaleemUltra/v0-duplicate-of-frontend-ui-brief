@@ -1,6 +1,10 @@
 import type { MetadataRoute } from "next"
 import { getDatabase } from "@/config/database"
 
+// Revalidate the sitemap every 3600 seconds (1 hour) so new blog posts
+// and content changes are reflected without a full redeploy.
+export const revalidate = 3600
+
 const BASE_URL = "https://www.buzzfiling.com"
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
