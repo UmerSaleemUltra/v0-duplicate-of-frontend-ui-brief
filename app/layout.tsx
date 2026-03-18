@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/toaster"
 const unbounded = Unbounded({
   subsets: ["latin"],
   variable: "--font-unbounded",
+  display: "swap",
 })
 
 export const metadata = {
