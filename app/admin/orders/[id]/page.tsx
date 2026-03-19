@@ -193,6 +193,13 @@ export default function OrderDetailPage() {
   const [addAddonLoading, setAddAddonLoading] = useState(false)
   const [addAddonFetching, setAddAddonFetching] = useState(false)
 
+  // Add Custom Addon to Client state
+  const [customAddonDialogOpen, setCustomAddonDialogOpen] = useState(false)
+  const [customAddonName, setCustomAddonName] = useState("")
+  const [customAddonDescription, setCustomAddonDescription] = useState("")
+  const [customAddonPrice, setCustomAddonPrice] = useState("")
+  const [customAddonLoading, setCustomAddonLoading] = useState(false)
+
   // Send Notification state
   const [notifDialogOpen, setNotifDialogOpen] = useState(false)
   const [notifTitle, setNotifTitle] = useState("")
@@ -2178,6 +2185,56 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleCreateCustomAddon = async () => {
+    const name = customAddonName.trim()
+    const description = customAddonDescription.trim()
+    const price = parseFloat(customAddonPrice)
+    if (!name) {
+      toast({ title: "Name required", description: "Please enter an addon name", variant: "destructive" })
+      return
+    }
+    if (!description) {
+      toast({ title: "Description required", description: "Please enter a description", variant: "destructive" })
+      return
+    }
+    if (isNaN(price) || price < 0) {
+      toast({ title: "Invalid price", description: "Please enter a valid price (0 or more)", variant: "destructive" })
+      return
+    }
+    const userId = customer?.id || order?.userId
+    if (!userId) {
+      toast({ title: "No user found", description: "Cannot determine the user for this order", variant: "destructive" })
+      return
+    }
+    setCustomAddonLoading(true)
+    try {
+      const token = authService.getToken()
+      const res = await fetch("/api/addons", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name,
+          description,
+          price,
+          category: "custom",
+          isActive: true,
+          assignedUserIds: [userId],
+        }),
+      })
+      const result = await res.json()
+      if (!result.success) throw new Error(result.error || "Failed to create custom addon")
+      toast({ title: "Custom Addon Created", description: `"${name}" has been added to the client` })
+      setCustomAddonDialogOpen(false)
+      setCustomAddonName("")
+      setCustomAddonDescription("")
+      setCustomAddonPrice("")
+    } catch (err: any) {
+      toast({ title: "Failed", description: err.message || "Failed to create custom addon", variant: "destructive" })
+    } finally {
+      setCustomAddonLoading(false)
+    }
+  }
+
   const handleOpenBannerDialog = async () => {
     if (!company) return
     try {
@@ -2893,6 +2950,12 @@ export default function OrderDetailPage() {
                 setUploadMailDialogOpen(true)
               }}
               onAddAddon={handleOpenAddAddonDialog}
+              onAddCustomAddon={() => {
+                setCustomAddonName("")
+                setCustomAddonDescription("")
+                setCustomAddonPrice("")
+                setCustomAddonDialogOpen(true)
+              }}
             />
           </TabsContent>
         </Tabs>
@@ -3882,6 +3945,73 @@ export default function OrderDetailPage() {
                 </>
               ) : (
                 "Assign Addon"
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Custom Addon to Client Dialog */}
+      <Dialog open={customAddonDialogOpen} onOpenChange={setCustomAddonDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Custom Addon to Client</DialogTitle>
+            <DialogDescription>
+              Create a custom addon and assign it directly to{" "}
+              {customer?.name || order?.businessName || "this client"}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-1.5">
+              <Label htmlFor="custom-addon-name">Addon Name</Label>
+              <Input
+                id="custom-addon-name"
+                placeholder="e.g. Priority Support"
+                value={customAddonName}
+                onChange={(e) => setCustomAddonName(e.target.value)}
+                disabled={customAddonLoading}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="custom-addon-description">Description</Label>
+              <Textarea
+                id="custom-addon-description"
+                placeholder="Brief description of this addon..."
+                value={customAddonDescription}
+                onChange={(e) => setCustomAddonDescription(e.target.value)}
+                disabled={customAddonLoading}
+                rows={3}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="custom-addon-price">Price ($)</Label>
+              <Input
+                id="custom-addon-price"
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="0.00"
+                value={customAddonPrice}
+                onChange={(e) => setCustomAddonPrice(e.target.value)}
+                disabled={customAddonLoading}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setCustomAddonDialogOpen(false)} disabled={customAddonLoading}>
+              Cancel
+            </Button>
+            <Button
+              onClick={handleCreateCustomAddon}
+              disabled={customAddonLoading || !customAddonName.trim() || !customAddonDescription.trim()}
+            >
+              {customAddonLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create & Assign"
               )}
             </Button>
           </DialogFooter>
