@@ -92,6 +92,7 @@ export default function AdminMailroomPage() {
   const [mailItems, setMailItems] = useState<MailItem[]>([])
   const [companies, setCompanies] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
+  const [companySearch, setCompanySearch] = useState("")
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [mailToEdit, setMailToEdit] = useState<MailItem | null>(null)
   const [editSubject, setEditSubject] = useState("")
@@ -596,18 +597,50 @@ Notes: ${mail.notes || "None"}
             <div className="space-y-4 py-4">
               <div className="space-y-2">
                 <Label htmlFor="company">Select Company *</Label>
-                <Select value={selectedCompany} onValueChange={setSelectedCompany}>
-                  <SelectTrigger id="company" className="h-10">
-                    <SelectValue placeholder="Choose a company" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {companies.map((company) => (
-                      <SelectItem key={company.id} value={company.id}>
-                        {company.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <div className="border rounded-md">
+                  <div className="flex items-center border-b px-2">
+                    <Search className="h-3.5 w-3.5 text-slate-400 shrink-0" />
+                    <input
+                      type="text"
+                      placeholder="Search company..."
+                      value={companySearch}
+                      onChange={(e) => setCompanySearch(e.target.value)}
+                      className="flex-1 py-2 px-2 text-sm outline-none bg-transparent placeholder:text-slate-400"
+                    />
+                    {companySearch && (
+                      <button onClick={() => setCompanySearch("")} className="text-slate-400 hover:text-slate-600">
+                        <X className="h-3.5 w-3.5" />
+                      </button>
+                    )}
+                  </div>
+                  <div className="max-h-44 overflow-y-auto py-1">
+                    {companies
+                      .filter((c) => c.name?.toLowerCase().includes(companySearch.toLowerCase()))
+                      .map((company) => (
+                        <button
+                          key={company.id}
+                          type="button"
+                          onClick={() => { setSelectedCompany(company.id); setCompanySearch("") }}
+                          className={`w-full text-left px-3 py-2 text-sm hover:bg-slate-50 transition-colors ${selectedCompany === company.id ? "bg-slate-100 font-medium" : ""}`}
+                        >
+                          {company.name}
+                        </button>
+                      ))}
+                    {companies.filter((c) => c.name?.toLowerCase().includes(companySearch.toLowerCase())).length === 0 && (
+                      <p className="text-sm text-slate-400 text-center py-3">No companies found</p>
+                    )}
+                  </div>
+                  {selectedCompany && (
+                    <div className="border-t px-3 py-1.5 flex items-center justify-between bg-slate-50">
+                      <span className="text-xs text-slate-600 font-medium">
+                        {companies.find((c) => c.id === selectedCompany)?.name}
+                      </span>
+                      <button onClick={() => setSelectedCompany("")} className="text-slate-400 hover:text-slate-600">
+                        <X className="h-3 w-3" />
+                      </button>
+                    </div>
+                  )}
+                </div>
               </div>
 
               <div className="space-y-2">

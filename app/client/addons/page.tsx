@@ -23,10 +23,26 @@ export default function ClientAddonsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard()
   const router = useRouter()
   const { selectedCompanyId } = useSelectedCompany()
-  const [addons, setAddons] = useState<AddonWithBilling[]>([])
+  // Seed from cache for instant render — background refresh keeps it fresh
+  const [addons, setAddons] = useState<AddonWithBilling[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("addons_cache")
+        if (cached) return JSON.parse(cached)
+      } catch { /* ignore */ }
+    }
+    return []
+  })
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
   const [hasAdvancePackage, setHasAdvancePackage] = useState(false)
-  const [isLoadingAddons, setIsLoadingAddons] = useState(true)
+  const [isLoadingAddons, setIsLoadingAddons] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return !localStorage.getItem("addons_cache")
+      } catch { /* ignore */ }
+    }
+    return true
+  })
 
   const loadAddons = async () => {
     try {
@@ -46,6 +62,9 @@ export default function ClientAddonsPage() {
         const data = await response.json()
         const addonsList = data.data?.addons || data.addons || []
         setAddons(addonsList)
+        try {
+          localStorage.setItem("addons_cache", JSON.stringify(addonsList))
+        } catch { /* ignore */ }
       }
     } catch (error) {
       // Error handled silently
