@@ -34,8 +34,9 @@ export const metadata: Metadata = {
 
 async function getBlogPosts() {
   try {
-    const res = await fetch("https://www.buzzfiling.com/api/blog", {
-      next: { revalidate: 60 },
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000"
+    const res = await fetch(`${baseUrl}/api/blog?status=published&limit=100`, {
+      next: { revalidate: 30 },
     })
     if (!res.ok) return []
     const json = await res.json()
