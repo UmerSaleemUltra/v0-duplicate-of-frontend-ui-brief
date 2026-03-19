@@ -246,7 +246,7 @@ export const emailTemplates = {
       </body>
     </html>
     `,
-  }},
+  }),
 
   passwordReset: (name: string, resetLink: string) => ({
     subject: "Reset Your Password - Buzz Filing",
