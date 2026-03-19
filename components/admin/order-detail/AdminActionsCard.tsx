@@ -47,6 +47,7 @@ interface AdminActionsCardProps {
   onUploadDocument: () => void
   onUploadMail: () => void
   onAddAddon: () => void
+  onAddCustomAddon: () => void
 }
 
 function ActionRow({
@@ -106,6 +107,7 @@ export function AdminActionsCard({
   onUploadDocument,
   onUploadMail,
   onAddAddon,
+  onAddCustomAddon,
 }: AdminActionsCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -180,6 +182,7 @@ export function AdminActionsCard({
           loadingLabel="Loading..."
         />
         <ActionRow icon={<Package className="w-4 h-4" />} label="Add Addon to Client" onClick={onAddAddon} />
+        <ActionRow icon={<Plus className="w-4 h-4" />} label="Add Custom Addon to Client" onClick={onAddCustomAddon} />
         <ActionRow icon={<UploadCloud className="w-4 h-4" />} label="Upload Document" onClick={onUploadDocument} />
         <ActionRow icon={<Mail className="w-4 h-4" />} label="Upload Mail" onClick={onUploadMail} />
         <ActionRow icon={<Download className="w-4 h-4" />} label="Download Invoice" onClick={onDownloadInvoice} />
