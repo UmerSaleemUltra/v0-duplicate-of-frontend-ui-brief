@@ -33,7 +33,7 @@ export const metadata: Metadata = {
 
 async function getBlogPosts() {
   try {
-    const res = await fetch("https://www.buzzfiling.com/api/blog", {
+    const res = await fetch("https://www.buzzfiling.com/api/blog?limit=100", {
       next: { revalidate: 60 },
     })
     if (!res.ok) return []
