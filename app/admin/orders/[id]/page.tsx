@@ -186,6 +186,13 @@ export default function OrderDetailPage() {
   const [bannerSaving, setBannerSaving] = useState(false)
   const [existingBanner, setExistingBanner] = useState<any>(null)
 
+  // Add Addon to Client state
+  const [addAddonDialogOpen, setAddAddonDialogOpen] = useState(false)
+  const [availableAddons, setAvailableAddons] = useState<any[]>([])
+  const [addAddonSelected, setAddAddonSelected] = useState("")
+  const [addAddonLoading, setAddAddonLoading] = useState(false)
+  const [addAddonFetching, setAddAddonFetching] = useState(false)
+
   // Send Notification state
   const [notifDialogOpen, setNotifDialogOpen] = useState(false)
   const [notifTitle, setNotifTitle] = useState("")
@@ -2120,6 +2127,57 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleOpenAddAddonDialog = async () => {
+    setAddAddonSelected("")
+    setAddAddonDialogOpen(true)
+    setAddAddonFetching(true)
+    try {
+      const token = authService.getToken()
+      const res = await fetch("/api/addons?limit=100", {
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      const result = await res.json()
+      if (result.success) {
+        setAvailableAddons(result.data.addons.filter((a: any) => a.isActive))
+      }
+    } catch (err) {
+      toast({ title: "Error", description: "Failed to load addons", variant: "destructive" })
+    } finally {
+      setAddAddonFetching(false)
+    }
+  }
+
+  const handleAssignAddon = async () => {
+    if (!addAddonSelected) {
+      toast({ title: "No addon selected", description: "Please select an addon to assign", variant: "destructive" })
+      return
+    }
+    const userId = customer?.id || order?.userId
+    if (!userId) {
+      toast({ title: "No user found", description: "Cannot determine the user for this order", variant: "destructive" })
+      return
+    }
+    setAddAddonLoading(true)
+    try {
+      const token = authService.getToken()
+      const res = await fetch("/api/addons/assign", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+        body: JSON.stringify({ addonId: addAddonSelected, userIds: [userId] }),
+      })
+      const result = await res.json()
+      if (!result.success) throw new Error(result.error || "Failed to assign addon")
+      const addonName = availableAddons.find((a) => a.id === addAddonSelected)?.name || "Addon"
+      toast({ title: "Addon Assigned", description: `${addonName} has been added to the client` })
+      setAddAddonDialogOpen(false)
+      setAddAddonSelected("")
+    } catch (err: any) {
+      toast({ title: "Assignment Failed", description: err.message || "Failed to assign addon", variant: "destructive" })
+    } finally {
+      setAddAddonLoading(false)
+    }
+  }
+
   const handleOpenBannerDialog = async () => {
     if (!company) return
     try {
@@ -2834,6 +2892,7 @@ export default function OrderDetailPage() {
                 setUploadMailFiles([])
                 setUploadMailDialogOpen(true)
               }}
+              onAddAddon={handleOpenAddAddonDialog}
             />
           </TabsContent>
         </Tabs>
@@ -3769,6 +3828,60 @@ export default function OrderDetailPage() {
                   <Mail className="w-4 h-4 mr-2" />
                   Upload Mail
                 </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Add Addon to Client Dialog */}
+      <Dialog open={addAddonDialogOpen} onOpenChange={setAddAddonDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Addon to Client</DialogTitle>
+            <DialogDescription>
+              Select an addon to assign to{" "}
+              {customer?.name || order?.businessName || "this client"}.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-2">
+            {addAddonFetching ? (
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Loading addons...
+              </div>
+            ) : availableAddons.length === 0 ? (
+              <p className="text-sm text-gray-500">No active addons available.</p>
+            ) : (
+              <div className="space-y-2">
+                <Label htmlFor="addon-select">Select Addon</Label>
+                <Select value={addAddonSelected} onValueChange={setAddAddonSelected}>
+                  <SelectTrigger id="addon-select">
+                    <SelectValue placeholder="Choose an addon..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {availableAddons.map((addon) => (
+                      <SelectItem key={addon.id} value={addon.id}>
+                        {addon.name} — ${addon.price}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddAddonDialogOpen(false)} disabled={addAddonLoading}>
+              Cancel
+            </Button>
+            <Button onClick={handleAssignAddon} disabled={addAddonLoading || addAddonFetching || !addAddonSelected}>
+              {addAddonLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Assigning...
+                </>
+              ) : (
+                "Assign Addon"
               )}
             </Button>
           </DialogFooter>

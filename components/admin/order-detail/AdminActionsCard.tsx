@@ -17,6 +17,7 @@ import {
   Bell,
   UploadCloud,
   Mail,
+  Package,
 } from "lucide-react"
 
 interface AdminActionsCardProps {
@@ -45,6 +46,7 @@ interface AdminActionsCardProps {
   onViewNotifications: () => void
   onUploadDocument: () => void
   onUploadMail: () => void
+  onAddAddon: () => void
 }
 
 function ActionRow({
@@ -103,6 +105,7 @@ export function AdminActionsCard({
   onViewNotifications,
   onUploadDocument,
   onUploadMail,
+  onAddAddon,
 }: AdminActionsCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -176,6 +179,7 @@ export function AdminActionsCard({
           loading={milestoneUpdating}
           loadingLabel="Loading..."
         />
+        <ActionRow icon={<Package className="w-4 h-4" />} label="Add Addon to Client" onClick={onAddAddon} />
         <ActionRow icon={<UploadCloud className="w-4 h-4" />} label="Upload Document" onClick={onUploadDocument} />
         <ActionRow icon={<Mail className="w-4 h-4" />} label="Upload Mail" onClick={onUploadMail} />
         <ActionRow icon={<Download className="w-4 h-4" />} label="Download Invoice" onClick={onDownloadInvoice} />
