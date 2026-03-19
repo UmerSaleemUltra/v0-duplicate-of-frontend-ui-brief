@@ -68,6 +68,7 @@ export default function DocumentsPage() {
   const [documentTitle, setDocumentTitle] = useState("")
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
+  const [companySearch, setCompanySearch] = useState("")
 
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [editingDocument, setEditingDocument] = useState<any | null>(null)

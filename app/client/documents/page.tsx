@@ -2,9 +2,10 @@
 
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ClientShell } from "@/components/client/client-shell"
-import { FileText, Download, Eye } from "lucide-react"
+import { FileText, Download, Eye, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Input } from "@/components/ui/input"
 import { useEffect, useState } from "react"
 import { useSelectedCompany } from "@/lib/company-context"
 import { useToast } from "@/hooks/use-toast"
@@ -19,6 +20,7 @@ export default function DocumentsPage() {
   const [documents, setDocuments] = useState<any[]>([])
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
   const [loading, setLoading] = useState(false)
+  const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
 
@@ -192,11 +194,18 @@ export default function DocumentsPage() {
   const completedDocs = documents.filter((d) => d.status === "ready" || !d.status)
   const pendingDocs = documents.filter((d) => d.status === "pending")
 
+  const filteredDocuments = searchQuery
+    ? documents.filter((d) =>
+        (d.title || d.name || "").toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (d.type || "").toLowerCase().includes(searchQuery.toLowerCase())
+      )
+    : documents
+
   // Pagination calculations
-  const totalPages = Math.ceil(documents.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredDocuments.length / itemsPerPage)
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  const currentDocuments = documents.slice(startIndex, endIndex)
+  const currentDocuments = filteredDocuments.slice(startIndex, endIndex)
 
   const goToPage = (page: number) => {
     setCurrentPage(page)
@@ -230,9 +239,21 @@ export default function DocumentsPage() {
           </div>
         </div>
 
+        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Input
+              placeholder="Search documents by name or type..."
+              className="pl-10 h-10 border-slate-200 focus:border-primary focus:ring-primary text-sm"
+              value={searchQuery}
+              onChange={(e) => { setSearchQuery(e.target.value); setCurrentPage(1) }}
+            />
+          </div>
+        </div>
+
         <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
           <div className="overflow-x-auto">
-            {documents.length === 0 ? (
+            {filteredDocuments.length === 0 ? (
               <div className="text-center py-12 px-4">
                 <FileText className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
                 <p className="text-slate-600 mb-2 text-sm sm:text-base">No documents yet</p>
@@ -303,10 +324,10 @@ export default function DocumentsPage() {
             )}
           </div>
 
-          {documents.length > itemsPerPage && (
+          {filteredDocuments.length > itemsPerPage && (
             <div className="flex items-center justify-between px-4 py-4 border-t border-slate-200 bg-white">
               <div className="text-sm text-slate-600">
-                Showing {startIndex + 1} to {Math.min(endIndex, documents.length)} of {documents.length} documents
+                Showing {startIndex + 1} to {Math.min(endIndex, filteredDocuments.length)} of {filteredDocuments.length} documents
               </div>
               <div className="flex items-center gap-1">
                 <Button

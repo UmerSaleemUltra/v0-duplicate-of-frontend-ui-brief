@@ -46,7 +46,11 @@ export async function POST(request: NextRequest) {
 
     let user
     try {
-      user = await usersCollection.findOne({ email })
+      // Hint the email index so MongoDB doesn't do a collection scan
+      user = await usersCollection.findOne(
+        { email },
+        { projection: { _id: 1, email: 1, password: 1, name: 1, role: 1, phone: 1, createdAt: 1, lastLoginAt: 1 } },
+      )
     } catch (queryError) {
       return apiError("Unable to search for user. Please try again later.", 500)
     }
@@ -93,60 +97,59 @@ export async function POST(request: NextRequest) {
 
     const isFirstLogin = !user.lastLoginAt
 
-    try {
-      await usersCollection.updateOne(
-        { _id: user._id },
-        {
-          $set: {
-            lastLoginAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
+    // Fire-and-forget: update lastLoginAt without blocking the response
+    usersCollection.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          lastLoginAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         },
-      )
-    } catch (updateError) {
-      // Non-fatal error
-    }
+      },
+    ).catch(() => { /* Non-fatal */ })
 
-    try {
-      const loginDateTime = new Date()
-      const pakistaniTime = new Date(loginDateTime.toLocaleString("en-US", { timeZone: "Asia/Karachi" }))
-      const formattedLoginTime =
-        pakistaniTime.toLocaleDateString("en-US", {
-          year: "numeric",
-          month: "long",
-          day: "numeric",
-        }) +
-        " at " +
-        pakistaniTime.toLocaleTimeString("en-US", {
-          hour: "numeric",
-          minute: "2-digit",
-          hour12: true,
-        }) +
-        " PST"
+    // Fire-and-forget: send login email without blocking the response
+    ;(async () => {
+      try {
+        const loginDateTime = new Date()
+        const pakistaniTime = new Date(loginDateTime.toLocaleString("en-US", { timeZone: "Asia/Karachi" }))
+        const formattedLoginTime =
+          pakistaniTime.toLocaleDateString("en-US", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          }) +
+          " at " +
+          pakistaniTime.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          }) +
+          " PST"
 
-      if (isFirstLogin) {
-        const welcomeEmail = emailTemplates.welcome(userResponse.name)
-        if (welcomeEmail && welcomeEmail.html && welcomeEmail.subject) {
-          await sendEmail({
-            to: email,
-            subject: welcomeEmail.subject,
-            html: welcomeEmail.html,
-          })
+        if (isFirstLogin) {
+          const welcomeEmail = emailTemplates.welcome(userResponse.name)
+          if (welcomeEmail && welcomeEmail.html && welcomeEmail.subject) {
+            await sendEmail({
+              to: email,
+              subject: welcomeEmail.subject,
+              html: welcomeEmail.html,
+            })
+          }
+        } else {
+          const loginEmail = emailTemplates.loginAlert(userResponse.name, formattedLoginTime)
+          if (loginEmail && loginEmail.html && loginEmail.subject) {
+            await sendEmail({
+              to: email,
+              subject: loginEmail.subject,
+              html: loginEmail.html,
+            })
+          }
         }
-      } else {
-        const loginEmail = emailTemplates.loginAlert(userResponse.name, formattedLoginTime)
-        if (loginEmail && loginEmail.html && loginEmail.subject) {
-          await sendEmail({
-            to: email,
-            subject: loginEmail.subject,
-            html: loginEmail.html,
-          })
-        }
+      } catch (emailError) {
+        // Email failure is non-fatal, logged silently
       }
-    } catch (emailError) {
-      console.log("[v0] Login email error:", emailError instanceof Error ? emailError.message : String(emailError))
-      // Email failure is non-fatal
-    }
+    })()
 
     return addSecurityHeaders(
       apiResponse({

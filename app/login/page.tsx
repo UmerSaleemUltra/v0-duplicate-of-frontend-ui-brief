@@ -11,6 +11,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { setupMultiTabSync } from "@/lib/multi-tab-sync"
+import { authService } from "@/lib/auth"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -25,24 +26,17 @@ export default function LoginPage() {
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { authService } = await import("@/lib/auth")
-        const currentUser = await authService.getCurrentUser()
-        if (currentUser) {
-          if (currentUser.role === "admin") {
-            router.push("/admin")
-          } else {
-            router.push("/client/dashboard")
-          }
-        } else {
-          setAuthChecked(true)
-        }
-      } catch {
-        setAuthChecked(true)
+    // Synchronous check — authService reads from in-memory / cookie on module init
+    const currentUser = authService.getCurrentUser()
+    if (currentUser) {
+      if (currentUser.role === "admin") {
+        router.replace("/admin")
+      } else {
+        router.replace("/client/dashboard")
       }
+    } else {
+      setAuthChecked(true)
     }
-    checkAuth()
   }, [router])
 
   useEffect(() => {
@@ -76,8 +70,6 @@ export default function LoginPage() {
     setLoading(true)
 
     try {
-      const { authService } = await import("@/lib/auth")
-
       const result = await authService.login({ email, password })
 
       if (result.success && result.user) {
