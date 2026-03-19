@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Search, ChevronLeft, ChevronRight } from "lucide-react"
 
-const POSTS_PER_PAGE = 10
+const POSTS_PER_PAGE = 6
 
 interface BlogPost {
   _id: string
