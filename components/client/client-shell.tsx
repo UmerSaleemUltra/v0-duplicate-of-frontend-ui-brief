@@ -20,6 +20,7 @@ import {
   FileText,
   ShieldAlert,
   RefreshCw,
+  Search,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
@@ -62,7 +63,18 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
-  const [allCompanies, setAllCompanies] = useState<any[]>([])
+  // Seed companies from localStorage cache so the name shows instantly without waiting for the API
+  const [allCompanies, setAllCompanies] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("companies_cache")
+        if (cached) return JSON.parse(cached)
+      } catch {
+        // ignore
+      }
+    }
+    return []
+  })
   const [userInitials, setUserInitials] = useState("U")
   const [userName, setUserName] = useState("")
   const [isAdminView, setIsAdminView] = useState(false)
@@ -72,11 +84,12 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [isPageReady, setIsPageReady] = useState(true)
   const [hasNoCompanies, setHasNoCompanies] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
+  const [companySearch, setCompanySearch] = useState("")
 
   const { selectedCompanyId, setSelectedCompanyId, companiesLoading } = useSelectedCompany()
   const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
-  // True while either the provider or the shell is still fetching companies
-  const isCompanyLoading = companiesLoading || (!!selectedCompanyId && allCompanies.length === 0)
+  // Only show skeleton if we have no cached data at all — otherwise show whatever we have instantly
+  const isCompanyLoading = companiesLoading && allCompanies.length === 0
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -174,6 +187,12 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
         setAllCompanies(userCompanies)
         setHasNoCompanies(userCompanies.length === 0)
+        // Persist to localStorage so the company name shows instantly on next load
+        try {
+          localStorage.setItem("companies_cache", JSON.stringify(userCompanies))
+        } catch {
+          // ignore storage errors
+        }
 
         // Read the current selection directly from localStorage to avoid
         // stale closure issues and prevent dependency on selectedCompanyId.
@@ -461,7 +480,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             />
           )}
 
-          <Dialog open={companyModalOpen} onOpenChange={setCompanyModalOpen}>
+          <Dialog open={companyModalOpen} onOpenChange={(open) => { setCompanyModalOpen(open); if (!open) setCompanySearch("") }}>
             <DialogContent className="w-[calc(100%-2rem)] max-w-[450px] mx-auto max-h-[85vh] overflow-y-auto">
               <DialogHeader className="space-y-2">
                 <DialogTitle className="text-base sm:text-lg font-semibold">Select Company</DialogTitle>
@@ -472,8 +491,23 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
                 </DialogDescription>
               </DialogHeader>
 
+              {allCompanies.length > 3 && (
+                <div className="relative mt-3">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    placeholder="Search companies..."
+                    value={companySearch}
+                    onChange={(e) => setCompanySearch(e.target.value)}
+                    className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/30 focus:border-[#ff0d13]"
+                  />
+                </div>
+              )}
+
               <div className="space-y-2 mt-3 sm:mt-4">
-                {allCompanies.map((company) => (
+                {allCompanies.filter((c) =>
+                  !companySearch || c.name?.toLowerCase().includes(companySearch.toLowerCase()) || c.state?.toLowerCase().includes(companySearch.toLowerCase())
+                ).map((company) => (
                   <button
                     key={company.id}
                     onClick={() => handleSelectCompany(company)}

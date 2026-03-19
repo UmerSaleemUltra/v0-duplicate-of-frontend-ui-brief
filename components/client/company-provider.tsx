@@ -8,20 +8,41 @@ import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 
 const SELECTED_COMPANY_KEY = "selectedCompanyId"
+const COMPANIES_CACHE_KEY = "companies_cache"
 
 const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing", "/services", "/auth", "/login", "/checkout", "/forgot-password", "/reset-password", "/blog"]
 
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+
+  // Read from localStorage synchronously on first render so the name shows instantly
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
     if (typeof window !== "undefined") {
       return localStorage.getItem(SELECTED_COMPANY_KEY) || null
     }
     return null
   })
-  const [companies, setCompanies] = useState<any[]>([])
-  // loading is only true for the very first fetch — never reset on tab-switch or refresh
-  const [loading, setLoading] = useState(true)
+
+  // Hydrate companies from localStorage cache immediately — avoids blank name
+  const [companies, setCompanies] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem(COMPANIES_CACHE_KEY)
+        if (cached) return JSON.parse(cached)
+      } catch {
+        // ignore
+      }
+    }
+    return []
+  })
+
+  // loading is false immediately if we have cached companies, so sidebar shows instantly
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      return !localStorage.getItem(COMPANIES_CACHE_KEY)
+    }
+    return true
+  })
   const [initialLoadDone, setInitialLoadDone] = useState(false)
 
   const isPublicPage = PUBLIC_PAGES.includes(pathname)
@@ -58,6 +79,12 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         })
 
         setCompanies(userCompanies)
+        // Persist to localStorage so next render is instant
+        try {
+          localStorage.setItem(COMPANIES_CACHE_KEY, JSON.stringify(userCompanies))
+        } catch {
+          // ignore storage errors
+        }
 
         // Auto-select company logic: prefer stored, then first
         if (userCompanies.length > 0) {
