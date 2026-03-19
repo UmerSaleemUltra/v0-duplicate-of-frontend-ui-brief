@@ -17,9 +17,26 @@ export default function DocumentsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard("client")
   const { selectedCompanyId } = useSelectedCompany()
   const { toast } = useToast()
-  const [documents, setDocuments] = useState<any[]>([])
+  // Seed from localStorage cache for instant paint — API refresh happens in background
+  const [documents, setDocuments] = useState<any[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem(`docs_cache_${selectedCompanyId}`)
+        if (cached) return JSON.parse(cached)
+      } catch { /* ignore */ }
+    }
+    return []
+  })
   const [selectedDoc, setSelectedDoc] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
+  // Only show skeleton if no cached data exists
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return !localStorage.getItem(`docs_cache_${selectedCompanyId}`)
+      } catch { /* ignore */ }
+    }
+    return true
+  })
   const [searchQuery, setSearchQuery] = useState("")
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
@@ -66,6 +83,9 @@ export default function DocumentsPage() {
           return dateB - dateA
         })
       setDocuments(businessDocs)
+      try {
+        localStorage.setItem(`docs_cache_${selectedCompanyId}`, JSON.stringify(businessDocs))
+      } catch { /* ignore */ }
     } catch (error) {
       console.error("Error loading documents:", error)
       toast({

@@ -32,8 +32,24 @@ type MemberUI = {
 export default function CompanyPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard("client")
   const { selectedCompanyId } = useSelectedCompany()
-  const [companyData, setCompanyData] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
+  // Seed from localStorage cache for instant paint on return visits
+  const [companyData, setCompanyData] = useState<any>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem(`company_detail_${selectedCompanyId}`)
+        if (cached) return JSON.parse(cached)
+      } catch { /* ignore */ }
+    }
+    return null
+  })
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return !localStorage.getItem(`company_detail_${selectedCompanyId}`)
+      } catch { /* ignore */ }
+    }
+    return true
+  })
   const [error, setError] = useState<string | null>(null)
   const [mailCount, setMailCount] = useState(0)
   const [documentCount, setDocumentCount] = useState(0)
@@ -209,6 +225,20 @@ export default function CompanyPage() {
             totalAddonsCost: totalAddonsCost,
             revenue: selectedComp.revenue || 0,
           })
+
+          // Persist to localStorage so next visit renders instantly
+          try {
+            const snapshot = {
+              businessName: selectedComp.name || "Your Company",
+              businessCategory: selectedComp.businessCategory || "Not yet",
+              state: selectedComp.state || "Not yet",
+              entityType: selectedComp.entityType || "LLC",
+              packageType: selectedComp.packageType || "starter",
+              ein: selectedComp.ein || "Not yet",
+              companyStatus: selectedComp.status || "pending",
+            }
+            localStorage.setItem(`company_detail_${selectedCompanyId}`, JSON.stringify(snapshot))
+          } catch { /* ignore */ }
 
           console.log(
             "[v0] Tax data fetched - Classification:",

@@ -19,11 +19,36 @@ export default function MailroomPage() {
   const { isAuthenticated, isLoading } = useAuthGuard()
   const { selectedCompanyId } = useSelectedCompany()
   const { toast } = useToast()
-  const [mailItems, setMailItems] = useState<MailItem[]>([])
-  const [filteredItems, setFilteredItems] = useState<MailItem[]>([])
+  // Seed from localStorage cache so the page paints immediately on return visits
+  const [mailItems, setMailItems] = useState<MailItem[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem(`mail_cache_${selectedCompanyId}`)
+        if (cached) return JSON.parse(cached)
+      } catch { /* ignore */ }
+    }
+    return []
+  })
+  const [filteredItems, setFilteredItems] = useState<MailItem[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem(`mail_cache_${selectedCompanyId}`)
+        if (cached) return JSON.parse(cached)
+      } catch { /* ignore */ }
+    }
+    return []
+  })
   const [typeFilter, setTypeFilter] = useState("all-types")
   const [searchQuery, setSearchQuery] = useState("")
-  const [loading, setLoading] = useState(true)
+  // Only show skeleton if there is no cached data
+  const [loading, setLoading] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return !localStorage.getItem(`mail_cache_${selectedCompanyId}`)
+      } catch { /* ignore */ }
+    }
+    return true
+  })
   const [viewingDocument, setViewingDocument] = useState<{ url: string; name: string } | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
   const itemsPerPage = 10
@@ -62,6 +87,9 @@ export default function MailroomPage() {
 
       setMailItems(normalizedItems)
       setFilteredItems(normalizedItems)
+      try {
+        localStorage.setItem(`mail_cache_${selectedCompanyId}`, JSON.stringify(normalizedItems))
+      } catch { /* ignore */ }
     } catch (error) {
       console.error("[v0] Error loading mail:", error)
       toast({

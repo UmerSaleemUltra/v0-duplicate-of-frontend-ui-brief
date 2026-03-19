@@ -248,6 +248,64 @@ export const emailTemplates = {
     `,
   }},
 
+  passwordReset: (name: string, resetLink: string) => ({
+    subject: "Reset Your Password - Buzz Filing",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+                <tr>
+                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">Dear ${name},</p>
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      We received a request to reset the password for your Buzz Filing account. Click the button below to set a new password. This link is valid for 1 hour.
+                    </p>
+                    <p style="margin: 0 0 30px 0; text-align: center;">
+                      <a href="${resetLink}" style="display: inline-block; background-color: #880000; color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-size: 14px; font-weight: 600;">
+                        Reset Password
+                      </a>
+                    </p>
+                    <p style="margin: 0 0 20px 0; font-size: 13px; color: #666666; line-height: 1.6;">
+                      If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.
+                    </p>
+                    <p style="margin: 0; font-size: 13px; color: #666666; line-height: 1.6;">
+                      Or copy and paste this link into your browser:<br/>
+                      <a href="${resetLink}" style="color: #880000; word-break: break-all;">${resetLink}</a>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 40px 40px 40px; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #999999;">
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+
   einUploaded: (name: string, companyName: string) => ({
     subject: "Your EIN Application Is Under Review",
     html: `
