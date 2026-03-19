@@ -19,8 +19,10 @@ export default function HeroSection() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [userRole, setUserRole] = useState<"admin" | "client" | null>(null)
   const [showCalculator, setShowCalculator] = useState(false)
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
+    setMounted(true)
     const authUserCookie = getCookie("auth_user")
     if (authUserCookie) {
       try {
@@ -34,8 +36,8 @@ export default function HeroSection() {
     }
   }, [])
 
-  const buttonLink = isAuthenticated ? (userRole === "admin" ? "/admin" : "/client/dashboard") : "/checkout"
-  const buttonText = isAuthenticated ? "Go to Dashboard" : "Start Your Business"
+  const buttonLink = mounted ? (isAuthenticated ? (userRole === "admin" ? "/admin" : "/client/dashboard") : "/checkout") : "/checkout"
+  const buttonText = mounted && isAuthenticated ? "Go to Dashboard" : "Start Your Business"
 
   return (
     <>
