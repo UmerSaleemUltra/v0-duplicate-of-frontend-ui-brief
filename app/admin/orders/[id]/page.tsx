@@ -2339,7 +2339,7 @@ export default function OrderDetailPage() {
     setNotifsLoading(true)
     try {
       const token = authService.getToken()
-      const res = await fetch(`/api/notifications?userId=${customer.id}&type=admin_message`, {
+      const res = await fetch(`/api/notifications?userId=${customer.id}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
       if (res.ok) {
@@ -3096,7 +3096,7 @@ export default function OrderDetailPage() {
           <DialogHeader>
             <DialogTitle className="text-xl font-semibold">Sent Notifications</DialogTitle>
             <DialogDescription>
-              Admin notifications sent to {customer?.name || customer?.email || "this client"}.
+              All notifications for {customer?.name || customer?.email || "this client"} — system and custom.
             </DialogDescription>
           </DialogHeader>
           <div className="flex-1 overflow-y-auto py-4 space-y-3">

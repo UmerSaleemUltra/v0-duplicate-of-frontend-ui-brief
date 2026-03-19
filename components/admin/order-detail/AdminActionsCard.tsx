@@ -181,7 +181,6 @@ export function AdminActionsCard({
           loading={milestoneUpdating}
           loadingLabel="Loading..."
         />
-        <ActionRow icon={<Package className="w-4 h-4" />} label="Add Addon to Client" onClick={onAddAddon} />
         <ActionRow icon={<Plus className="w-4 h-4" />} label="Add Custom Addon to Client" onClick={onAddCustomAddon} />
         <ActionRow icon={<UploadCloud className="w-4 h-4" />} label="Upload Document" onClick={onUploadDocument} />
         <ActionRow icon={<Mail className="w-4 h-4" />} label="Upload Mail" onClick={onUploadMail} />
