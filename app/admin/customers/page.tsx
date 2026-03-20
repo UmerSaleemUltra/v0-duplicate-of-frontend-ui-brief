@@ -296,7 +296,7 @@ export default function CustomersPage() {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm font-medium text-slate-900 truncate">{customer.name}</p>
-                      <p className="text-xs text-slate-500 truncate">{customer.email}</p>
+                      <p className="text-xs text-slate-500 truncate line-clamp-1">{customer.email}</p>
                     </div>
                   </div>
                   <div className="flex items-center gap-6 shrink-0">
