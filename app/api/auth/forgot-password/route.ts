@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
 
     // Generate reset token
     const resetToken = generateOTP()
-    const resetTokenExpiry = new Date(Date.now() + 60 * 60 * 1000) // 1 hour
+    const resetTokenExpiry = new Date(Date.now() + 15 * 60 * 1000) // 15 minutes
 
     await usersCollection.updateOne(
       { _id: user._id },

@@ -5,7 +5,7 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import { Mail, ArrowRight, ArrowLeft, CheckCircle } from "lucide-react"
+import { Mail, ArrowRight, ArrowLeft, CheckCircle, Clock, RefreshCw, InboxIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -125,26 +125,54 @@ export default function ForgotPasswordPage() {
             </div>
 
             <h1 className="text-3xl font-bold text-center mb-2">Check Your Email</h1>
-            <p className="text-muted text-center mb-8">
-              We've sent a password reset link to <span className="text-foreground font-medium">{email}</span>
+            <p className="text-muted text-center mb-6">
+              We've sent a password reset link to{" "}
+              <span className="text-foreground font-semibold">{email}</span>
             </p>
 
+            {/* Token expiry notice */}
+            <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 mb-6">
+              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
+                <Clock className="w-4 h-4 text-amber-500" />
+              </div>
+              <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
+                This link expires in <strong>15 minutes</strong>. Please check your email promptly.
+              </p>
+            </div>
+
             <div className="space-y-4">
-              <div className="p-4 rounded-xl bg-muted/50 border border-glass-border">
-                <p className="text-sm text-muted">
-                  <strong className="text-foreground">Didn't receive the email?</strong>
-                  <br />
-                  Check your spam folder or try resending the link.
-                </p>
+              {/* Didn't receive card — redesigned */}
+              <div className="rounded-2xl border border-glass-border bg-background/60 overflow-hidden">
+                <div className="flex items-center gap-3 px-4 py-3 border-b border-glass-border bg-muted/30">
+                  <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center flex-shrink-0">
+                    <InboxIcon className="w-4 h-4 text-brand" />
+                  </div>
+                  <p className="text-sm font-semibold text-foreground">Didn't receive the email?</p>
+                </div>
+                <div className="px-4 py-3 space-y-1.5">
+                  <p className="text-sm text-muted flex items-start gap-2">
+                    <span className="mt-0.5 text-brand font-bold">1.</span>
+                    Check your <strong className="text-foreground">spam or junk</strong> folder.
+                  </p>
+                  <p className="text-sm text-muted flex items-start gap-2">
+                    <span className="mt-0.5 text-brand font-bold">2.</span>
+                    Make sure you entered the correct email address.
+                  </p>
+                  <p className="text-sm text-muted flex items-start gap-2">
+                    <span className="mt-0.5 text-brand font-bold">3.</span>
+                    Use the button below to resend a new link.
+                  </p>
+                </div>
               </div>
 
               <Button
                 onClick={handleResend}
                 variant="outline"
-                className="w-full h-11 bg-transparent"
+                className="w-full h-11 bg-transparent gap-2"
                 disabled={loading}
               >
-                {loading ? "Sending..." : "Resend Email"}
+                <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
+                {loading ? "Sending..." : "Resend Reset Email"}
               </Button>
 
               <Link href="/login">
