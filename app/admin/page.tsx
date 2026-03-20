@@ -26,7 +26,7 @@ import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area } from "recharts"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, Cell, PieChart, Pie, Legend } from "recharts"
 
 export default function AdminDashboard() {
   const router = useRouter()
@@ -47,6 +47,8 @@ export default function AdminDashboard() {
   const [statesDrawerOpen, setStatesDrawerOpen] = useState(false)
   const [ordersDrawerOpen, setOrdersDrawerOpen] = useState(false)
   const [allOrders, setAllOrders] = useState<any[]>([])
+  const [packageData, setPackageData] = useState<any[]>([])
+  const [heatmapData, setHeatmapData] = useState<any[]>([])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -229,6 +231,36 @@ export default function AdminDashboard() {
         })
         
         setChartData(monthlyChartData)
+
+        // Best-selling packages
+        const packageCount: Record<string, { count: number; revenue: number }> = {}
+        allOrders.forEach((order: any) => {
+          const pkg = order.packageType || "N/A"
+          if (!packageCount[pkg]) packageCount[pkg] = { count: 0, revenue: 0 }
+          packageCount[pkg].count += 1
+          packageCount[pkg].revenue += order.pricing?.total || order.amount || order.total || 0
+        })
+        const pkgData = Object.entries(packageCount)
+          .map(([name, val]) => ({ name, count: val.count, revenue: val.revenue }))
+          .sort((a, b) => b.count - a.count)
+        setPackageData(pkgData)
+
+        // Peak order hours/days heatmap
+        const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]
+        const heatmap = days.map((day, dayIdx) => {
+          const hours: Record<string, number> = {}
+          for (let h = 0; h < 24; h++) hours[`h${h}`] = 0
+          allOrders.forEach((order: any) => {
+            const d = new Date(order.createdAt)
+            if (d.getDay() === dayIdx) {
+              const h = d.getHours()
+              hours[`h${h}`] = (hours[`h${h}`] || 0) + 1
+            }
+          })
+          return { day, ...hours }
+        })
+        setHeatmapData(heatmap)
+
         console.log("[v0] Admin Dashboard: State breakdown set:", breakdown.length)
 
         setDataLoaded(true)
@@ -507,6 +539,107 @@ export default function AdminDashboard() {
               <Area type="monotone" dataKey="revenue" stroke="#880000" fillOpacity={1} fill="url(#colorRevenue)" />
             </AreaChart>
           </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Best-Selling Packages + Peak Order Heatmap */}
+      <div className="grid gap-4 md:gap-6 grid-cols-1 lg:grid-cols-2">
+        {/* Best-Selling Packages */}
+        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-lg">
+          <div className="mb-4 md:mb-6">
+            <h3 className="text-lg md:text-xl font-bold text-slate-900">Best-Selling Packages</h3>
+            <p className="text-xs md:text-sm text-slate-700 mt-1">Order volume by package type</p>
+          </div>
+          {packageData.length === 0 ? (
+            <p className="text-center text-slate-500 py-8 text-sm">No package data yet</p>
+          ) : (
+            <div className="space-y-3">
+              {packageData.map((pkg, i) => {
+                const max = packageData[0]?.count || 1
+                const pct = Math.round((pkg.count / max) * 100)
+                const colors = ["from-[#880000] to-[#ff0d13]", "from-slate-700 to-slate-500", "from-slate-400 to-slate-300", "from-slate-300 to-slate-200"]
+                return (
+                  <div key={i} className="p-3 rounded-xl bg-white/60 border border-white/40">
+                    <div className="flex items-center justify-between mb-2">
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-bold text-slate-400 w-5">#{i + 1}</span>
+                        <span className="text-sm font-semibold text-slate-900">{pkg.name}</span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="text-xs text-slate-500">{pkg.count} orders</span>
+                        <span className="text-xs font-bold text-slate-700">${pkg.revenue.toLocaleString()}</span>
+                      </div>
+                    </div>
+                    <div className="w-full bg-white/40 rounded-full h-2">
+                      <div
+                        className={`bg-gradient-to-r ${colors[i] || colors[3]} h-2 rounded-full transition-all`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Peak Order Hours/Days Heatmap */}
+        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-lg">
+          <div className="mb-4 md:mb-6">
+            <h3 className="text-lg md:text-xl font-bold text-slate-900">Peak Order Times</h3>
+            <p className="text-xs md:text-sm text-slate-700 mt-1">Order activity by day and hour</p>
+          </div>
+          {heatmapData.length === 0 || allOrders.length === 0 ? (
+            <p className="text-center text-slate-500 py-8 text-sm">No order time data yet</p>
+          ) : (
+            <div className="overflow-x-auto">
+              <div className="min-w-[340px]">
+                {/* Hour labels */}
+                <div className="flex items-center mb-1 pl-9">
+                  {[0, 3, 6, 9, 12, 15, 18, 21].map((h) => (
+                    <div key={h} className="flex-1 text-center text-[10px] text-slate-400">
+                      {h === 0 ? "12a" : h < 12 ? `${h}a` : h === 12 ? "12p" : `${h - 12}p`}
+                    </div>
+                  ))}
+                </div>
+                {/* Heatmap rows */}
+                {heatmapData.map((row, di) => {
+                  const maxVal = Math.max(...heatmapData.flatMap(r => Array.from({length: 24}, (_, h) => r[`h${h}`] || 0)))
+                  return (
+                    <div key={di} className="flex items-center gap-1 mb-1">
+                      <span className="text-[11px] font-medium text-slate-500 w-8 flex-shrink-0">{row.day}</span>
+                      <div className="flex gap-0.5 flex-1">
+                        {Array.from({ length: 24 }, (_, h) => {
+                          const val = row[`h${h}`] || 0
+                          const intensity = maxVal > 0 ? val / maxVal : 0
+                          let bg = "bg-slate-100"
+                          if (intensity > 0.75) bg = "bg-[#880000]"
+                          else if (intensity > 0.5) bg = "bg-[#880000]/70"
+                          else if (intensity > 0.25) bg = "bg-[#880000]/40"
+                          else if (intensity > 0) bg = "bg-[#880000]/20"
+                          return (
+                            <div
+                              key={h}
+                              title={`${row.day} ${h}:00 — ${val} order${val !== 1 ? "s" : ""}`}
+                              className={`flex-1 h-6 rounded-sm ${bg} cursor-default transition-all hover:ring-1 hover:ring-[#880000]/60`}
+                            />
+                          )
+                        })}
+                      </div>
+                    </div>
+                  )
+                })}
+                {/* Legend */}
+                <div className="flex items-center gap-2 mt-3 justify-end">
+                  <span className="text-[10px] text-slate-400">Less</span>
+                  {["bg-slate-100", "bg-[#880000]/20", "bg-[#880000]/40", "bg-[#880000]/70", "bg-[#880000]"].map((c, i) => (
+                    <div key={i} className={`w-4 h-4 rounded-sm ${c}`} />
+                  ))}
+                  <span className="text-[10px] text-slate-400">More</span>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
