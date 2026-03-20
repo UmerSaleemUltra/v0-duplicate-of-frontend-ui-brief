@@ -152,14 +152,10 @@ export default function ForgotPasswordPage() {
                 <div className="px-4 py-3 space-y-1.5">
                   <p className="text-sm text-muted flex items-start gap-2">
                     <span className="mt-0.5 text-brand font-bold">1.</span>
-                    Check your <strong className="text-foreground">spam or junk</strong> folder.
-                  </p>
-                  <p className="text-sm text-muted flex items-start gap-2">
-                    <span className="mt-0.5 text-brand font-bold">2.</span>
                     Make sure you entered the correct email address.
                   </p>
                   <p className="text-sm text-muted flex items-start gap-2">
-                    <span className="mt-0.5 text-brand font-bold">3.</span>
+                    <span className="mt-0.5 text-brand font-bold">2.</span>
                     Use the button below to resend a new link.
                   </p>
                 </div>

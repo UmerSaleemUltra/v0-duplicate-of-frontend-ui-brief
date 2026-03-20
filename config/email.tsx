@@ -271,7 +271,7 @@ export const emailTemplates = {
                   <td style="padding: 0 40px 40px 40px;">
                     <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">Dear ${name},</p>
                     <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      We received a request to reset the password for your Buzz Filing account. Click the button below to set a new password. This link is valid for 1 hour.
+                      We received a request to reset the password for your Buzz Filing account. Click the button below to set a new password. This email is valid for 15 minutes.
                     </p>
                     <p style="margin: 0 0 30px 0; text-align: center;">
                       <a href="${resetLink}" style="display: inline-block; background-color: #880000; color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-size: 14px; font-weight: 600;">
