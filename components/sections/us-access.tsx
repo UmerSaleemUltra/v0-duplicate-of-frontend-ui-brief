@@ -42,30 +42,30 @@ export default function USAccessSection() {
       aria-labelledby="us-access-heading"
       className="w-full py-16 md:py-20 lg:py-24 bg-white"
     >
-      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
-        {/* Badge */}
-        <p className="text-sm font-extrabold tracking-widest uppercase text-[#cc0000] mb-8 text-center">
-          Trusted by Global Entrepreneurs
-        </p>
-
-        {/* Heading */}
-        <h2
-          id="us-access-heading"
-          className="text-3xl md:text-4xl font-semibold text-center text-[#1a0a0a] leading-tight mb-4 text-balance"
-        >
-          With a{" "}
-          <span className="text-[#880000]">US Company</span>
-          <br />
-          you can access
-        </h2>
-
-        {/* Subtitle */}
-        <p className="text-gray-500 text-base md:text-lg text-center max-w-xl leading-relaxed mb-12">
-          Unlock the power of US business infrastructure and access the world&apos;s leading platforms and services
-        </p>
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* Header Section with Badge */}
+        <div className="text-center mb-12 sm:mb-16 lg:mb-20">
+          <div className="flex justify-center mb-4">
+            <div className="inline-flex items-center gap-2 px-0 py-2">
+              <span className="text-sm font-bold text-[#ff0d13] uppercase tracking-wide">Global Access</span>
+            </div>
+          </div>
+          <h2
+            id="us-access-heading"
+            className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4"
+          >
+            With a US Company
+            <br />
+            you can access
+          </h2>
+          <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-6">
+            Unlock access to the world&apos;s leading payment platforms and financial services with a US company foundation.
+          </p>
+        </div>
 
         {/* Logos Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 w-full">
+        <div className="flex flex-col items-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 w-full">
           {platforms.map((platform) => (
             <div
               key={platform.name}
@@ -81,6 +81,7 @@ export default function USAccessSection() {
               />
             </div>
           ))}
+          </div>
         </div>
       </div>
     </section>
