@@ -177,7 +177,6 @@ export const getAllFilesFromLocalStorage = async (): Promise<StoredFile[]> => {
     return []
   }
 }
-}
 
 // Clear localStorage backup
 export const clearLocalStorageBackup = (): void => {
