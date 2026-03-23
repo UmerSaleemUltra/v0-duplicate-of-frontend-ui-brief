@@ -36,7 +36,7 @@ export default function PricingSection() {
 
   return (
     <>
-      <section id="pricing" className="w-full flex items-center justify-center px-4 sm:px-6 py-16 md:py-20 lg:py-24 bg-white">
+      <section id="pricing" className="w-full flex items-center justify-center px-4 sm:px-6 py-16 md:py-20 lg:py-24 bg-white mt-[-80px]">
         <div className="container mx-auto max-w-6xl">
           <div className="text-center mb-12 sm:mb-16 lg:mb-20">
             <div className="flex justify-center mb-4">
