@@ -45,7 +45,7 @@ export default function USAccessSection() {
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
         {/* Badge */}
-        <p className="text-sm font-extrabold tracking-widest uppercase text-[#cc0000] mb-8">
+        <p className="text-sm font-extrabold tracking-widest uppercase text-[#cc0000] mb-8 text-center">
           Trusted by Global Entrepreneurs
         </p>
 
