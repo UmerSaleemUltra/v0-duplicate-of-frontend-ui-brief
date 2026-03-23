@@ -64,24 +64,22 @@ export default function USAccessSection() {
         </div>
 
         {/* Logos Grid */}
-        <div className="flex flex-col items-center">
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 w-full mb-12">
-            {platforms.map((platform) => (
-              <div
-                key={platform.name}
-                className="flex items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 px-4 shadow-sm hover:shadow-md transition-shadow duration-200"
-              >
-                <img
-                  src={platform.logo}
-                  alt={`${platform.name} logo`}
-                  className={`h-8 md:h-10 w-auto max-w-[120px] object-contain ${
-                    platform.hasBlackFilter ? "filter brightness-0" : ""
-                  }`}
-                  loading="lazy"
-                />
-              </div>
-            ))}
-          </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 w-full">
+          {platforms.map((platform) => (
+            <div
+              key={platform.name}
+              className="flex items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 px-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+            >
+              <img
+                src={platform.logo}
+                alt={`${platform.name} logo`}
+                className={`h-8 md:h-10 w-auto max-w-[120px] object-contain ${
+                  platform.hasBlackFilter ? "filter brightness-0" : ""
+                }`}
+                loading="lazy"
+              />
+            </div>
+          ))}
         </div>
       </div>
     </section>
