@@ -45,10 +45,9 @@ export default function USAccessSection() {
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 flex flex-col items-center">
         {/* Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-gray-200 bg-white shadow-sm mb-8">
-          <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
-          <span className="text-sm text-gray-600 font-medium">Trusted by Global Entrepreneurs</span>
-        </div>
+        <p className="text-sm font-extrabold tracking-widest uppercase text-[#cc0000] mb-8">
+          Trusted by Global Entrepreneurs
+        </p>
 
         {/* Heading */}
         <h2
