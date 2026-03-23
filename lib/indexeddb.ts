@@ -138,7 +138,6 @@ export const getFileFromLocalStorage = async (id: string): Promise<StoredFile | 
       memberIndex: backup.memberIndex,
     }
   } catch (error) {
-    console.error("[v0] Error retrieving file from localStorage:", error)
     return null
   }
 }
@@ -172,11 +171,12 @@ export const getAllFilesFromLocalStorage = async (): Promise<StoredFile[]> => {
       }),
     )
 
-    return files.filter((f): f is StoredFile => f !== null)
+      return files.filter((f): f is StoredFile => f !== null)
+    }
   } catch (error) {
-    console.error("[v0] Error retrieving files from localStorage:", error)
     return []
   }
+}
 }
 
 // Clear localStorage backup
@@ -186,8 +186,6 @@ export const clearLocalStorageBackup = (): void => {
 
 // Save file to IndexedDB
 export const saveFileToIndexedDB = async (file: File, memberIndex: number): Promise<string> => {
-  console.log("[v0] Attempting to save file to IndexedDB...")
-
   // Try IndexedDB first
   if (isIndexedDBAvailable()) {
     try {
@@ -212,27 +210,21 @@ export const saveFileToIndexedDB = async (file: File, memberIndex: number): Prom
         request.onerror = () => reject(request.error)
       })
 
-      console.log("[v0] ✅ File saved to IndexedDB:", id)
-
       // Also save to localStorage as backup
       await saveFileToLocalStorage(file, memberIndex)
-      console.log("[v0] ✅ File also saved to localStorage as backup")
 
       return id
     } catch (error) {
-      console.warn("[v0] IndexedDB failed, falling back to localStorage:", error)
+      // Fall through to localStorage
     }
   }
 
   // Fallback to localStorage if IndexedDB fails or unavailable
-  console.log("[v0] Using localStorage for file storage (incognito mode detected)")
   return await saveFileToLocalStorage(file, memberIndex)
 }
 
 // Get file from IndexedDB
 export const getFileFromIndexedDB = async (id: string): Promise<StoredFile | null> => {
-  console.log("[v0] Retrieving file:", id)
-
   // Try IndexedDB first
   if (isIndexedDBAvailable()) {
     try {
@@ -247,22 +239,19 @@ export const getFileFromIndexedDB = async (id: string): Promise<StoredFile | nul
       })
 
       if (file) {
-        console.log("[v0] ✅ File retrieved from IndexedDB")
         return file
       }
     } catch (error) {
-      console.warn("[v0] IndexedDB retrieval failed, checking localStorage:", error)
+      // Fall through to localStorage
     }
   }
 
   // Fallback to localStorage
-  console.log("[v0] Checking localStorage for file")
   return await getFileFromLocalStorage(id)
 }
 
 // Get all files from IndexedDB
 export const getAllFilesFromIndexedDB = async (): Promise<StoredFile[]> => {
-  console.log("[v0] Retrieving all files...")
   const files: StoredFile[] = []
 
   // Try IndexedDB first
@@ -279,15 +268,13 @@ export const getAllFilesFromIndexedDB = async (): Promise<StoredFile[]> => {
       })
 
       files.push(...indexedDBFiles)
-      console.log(`[v0] ✅ Retrieved ${indexedDBFiles.length} files from IndexedDB`)
     } catch (error) {
-      console.warn("[v0] IndexedDB retrieval failed:", error)
+      // Continue
     }
   }
 
   // Also check localStorage
   const localStorageFiles = await getAllFilesFromLocalStorage()
-  console.log(`[v0] ✅ Retrieved ${localStorageFiles.length} files from localStorage`)
 
   // Merge, avoiding duplicates
   const uniqueFiles = new Map<string, StoredFile>()
@@ -295,9 +282,7 @@ export const getAllFilesFromIndexedDB = async (): Promise<StoredFile[]> => {
     uniqueFiles.set(file.id, file)
   }
 
-  const result = Array.from(uniqueFiles.values())
-  console.log(`[v0] Total unique files: ${result.length}`)
-  return result
+  return Array.from(uniqueFiles.values())
 }
 
 // Delete file from IndexedDB
@@ -316,8 +301,6 @@ export const deleteFileFromIndexedDB = async (id: string): Promise<void> => {
 
 // Clear all files from IndexedDB (cleanup after successful order)
 export const clearAllFilesFromIndexedDB = async (): Promise<void> => {
-  console.log("[v0] Clearing all stored files...")
-
   // Clear IndexedDB
   if (isIndexedDBAvailable()) {
     try {
@@ -330,13 +313,11 @@ export const clearAllFilesFromIndexedDB = async (): Promise<void> => {
         request.onsuccess = () => resolve()
         request.onerror = () => reject(request.error)
       })
-      console.log("[v0] ✅ IndexedDB cleared")
     } catch (error) {
-      console.warn("[v0] Failed to clear IndexedDB:", error)
+      // Continue
     }
   }
 
   // Clear localStorage backup
   clearLocalStorageBackup()
-  console.log("[v0] ✅ localStorage backup cleared")
 }

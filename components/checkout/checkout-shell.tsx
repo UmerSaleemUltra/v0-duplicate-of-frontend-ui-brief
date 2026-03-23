@@ -21,9 +21,6 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
   const [saveMessage, setSaveMessage] = useState<string>("")
 
   useEffect(() => {
-    console.log("[v0] Checkout: Current step:", currentStep)
-    console.log("[v0] Checkout: Data state:", data?.state?.name || "No state selected")
-
     // Clear save message when step changes
     if (saveMessage) {
       setSaveMessage("")
@@ -40,7 +37,6 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
   ]
 
   const handleSaveProgress = () => {
-    console.log("[v0] Checkout: Saving progress at step:", currentStep)
     const result = saveProgress()
     setSaveMessage(result.message)
 
