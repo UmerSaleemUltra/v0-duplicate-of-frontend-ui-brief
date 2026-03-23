@@ -25,6 +25,14 @@ const platforms = [
     name: "Payoneer",
     logo: "https://cdn.brandfetch.io/idVmyDyyyZ/w/800/h/156/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1667571027582",
   },
+  {
+    name: "Wise",
+    logo: "https://cdn.brandfetch.io/idIeznrSk9/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+  },
+  {
+    name: "Square",
+    logo: "https://cdn.brandfetch.io/idk6fxo1w1/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+  },
 ]
 
 export default function USAccessSection() {
