@@ -25,15 +25,6 @@ const platforms = [
     name: "Payoneer",
     logo: "https://cdn.brandfetch.io/idVmyDyyyZ/w/800/h/156/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1667571027582",
   },
-  {
-    name: "Sunrate",
-    logo: "https://cdn.brandfetch.io/idY4rzp0Gt/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
-    hasBlackFilter: true,
-  },
-  {
-    name: "Nsave",
-    logo: "https://cdn.brandfetch.io/idtf53Ue7K/w/820/h/187/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
-  },
 ]
 
 export default function USAccessSection() {
