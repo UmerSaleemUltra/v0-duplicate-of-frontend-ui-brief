@@ -40,7 +40,7 @@ export default function USAccessSection() {
   return (
     <section
       aria-labelledby="us-access-heading"
-      className="w-full py-16 md:py-20 lg:py-24 bg-white"
+      className="w-full py-12 md:py-14 lg:py-16 bg-white"
     >
       <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header Section with Badge */}

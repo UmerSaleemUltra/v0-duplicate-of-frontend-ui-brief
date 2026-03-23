@@ -27,7 +27,7 @@ export default function Brands() {
   return (
     <section
       aria-labelledby="partners-heading"
-      className="relative w-full py-16 md:py-20 lg:py-24 bg-gradient-to-r from-[#880000] to-[#ff0d13] overflow-hidden"
+      className="relative w-full py-12 md:py-14 lg:py-16 bg-gradient-to-r from-[#880000] to-[#ff0d13] overflow-hidden"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <h2
