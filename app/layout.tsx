@@ -107,6 +107,8 @@ export const metadata = {
     "Pakistan LLC service",
     "LLC kaise banaye Pakistan",
     "US company kaise register kare",
+    "Best LLC Formation Services in Pakistan",
+    "Best LLC Formation Services in Karachi",
   ],
 
   authors: [{ name: "Buzz Filing", url: "https://www.buzzfiling.com" }],
