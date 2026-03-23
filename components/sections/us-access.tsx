@@ -1,7 +1,5 @@
 "use client"
 
-import Link from "next/link"
-
 const platforms = [
   {
     name: "Stripe",
@@ -29,7 +27,7 @@ const platforms = [
   },
   {
     name: "Sunrate",
-    logo: "https://cdn.brandfetch.io/idY4rzp0Gt/w/820/h/94/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX&t=1769383332682",
+    logo: "https://cdn.brandfetch.io/idY4rzp0Gt/w/820/h/94/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
   },
   {
     name: "Nsave",
@@ -66,7 +64,7 @@ export default function USAccessSection() {
         </p>
 
         {/* Logos Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 w-full mb-12">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 md:gap-4 w-full">
           {platforms.map((platform) => (
             <div
               key={platform.name}
@@ -75,25 +73,11 @@ export default function USAccessSection() {
               <img
                 src={platform.logo}
                 alt={`${platform.name} logo`}
-                className={`h-8 md:h-10 w-auto max-w-[120px] object-contain ${
-                  platform.name === "Sunrate" ? "filter brightness-0 saturate-100 hue-rotate-[220deg] brightness-150" : ""
-                }`}
+                className="h-8 md:h-10 w-auto max-w-[120px] object-contain"
                 loading="lazy"
               />
             </div>
           ))}
-        </div>
-
-        {/* CTA Pill */}
-        <div className="inline-flex items-center gap-2 px-5 py-3 rounded-full border border-gray-200 bg-white shadow-sm">
-          <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
-          <span className="text-sm text-gray-500">Ready to get started?</span>
-          <Link
-            href="/checkout"
-            className="text-sm font-bold text-[#880000] hover:text-[#ff0d13] transition-colors"
-          >
-            Start Your US Company &rarr;
-          </Link>
         </div>
       </div>
     </section>
