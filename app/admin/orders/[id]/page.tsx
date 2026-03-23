@@ -71,6 +71,7 @@ import { AddonsCard } from "@/components/admin/order-detail/AddonsCard"
 import { AdminActionsCard } from "@/components/admin/order-detail/AdminActionsCard"
 import { StatusManagementCard } from "@/components/admin/order-detail/StatusManagementCard"
 import { AssignedInfoCards } from "@/components/admin/order-detail/AssignedInfoCards"
+import { RequestDocumentModal } from "@/components/admin/request-document-modal"
 
 const getDisplayValue = (value: any, defaultValue = "N/A"): string => {
   if (value === null || value === undefined || value === "") return defaultValue
@@ -226,6 +227,9 @@ export default function OrderDetailPage() {
   const [uploadDocType, setUploadDocType] = useState("general")
   const [uploadDocTitle, setUploadDocTitle] = useState("")
   const [uploadDocFiles, setUploadDocFiles] = useState<FileList | null>(null)
+
+  // Request Document state
+  const [requestDocumentDialogOpen, setRequestDocumentDialogOpen] = useState(false)
 
   // Upload Mail state
   const [uploadMailDialogOpen, setUploadMailDialogOpen] = useState(false)
@@ -2956,10 +2960,23 @@ export default function OrderDetailPage() {
                 setCustomAddonPrice("")
                 setCustomAddonDialogOpen(true)
               }}
+              onRequestDocument={() => setRequestDocumentDialogOpen(true)}
             />
           </TabsContent>
         </Tabs>
       </div>
+
+      {/* Request Document Modal */}
+      <RequestDocumentModal
+        open={requestDocumentDialogOpen}
+        onOpenChange={setRequestDocumentDialogOpen}
+        orderId={order?.id || ""}
+        companyId={company?.id || ""}
+        userId={customer?.id || order?.userId || ""}
+        companyName={company?.name}
+        customerName={customer?.name}
+        customerEmail={customer?.email || order?.email}
+      />
 
       {/* Manage Milestones Dialog */}
       <MilestonesDialog
