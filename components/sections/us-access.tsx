@@ -75,7 +75,9 @@ export default function USAccessSection() {
               <img
                 src={platform.logo}
                 alt={`${platform.name} logo`}
-                className="h-8 md:h-10 w-auto max-w-[120px] object-contain"
+                className={`h-8 md:h-10 w-auto max-w-[120px] object-contain ${
+                  platform.name === "Sunrate" ? "filter brightness-0 saturate-100 hue-rotate-[220deg] brightness-150" : ""
+                }`}
                 loading="lazy"
               />
             </div>
