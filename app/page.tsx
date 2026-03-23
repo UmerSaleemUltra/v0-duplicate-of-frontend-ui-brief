@@ -5,6 +5,7 @@ import type { Metadata } from "next"
 
 // Below-the-fold sections loaded lazily to reduce initial JS bundle
 const Brands = dynamic(() => import("@/components/sections/brands"))
+const USAccessSection = dynamic(() => import("@/components/sections/us-access"))
 const PricingSection = dynamic(() => import("@/components/sections/pricing"))
 const ServicesSection = dynamic(() => import("@/components/sections/services"))
 const HowItWorks = dynamic(() => import("@/components/sections/how-it-works"))
@@ -213,6 +214,7 @@ export default function LandingPage() {
       <Navbar />
       <HeroSection />
       <Brands />
+      <USAccessSection />
       <PricingSection />
       <ServicesSection />
       <HowItWorks />
