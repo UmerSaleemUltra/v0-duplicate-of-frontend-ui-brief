@@ -54,12 +54,10 @@ export default function USAccessSection() {
             id="us-access-heading"
             className="text-gray-900 text-3xl md:text-4xl font-semibold mb-4"
           >
-            With a US Company
-            <br />
-            you can access
+            Access Global Platforms
           </h2>
           <p className="text-gray-600 text-base sm:text-lg md:text-xl max-w-3xl mx-auto mb-6">
-            Unlock access to the world&apos;s leading payment platforms and financial services with a US company foundation.
+            Open doors to international markets with US company.
           </p>
         </div>
 
@@ -68,12 +66,16 @@ export default function USAccessSection() {
           {platforms.map((platform) => (
             <div
               key={platform.name}
-              className="flex items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 px-4 shadow-sm hover:shadow-md transition-shadow duration-200"
+              className={`flex items-center justify-center rounded-2xl border border-gray-200 bg-white py-6 px-4 shadow-sm hover:shadow-md transition-shadow duration-200 ${
+                platform.name === "Stripe" ? "sm:col-span-2 lg:col-span-1" : ""
+              }`}
             >
               <img
                 src={platform.logo}
                 alt={`${platform.name} logo`}
-                className={`h-8 md:h-10 w-auto max-w-[120px] object-contain ${
+                className={`${
+                  platform.name === "Stripe" ? "h-12 md:h-16" : "h-8 md:h-10"
+                } w-auto max-w-[120px] object-contain ${
                   platform.hasBlackFilter ? "filter brightness-0" : ""
                 }`}
                 loading="lazy"
