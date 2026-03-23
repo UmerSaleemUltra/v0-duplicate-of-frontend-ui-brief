@@ -5,27 +5,27 @@ import Link from "next/link"
 const platforms = [
   {
     name: "Stripe",
-    logo: "https://cdn.brandfetch.io/idxAg10C0L/w/820/h/180/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX",
+    logo: "https://cdn.brandfetch.io/idxAg10C0L/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
   },
   {
     name: "PayPal",
-    logo: "https://cdn.brandfetch.io/id-IBRRPOb/w/820/h/180/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX",
+    logo: "https://cdn.brandfetch.io/id-Wd4a4TS/theme/dark/id31tBizMM.svg?c=1dxbfHSJFAPEGdCLU4o5B",
   },
   {
     name: "Amazon",
-    logo: "https://cdn.brandfetch.io/idawOgYOsG/w/820/h/180/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX",
+    logo: "https://cdn.brandfetch.io/idawOgYOsG/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
   },
   {
     name: "eBay",
-    logo: "https://cdn.brandfetch.io/idnrCPuv87/w/820/h/180/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX",
+    logo: "https://cdn.brandfetch.io/idjTS-RPU1/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
   },
   {
     name: "Airwallex",
-    logo: "https://cdn.brandfetch.io/idXCtf-53F/w/800/h/110/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX&t=1764298515500",
+    logo: "https://cdn.brandfetch.io/idXCtf-53F/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
   },
   {
     name: "Payoneer",
-    logo: "https://cdn.brandfetch.io/idVmyDyyyZ/w/800/h/156/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX&t=1667571027582",
+    logo: "https://cdn.brandfetch.io/idVmyDyyyZ/w/800/h/156/theme/dark/logo.png?c=1bxid64Mup7aczewSAYMX&t=1667571027582",
   },
   {
     name: "Sunrate",
