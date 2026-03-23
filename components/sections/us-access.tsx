@@ -27,7 +27,8 @@ const platforms = [
   },
   {
     name: "Sunrate",
-    logo: "https://cdn.brandfetch.io/idY4rzp0Gt/w/820/h/94/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
+    logo: "https://cdn.brandfetch.io/idY4rzp0Gt/theme/light/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+    hasBlackFilter: true,
   },
   {
     name: "Nsave",
@@ -50,7 +51,7 @@ export default function USAccessSection() {
         {/* Heading */}
         <h2
           id="us-access-heading"
-          className="text-4xl md:text-5xl lg:text-6xl font-bold text-center text-[#1a0a0a] leading-tight mb-4 text-balance"
+          className="text-3xl md:text-4xl font-semibold text-center text-[#1a0a0a] leading-tight mb-4 text-balance"
         >
           With a{" "}
           <span className="text-[#880000]">US Company</span>
@@ -73,7 +74,9 @@ export default function USAccessSection() {
               <img
                 src={platform.logo}
                 alt={`${platform.name} logo`}
-                className="h-8 md:h-10 w-auto max-w-[120px] object-contain"
+                className={`h-8 md:h-10 w-auto max-w-[120px] object-contain ${
+                  platform.hasBlackFilter ? "filter brightness-0" : ""
+                }`}
                 loading="lazy"
               />
             </div>
