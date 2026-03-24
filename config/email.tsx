@@ -62,7 +62,7 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
 }
 
 export async function sendAdminEmail({ subject, html }: { subject: string; html: string }) {
-  const adminEmail = "us8637@gmail.com"
+  const adminEmail = "buzzfilings@gmail.com"
   return sendEmail({ to: adminEmail, subject, html })
 }
 
@@ -1223,6 +1223,182 @@ export const emailTemplates = {
                       All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
                     </p>
                     <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+
+  adminNewOrder: (
+    clientName: string,
+    companyName: string,
+    packageType: string,
+    totalAmount: string,
+    orderId: string,
+    clientEmail: string,
+  ) => ({
+    subject: `New Order Placed - ${companyName}`,
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+                
+                <tr>
+                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000; font-weight: 600;">
+                      New Order Received
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      A new order has been placed and is ready for processing.
+                    </p>
+                    
+                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #000000; font-weight: 600;">
+                      Order Details:
+                    </p>
+                    
+                    <ul style="margin: 0 0 20px 0; padding-left: 20px; border-left: 3px solid #880000;">
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Order ID:</strong> ${orderId}
+                      </li>
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Client Name:</strong> ${clientName}
+                      </li>
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Client Email:</strong> ${clientEmail}
+                      </li>
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Company Name:</strong> ${companyName}
+                      </li>
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Package Type:</strong> ${packageType}
+                      </li>
+                      <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Total Amount:</strong> $${totalAmount}
+                      </li>
+                    </ul>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 13px; color: #666666; line-height: 1.6;">
+                      Please log in to your admin dashboard to view and process this order.
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #999999;">
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+
+  adminAddonPurchase: (
+    clientName: string,
+    companyName: string,
+    addonName: string,
+    price: string,
+    clientEmail: string,
+  ) => ({
+    subject: `New Add-on Purchase - ${companyName}`,
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+                
+                <tr>
+                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000; font-weight: 600;">
+                      New Add-on Purchase
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      A client has purchased an add-on service and submitted payment details.
+                    </p>
+                    
+                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #000000; font-weight: 600;">
+                      Purchase Details:
+                    </p>
+                    
+                    <ul style="margin: 0 0 20px 0; padding-left: 20px; border-left: 3px solid #880000;">
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Client Name:</strong> ${clientName}
+                      </li>
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Client Email:</strong> ${clientEmail}
+                      </li>
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Company Name:</strong> ${companyName}
+                      </li>
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Add-on Name:</strong> ${addonName}
+                      </li>
+                      <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Price:</strong> $${price}
+                      </li>
+                    </ul>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 13px; color: #666666; line-height: 1.6;">
+                      Please log in to your admin dashboard to verify the payment and process the add-on.
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #999999;">
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
+                    </p>
                   </td>
                 </tr>
                 
