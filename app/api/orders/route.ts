@@ -159,12 +159,13 @@ export async function POST(req: NextRequest) {
 
       if (user) {
         console.log("[v0] Attempting to send order confirmation email to:", user.email)
-        const orderEmail = emailTemplates.orderConfirmation(user.name, orderId, {
+        const orderEmail = emailTemplates.orderConfirmation(
+          user.name,
           companyName,
-          packageType: packageType || "Starter Package",
-          state: company?.state || "N/A",
-          total: total || amount,
-        })
+          packageType || "Starter Package",
+          (total || amount).toString(),
+          orderId
+        )
 
         const emailResult = await sendEmail({
           to: user.email,
@@ -183,11 +184,11 @@ export async function POST(req: NextRequest) {
             orderId,
             user.email,
           )
-          await sendAdminEmail({
+          const adminEmailResult = await sendAdminEmail({
             subject: adminOrderEmail.subject,
             html: adminOrderEmail.html,
           })
-          console.log("[v0] Admin notification email sent successfully")
+          console.log("[v0] Admin notification email sent successfully:", adminEmailResult)
         } catch (adminEmailError) {
           console.error("[v0] Admin notification email failed:", adminEmailError)
         }
