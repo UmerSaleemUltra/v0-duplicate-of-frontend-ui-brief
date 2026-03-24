@@ -176,6 +176,7 @@ export async function POST(req: NextRequest) {
 
         // Send admin notification
         try {
+          console.log("[v0] Starting admin email send for order:", orderId)
           const adminOrderEmail = emailTemplates.adminNewOrder(
             user.name,
             companyName,
@@ -184,13 +185,15 @@ export async function POST(req: NextRequest) {
             orderId,
             user.email,
           )
+          console.log("[v0] Admin email template created:", adminOrderEmail.subject)
           const adminEmailResult = await sendAdminEmail({
             subject: adminOrderEmail.subject,
             html: adminOrderEmail.html,
           })
           console.log("[v0] Admin notification email sent successfully:", adminEmailResult)
         } catch (adminEmailError) {
-          console.error("[v0] Admin notification email failed:", adminEmailError)
+          console.error("[v0] Admin notification email failed with error:", adminEmailError)
+          console.error("[v0] Error details:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
         }
       } else {
         console.log("[v0] User not found for email notification:", decoded.userId)
