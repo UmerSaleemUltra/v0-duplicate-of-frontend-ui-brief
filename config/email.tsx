@@ -62,7 +62,7 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
 }
 
 export async function sendAdminEmail({ subject, html }: { subject: string; html: string }) {
-  const adminEmail = process.env.ADMIN_EMAIL || "support@buzzfiling.com"
+  const adminEmail = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
   console.log("[v0] Sending admin email to:", adminEmail, "| Subject:", subject)
   return sendEmail({ to: adminEmail, subject, html })
 }
