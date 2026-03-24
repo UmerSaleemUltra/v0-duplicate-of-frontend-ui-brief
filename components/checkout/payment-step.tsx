@@ -90,26 +90,35 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     setIsSubmitting(true)
 
     try {
+      console.log("[v0] ========== PAYMENT SUBMISSION STARTED ==========")
+
       if (paymentMethod === "already_paid") {
         if (!whatsappPhone.trim()) {
           setErrors({ whatsappNumber: "Please provide your phone number to proceed", submit: "" })
           setShowValidationError(true)
+          console.log("❌ Validation failed: WhatsApp phone number is required")
           return
         }
         const phoneDigits = whatsappPhone.replace(/\D/g, "")
         if (phoneDigits.length < 10) {
           setErrors({ whatsappNumber: "Please enter a valid phone number with at least 10 digits", submit: "" })
           setShowValidationError(true)
+          console.log("❌ Validation failed: Invalid phone number format")
           return
         }
       } else {
         if (!receiptUrl) {
           setShowValidationError(true)
+          console.log("❌ Validation failed: Payment receipt is required")
           return
         }
       }
 
+      console.log("[v0] ✅ Payment information validated")
       setShowValidationError(false)
+
+      console.log("\n[v0] === PAYMENT SUBMISSION START ===")
+      console.log("[v0] Checkout data:", data)
 
       let userId = data.userId
       let currentToken = authService.getToken()
@@ -140,6 +149,8 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       }
 
       if (!userId || !currentToken) {
+        console.log("[v0] No userId or token found, creating/logging in account...")
+
         const email = data.email?.trim()
         const password = data.password?.trim()
         const name = data.name?.trim()
@@ -148,6 +159,8 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         if (!email || !password) {
           throw new Error("Email and password are required")
         }
+
+        console.log("[v0] Step 1: Creating/logging in account for:", email)
 
         const signupResponse = await fetch("/api/auth/signup", {
           method: "POST",
@@ -159,6 +172,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
         if (!signupResponse.ok) {
           if (signupData.error?.includes("already exists") || signupData.error?.includes("already registered")) {
+            console.log("[v0] Email exists, attempting login...")
             const loginResponse = await fetch("/api/auth/login", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -171,6 +185,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               throw new Error(loginData.error || "Login failed after signup error")
             }
 
+            console.log("[v0] ✅ Login successful")
             currentToken = loginData.data.token
             userId = loginData.data.user.id
 
@@ -184,6 +199,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             throw new Error(signupData.error || "Account creation failed")
           }
         } else {
+          console.log("[v0] ✅ Account created successfully")
           currentToken = signupData.data.token
           userId = signupData.data.user.id
 
@@ -197,20 +213,41 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
         const updatedData = { ...data, userId }
         saveCheckoutData(updatedData)
+
+        console.log("[v0] User ID set to:", userId)
       }
 
       if (!userId) {
+        console.error("[v0] ❌ Failed to retrieve userId after authentication")
         throw new Error("User ID is missing - authentication may have failed. Please refresh and try again.")
       }
+
+      console.log("[v0] Verified userId:", userId)
+      console.log("[v0] Verified token:", currentToken ? "Present" : "Missing")
+
+      console.log("\n[v0] === STEP 2: UPLOADING PASSPORTS ===")
+      console.log(`[v0] Found ${data.members?.length || 0} members to process`)
 
       const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
 
       let updatedMembers
       try {
         updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], userId, "")
+        console.log("[v0] ✅ All passports uploaded successfully")
+        console.log("[v0] Updated members with passport URLs:", updatedMembers)
       } catch (uploadError) {
+        console.error("[v0] ❌ Passport upload error:", uploadError)
         throw uploadError
       }
+
+      console.log("\n[v0] === STEP 3: CREATING COMPANY WITH EMBEDDED ORDER ===")
+      console.log("[v0] Company details:", {
+        name: data.businessName,
+        type: data.entityType,
+        state: data.state,
+        packageType: data.packageType,
+        membersCount: updatedMembers.length,
+      })
 
       const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
       const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
@@ -284,14 +321,25 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       const companyData = await companyResponse.json()
 
       if (!companyResponse.ok) {
+        console.error("[v0] ❌ Company creation failed:", companyData.error)
         throw new Error(companyData.error || "Failed to create company")
       }
 
+      console.log("[v0] ✅ Company and order created successfully with ID:", companyData.data.id)
+      console.log("[v0] ✅ Order embedded in company")
+
+      console.log("\n[v0] === CLEANING UP ===")
+      console.log("[v0] Clearing checkout data from localStorage...")
       localStorage.removeItem("checkoutData")
       localStorage.removeItem("checkoutStep")
+      console.log("[v0] ✅ Checkout data cleared")
+
+      console.log("\n[v0] === CHECKOUT COMPLETED SUCCESSFULLY ===")
+      console.log("[v0] Redirecting to dashboard...")
 
       window.location.href = "/client/dashboard"
     } catch (error: any) {
+      console.error("[v0] ❌ Payment submission error:", error)
       setErrors({ submit: error.message || "Payment submission failed. Please try again." })
     } finally {
       setIsSubmitting(false)
@@ -342,6 +390,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         setUploadError(result.error || "Failed to upload receipt")
       }
     } catch (error) {
+      console.error("Receipt upload error:", error)
       setUploadError("Failed to upload receipt. Please try again.")
     } finally {
       setIsUploadingReceipt(false)
