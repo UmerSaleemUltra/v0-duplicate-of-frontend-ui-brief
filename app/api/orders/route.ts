@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
-import { sendEmail, emailTemplates } from "@/config/email"
+import { sendEmail, sendAdminEmail, emailTemplates } from "@/config/email"
 import { ObjectId } from "mongodb"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
@@ -172,6 +172,25 @@ export async function POST(req: NextRequest) {
           html: orderEmail.html,
         })
         console.log("[v0] Order confirmation email result:", emailResult)
+
+        // Send admin notification
+        try {
+          const adminOrderEmail = emailTemplates.adminNewOrder(
+            user.name,
+            companyName,
+            packageType || "Starter",
+            (total || amount).toString(),
+            orderId,
+            user.email,
+          )
+          await sendAdminEmail({
+            subject: adminOrderEmail.subject,
+            html: adminOrderEmail.html,
+          })
+          console.log("[v0] Admin notification email sent successfully")
+        } catch (adminEmailError) {
+          console.error("[v0] Admin notification email failed:", adminEmailError)
+        }
       } else {
         console.log("[v0] User not found for email notification:", decoded.userId)
       }

@@ -177,7 +177,7 @@ export async function POST(req: NextRequest) {
         )
 
         await sendEmail({
-          to: "us8637@gmail.com",
+          to: "buzzfilings@gmail.com",
           subject: adminEmail.subject,
           html: adminEmail.html,
         }).catch((adminEmailError) => {

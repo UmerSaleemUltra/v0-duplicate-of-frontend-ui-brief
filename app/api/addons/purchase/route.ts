@@ -6,6 +6,7 @@ import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { blobStorage } from "@/config/storage"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
+import { sendAdminEmail, emailTemplates } from "@/config/email"
 
 export async function POST(request: NextRequest) {
   try {
@@ -239,6 +240,30 @@ export async function POST(request: NextRequest) {
       })
       
       console.log("[v0] Notification broadcast sent")
+
+      // Send admin notification
+      try {
+        const user = await db
+          .collection("users")
+          .findOne({ _id: new ObjectId(decoded.userId) }, { projection: { name: 1, email: 1 } })
+
+        if (user) {
+          const adminAddonEmail = emailTemplates.adminAddonPurchase(
+            user.name,
+            company.name || companyName,
+            addon.name,
+            addon.price.toString(),
+            user.email,
+          )
+          await sendAdminEmail({
+            subject: adminAddonEmail.subject,
+            html: adminAddonEmail.html,
+          })
+          console.log("[v0] Admin addon purchase notification sent successfully")
+        }
+      } catch (adminEmailError) {
+        console.error("[v0] Admin addon purchase notification failed:", adminEmailError)
+      }
     } catch (notificationError) {
       console.error("[v0] Failed to create notification:", notificationError)
       // Continue anyway - notification failure shouldn't block the purchase
