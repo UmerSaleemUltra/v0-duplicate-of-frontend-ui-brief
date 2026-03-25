@@ -382,6 +382,39 @@ export async function POST(req: NextRequest) {
           console.log("[v0] Order confirmation email sent to:", user.email)
         }
 
+        // Send admin notification
+        try {
+          console.log("[v0] Starting admin email send for new company order:", companyId)
+          const adminEmail = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
+          console.log("[v0] Admin email configured as:", adminEmail)
+          
+          const adminOrderEmail = emailTemplates.adminNewOrder(
+            user?.name || "Customer",
+            name,
+            order.orderType,
+            `$${order.pricing.total}`,
+            companyId,
+            user?.email || "Unknown",
+          )
+          console.log("[v0] Admin email template created:", adminOrderEmail.subject)
+          
+          const adminEmailResult = await sendEmail({
+            to: adminEmail,
+            subject: adminOrderEmail.subject,
+            html: adminOrderEmail.html,
+          })
+          
+          console.log("[v0] Admin notification email result:", adminEmailResult)
+          if (!adminEmailResult?.success) {
+            console.error("[v0] Admin email failed:", adminEmailResult?.error)
+          } else {
+            console.log("[v0] Admin email sent successfully to:", adminEmail)
+          }
+        } catch (adminEmailError) {
+          console.error("[v0] Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
+          console.error("[v0] Admin email full error:", adminEmailError)
+        }
+
         broadcastUpdate("notifications", "created", { userId: decoded.userId, companyId })
       } catch (orderError) {
         console.error("[v0] Error sending order notification/email:", orderError)
