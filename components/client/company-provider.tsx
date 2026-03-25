@@ -106,6 +106,10 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
             setSelectedCompanyId(firstCompanyId)
             localStorage.setItem(SELECTED_COMPANY_KEY, firstCompanyId)
           }
+        } else {
+          // Clear selected company if user has no companies
+          setSelectedCompanyId(null)
+          localStorage.removeItem(SELECTED_COMPANY_KEY)
         }
       } catch (error) {
         console.error("[v0] CompanyProvider: Error loading companies:", error)
@@ -117,6 +121,23 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
     loadCompanies()
   }, [isPublicPage, initialLoadDone])
+
+  // Listen for checkout completion and refresh companies
+  useEffect(() => {
+    const handleCheckoutComplete = () => {
+      // Force refresh companies from API after checkout
+      setInitialLoadDone(false)
+      try {
+        localStorage.removeItem(COMPANIES_CACHE_KEY)
+        localStorage.removeItem(SELECTED_COMPANY_KEY)
+      } catch {
+        // ignore
+      }
+    }
+
+    window.addEventListener("checkout-completed", handleCheckoutComplete)
+    return () => window.removeEventListener("checkout-completed", handleCheckoutComplete)
+  }, [])
 
   const handleSetSelectedCompanyId = useCallback((id: string | null) => {
     setSelectedCompanyId(id)

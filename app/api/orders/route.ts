@@ -179,7 +179,7 @@ export async function POST(req: NextRequest) {
           try {
             console.log("[v0] Starting admin email send for order:", orderId)
             const adminOrderEmail = emailTemplates.adminNewOrder(
-              user.name,
+              user.name || "Customer",
               companyName,
               packageType || "Starter",
               (total || amount).toString(),
@@ -187,16 +187,26 @@ export async function POST(req: NextRequest) {
               user.email,
             )
             console.log("[v0] Admin email template created:", adminOrderEmail.subject)
-            const adminEmailResult = await sendAdminEmail({
+            
+            // Explicitly get admin email from env or use fallback
+            const adminEmailAddress = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
+            console.log("[v0] Sending admin email to:", adminEmailAddress)
+            
+            const adminEmailResult = await sendEmail({
+              to: adminEmailAddress,
               subject: adminOrderEmail.subject,
               html: adminOrderEmail.html,
             })
+            
             console.log("[v0] Admin notification email result:", adminEmailResult)
             if (!adminEmailResult?.success) {
               console.error("[v0] Admin email failed with result:", adminEmailResult)
+            } else {
+              console.log("[v0] Admin email sent successfully to:", adminEmailAddress)
             }
           } catch (adminEmailError) {
             console.error("[v0] Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
+            console.error("[v0] Admin email stack:", adminEmailError)
           }
         }
       } else {

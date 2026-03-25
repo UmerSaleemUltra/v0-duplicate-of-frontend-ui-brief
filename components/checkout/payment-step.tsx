@@ -332,9 +332,25 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       console.log("[v0] Clearing checkout data from localStorage...")
       localStorage.removeItem("checkoutData")
       localStorage.removeItem("checkoutStep")
+      
+      // Clear company cache to force refresh on dashboard
+      try {
+        localStorage.removeItem("companies_cache")
+        localStorage.removeItem("selectedCompanyId")
+      } catch {
+        // ignore
+      }
+      
       console.log("[v0] ✅ Checkout data cleared")
 
       console.log("\n[v0] === CHECKOUT COMPLETED SUCCESSFULLY ===")
+      console.log("[v0] Dispatching checkout-completed event...")
+      
+      // Dispatch event to notify CompanyProvider to refresh
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("checkout-completed"))
+      }
+      
       console.log("[v0] Redirecting to dashboard...")
 
       window.location.href = "/client/dashboard"
