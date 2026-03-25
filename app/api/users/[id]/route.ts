@@ -123,6 +123,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     console.log("[v0] User updated:", result.email)
 
+    // Broadcast logout if email or password changed
+    if (email || password) {
+      broadcast("force_logout", {
+        userId: id,
+        reason: email ? "email_changed" : "password_changed",
+        timestamp: new Date().toISOString(),
+      })
+    }
+
     broadcast("user_updated", {
       id: result._id.toString(),
       email: result.email,
@@ -188,6 +197,13 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     }
 
     console.log("[v0] User deleted successfully")
+
+    // Broadcast logout when user is deleted
+    broadcast("force_logout", {
+      userId: id,
+      reason: "user_deleted",
+      timestamp: new Date().toISOString(),
+    })
 
     broadcast("user_deleted", { id })
 
