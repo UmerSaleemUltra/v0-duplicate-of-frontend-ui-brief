@@ -175,25 +175,29 @@ export async function POST(req: NextRequest) {
         console.log("[v0] Order confirmation email result:", emailResult)
 
         // Send admin notification
-        try {
-          console.log("[v0] Starting admin email send for order:", orderId)
-          const adminOrderEmail = emailTemplates.adminNewOrder(
-            user.name,
-            companyName,
-            packageType || "Starter",
-            (total || amount).toString(),
-            orderId,
-            user.email,
-          )
-          console.log("[v0] Admin email template created:", adminOrderEmail.subject)
-          const adminEmailResult = await sendAdminEmail({
-            subject: adminOrderEmail.subject,
-            html: adminOrderEmail.html,
-          })
-          console.log("[v0] Admin notification email sent successfully:", adminEmailResult)
-        } catch (adminEmailError) {
-          console.error("[v0] Admin notification email failed with error:", adminEmailError)
-          console.error("[v0] Error details:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
+        if (user) {
+          try {
+            console.log("[v0] Starting admin email send for order:", orderId)
+            const adminOrderEmail = emailTemplates.adminNewOrder(
+              user.name,
+              companyName,
+              packageType || "Starter",
+              (total || amount).toString(),
+              orderId,
+              user.email,
+            )
+            console.log("[v0] Admin email template created:", adminOrderEmail.subject)
+            const adminEmailResult = await sendAdminEmail({
+              subject: adminOrderEmail.subject,
+              html: adminOrderEmail.html,
+            })
+            console.log("[v0] Admin notification email result:", adminEmailResult)
+            if (!adminEmailResult?.success) {
+              console.error("[v0] Admin email failed with result:", adminEmailResult)
+            }
+          } catch (adminEmailError) {
+            console.error("[v0] Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
+          }
         }
       } else {
         console.log("[v0] User not found for email notification:", decoded.userId)
