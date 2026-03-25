@@ -83,6 +83,14 @@ export const POST = requireAuth(async (request: NextRequest, user) => {
       { expiresIn: "7d" },
     )
 
+    // Broadcast logout to old sessions
+    const { broadcast } = await import("@/lib/realtime/broadcaster")
+    broadcast("force_logout", {
+      userId: user.userId,
+      reason: "password_changed",
+      timestamp: new Date().toISOString(),
+    })
+
     return addSecurityHeaders(
       apiResponse({
         message: "Password changed successfully",
