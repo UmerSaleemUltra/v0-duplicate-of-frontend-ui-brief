@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
-import { sendEmail, sendAdminEmail, sendUserEmail, emailTemplates } from "@/config/email"
+import { sendAdminEmail, sendUserEmail, emailTemplates } from "@/config/email"
 import { ObjectId } from "mongodb"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
@@ -191,13 +191,12 @@ export async function POST(req: NextRequest) {
             user.email,
           )
           console.log("[v0] Admin email template created:", adminOrderEmail.subject)
+          console.log("ADMIN DEBUG:", {
+            subject: adminOrderEmail.subject,
+            htmlLength: adminOrderEmail.html?.length,
+          })
           
-          // Explicitly get admin email from env or use fallback
-          const adminEmailAddress = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
-          console.log("[v0] Sending admin email to:", adminEmailAddress)
-          
-          const adminEmailResult = await sendEmail({
-            to: adminEmailAddress,
+          const adminEmailResult = await sendAdminEmail({
             subject: adminOrderEmail.subject,
             html: adminOrderEmail.html,
           })
@@ -206,7 +205,7 @@ export async function POST(req: NextRequest) {
           if (!adminEmailResult?.success) {
             console.error("[v0] Admin email failed with result:", adminEmailResult)
           } else {
-            console.log("[v0] Admin email sent successfully to:", adminEmailAddress)
+            console.log("[v0] Admin email sent successfully")
           }
         } catch (adminEmailError) {
           console.error("[v0] Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
