@@ -221,9 +221,18 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       loadCompanies()
     }
 
+    const handleCheckoutComplete = () => {
+      // Force refresh companies after checkout completes
+      setAllCompanies([])
+      setSelectedCompanyId(null)
+      loadCompanies()
+    }
+
     window.addEventListener("client-dashboard-refresh", handleRefresh)
+    window.addEventListener("checkout-completed", handleCheckoutComplete)
     return () => {
       window.removeEventListener("client-dashboard-refresh", handleRefresh)
+      window.removeEventListener("checkout-completed", handleCheckoutComplete)
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])

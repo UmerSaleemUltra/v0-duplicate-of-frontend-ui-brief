@@ -139,17 +139,20 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (isAuthenticating) return
 
-    // Check if we have companies — no need to wait for settlement
+    // If companies are still loading, don't set "no companies" yet - show loading state instead
     if (companiesLoading) {
       return
     }
 
+    // Only determine "no companies" state AFTER loading is done
     if (!selectedCompanyId) {
+      // No selected company AND not loading = truly no companies
       setHasNoCompanies(!hasCompanies)
       setIsLoadingData(false)
       return
     }
 
+    // Has companies and a selected company - proceed with loading data
     setHasNoCompanies(false)
 
     if (selectedCompanyId && selectedCompanyId !== lastLoadedCompanyId) {
