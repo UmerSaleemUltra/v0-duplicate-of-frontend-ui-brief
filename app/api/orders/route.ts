@@ -182,6 +182,9 @@ export async function POST(req: NextRequest) {
         // Send admin notification
         try {
           console.log("[v0] Starting admin email send for order:", orderId)
+          const adminEmail = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
+          console.log("[v0] Admin email configured as:", adminEmail)
+          
           const adminOrderEmail = emailTemplates.adminNewOrder(
             user.name || "Customer",
             companyName,
@@ -191,10 +194,6 @@ export async function POST(req: NextRequest) {
             user.email,
           )
           console.log("[v0] Admin email template created:", adminOrderEmail.subject)
-          console.log("ADMIN DEBUG:", {
-            subject: adminOrderEmail.subject,
-            htmlLength: adminOrderEmail.html?.length,
-          })
           
           const adminEmailResult = await sendAdminEmail({
             subject: adminOrderEmail.subject,
@@ -203,13 +202,13 @@ export async function POST(req: NextRequest) {
           
           console.log("[v0] Admin notification email result:", adminEmailResult)
           if (!adminEmailResult?.success) {
-            console.error("[v0] Admin email failed with result:", adminEmailResult)
+            console.error("[v0] Admin email failed:", adminEmailResult?.error)
           } else {
-            console.log("[v0] Admin email sent successfully")
+            console.log("[v0] Admin email sent successfully to:", adminEmail)
           }
         } catch (adminEmailError) {
           console.error("[v0] Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
-          console.error("[v0] Admin email stack:", adminEmailError)
+          console.error("[v0] Admin email full error:", adminEmailError)
         }
       } else {
         console.log("[v0] User not found for email notification:", decoded.userId)
