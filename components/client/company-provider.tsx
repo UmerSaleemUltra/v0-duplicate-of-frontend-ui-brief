@@ -39,9 +39,10 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   // loading is false immediately if we have cached companies, so sidebar shows instantly
   const [loading, setLoading] = useState(() => {
     if (typeof window !== "undefined") {
+      // Don't set loading to true on first render — only set to true when we actively fetch
       return !localStorage.getItem(COMPANIES_CACHE_KEY)
     }
-    return true
+    return false
   })
   const [initialLoadDone, setInitialLoadDone] = useState(false)
 
@@ -50,6 +51,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (isPublicPage) {
       setLoading(false)
+      setInitialLoadDone(true)
       return
     }
 
