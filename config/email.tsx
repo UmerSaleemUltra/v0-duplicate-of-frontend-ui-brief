@@ -67,6 +67,15 @@ export async function sendAdminEmail({ subject, html }: { subject: string; html:
   return sendEmail({ to: adminEmail, subject, html })
 }
 
+export async function sendUserEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+  if (!to) {
+    console.error("[v0] sendUserEmail: No recipient email provided")
+    return { success: false, error: "No recipient email provided" }
+  }
+  console.log("[v0] Sending user email to:", to, "| Subject:", subject)
+  return sendEmail({ to, subject, html })
+}
+
 export const emailTemplates = {
   welcome: (name: string) => ({
     subject: "Welcome to Buzz Filing – Your Dashboard Is Ready",

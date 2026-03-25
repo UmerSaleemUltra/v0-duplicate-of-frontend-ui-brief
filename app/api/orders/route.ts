@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
-import { sendEmail, sendAdminEmail, emailTemplates } from "@/config/email"
+import { sendEmail, sendAdminEmail, sendUserEmail, emailTemplates } from "@/config/email"
 import { ObjectId } from "mongodb"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
@@ -167,47 +167,50 @@ export async function POST(req: NextRequest) {
           orderId
         )
 
-        const emailResult = await sendEmail({
+        const emailResult = await sendUserEmail({
           to: user.email,
           subject: orderEmail.subject,
           html: orderEmail.html,
         })
         console.log("[v0] Order confirmation email result:", emailResult)
+        if (!emailResult?.success) {
+          console.error("[v0] User email failed with result:", emailResult)
+        } else {
+          console.log("[v0] User email sent successfully to:", user.email)
+        }
 
         // Send admin notification
-        if (user) {
-          try {
-            console.log("[v0] Starting admin email send for order:", orderId)
-            const adminOrderEmail = emailTemplates.adminNewOrder(
-              user.name || "Customer",
-              companyName,
-              packageType || "Starter",
-              (total || amount).toString(),
-              orderId,
-              user.email,
-            )
-            console.log("[v0] Admin email template created:", adminOrderEmail.subject)
-            
-            // Explicitly get admin email from env or use fallback
-            const adminEmailAddress = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
-            console.log("[v0] Sending admin email to:", adminEmailAddress)
-            
-            const adminEmailResult = await sendEmail({
-              to: adminEmailAddress,
-              subject: adminOrderEmail.subject,
-              html: adminOrderEmail.html,
-            })
-            
-            console.log("[v0] Admin notification email result:", adminEmailResult)
-            if (!adminEmailResult?.success) {
-              console.error("[v0] Admin email failed with result:", adminEmailResult)
-            } else {
-              console.log("[v0] Admin email sent successfully to:", adminEmailAddress)
-            }
-          } catch (adminEmailError) {
-            console.error("[v0] Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
-            console.error("[v0] Admin email stack:", adminEmailError)
+        try {
+          console.log("[v0] Starting admin email send for order:", orderId)
+          const adminOrderEmail = emailTemplates.adminNewOrder(
+            user.name || "Customer",
+            companyName,
+            packageType || "Starter",
+            (total || amount).toString(),
+            orderId,
+            user.email,
+          )
+          console.log("[v0] Admin email template created:", adminOrderEmail.subject)
+          
+          // Explicitly get admin email from env or use fallback
+          const adminEmailAddress = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
+          console.log("[v0] Sending admin email to:", adminEmailAddress)
+          
+          const adminEmailResult = await sendEmail({
+            to: adminEmailAddress,
+            subject: adminOrderEmail.subject,
+            html: adminOrderEmail.html,
+          })
+          
+          console.log("[v0] Admin notification email result:", adminEmailResult)
+          if (!adminEmailResult?.success) {
+            console.error("[v0] Admin email failed with result:", adminEmailResult)
+          } else {
+            console.log("[v0] Admin email sent successfully to:", adminEmailAddress)
           }
+        } catch (adminEmailError) {
+          console.error("[v0] Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
+          console.error("[v0] Admin email stack:", adminEmailError)
         }
       } else {
         console.log("[v0] User not found for email notification:", decoded.userId)
