@@ -36,8 +36,6 @@ export default function UserDetailPage() {
   const [changingPassword, setChangingPassword] = useState(false)
   const [newPassword, setNewPassword] = useState("")
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [loadingCurrentPassword, setLoadingCurrentPassword] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -487,21 +485,7 @@ export default function UserDetailPage() {
         open={showPasswordDialog} 
         onOpenChange={(open) => {
           setShowPasswordDialog(open)
-          if (open) {
-            setLoadingCurrentPassword(true)
-            fetch(`/api/users/${params.id}`, {
-              headers: { Authorization: `Bearer ${authService.getToken()}` },
-            })
-              .then(res => res.json())
-              .then(data => {
-                const userData = data.data || data
-                console.log("[v0] Password data received:", userData)
-                setCurrentPassword(userData.plainPassword || "")
-              })
-              .catch(err => console.error("[v0] Error fetching current password:", err))
-              .finally(() => setLoadingCurrentPassword(false))
-          } else {
-            setCurrentPassword("")
+          if (!open) {
             setNewPassword("")
           }
         }}
@@ -512,23 +496,6 @@ export default function UserDetailPage() {
             <DialogDescription>Set a new password for {user.name}</DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              {loadingCurrentPassword ? (
-                <div className="flex items-center gap-2 p-3 rounded-md border border-border">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  <span className="text-sm text-muted-foreground">Loading...</span>
-                </div>
-              ) : (
-                <Input
-                  id="currentPassword"
-                  type="text"
-                  value={currentPassword}
-                  readOnly
-                  className="bg-slate-50 cursor-default"
-                />
-              )}
-            </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
               <Input
