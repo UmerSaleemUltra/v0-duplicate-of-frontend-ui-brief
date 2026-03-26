@@ -36,6 +36,8 @@ export default function UserDetailPage() {
   const [changingPassword, setChangingPassword] = useState(false)
   const [newPassword, setNewPassword] = useState("")
   const [showPasswordDialog, setShowPasswordDialog] = useState(false)
+  const [currentPassword, setCurrentPassword] = useState("")
+  const [loadingCurrentPassword, setLoadingCurrentPassword] = useState(false)
 
   useEffect(() => {
     loadData()
@@ -481,7 +483,28 @@ export default function UserDetailPage() {
         </Card>
       </div>
 
-      <Dialog open={showPasswordDialog} onOpenChange={setShowPasswordDialog}>
+      <Dialog 
+        open={showPasswordDialog} 
+        onOpenChange={(open) => {
+          setShowPasswordDialog(open)
+          if (open) {
+            setLoadingCurrentPassword(true)
+            fetch(`/api/users/${params.id}`, {
+              headers: { Authorization: `Bearer ${authService.getToken()}` },
+            })
+              .then(res => res.json())
+              .then(data => {
+                const userData = data.data || data
+                setCurrentPassword(userData.currentPassword || userData.plainPassword || "")
+              })
+              .catch(err => console.error("[v0] Error fetching current password:", err))
+              .finally(() => setLoadingCurrentPassword(false))
+          } else {
+            setCurrentPassword("")
+            setNewPassword("")
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Change Password</DialogTitle>
@@ -489,15 +512,21 @@ export default function UserDetailPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password (Hash)</Label>
-              <div className="bg-muted p-3 rounded-md border border-border">
-                <p className="text-xs font-mono break-all text-foreground">
-                  {user.password ? user.password.substring(0, 50) + "..." : "No password set"}
-                </p>
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Passwords are securely hashed and cannot be displayed as plain text for security reasons.
-              </p>
+              <Label htmlFor="currentPassword">Current Password</Label>
+              {loadingCurrentPassword ? (
+                <div className="flex items-center gap-2 p-3 rounded-md border border-border">
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  <span className="text-sm text-muted-foreground">Loading...</span>
+                </div>
+              ) : (
+                <Input
+                  id="currentPassword"
+                  type="text"
+                  value={currentPassword}
+                  readOnly
+                  className="bg-slate-50 cursor-default"
+                />
+              )}
             </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
