@@ -2,7 +2,6 @@ import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/config/database"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
-import { redisCache } from "@/lib/redis-cache"
 
 export async function GET(req: NextRequest) {
   try {
@@ -16,16 +15,6 @@ export async function GET(req: NextRequest) {
     const decoded = verifyToken(token)
     if (!decoded || decoded.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-    }
-
-    // Generate cache key - admin dashboard stats are global
-    const cacheKey = 'dashboard:stats:admin'
-    
-    // Try to get from cache first
-    const cachedData = await redisCache.get(cacheKey)
-    if (cachedData) {
-      console.log('[v0] Dashboard stats served from cache')
-      return addSecurityHeaders(NextResponse.json(cachedData))
     }
 
     const { db } = await connectDB()

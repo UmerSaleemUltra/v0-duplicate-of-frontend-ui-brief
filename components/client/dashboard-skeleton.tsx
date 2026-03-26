@@ -1,9 +1,9 @@
 function Shimmer({ className }: { className?: string }) {
   return (
     <div
-      className={`relative overflow-hidden rounded-lg bg-slate-100 ${className}`}
+      className={`relative overflow-hidden rounded-lg bg-gradient-to-r from-slate-100 via-slate-50 to-slate-100 ${className}`}
     >
-      <div className="absolute inset-0 -translate-x-full animate-[shimmer_0.8s_infinite] bg-gradient-to-r from-transparent via-white/80 to-transparent" />
+      <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.5s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
     </div>
   )
 }

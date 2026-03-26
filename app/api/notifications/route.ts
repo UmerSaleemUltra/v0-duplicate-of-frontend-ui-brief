@@ -3,7 +3,6 @@ import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
-import { redisCache } from "@/lib/redis-cache"
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,16 +22,6 @@ export async function GET(req: NextRequest) {
     const companyId = searchParams.get("companyId")
     const targetUserId = searchParams.get("userId")
     const type = searchParams.get("type")
-
-    // Generate cache key
-    const cacheKey = `notifications:${decoded.userId}:${companyId || 'all'}:${targetUserId || 'all'}:${type || 'all'}`
-    
-    // Try to get from cache first
-    const cachedData = await redisCache.get(cacheKey)
-    if (cachedData) {
-      console.log('[v0] Notifications served from cache')
-      return addSecurityHeaders(NextResponse.json(cachedData))
-    }
 
     const { db } = await connectDB()
 
@@ -65,9 +54,6 @@ export async function GET(req: NextRequest) {
         createdAt: notif.createdAt,
       })),
     }
-
-    // Cache for 2 minutes
-    await redisCache.set(cacheKey, result, 120)
 
     return addSecurityHeaders(NextResponse.json(result))
   } catch (error) {
@@ -146,12 +132,6 @@ export async function POST(req: NextRequest) {
     const notificationId = result.insertedId.toString()
 
     const createdNotification = { id: notificationId, ...newNotification }
-
-    // Invalidate notification cache
-    await redisCache.invalidatePattern(`notifications:${userId}:*`)
-    if (metadata?.companyId) {
-      await redisCache.invalidatePattern(`notifications:*:${metadata.companyId}:*`)
-    }
 
     broadcastUpdate("notifications", "created", createdNotification)
 

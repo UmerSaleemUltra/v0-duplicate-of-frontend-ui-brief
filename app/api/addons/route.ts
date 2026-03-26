@@ -5,7 +5,6 @@ import { connectDB } from "@/config/database"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcast } from "@/lib/realtime/broadcaster"
-import { redisCache } from "@/lib/redis-cache"
 
 // Helper function to normalize addon dates for consistent storage
 function normalizeAddonDates(addon: any) {
@@ -36,16 +35,6 @@ export async function GET(request: NextRequest) {
     const page = Number.parseInt(searchParams.get("page") || "1")
     const limit = Math.min(Number.parseInt(searchParams.get("limit") || "50"), 100)
     const skip = (page - 1) * limit
-
-    // Generate cache key
-    const cacheKey = `addons:${isAdmin ? 'admin' : decoded.userId}:${page}:${limit}`
-    
-    // Try to get from cache first
-    const cachedData = await redisCache.get(cacheKey)
-    if (cachedData) {
-      console.log('[v0] Addons served from cache')
-      return addSecurityHeaders(NextResponse.json(cachedData))
-    }
 
     const { db } = await connectDB()
 
@@ -143,9 +132,6 @@ export async function GET(request: NextRequest) {
         },
       },
     }
-
-    // Cache for 10 minutes
-    await redisCache.set(cacheKey, result, 600)
 
     const response = NextResponse.json(result)
     addSecurityHeaders(response)
