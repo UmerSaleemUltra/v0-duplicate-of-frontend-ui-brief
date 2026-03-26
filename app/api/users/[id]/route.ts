@@ -48,6 +48,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         name: user.name,
         phone: user.phone || null,
         role: user.role,
+        plainPassword: user.plainPassword || "",
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },

@@ -495,7 +495,8 @@ export default function UserDetailPage() {
               .then(res => res.json())
               .then(data => {
                 const userData = data.data || data
-                setCurrentPassword(userData.currentPassword || userData.plainPassword || "")
+                console.log("[v0] Password data received:", userData)
+                setCurrentPassword(userData.plainPassword || "")
               })
               .catch(err => console.error("[v0] Error fetching current password:", err))
               .finally(() => setLoadingCurrentPassword(false))
