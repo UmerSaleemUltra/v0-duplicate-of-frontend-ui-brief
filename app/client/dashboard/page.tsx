@@ -139,26 +139,29 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (isAuthenticating) return
 
-    // If companies are still loading, don't set "no companies" yet - show loading state instead
+    // If companies are still loading, don't proceed yet
     if (companiesLoading) {
       return
     }
 
-    // Only determine "no companies" state AFTER loading is done
-    if (!selectedCompanyId) {
-      // No selected company AND not loading = truly no companies
-      setHasNoCompanies(!hasCompanies)
+    // After companies finish loading, determine if there are ANY companies
+    if (!selectedCompanyId && !hasCompanies) {
+      // No selected company AND no companies available = show NoCompanyState
+      setHasNoCompanies(true)
       setIsLoadingData(false)
+      setDataLoaded(false)
       return
     }
 
-    // Has companies and a selected company - proceed with loading data
+    // If we get here, we have a selectedCompanyId (guaranteed by CompanyProvider logic)
     setHasNoCompanies(false)
 
+    // Check if we need to reload data (company selection changed)
     if (selectedCompanyId && selectedCompanyId !== lastLoadedCompanyId) {
       setDataLoaded(false)
     }
 
+    // If data is already loaded for this company, don't reload
     if (dataLoaded && selectedCompanyId === lastLoadedCompanyId) {
       return
     }
@@ -324,8 +327,8 @@ export default function ClientDashboard() {
 
 
 
-  // Only show the no-company state when auth is done and there are no companies
-  if (!isAuthenticating && hasNoCompanies) {
+  // Show no-company state if auth is done, companies finished loading, and there are no companies
+  if (!isAuthenticating && !companiesLoading && hasNoCompanies) {
     return (
       <ClientShell>
         <NoCompanyState />
@@ -333,7 +336,8 @@ export default function ClientDashboard() {
     )
   }
 
-  if (isAuthenticating || companiesLoading || isLoadingData || (!dataLoaded && !hasNoCompanies)) {
+  // Show loading skeleton while: auth check is running OR companies are loading OR data is loading OR we have a company but haven't loaded its data yet
+  if (isAuthenticating || companiesLoading || isLoadingData || (!dataLoaded && selectedCompanyId)) {
     return (
       <ClientShell>
         <DashboardSkeleton />

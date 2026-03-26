@@ -129,103 +129,50 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   }, [])
 
   useEffect(() => {
-    const loadCompanies = async () => {
-      const token = authService.getToken()
-      if (!token) {
-        return
-      }
-
+    // Seed companies from localStorage cache (set by CompanyProvider)
+    if (typeof window !== "undefined") {
       try {
-        const currentUser = authService.getCurrentUser()
-        let userId = currentUser?.id
-
-        if (!userId && typeof window !== "undefined") {
-          const storedUserId = localStorage.getItem("user_id")
-          const storedUserData = localStorage.getItem("user_data")
-
-          if (storedUserId) {
-            userId = storedUserId
-          } else if (storedUserData) {
-            try {
-              const userData = JSON.parse(storedUserData)
-              userId = userData.id
-            } catch (e) {
-              // ignore parse errors
-            }
-          }
-
-          if (!userId && token) {
-            try {
-              const tokenParts = token.split(".")
-              if (tokenParts.length === 3) {
-                const payload = JSON.parse(atob(tokenParts[1]))
-                userId = payload.userId || payload.id
-              }
-            } catch (e) {
-              // ignore decode errors
-            }
-          }
+        const cached = localStorage.getItem("companies_cache")
+        if (cached) {
+          const companies = JSON.parse(cached)
+          setAllCompanies(companies)
+          setHasNoCompanies(companies.length === 0)
         }
-
-        if (!userId) {
-          return
-        }
-
-        const response = await fetch(`/api/companies`, {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }).then((res) => res.json())
-
-        const allCompaniesData = response.data || response.companies || []
-
-        const userCompanies = allCompaniesData.filter((c: any) => {
-          const companyUserId = String(c.userId).trim()
-          const currentUserId = String(userId).trim()
-          return companyUserId === currentUserId
-        })
-
-        setAllCompanies(userCompanies)
-        setHasNoCompanies(userCompanies.length === 0)
-        // Persist to localStorage so the company name shows instantly on next load
-        try {
-          localStorage.setItem("companies_cache", JSON.stringify(userCompanies))
-        } catch {
-          // ignore storage errors
-        }
-
-        // Read the current selection directly from localStorage to avoid
-        // stale closure issues and prevent dependency on selectedCompanyId.
-        const lastSelectedCompanyId = localStorage.getItem("selectedCompanyId")
-
-        if (lastSelectedCompanyId && userCompanies.some((c: any) => c.id === lastSelectedCompanyId)) {
-          // Restore previously selected company
-          setSelectedCompanyId(lastSelectedCompanyId)
-        } else if (userCompanies.length > 0) {
-          // Auto-select first company when nothing valid is stored
-          const firstCompanyId = userCompanies[0].id
-          setSelectedCompanyId(firstCompanyId)
-          localStorage.setItem("selectedCompanyId", firstCompanyId)
-        } else {
-          setSelectedCompanyId(null)
-          localStorage.removeItem("selectedCompanyId")
-        }
-      } catch (error) {
-        console.error("Sidebar: Error loading companies:", error)
+      } catch {
+        // ignore
       }
     }
 
-    loadCompanies()
-
+    // Listen for refresh events to reload companies cache from localStorage
     const handleRefresh = () => {
-      loadCompanies()
+      if (typeof window !== "undefined") {
+        try {
+          const cached = localStorage.getItem("companies_cache")
+          if (cached) {
+            const companies = JSON.parse(cached)
+            setAllCompanies(companies)
+            setHasNoCompanies(companies.length === 0)
+          }
+        } catch {
+          // ignore
+        }
+      }
     }
 
     const handleCheckoutComplete = () => {
-      // Force refresh companies after checkout completes
-      setAllCompanies([])
-      setSelectedCompanyId(null)
-      loadCompanies()
+      // Force refresh companies cache after checkout
+      if (typeof window !== "undefined") {
+        try {
+          const cached = localStorage.getItem("companies_cache")
+          if (cached) {
+            const companies = JSON.parse(cached)
+            setAllCompanies(companies)
+            setHasNoCompanies(companies.length === 0)
+          }
+        } catch {
+          // ignore
+        }
+      }
     }
 
     window.addEventListener("client-dashboard-refresh", handleRefresh)
@@ -234,7 +181,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
       window.removeEventListener("client-dashboard-refresh", handleRefresh)
       window.removeEventListener("checkout-completed", handleCheckoutComplete)
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   // Intentionally removed: the visibilitychange listener was triggering a full
