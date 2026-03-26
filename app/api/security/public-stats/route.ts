@@ -1,8 +1,19 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { getDDoSStats } from "@/lib/middleware/ddos-protection"
+import { redisCache } from "@/lib/redis-cache"
 
 export async function GET(req: NextRequest) {
   try {
+    // Generate cache key
+    const cacheKey = 'security:public:stats'
+    
+    // Try to get from cache first
+    const cachedData = await redisCache.get(cacheKey)
+    if (cachedData) {
+      console.log('[v0] Security stats served from cache')
+      return NextResponse.json(cachedData)
+    }
+
     // Get client IP
     const clientIP = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "unknown"
 
@@ -35,7 +46,7 @@ export async function GET(req: NextRequest) {
         ip: tracker.ip,
       }))
 
-    return NextResponse.json({
+    const result = {
       stats: {
         blockedIPs: blockedCount,
         totalThreats: activeThreats + blockedCount,
@@ -46,7 +57,10 @@ export async function GET(req: NextRequest) {
       },
       recentActivity: recentActivity,
       timestamp: new Date().toISOString(),
-    })
+    }
+
+    // Cache for 1 minute (60 seconds) for security stats
+    await redisCache.set(cacheKey, result, 60)
   } catch (error) {
     console.error("[SECURITY API] Error:", error)
     return NextResponse.json(

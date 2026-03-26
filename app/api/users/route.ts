@@ -4,6 +4,7 @@ import { verifyToken } from "@/lib/jwt"
 import bcrypt from "bcryptjs"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcast } from "@/lib/realtime/broadcaster"
+import { redisCache } from "@/lib/redis-cache"
 
 export async function GET(req: NextRequest) {
   try {
@@ -17,6 +18,16 @@ export async function GET(req: NextRequest) {
     const decoded = verifyToken(token)
     if (!decoded || decoded.role !== "admin") {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
+    // Generate cache key - admin only
+    const cacheKey = 'users:admin:all'
+    
+    // Try to get from cache first
+    const cachedData = await redisCache.get(cacheKey)
+    if (cachedData) {
+      console.log('[v0] Users list served from cache')
+      return addSecurityHeaders(NextResponse.json(cachedData))
     }
 
     const { db } = await connectDB()
@@ -78,6 +89,9 @@ export async function GET(req: NextRequest) {
         companyNames: companiesByUserId.get(user.id) || [],
       }))
     }
+
+    // Cache for 10 minutes
+    await redisCache.set(cacheKey, result, 600)
 
     const response = NextResponse.json(result)
     addSecurityHeaders(response)
