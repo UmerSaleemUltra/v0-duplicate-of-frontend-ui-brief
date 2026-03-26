@@ -3,14 +3,14 @@ function Shimmer({ className }: { className?: string }) {
     <div
       className={`relative overflow-hidden rounded-lg bg-slate-100 ${className}`}
     >
-      <div className="absolute inset-0 -translate-x-full animate-[shimmer_1.2s_infinite] bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+      <div className="absolute inset-0 -translate-x-full animate-[shimmer_0.8s_infinite] bg-gradient-to-r from-transparent via-white/80 to-transparent" />
     </div>
   )
 }
 
 export function DashboardSkeleton() {
   return (
-    <div className="space-y-6 pb-8">
+    <div className="animate-in fade-in duration-300 space-y-6 pb-8">
       {/* Welcome heading */}
       <div className="space-y-2">
         <Shimmer className="h-8 w-56" />
@@ -20,7 +20,7 @@ export function DashboardSkeleton() {
       {/* Info cards row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
         {[...Array(3)].map((_, i) => (
-          <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+          <div key={i} className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 animate-in fade-in" style={{ animationDelay: `${i * 50}ms` }}>
             <div className="flex items-start justify-between">
               <Shimmer className="h-12 w-12 rounded-full" />
               <Shimmer className="h-8 w-8 rounded-lg" />
@@ -34,7 +34,7 @@ export function DashboardSkeleton() {
       </div>
 
       {/* Progress card */}
-      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4">
+      <div className="bg-white rounded-2xl border border-slate-200 p-6 space-y-4 animate-in fade-in" style={{ animationDelay: "150ms" }}>
         <div className="flex items-center justify-between">
           <Shimmer className="h-6 w-48" />
           <Shimmer className="h-6 w-16 rounded-full" />
