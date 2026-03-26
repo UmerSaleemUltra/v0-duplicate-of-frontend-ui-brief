@@ -489,6 +489,18 @@ export default function UserDetailPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
+              <Label htmlFor="currentPassword">Current Password</Label>
+              <Input
+                id="currentPassword"
+                type="password"
+                value={user.password || ""}
+                disabled
+                readOnly
+                className="bg-muted"
+              />
+              <p className="text-xs text-muted-foreground">Current password (read-only)</p>
+            </div>
+            <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
               <Input
                 id="newPassword"
