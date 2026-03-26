@@ -5,7 +5,6 @@ import { sendAdminEmail, sendUserEmail, emailTemplates } from "@/config/email"
 import { ObjectId } from "mongodb"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
-import { redisCache } from "@/lib/redis-cache"
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,16 +18,6 @@ export async function GET(req: NextRequest) {
     const decoded = verifyToken(token)
     if (!decoded) {
       return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
-    }
-
-    // Generate cache key
-    const cacheKey = `orders:${decoded.userId}:${decoded.role}`
-    
-    // Try to get from cache first
-    const cachedData = await redisCache.get(cacheKey)
-    if (cachedData) {
-      console.log('[v0] Orders served from cache')
-      return addSecurityHeaders(NextResponse.json(cachedData))
     }
 
     const { db } = await connectDB()
@@ -58,9 +47,6 @@ export async function GET(req: NextRequest) {
         updatedAt: order.updatedAt,
       })),
     }
-
-    // Cache for 5 minutes
-    await redisCache.set(cacheKey, result, 300)
 
     return addSecurityHeaders(NextResponse.json(result))
   } catch (error) {

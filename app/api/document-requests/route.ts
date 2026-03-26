@@ -3,7 +3,6 @@ import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
-import { redisCache } from "@/lib/redis-cache"
 
 // GET /api/document-requests — fetch requests
 // Admin: can filter by orderId, companyId, userId
@@ -26,16 +25,6 @@ export async function GET(req: NextRequest) {
     const companyId = searchParams.get("companyId")
     const userId = searchParams.get("userId")
     const status = searchParams.get("status")
-
-    // Generate cache key
-    const cacheKey = `doc-requests:${decoded.userId}:${orderId || 'all'}:${companyId || 'all'}:${userId || 'all'}:${status || 'all'}`
-    
-    // Try to get from cache first
-    const cachedData = await redisCache.get(cacheKey)
-    if (cachedData) {
-      console.log('[v0] Document requests served from cache')
-      return addSecurityHeaders(NextResponse.json(cachedData))
-    }
 
     const { db } = await connectDB()
     const query: any = {}
@@ -80,12 +69,7 @@ export async function GET(req: NextRequest) {
       customerEmail: r.customerEmail ?? null,
     }))
 
-    const result = { success: true, data }
-
-    // Cache for 5 minutes
-    await redisCache.set(cacheKey, result, 300)
-
-    const response = NextResponse.json(result)
+    const response = NextResponse.json({ success: true, data })
     response.headers.set("Cache-Control", "private, no-store")
     return addSecurityHeaders(response)
   } catch {
