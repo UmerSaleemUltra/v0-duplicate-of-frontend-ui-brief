@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
+import { redisCache } from "@/lib/redis-cache"
 
 export async function GET(req: NextRequest) {
   try {
@@ -22,6 +23,16 @@ export async function GET(req: NextRequest) {
     const companyId = searchParams.get("companyId")
     const memberId = searchParams.get("memberId")
     const includePending = searchParams.get("includePending") === "true"
+
+    // Generate cache key
+    const cacheKey = `passports:${decoded.userId}:${userId || 'all'}:${companyId || 'all'}:${memberId || 'all'}:${includePending}`
+    
+    // Try to get from cache first
+    const cachedData = await redisCache.get(cacheKey)
+    if (cachedData) {
+      console.log('[v0] Passports served from cache')
+      return addSecurityHeaders(NextResponse.json(cachedData))
+    }
 
     const { db } = await connectDB()
 
@@ -80,6 +91,9 @@ export async function GET(req: NextRequest) {
         uploadedAt: passport.uploadedAt,
       })),
     }
+
+    // Cache for 5 minutes
+    await redisCache.set(cacheKey, result, 300)
 
     const response = NextResponse.json(result)
     addSecurityHeaders(response)
