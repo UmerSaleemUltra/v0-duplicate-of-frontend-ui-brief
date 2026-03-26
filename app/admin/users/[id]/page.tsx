@@ -489,16 +489,15 @@ export default function UserDetailPage() {
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="currentPassword">Current Password</Label>
-              <Input
-                id="currentPassword"
-                type="password"
-                value={user.password || ""}
-                disabled
-                readOnly
-                className="bg-muted"
-              />
-              <p className="text-xs text-muted-foreground">Current password (read-only)</p>
+              <Label htmlFor="currentPassword">Current Password (Hash)</Label>
+              <div className="bg-muted p-3 rounded-md border border-border">
+                <p className="text-xs font-mono break-all text-foreground">
+                  {user.password ? user.password.substring(0, 50) + "..." : "No password set"}
+                </p>
+              </div>
+              <p className="text-xs text-muted-foreground">
+                Passwords are securely hashed and cannot be displayed as plain text for security reasons.
+              </p>
             </div>
             <div className="space-y-2">
               <Label htmlFor="newPassword">New Password</Label>
