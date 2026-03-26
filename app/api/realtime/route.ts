@@ -6,8 +6,14 @@ export const runtime = "nodejs"
 export const dynamic = "force-dynamic"
 
 export async function GET(req: NextRequest) {
+  // Try to get token from Authorization header first, then from query parameter
   const authHeader = req.headers.get("authorization")
-  const token = authHeader?.replace("Bearer ", "")
+  let token = authHeader?.replace("Bearer ", "")
+  
+  if (!token) {
+    const url = new URL(req.url)
+    token = url.searchParams.get("token") || undefined
+  }
 
   if (!token) {
     return new Response("Unauthorized", { status: 401 })
