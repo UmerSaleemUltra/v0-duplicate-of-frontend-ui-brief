@@ -76,203 +76,173 @@ export default function CompanyPage() {
           return
         }
 
-        const [companyResponse, mailResponse, docsResponse, ordersResponse] = await Promise.allSettled([
-          ApiClient.companies.getById(selectedCompanyId, token),
-          ApiClient.mail.getAll(token, selectedCompanyId),
-          ApiClient.documents.getAll(token, selectedCompanyId),
-          ApiClient.orders.getAll(token),
-        ])
+        // CRITICAL PATH: Load only company details first
+        const companyResponse = await ApiClient.companies.getById(selectedCompanyId, token)
 
-        if (companyResponse.status === "fulfilled") {
-          const selectedComp = companyResponse.value.data || companyResponse.value
-
-          if (!selectedComp) {
-            setError("Company not found")
-            setLoading(false)
-            return
-          }
-
-          console.log("[v0] Company data from API:", selectedComp)
-          console.log("[v0] businessAddressStatus value:", selectedComp.businessAddressStatus)
-          console.log("[v0] mailingAddressStatus value:", selectedComp.mailingAddressStatus)
-          console.log("[v0] All address-related fields:", {
-            businessAddressStatus: selectedComp.businessAddressStatus,
-            mailingAddressStatus: selectedComp.mailingAddressStatus,
-            businessAddress: selectedComp.businessAddress,
-            mailingAddress: selectedComp.mailingAddress,
-          })
-
-          const mailCount = mailResponse.status === "fulfilled" ? (mailResponse.value.data || []).length : 0
-          const docCount = docsResponse.status === "fulfilled" ? (docsResponse.value.data || []).length : 0
-
-          setMailCount(mailCount)
-          setDocumentCount(docCount)
-
-          const builtMembers: MemberUI[] = (selectedComp.members ?? []).map((m: any, idx: number) => {
-            const firstName = m.firstName || ""
-            const middleName = m.middleName || ""
-            const lastName = m.lastName || ""
-
-            let fullName = "Not yet"
-            if (firstName && lastName) {
-              fullName = middleName ? `${firstName} ${middleName} ${lastName}` : `${firstName} ${lastName}`
-            } else if (firstName) {
-              fullName = firstName
-            } else if (m.name) {
-              fullName = m.name
-            }
-
-            return {
-              id: m._id?.toString() || m.id || `member-${idx + 1}`,
-              storageKey: m.id || m.memberId || `member-${idx + 1}`,
-              name: fullName,
-              email: m.email || "",
-              phone: m.phone || "",
-              address: m.address || "Not yet",
-              city: m.city || "Not yet",
-              state: m.state || "Not yet",
-              country: m.country || "US",
-              zip: m.zip || "Not yet",
-              ssn: m.ssn && m.ssn.trim() ? m.ssn : "Not yet",
-              isResponsiblePerson: !!(m.isResponsiblePerson || m.responsiblePerson),
-              itinAdded: !!m.needsItin,
-              ownership: `${m.ownershipPercentage || 0}%`,
-            }
-          })
-
-          let orderDate = new Date(selectedComp.createdAt).toLocaleDateString("en-US", {
-            month: "long",
-            day: "numeric",
-            year: "numeric",
-          })
-
-          // If we have the actual order, use its date
-          if (ordersResponse.status === "fulfilled") {
-            const allOrders = ordersResponse.value.data || ordersResponse.value.orders || []
-            const companyOrder = allOrders.find((order: any) => order.companyId === selectedCompanyId)
-            if (companyOrder) {
-              setOrderDetails(companyOrder)
-              orderDate = new Date(companyOrder.createdAt).toLocaleDateString("en-US", {
-                month: "long",
-                day: "numeric",
-                year: "numeric",
-              })
-            }
-          }
-
-          // Aggregate purchased addons from both sources: company level and orders array
-          let allPurchasedAddons = []
-          
-          // Include addons from company's purchasedAddons array (root level)
-          if (selectedComp.purchasedAddons && Array.isArray(selectedComp.purchasedAddons)) {
-            allPurchasedAddons.push(...selectedComp.purchasedAddons)
-          }
-          
-          // Also check orders array for redundancy
-          if (selectedComp.orders && Array.isArray(selectedComp.orders)) {
-            selectedComp.orders.forEach((order: any) => {
-              if (order.purchasedAddons && Array.isArray(order.purchasedAddons)) {
-                // Only add if not already in list (avoid duplicates)
-                order.purchasedAddons.forEach((addon: any) => {
-                  const isDuplicate = allPurchasedAddons.some(
-                    (existing: any) => 
-                      existing.serviceId === addon.serviceId && 
-                      existing.purchasedAt === addon.purchasedAt
-                  )
-                  if (!isDuplicate) {
-                    allPurchasedAddons.push(addon)
-                  }
-                })
-              }
-            })
-          }
-          
-          // Calculate total addons cost
-          const totalAddonsCost = allPurchasedAddons.reduce((sum: number, addon: any) => {
-            return sum + (addon.price || 0)
-          }, 0)
-
-          setCompanyData({
-            businessName: selectedComp.name || "Your Company",
-            businessCategory: selectedComp.businessCategory || "Not yet",
-            businessDescription: selectedComp.businessDescription || "No description provided",
-            website: selectedComp.website || selectedComp.businessWebsite || "Not yet",
-            needsResellerCertificate: selectedComp.businessCategory === "Reseller" || false,
-            state: selectedComp.state || "Not yet",
-            entityType: selectedComp.entityType || "LLC",
-            packageType: selectedComp.packageType || "starter",
-            orderDate: orderDate,
-            ein: selectedComp.ein || "Not yet",
-            businessId: selectedComp.businessId || "Not Yet",
-            selectedServices: selectedComp.services || [],
-            selectedAddons: selectedComp.addons || [],
-            purchasedAddons: allPurchasedAddons.length > 0 ? allPurchasedAddons : (selectedComp.purchasedAddons || []),
-            members: builtMembers,
-            registeredAgent: selectedComp.registeredAgent,
-            businessAddress: selectedComp.businessAddress,
-            itin: selectedComp.itin || "Not yet",
-            itinMembers: selectedComp.itinMembers || [],
-            businessAddressStatus: selectedComp.businessAddressStatus || "pending",
-            companyStatus: selectedComp.status || "pending",
-            registeredAgentStatus: selectedComp.registeredAgentStatus || "pending",
-            businessAddressStatus: selectedComp.businessAddressStatus,
-            serviceStatus: selectedComp.serviceStatus || "pending",
-            mailingAddress: selectedComp.mailingAddress,
-            taxFilingDate: selectedComp.taxFilingDate,
-            taxClassification: selectedComp.taxClassification || "Not Yet",
-            annualReportFilingDate: selectedComp.annualReportFilingDate,
-            irsFilingDate: selectedComp.irsFilingDate, // API returns as irsFilingDate
-            totalAddonsCost: totalAddonsCost,
-            revenue: selectedComp.revenue || 0,
-          })
-
-          // Persist to localStorage so next visit renders instantly
-          try {
-            const snapshot = {
-              businessName: selectedComp.name || "Your Company",
-              businessCategory: selectedComp.businessCategory || "Not yet",
-              state: selectedComp.state || "Not yet",
-              entityType: selectedComp.entityType || "LLC",
-              packageType: selectedComp.packageType || "starter",
-              ein: selectedComp.ein || "Not yet",
-              companyStatus: selectedComp.status || "pending",
-            }
-            localStorage.setItem(`company_detail_${selectedCompanyId}`, JSON.stringify(snapshot))
-          } catch { /* ignore */ }
-
-          console.log(
-            "[v0] Tax data fetched - Classification:",
-            selectedComp.taxClassification,
-            "Annual Report:",
-            selectedComp.annualReportFilingDate,
-            "IRS Filing:",
-            selectedComp.irsFilingDate,
-          )
-        } else {
+        if (!companyResponse.data) {
           setError("Company not found")
+          setLoading(false)
+          return
         }
 
+        const selectedComp = companyResponse.data
+
+        console.log("[v0] Company data from API:", selectedComp)
+        console.log("[v0] businessAddressStatus value:", selectedComp.businessAddressStatus)
+        console.log("[v0] mailingAddressStatus value:", selectedComp.mailingAddressStatus)
+
+        // Build members array
+        const builtMembers: MemberUI[] = (selectedComp.members ?? []).map((m: any, idx: number) => {
+          const firstName = m.firstName || ""
+          const middleName = m.middleName || ""
+          const lastName = m.lastName || ""
+
+          let fullName = "Not yet"
+          if (firstName && lastName) {
+            fullName = middleName ? `${firstName} ${middleName} ${lastName}` : `${firstName} ${lastName}`
+          } else if (firstName) {
+            fullName = firstName
+          } else if (m.name) {
+            fullName = m.name
+          }
+
+          return {
+            id: m._id?.toString() || m.id || `member-${idx + 1}`,
+            storageKey: m.id || m.memberId || `member-${idx + 1}`,
+            name: fullName,
+            email: m.email || "",
+            phone: m.phone || "",
+            address: m.address || "Not yet",
+            city: m.city || "Not yet",
+            state: m.state || "Not yet",
+            country: m.country || "US",
+            zip: m.zip || "Not yet",
+            ssn: m.ssn && m.ssn.trim() ? m.ssn : "Not yet",
+            isResponsiblePerson: !!(m.isResponsiblePerson || m.responsiblePerson),
+            itinAdded: !!m.needsItin,
+            ownership: `${m.ownershipPercentage || 0}%`,
+          }
+        })
+
+        // Build initial company data
+        const initialCompanyData = buildCompanyData(selectedComp, builtMembers)
+        setCompanyData(initialCompanyData)
         setLoading(false)
-      } catch (err) {
-        console.error("[v0] Load company error:", err)
-        setError("Failed to load company data")
+
+        // NON-CRITICAL PATH: Load mail, docs, and orders in background
+        setTimeout(async () => {
+          try {
+            const [mailResponse, docsResponse, ordersResponse] = await Promise.allSettled([
+              ApiClient.mail.getAll(token, selectedCompanyId),
+              ApiClient.documents.getAll(token, selectedCompanyId),
+              ApiClient.orders.getAll(token),
+            ])
+
+            const mailCount = mailResponse.status === "fulfilled" ? (mailResponse.value.data || []).length : 0
+            const docCount = docsResponse.status === "fulfilled" ? (docsResponse.value.data || []).length : 0
+
+            setMailCount(mailCount)
+            setDocumentCount(docCount)
+
+            // Handle orders
+            if (ordersResponse.status === "fulfilled") {
+              const allOrders = ordersResponse.value.data || ordersResponse.value.orders || []
+              const companyOrder = allOrders.find((order: any) => order.companyId === selectedCompanyId)
+              if (companyOrder) {
+                setOrderDetails(companyOrder)
+              }
+            }
+          } catch (error) {
+            console.error("[v0] Error loading secondary company data:", error)
+          }
+        }, 0)
+      } catch (error) {
+        console.error("[v0] Error fetching company:", error)
+        setError(error instanceof Error ? error.message : "Failed to fetch company data")
         setLoading(false)
       }
     }
 
     fetchCompanyData()
-
-    const handleRefresh = () => {
-      console.log("[v0] Company page refresh triggered")
-      fetchCompanyData()
-    }
-
-    window.addEventListener("client-dashboard-refresh", handleRefresh)
-
-    return () => {
-      window.removeEventListener("client-dashboard-refresh", handleRefresh)
-    }
   }, [selectedCompanyId])
+
+  // Helper function to build company data
+  const buildCompanyData = (selectedComp: any, members: MemberUI[]) => {
+    let orderDate = new Date(selectedComp.createdAt).toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric",
+    })
+
+    // Aggregate purchased addons
+    let allPurchasedAddons = []
+    
+    if (selectedComp.purchasedAddons && Array.isArray(selectedComp.purchasedAddons)) {
+      allPurchasedAddons.push(...selectedComp.purchasedAddons)
+    }
+    
+    if (selectedComp.orders && Array.isArray(selectedComp.orders)) {
+      selectedComp.orders.forEach((order: any) => {
+        if (order.purchasedAddons && Array.isArray(order.purchasedAddons)) {
+          order.purchasedAddons.forEach((addon: any) => {
+            const isDuplicate = allPurchasedAddons.some(
+              (existing: any) => 
+                existing.serviceId === addon.serviceId && 
+                existing.purchasedAt === addon.purchasedAt
+            )
+            if (!isDuplicate) {
+              allPurchasedAddons.push(addon)
+            }
+          })
+        }
+      })
+    }
+    
+    const totalAddonsCost = allPurchasedAddons.reduce((sum: number, addon: any) => {
+      return sum + (addon.price || 0)
+    }, 0)
+
+    return {
+      businessName: selectedComp.name || "Your Company",
+      businessCategory: selectedComp.businessCategory || "Not yet",
+      businessDescription: selectedComp.businessDescription || "No description provided",
+      website: selectedComp.website || selectedComp.businessWebsite || "Not yet",
+      needsResellerCertificate: selectedComp.businessCategory === "Reseller" || false,
+      state: selectedComp.state || "Not yet",
+      entityType: selectedComp.entityType || "LLC",
+      packageType: selectedComp.packageType || "starter",
+      orderDate: orderDate,
+      ein: selectedComp.ein || "Not yet",
+      businessId: selectedComp.businessId || "Not Yet",
+      selectedServices: selectedComp.services || [],
+      selectedAddons: selectedComp.addons || [],
+      purchasedAddons: allPurchasedAddons.length > 0 ? allPurchasedAddons : (selectedComp.purchasedAddons || []),
+      members: members,
+      registeredAgent: selectedComp.registeredAgent,
+      businessAddress: selectedComp.businessAddress,
+      itin: selectedComp.itin || "Not yet",
+      itinMembers: selectedComp.itinMembers || [],
+      businessAddressStatus: selectedComp.businessAddressStatus || "pending",
+      companyStatus: selectedComp.status || "pending",
+      registeredAgentStatus: selectedComp.registeredAgentStatus || "pending",
+      serviceStatus: selectedComp.serviceStatus || "pending",
+      mailingAddress: selectedComp.mailingAddress,
+      taxFilingDate: selectedComp.taxFilingDate,
+      taxClassification: selectedComp.taxClassification || "Not Yet",
+      annualReportFilingDate: selectedComp.annualReportFilingDate,
+      irsFilingDate: selectedComp.irsFilingDate,
+      totalAddonsCost: totalAddonsCost,
+      revenue: selectedComp.revenue || 0,
+    }
+  }
+
+  if (isAuthenticated === false || authLoading === false) {
+    return <CompanySkeleton />
+  }
+
+  if (!selectedCompanyId) {
+    return <NoCompanyState />
+  }
 
   useEffect(() => {
     if (companyData) {

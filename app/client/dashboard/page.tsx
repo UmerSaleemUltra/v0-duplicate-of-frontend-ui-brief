@@ -176,18 +176,15 @@ export default function ClientDashboard() {
           return
         }
 
-        const [selectedComp, companyDocuments, companyMail, companyNotifications, bannerRes] = await Promise.all([
+        // CRITICAL PATH: Load only essential data first
+        const [selectedComp, bannerRes] = await Promise.all([
           ApiClient.companies.getById(selectedCompanyId, token),
-          ApiClient.documents.getAll(token, selectedCompanyId),
-          ApiClient.mail.getAll(token, selectedCompanyId),
-          ApiClient.notifications.getAll(token, selectedCompanyId),
           fetch(`/api/banners?companyId=${selectedCompanyId}`, {
             headers: { Authorization: `Bearer ${token}` },
           }).then((r) => r.json()),
         ])
 
         setCompany(selectedComp.data)
-        setNotifications(companyNotifications.data || [])
         setBanner(bannerRes?.data ?? null)
         setBannerDismissed(false)
 
@@ -196,10 +193,31 @@ export default function ClientDashboard() {
           setOrder(companyOrders[0])
         }
 
-        setDocuments(companyDocuments.data || [])
-        setMailItems(companyMail.data || [])
         setLastLoadedCompanyId(selectedCompanyId)
         setDataLoaded(true)
+
+        // NON-CRITICAL PATH: Load documents, mail, notifications in background after UI render
+        setTimeout(async () => {
+          try {
+            const [companyDocuments, companyMail, companyNotifications] = await Promise.allSettled([
+              ApiClient.documents.getAll(token, selectedCompanyId),
+              ApiClient.mail.getAll(token, selectedCompanyId),
+              ApiClient.notifications.getAll(token, selectedCompanyId),
+            ])
+
+            if (companyDocuments.status === "fulfilled") {
+              setDocuments(companyDocuments.value.data || [])
+            }
+            if (companyMail.status === "fulfilled") {
+              setMailItems(companyMail.value.data || [])
+            }
+            if (companyNotifications.status === "fulfilled") {
+              setNotifications(companyNotifications.value.data || [])
+            }
+          } catch (error) {
+            console.error("[v0] Error loading secondary dashboard data:", error)
+          }
+        }, 0)
       } catch (error) {
         console.error("[v0] Error loading dashboard data:", error)
         if (error instanceof Error && error.message.includes("Unauthorized")) {
@@ -228,29 +246,43 @@ export default function ClientDashboard() {
 
       setIsSilentRefreshing(true)
       try {
-        const [selectedComp, companyDocuments, companyMail, companyNotifications, bannerRes] = await Promise.all([
-          ApiClient.companies.getById(selectedCompanyId, token),
-          ApiClient.documents.getAll(token, selectedCompanyId),
-          ApiClient.mail.getAll(token, selectedCompanyId),
-          ApiClient.notifications.getAll(token, selectedCompanyId),
-          fetch(`/api/banners?companyId=${selectedCompanyId}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          }).then((r) => r.json()),
-        ])
-
+        // Load essential data only first
+        const selectedComp = await ApiClient.companies.getById(selectedCompanyId, token)
         setCompany(selectedComp.data)
-        setNotifications(companyNotifications.data || [])
-        setBanner(bannerRes?.data ?? null)
 
         const companyOrders = selectedComp.data?.orders || []
         if (companyOrders.length > 0) {
           setOrder(companyOrders[0])
         }
 
-        setDocuments(companyDocuments.data || [])
-        setMailItems(companyMail.data || [])
-        setLastLoadedCompanyId(selectedCompanyId)
-        setDataLoaded(true)
+        // Then load non-critical data in background
+        setTimeout(async () => {
+          try {
+            const [companyDocuments, companyMail, companyNotifications, bannerRes] = await Promise.allSettled([
+              ApiClient.documents.getAll(token, selectedCompanyId),
+              ApiClient.mail.getAll(token, selectedCompanyId),
+              ApiClient.notifications.getAll(token, selectedCompanyId),
+              fetch(`/api/banners?companyId=${selectedCompanyId}`, {
+                headers: { Authorization: `Bearer ${token}` },
+              }).then((r) => r.json()),
+            ])
+
+            if (companyDocuments.status === "fulfilled") {
+              setDocuments(companyDocuments.value.data || [])
+            }
+            if (companyMail.status === "fulfilled") {
+              setMailItems(companyMail.value.data || [])
+            }
+            if (companyNotifications.status === "fulfilled") {
+              setNotifications(companyNotifications.value.data || [])
+            }
+            if (bannerRes && bannerRes.status === "fulfilled") {
+              setBanner(bannerRes.value?.data ?? null)
+            }
+          } catch (error) {
+            console.error("[v0] Silent refresh secondary data failed:", error)
+          }
+        }, 0)
       } catch (error) {
         console.error("[v0] Silent refresh failed:", error)
       } finally {
