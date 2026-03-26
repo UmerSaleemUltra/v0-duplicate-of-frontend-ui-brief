@@ -54,6 +54,7 @@ export const POST = requireAuth(async (request: NextRequest, user) => {
       {
         $set: {
           password: hashedPassword,
+          plainPassword: newPassword,
           updatedAt: new Date(),
         },
       },
