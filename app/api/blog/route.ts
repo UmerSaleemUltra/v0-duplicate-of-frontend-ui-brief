@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { revalidateTag } from "next/cache"
 import { getDatabase } from "@/config/database"
+import { redisCache } from "@/lib/redis-cache"
 
 export async function GET(request: NextRequest) {
   try {
@@ -11,16 +12,29 @@ export async function GET(request: NextRequest) {
     const limit = Number.parseInt(searchParams.get("limit") || "10")
     const skip = Number.parseInt(searchParams.get("skip") || "0")
 
+    // Generate cache key
+    const cacheKey = `blog:${status || 'all'}:${slug || 'all'}:${category || 'all'}:${limit}:${skip}`
+    
+    // Try to get from cache first
+    const cachedData = await redisCache.get(cacheKey)
+    if (cachedData) {
+      console.log('[v0] Blog posts served from cache')
+      return NextResponse.json(cachedData)
+    }
+
     const db = await getDatabase()
     const collection = db.collection("blog_posts")
 
     if (slug) {
       const post = await collection.findOne({ slug })
 
-      return NextResponse.json({
+      const result = {
         success: true,
         data: post ? [post] : [],
-      })
+      }
+      
+      await redisCache.set(cacheKey, result, 600) // 10 minutes
+      return NextResponse.json(result)
     }
 
     const query: any = {}
@@ -37,7 +51,7 @@ export async function GET(request: NextRequest) {
 
     console.log("[v0] Fetched", posts.length, "blog posts")
 
-    return NextResponse.json({
+    const result = {
       success: true,
       data: posts,
       pagination: {
@@ -46,7 +60,12 @@ export async function GET(request: NextRequest) {
         skip,
         hasMore: skip + limit < total,
       },
-    })
+    }
+
+    // Cache for 10 minutes
+    await redisCache.set(cacheKey, result, 600)
+
+    return NextResponse.json(result)
   } catch (error) {
     console.error("[v0] Error fetching blog posts:", error)
     return NextResponse.json(
@@ -92,6 +111,9 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await collection.insertOne(newPost)
+
+    // Invalidate blog cache
+    await redisCache.invalidatePattern('blog:*')
 
     // If the post is published immediately, invalidate the sitemap cache
     // so the new URL appears in real-time without waiting for the interval.
