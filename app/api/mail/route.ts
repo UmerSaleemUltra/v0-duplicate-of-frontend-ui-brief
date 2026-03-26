@@ -6,6 +6,7 @@ import { sendEmail, emailTemplates } from "@/config/email"
 import { ObjectId } from "mongodb"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
+import { redisCache } from "@/lib/redis-cache"
 
 export async function GET(req: NextRequest) {
   try {
@@ -23,6 +24,16 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url)
     const companyId = searchParams.get("companyId")
+
+    // Generate cache key
+    const cacheKey = `mail:${decoded.userId}:${companyId || 'all'}`
+    
+    // Try to get from cache first
+    const cachedData = await redisCache.get(cacheKey)
+    if (cachedData) {
+      console.log('[v0] Mail items served from cache')
+      return addSecurityHeaders(NextResponse.json(cachedData))
+    }
 
     const { db } = await connectDB()
     const query: any = {}
@@ -55,6 +66,9 @@ export async function GET(req: NextRequest) {
         updatedAt: mail.updatedAt,
       })),
     }
+
+    // Cache for 3 minutes
+    await redisCache.set(cacheKey, result, 180)
 
     const response = NextResponse.json(result)
     response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60")

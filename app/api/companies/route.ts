@@ -5,6 +5,7 @@ import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 import { ObjectId } from "mongodb"
 import { sendEmail, emailTemplates } from "@/config/email"
+import { redisCache } from "@/lib/redis-cache"
 
 export async function GET(req: NextRequest) {
   try {
@@ -24,6 +25,16 @@ export async function GET(req: NextRequest) {
 
     const { searchParams } = new URL(req.url)
     const userIdParam = searchParams.get("userId")
+
+    // Generate cache key
+    const cacheKey = `companies:${decoded.role}:${decoded.userId}:${userIdParam || 'all'}`
+    
+    // Try to get from cache first
+    const cachedData = await redisCache.get(cacheKey)
+    if (cachedData) {
+      console.log('[v0] Companies data served from cache')
+      return addSecurityHeaders(NextResponse.json(cachedData))
+    }
 
     let query: any = decoded.role === "admin" ? {} : { userId: decoded.userId }
 
@@ -130,6 +141,9 @@ export async function GET(req: NextRequest) {
         }
       }),
     }
+
+    // Cache the result for 5 minutes (300 seconds)
+    await redisCache.set(cacheKey, result, 300)
 
     const response = NextResponse.json(result)
     response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60")
