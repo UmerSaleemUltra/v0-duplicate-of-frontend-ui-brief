@@ -48,11 +48,6 @@ interface AdminActionsCardProps {
   onUploadMail: () => void
   onAddAddon: () => void
   onAddCustomAddon: () => void
-  assignedValues?: {
-    agent?: any
-    address?: any
-    itin?: any[]
-  }
 }
 
 function ActionRow({
@@ -113,7 +108,6 @@ export function AdminActionsCard({
   onUploadMail,
   onAddAddon,
   onAddCustomAddon,
-  assignedValues = {},
 }: AdminActionsCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -133,7 +127,7 @@ export function AdminActionsCard({
         <ActionRow icon={<Plus className="w-4 h-4" />} label="Add Milestone" onClick={onAddMilestone} />
         <ActionRow
           icon={<UserCheck className="w-4 h-4" />}
-          label={assignedValues?.agent ? "View / Edit Registered Agent" : "Assign Registered Agent"}
+          label="Assign Registered Agent"
           onClick={onAssignAgent}
           disabled={agentUpdating || !company}
           loading={agentUpdating}
@@ -141,7 +135,7 @@ export function AdminActionsCard({
         />
         <ActionRow
           icon={<MapPin className="w-4 h-4" />}
-          label={assignedValues?.address ? "View / Edit Mailing Address" : "Assign Mailing Address"}
+          label="Assign Mailing Address"
           onClick={onAssignAddress}
           disabled={addressUpdating || !company}
           loading={addressUpdating}
