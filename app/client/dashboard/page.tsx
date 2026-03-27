@@ -82,7 +82,7 @@ function BannerBar({
 }
 
 export default function ClientDashboard() {
-  const { selectedCompanyId, setSelectedCompanyId, companiesLoading, hasCompanies, initialLoadDone } = useSelectedCompany()
+  const { selectedCompanyId, setSelectedCompanyId, companiesLoading, hasCompanies, initialLoadDone, isResetting } = useSelectedCompany()
   const [company, setCompany] = useState<any>(null)
   const [order, setOrder] = useState<any>(null)
   const [documents, setDocuments] = useState<any[]>([])
@@ -139,8 +139,8 @@ export default function ClientDashboard() {
   useEffect(() => {
     if (isAuthenticating) return
 
-    // If companies are still loading, don't proceed yet
-    if (companiesLoading) {
+    // If companies are still loading or resetting after login, don't proceed yet
+    if (companiesLoading || isResetting) {
       return
     }
 
@@ -229,7 +229,7 @@ export default function ClientDashboard() {
     }
 
     loadData()
-  }, [isAuthenticating, companiesLoading, hasCompanies, initialLoadDone, selectedCompanyId, lastLoadedCompanyId, dataLoaded, router])
+  }, [isAuthenticating, companiesLoading, hasCompanies, initialLoadDone, isResetting, selectedCompanyId, lastLoadedCompanyId, dataLoaded, router])
 
   // Silent background refresh — no skeleton, just update data in place
   useEffect(() => {
