@@ -3258,12 +3258,45 @@ export default function OrderDetailPage() {
       <Dialog open={registeredAgentDialogOpen} onOpenChange={handleCloseRegisteredAgentDialog}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Assign Registered Agent</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">
+              {company?.registeredAgent ? "View / Edit Registered Agent" : "Assign Registered Agent"}
+            </DialogTitle>
             <DialogDescription>
-              Assign a registered agent for {company?.name}. This will update the company records and mark the milestone
-              as complete.
+              {company?.registeredAgent
+                ? `Current registered agent for ${company?.name}`
+                : `Assign a registered agent for ${company?.name}. This will update the company records and mark the milestone
+              as complete.`}
             </DialogDescription>
           </DialogHeader>
+          {company?.registeredAgent && (
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold text-blue-900 mb-3">Assigned Agent Information:</h3>
+              <div className="grid md:grid-cols-2 gap-3 text-sm">
+                <div>
+                  <span className="text-blue-700 font-medium">Name:</span>
+                  <p className="text-blue-900">{company.registeredAgent.name}</p>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-medium">Company:</span>
+                  <p className="text-blue-900">{company.registeredAgent.company || "N/A"}</p>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-medium">Address:</span>
+                  <p className="text-blue-900">{company.registeredAgent.address}</p>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-medium">City, State ZIP:</span>
+                  <p className="text-blue-900">
+                    {company.registeredAgent.city}, {company.registeredAgent.state} {company.registeredAgent.zip}
+                  </p>
+                </div>
+                <div>
+                  <span className="text-blue-700 font-medium">Service Period:</span>
+                  <p className="text-blue-900">{company.registeredAgent.servicePeriod}</p>
+                </div>
+              </div>
+            </div>
+          )}
           <div className="space-y-4 py-4">
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -3375,12 +3408,20 @@ export default function OrderDetailPage() {
       <Dialog open={einDialogOpen} onOpenChange={handleCloseEinDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Assign EIN</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">{hasEIN ? "View / Edit EIN" : "Assign EIN"}</DialogTitle>
             <DialogDescription>
-              Assign a Employer Identification Number (EIN) for {company?.name}. This will update the company records
-              and mark the EIN milestone as complete.
+              {hasEIN
+                ? `Current EIN for ${company?.name}`
+                : `Assign a Employer Identification Number (EIN) for ${company?.name}. This will update the company records
+              and mark the EIN milestone as complete.`}
             </DialogDescription>
           </DialogHeader>
+          {hasEIN && company?.ein && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold text-yellow-900 mb-2">Assigned EIN:</h3>
+              <p className="text-yellow-900 font-mono text-lg">{company.ein}</p>
+            </div>
+          )}
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="einInput">EIN (Employer Identification Number) *</Label>
@@ -3419,11 +3460,28 @@ export default function OrderDetailPage() {
       <Dialog open={itinDialogOpen} onOpenChange={handleCloseItinDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Assign ITIN to Member</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">
+              {company?.itinMembers && company.itinMembers.length > 0 ? "View / Edit ITIN" : "Assign ITIN to Member"}
+            </DialogTitle>
             <DialogDescription>
-              ITIN is an Individual Taxpayer Identification Number assigned to a specific member, not the company.
+              {company?.itinMembers && company.itinMembers.length > 0
+                ? "ITIN is an Individual Taxpayer Identification Number assigned to a specific member"
+                : "ITIN is an Individual Taxpayer Identification Number assigned to a specific member, not the company."}
             </DialogDescription>
           </DialogHeader>
+          {company?.itinMembers && company.itinMembers.length > 0 && (
+            <div className="bg-purple-50 border border-purple-200 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold text-purple-900 mb-3">Assigned ITINs:</h3>
+              <div className="space-y-2">
+                {company.itinMembers.map((entry: any, idx: number) => (
+                  <div key={idx} className="text-sm">
+                    <p className="text-purple-900 font-medium">{entry.memberName}</p>
+                    <p className="text-purple-700 font-mono">{entry.itin}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
           <div className="space-y-4 py-4">
             {/* Member selector */}
             <div className="space-y-2">
@@ -3507,12 +3565,22 @@ export default function OrderDetailPage() {
       <Dialog open={businessIdDialogOpen} onOpenChange={handleCloseBusinessIdDialog}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-xl font-semibold">Assign Business ID</DialogTitle>
+            <DialogTitle className="text-xl font-semibold">
+              {company?.businessId ? "View / Edit Business ID" : "Assign Business ID"}
+            </DialogTitle>
             <DialogDescription>
-              Assign a Business ID (State Filing Number) for {company?.name}. This identifier is issued by the state
-              after formation is complete.
+              {company?.businessId
+                ? `Current Business ID for ${company?.name}`
+                : `Assign a Business ID (State Filing Number) for ${company?.name}. This identifier is issued by the state
+              after formation is complete.`}
             </DialogDescription>
           </DialogHeader>
+          {company?.businessId && (
+            <div className="bg-indigo-50 border border-indigo-200 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold text-indigo-900 mb-2">Assigned Business ID:</h3>
+              <p className="text-indigo-900 font-mono text-lg">{company.businessId}</p>
+            </div>
+          )}
           <div className="space-y-4 py-4">
             <div className="space-y-2">
               <Label htmlFor="businessIdInput">Business ID / State Filing Number *</Label>
@@ -3553,13 +3621,25 @@ export default function OrderDetailPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <Home className="w-5 h-5 text-[#dc2626]" />
-              Assign Mailing Address
+              {company?.mailingAddress ? "View / Edit Mailing Address" : "Assign Mailing Address"}
             </DialogTitle>
             <DialogDescription>
-              Assign a mailing address to {company?.name}. This will be displayed on the user dashboard and company
-              page.
+              {company?.mailingAddress
+                ? `Current mailing address for ${company?.name}`
+                : `Assign a mailing address to ${company?.name}. This will be displayed on the user dashboard and company
+              page.`}
             </DialogDescription>
           </DialogHeader>
+          {company?.mailingAddress && (
+            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+              <h3 className="font-semibold text-green-900 mb-2">Assigned Address:</h3>
+              <p className="text-green-900 text-sm">
+                {company.mailingAddress.street}
+                <br />
+                {company.mailingAddress.city}, {company.mailingAddress.state} {company.mailingAddress.zip}
+              </p>
+            </div>
+          )}
           <div className="grid gap-4 py-4">
             <div className="grid gap-2">
               <Label htmlFor="street">Street Address *</Label>
