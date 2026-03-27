@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { usePathname } from "next/navigation"
 import { CompanyContext } from "@/lib/company-context"
 import { ApiClient } from "@/lib/api-client"
@@ -15,6 +15,8 @@ const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
   const [lastUserId, setLastUserId] = useState<string | null>(null)
+  // Ref guard: prevents loadCompanies from being called concurrently
+  const isFetchingRef = useRef(false)
 
   // Read from localStorage synchronously on first render so the name shows instantly
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
@@ -49,6 +51,29 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
   const isPublicPage = PUBLIC_PAGES.includes(pathname)
 
+  // Listen for fresh login events so the provider resets and re-fetches for the new session
+  useEffect(() => {
+    const handleUserLoggedIn = (e: CustomEvent<{ userId: string }>) => {
+      const newUserId = e.detail?.userId
+      // Reset all state so loadCompanies runs fresh on next effect cycle
+      isFetchingRef.current = false
+      try {
+        localStorage.removeItem(COMPANIES_CACHE_KEY)
+        localStorage.removeItem(SELECTED_COMPANY_KEY)
+      } catch {
+        // ignore
+      }
+      setCompanies([])
+      setSelectedCompanyId(null)
+      setLoading(true)
+      setInitialLoadDone(false)
+      setLastUserId(newUserId ?? null)
+    }
+
+    window.addEventListener("user-logged-in", handleUserLoggedIn as EventListener)
+    return () => window.removeEventListener("user-logged-in", handleUserLoggedIn as EventListener)
+  }, [])
+
   useEffect(() => {
     if (isPublicPage) {
       setLoading(false)
@@ -60,6 +85,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     const currentUser = authService.getCurrentUser()
     if (currentUser && lastUserId && lastUserId !== currentUser.id) {
       // User ID changed, clear cache and reset
+      isFetchingRef.current = false
       try {
         localStorage.removeItem(COMPANIES_CACHE_KEY)
         localStorage.removeItem(SELECTED_COMPANY_KEY)
@@ -75,6 +101,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
     if (currentUser && !lastUserId) {
       setLastUserId(currentUser.id)
+      // Don't return — fall through so loadCompanies runs on this same cycle
     }
 
     // Only run the full loading sequence once per session
@@ -82,7 +109,13 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       return
     }
 
+    // Prevent concurrent fetches (e.g. from rapid state changes)
+    if (isFetchingRef.current) {
+      return
+    }
+
     const loadCompanies = async () => {
+      isFetchingRef.current = true
       try {
         const currentUser = authService.getCurrentUser()
         const token = authService.getToken()
@@ -90,6 +123,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         if (!currentUser || !token) {
           setLoading(false)
           setInitialLoadDone(true)
+          isFetchingRef.current = false
           return
         }
 
@@ -138,6 +172,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       } finally {
         setLoading(false)
         setInitialLoadDone(true)
+        isFetchingRef.current = false
       }
     }
 
