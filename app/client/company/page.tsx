@@ -31,7 +31,7 @@ type MemberUI = {
 
 export default function CompanyPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard("client")
-  const { selectedCompanyId } = useSelectedCompany()
+  const { selectedCompanyId, companiesLoading, initialLoadDone } = useSelectedCompany()
   // Seed from localStorage cache for instant paint on return visits
   const [companyData, setCompanyData] = useState<any>(() => {
     if (typeof window !== "undefined") {
@@ -316,10 +316,20 @@ export default function CompanyPage() {
     )
   }
 
-  if (!selectedCompanyId || !companyData) {
+  // Only show NoCompanyState once the API load is confirmed complete — prevents 3-second flash
+  if ((!selectedCompanyId || !companyData) && !companiesLoading && initialLoadDone) {
     return (
       <ClientShell>
         <NoCompanyState />
+      </ClientShell>
+    )
+  }
+
+  // While companies are still loading, show skeleton to avoid flash of NoCompanyState
+  if (companiesLoading || !initialLoadDone) {
+    return (
+      <ClientShell>
+        <CompanySkeleton />
       </ClientShell>
     )
   }
