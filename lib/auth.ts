@@ -100,6 +100,11 @@ export const authService = {
       setCookie(tokenKey, tokenData, 3)
       setCookie("auth_user", encodeURIComponent(JSON.stringify(authUser)), 3)
 
+      // Notify CompanyProvider that a fresh login occurred so it resets its state
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("user-logged-in", { detail: { userId: authUser.id } }))
+      }
+
       return { success: true, user: authUser }
     } catch (error: any) {
       const errorData = error?.response?.data || {}

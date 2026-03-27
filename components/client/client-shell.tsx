@@ -86,10 +86,13 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const [companySearch, setCompanySearch] = useState("")
 
-  const { selectedCompanyId, setSelectedCompanyId, companiesLoading } = useSelectedCompany()
-  const selectedCompany = selectedCompanyId ? allCompanies.find((c) => c.id === selectedCompanyId) : null
-  // Only show skeleton if we have no cached data at all — otherwise show whatever we have instantly
-  const isCompanyLoading = companiesLoading && allCompanies.length === 0
+  const { selectedCompanyId, setSelectedCompanyId, companiesLoading, initialLoadDone } = useSelectedCompany()
+  // Check both c.id and c._id to handle MongoDB documents that may use _id
+  const selectedCompany = selectedCompanyId
+    ? allCompanies.find((c) => (c.id || c._id) === selectedCompanyId)
+    : null
+  // Show skeleton only when actively loading AND we have no cached data to display yet
+  const isCompanyLoading = (companiesLoading || !initialLoadDone) && allCompanies.length === 0
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -152,11 +155,33 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
             const companies = JSON.parse(cached)
             setAllCompanies(companies)
             setHasNoCompanies(companies.length === 0)
+          } else {
+            // Cache cleared (e.g. fresh login) — will be repopulated by CompanyProvider
+            setAllCompanies([])
           }
         } catch {
           // ignore
         }
       }
+    }
+
+    // Listen for fresh login to sync company list once CompanyProvider repopulates the cache
+    const handleUserLoggedIn = () => {
+      // Small delay so CompanyProvider's loadCompanies has time to write the cache
+      setTimeout(() => {
+        if (typeof window !== "undefined") {
+          try {
+            const cached = localStorage.getItem("companies_cache")
+            if (cached) {
+              const companies = JSON.parse(cached)
+              setAllCompanies(companies)
+              setHasNoCompanies(companies.length === 0)
+            }
+          } catch {
+            // ignore
+          }
+        }
+      }, 1500)
     }
 
     const handleCheckoutComplete = () => {
@@ -177,9 +202,11 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
     window.addEventListener("client-dashboard-refresh", handleRefresh)
     window.addEventListener("checkout-completed", handleCheckoutComplete)
+    window.addEventListener("user-logged-in", handleUserLoggedIn)
     return () => {
       window.removeEventListener("client-dashboard-refresh", handleRefresh)
       window.removeEventListener("checkout-completed", handleCheckoutComplete)
+      window.removeEventListener("user-logged-in", handleUserLoggedIn)
     }
   }, [])
 
@@ -214,8 +241,9 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   }, [lastScrollY])
 
   const handleSelectCompany = async (company: any) => {
-    setSelectedCompanyId(company.id)
-    localStorage.setItem("selectedCompanyId", company.id)
+    const companyId = company.id || company._id
+    setSelectedCompanyId(companyId)
+    localStorage.setItem("selectedCompanyId", companyId)
     setCompanyModalOpen(false)
     window.dispatchEvent(new Event("client-dashboard-refresh"))
   }
