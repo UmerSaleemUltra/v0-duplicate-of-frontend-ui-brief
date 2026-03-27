@@ -8,6 +8,7 @@ interface CompanyContextType {
   companiesLoading: boolean
   hasCompanies: boolean
   initialLoadDone: boolean
+  isResetting: boolean
 }
 
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined)

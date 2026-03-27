@@ -21,6 +21,9 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   // we must NOT mark initialLoadDone=true in the public-page branch — 
   // we wait until the route changes to a protected page before fetching.
   const pendingLoginFetchRef = useRef(false)
+  // True while a login reset is in progress — prevents dashboard from seeing
+  // the transient (companies=[], initialLoadDone=false) state as "no companies"
+  const [isResetting, setIsResetting] = useState(false)
 
   // Read from localStorage synchronously on first render so the name shows instantly
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
@@ -63,6 +66,9 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       // from prematurely setting initialLoadDone=true before we navigate to a protected route
       pendingLoginFetchRef.current = true
       isFetchingRef.current = false
+      // Mark as resetting so consumers (dashboard) don't flash NoCompanyState
+      // while companies/selectedCompanyId are temporarily cleared
+      setIsResetting(true)
       try {
         localStorage.removeItem(COMPANIES_CACHE_KEY)
         localStorage.removeItem(SELECTED_COMPANY_KEY)
@@ -155,6 +161,8 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         })
 
         setCompanies(userCompanies)
+        // Clear resetting flag now that we have fresh companies loaded
+        setIsResetting(false)
         // Persist to localStorage so next render is instant
         try {
           localStorage.setItem(COMPANIES_CACHE_KEY, JSON.stringify(userCompanies))
@@ -190,6 +198,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       } finally {
         setLoading(false)
         setInitialLoadDone(true)
+        setIsResetting(false)
         isFetchingRef.current = false
       }
     }
@@ -231,6 +240,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
         companiesLoading: loading,
         hasCompanies: companies.length > 0,
         initialLoadDone,
+        isResetting,
       }}
     >
       {children}
