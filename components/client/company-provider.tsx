@@ -17,6 +17,10 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const [lastUserId, setLastUserId] = useState<string | null>(null)
   // Ref guard: prevents loadCompanies from being called concurrently
   const isFetchingRef = useRef(false)
+  // When user-logged-in fires while we're still on a public page (e.g. /login),
+  // we must NOT mark initialLoadDone=true in the public-page branch — 
+  // we wait until the route changes to a protected page before fetching.
+  const pendingLoginFetchRef = useRef(false)
 
   // Read from localStorage synchronously on first render so the name shows instantly
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
@@ -55,7 +59,9 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     const handleUserLoggedIn = (e: CustomEvent<{ userId: string }>) => {
       const newUserId = e.detail?.userId
-      // Reset all state so loadCompanies runs fresh on next effect cycle
+      // Mark that a login just occurred — used to block the public-page branch
+      // from prematurely setting initialLoadDone=true before we navigate to a protected route
+      pendingLoginFetchRef.current = true
       isFetchingRef.current = false
       try {
         localStorage.removeItem(COMPANIES_CACHE_KEY)
@@ -76,9 +82,21 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (isPublicPage) {
+      // If we're on a public page and a login just occurred, do NOT set initialLoadDone = true
+      // Let the route change to a protected page first, then loadCompanies will run
+      if (pendingLoginFetchRef.current) {
+        setLoading(false)
+        return
+      }
+      // Normal public page — no companies needed
       setLoading(false)
       setInitialLoadDone(true)
       return
+    }
+
+    // We're on a protected page now — if a login was pending, clear the flag so fetch can proceed
+    if (pendingLoginFetchRef.current) {
+      pendingLoginFetchRef.current = false
     }
 
     // Check if user has changed (logout then login different user scenario)
