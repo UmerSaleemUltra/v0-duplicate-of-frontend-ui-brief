@@ -4144,7 +4144,7 @@ export default function OrderDetailPage() {
               <Input
                 id="taxClassification"
                 placeholder="e.g., S-Corporation, Partnership"
-                value={taxData.taxClassification}
+                value={taxData.taxClassification || ""}
                 onChange={(e) => setTaxData({ ...taxData, taxClassification: e.target.value })}
                 className="mt-1"
               />
@@ -4161,7 +4161,7 @@ export default function OrderDetailPage() {
               <Input
                 id="annualReportFilingDate"
                 type="date"
-                value={taxData.annualReportFilingDate}
+                value={taxData.annualReportFilingDate || ""}
                 onChange={(e) => setTaxData({ ...taxData, annualReportFilingDate: e.target.value })}
                 className="mt-1"
               />
@@ -4178,7 +4178,7 @@ export default function OrderDetailPage() {
               <Input
                 id="irsFilingDate"
                 type="date"
-                value={taxData.irsFilingDate}
+                value={taxData.irsFilingDate || ""}
                 onChange={(e) => setTaxData({ ...taxData, irsFilingDate: e.target.value })}
                 className="mt-1"
               />
@@ -4195,7 +4195,7 @@ export default function OrderDetailPage() {
               <Input
                 id="itin"
                 placeholder="Individual Taxpayer Identification Number"
-                value={taxData.itin}
+                value={taxData.itin || ""}
                 onChange={(e) => setTaxData({ ...taxData, itin: e.target.value })}
                 className="mt-1"
               />
