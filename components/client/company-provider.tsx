@@ -60,7 +60,6 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     const currentUser = authService.getCurrentUser()
     if (currentUser && lastUserId && lastUserId !== currentUser.id) {
       // User ID changed, clear cache and reset
-      console.log("[v0] User changed, clearing company cache")
       try {
         localStorage.removeItem(COMPANIES_CACHE_KEY)
         localStorage.removeItem(SELECTED_COMPANY_KEY)
@@ -135,7 +134,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
           localStorage.removeItem(SELECTED_COMPANY_KEY)
         }
       } catch (error) {
-        console.error("[v0] CompanyProvider: Error loading companies:", error)
+        // Silently handle errors
       } finally {
         setLoading(false)
         setInitialLoadDone(true)
