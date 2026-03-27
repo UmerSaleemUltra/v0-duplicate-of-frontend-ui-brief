@@ -202,6 +202,19 @@ export default function ClientDashboard() {
         setDataLoaded(true)
       } catch (error) {
         console.error("[v0] Error loading dashboard data:", error)
+        // Handle 403 Forbidden - user doesn't have access to this company
+        if (error instanceof Error && error.message.includes("Forbidden")) {
+          console.log("[v0] Company access forbidden, clearing cache and reloading")
+          try {
+            localStorage.removeItem("selectedCompanyId")
+            localStorage.removeItem("companies_cache")
+          } catch {
+            // ignore
+          }
+          // Force company provider to reload
+          window.location.reload()
+          return
+        }
         if (error instanceof Error && error.message.includes("Unauthorized")) {
           authService.logout()
           router.push("/login")
@@ -252,6 +265,18 @@ export default function ClientDashboard() {
         setLastLoadedCompanyId(selectedCompanyId)
         setDataLoaded(true)
       } catch (error) {
+        // Handle 403 Forbidden in silent refresh
+        if (error instanceof Error && error.message.includes("Forbidden")) {
+          console.log("[v0] Silent refresh: company access forbidden, clearing cache")
+          try {
+            localStorage.removeItem("selectedCompanyId")
+            localStorage.removeItem("companies_cache")
+          } catch {
+            // ignore
+          }
+          window.location.reload()
+          return
+        }
         console.error("[v0] Silent refresh failed:", error)
       } finally {
         setIsSilentRefreshing(false)
