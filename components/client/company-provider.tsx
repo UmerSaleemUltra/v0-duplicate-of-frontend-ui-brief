@@ -14,6 +14,7 @@ const PUBLIC_PAGES = ["/", "/privacy", "/terms", "/about", "/contact", "/pricing
 
 export function CompanyProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [lastUserId, setLastUserId] = useState<string | null>(null)
 
   // Read from localStorage synchronously on first render so the name shows instantly
   const [selectedCompanyId, setSelectedCompanyId] = useState<string | null>(() => {
@@ -53,6 +54,28 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       setLoading(false)
       setInitialLoadDone(true)
       return
+    }
+
+    // Check if user has changed (logout then login different user scenario)
+    const currentUser = authService.getCurrentUser()
+    if (currentUser && lastUserId && lastUserId !== currentUser.id) {
+      // User ID changed, clear cache and reset
+      console.log("[v0] User changed, clearing company cache")
+      try {
+        localStorage.removeItem(COMPANIES_CACHE_KEY)
+        localStorage.removeItem(SELECTED_COMPANY_KEY)
+      } catch {
+        // ignore
+      }
+      setCompanies([])
+      setSelectedCompanyId(null)
+      setLastUserId(currentUser.id)
+      setInitialLoadDone(false)
+      return
+    }
+
+    if (currentUser && !lastUserId) {
+      setLastUserId(currentUser.id)
     }
 
     // Only run the full loading sequence once per session
@@ -120,7 +143,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
     }
 
     loadCompanies()
-  }, [isPublicPage, initialLoadDone])
+  }, [isPublicPage, initialLoadDone, lastUserId])
 
   // Listen for checkout completion and refresh companies
   useEffect(() => {
