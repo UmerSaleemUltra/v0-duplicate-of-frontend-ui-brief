@@ -131,6 +131,9 @@ export const authService = {
     deleteCookie("auth_user")
 
     if (typeof window !== "undefined") {
+      // Clear company-related cache on logout
+      localStorage.removeItem("selectedCompanyId")
+      localStorage.removeItem("companies_cache")
       localStorage.setItem("onetime_logout", "true")
     }
 
