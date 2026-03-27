@@ -82,7 +82,7 @@ function BannerBar({
 }
 
 export default function ClientDashboard() {
-  const { selectedCompanyId, setSelectedCompanyId, companiesLoading, hasCompanies } = useSelectedCompany()
+  const { selectedCompanyId, setSelectedCompanyId, companiesLoading, hasCompanies, initialLoadDone } = useSelectedCompany()
   const [company, setCompany] = useState<any>(null)
   const [order, setOrder] = useState<any>(null)
   const [documents, setDocuments] = useState<any[]>([])
@@ -144,8 +144,9 @@ export default function ClientDashboard() {
       return
     }
 
-    // After companies finish loading, determine if there are ANY companies
-    if (!selectedCompanyId && !hasCompanies) {
+    // After companies finish loading (API call complete), determine if there are ANY companies.
+    // Guard with initialLoadDone to avoid showing NoCompanyState during the fetch on fresh login/refresh.
+    if (!selectedCompanyId && !hasCompanies && initialLoadDone) {
       // No selected company AND no companies available = show NoCompanyState
       setHasNoCompanies(true)
       setIsLoadingData(false)
@@ -228,7 +229,7 @@ export default function ClientDashboard() {
     }
 
     loadData()
-  }, [isAuthenticating, companiesLoading, hasCompanies, selectedCompanyId, lastLoadedCompanyId, dataLoaded, router])
+  }, [isAuthenticating, companiesLoading, hasCompanies, initialLoadDone, selectedCompanyId, lastLoadedCompanyId, dataLoaded, router])
 
   // Silent background refresh — no skeleton, just update data in place
   useEffect(() => {
@@ -348,8 +349,9 @@ export default function ClientDashboard() {
 
 
 
-  // Show no-company state if auth is done, companies finished loading, and there are no companies
-  if (!isAuthenticating && !companiesLoading && hasNoCompanies) {
+  // Show no-company state only after auth is done, the API fetch has completed (initialLoadDone),
+  // and there are confirmed no companies — prevents flash on fresh login/refresh
+  if (!isAuthenticating && !companiesLoading && initialLoadDone && hasNoCompanies) {
     return (
       <ClientShell>
         <NoCompanyState />
