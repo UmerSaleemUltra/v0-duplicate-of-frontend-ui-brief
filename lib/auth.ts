@@ -131,9 +131,25 @@ export const authService = {
     deleteCookie("auth_user")
 
     if (typeof window !== "undefined") {
-      // Clear company-related cache on logout
-      localStorage.removeItem("selectedCompanyId")
-      localStorage.removeItem("companies_cache")
+      // Clear all user/company-related cache keys on logout
+      const keysToRemove: string[] = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (!key) continue
+        // Remove all known cache keys (including dynamic per-company/per-user keys)
+        if (
+          key === "selectedCompanyId" ||
+          key === "companies_cache" ||
+          key === "addons_cache" ||
+          key.startsWith("company_detail_") ||
+          key.startsWith("docs_cache_") ||
+          key.startsWith("mail_cache_") ||
+          key.startsWith("dashboard_visited_")
+        ) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach((key) => localStorage.removeItem(key))
       localStorage.setItem("onetime_logout", "true")
     }
 
