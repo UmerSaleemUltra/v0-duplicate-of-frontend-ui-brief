@@ -237,6 +237,7 @@ export function CompanyProvider({ children }: { children: React.ReactNode }) {
       value={{
         selectedCompanyId,
         setSelectedCompanyId: handleSetSelectedCompanyId,
+        companies,
         companiesLoading: loading,
         hasCompanies: companies.length > 0,
         initialLoadDone,

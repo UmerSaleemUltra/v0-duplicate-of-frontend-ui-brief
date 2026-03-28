@@ -350,8 +350,8 @@ export default function ClientDashboard() {
 
 
   // Show no-company state only after auth is done, the API fetch has completed (initialLoadDone),
-  // and there are confirmed no companies — prevents flash on fresh login/refresh
-  if (!isAuthenticating && !companiesLoading && initialLoadDone && hasNoCompanies) {
+  // resetting is finished, and there are confirmed no companies — prevents flash on fresh login/refresh
+  if (!isAuthenticating && !companiesLoading && !isResetting && initialLoadDone && hasNoCompanies) {
     return (
       <ClientShell>
         <NoCompanyState />
@@ -359,8 +359,22 @@ export default function ClientDashboard() {
     )
   }
 
-  // Show loading skeleton while: auth check is running OR companies are loading OR data is loading OR we have a company but haven't loaded its data yet
-  if (isAuthenticating || companiesLoading || isLoadingData || (!dataLoaded && selectedCompanyId)) {
+  // Keep the skeleton until ALL of these are true at once:
+  //   1. Auth check complete
+  //   2. Company list loaded from API (initialLoadDone) and not currently resetting
+  //   3. A company is selected (selectedCompanyId is set)
+  //   4. Dashboard data for that company has been fetched (dataLoaded)
+  // This ensures the sidebar company name AND the dashboard cards appear together with no flicker.
+  const everythingReady =
+    !isAuthenticating &&
+    !companiesLoading &&
+    !isResetting &&
+    initialLoadDone &&
+    !!selectedCompanyId &&
+    dataLoaded &&
+    !isLoadingData
+
+  if (!everythingReady) {
     return (
       <ClientShell>
         <DashboardSkeleton />
