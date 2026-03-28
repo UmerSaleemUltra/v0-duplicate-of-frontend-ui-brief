@@ -63,18 +63,6 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
-  // Seed companies from localStorage cache so the name shows instantly without waiting for the API
-  const [allCompanies, setAllCompanies] = useState<any[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const cached = localStorage.getItem("companies_cache")
-        if (cached) return JSON.parse(cached)
-      } catch {
-        // ignore
-      }
-    }
-    return []
-  })
   const [userInitials, setUserInitials] = useState("U")
   const [userName, setUserName] = useState("")
   const [isAdminView, setIsAdminView] = useState(false)
@@ -82,17 +70,16 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const [showHamburger, setShowHamburger] = useState(true)
   const [lastScrollY, setLastScrollY] = useState(0)
   const [isPageReady, setIsPageReady] = useState(true)
-  const [hasNoCompanies, setHasNoCompanies] = useState(false)
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const [companySearch, setCompanySearch] = useState("")
 
-  const { selectedCompanyId, setSelectedCompanyId, companiesLoading, initialLoadDone } = useSelectedCompany()
+  const { selectedCompanyId, setSelectedCompanyId, companies: allCompanies, companiesLoading, initialLoadDone, isResetting } = useSelectedCompany()
   // Check both c.id and c._id to handle MongoDB documents that may use _id
   const selectedCompany = selectedCompanyId
     ? allCompanies.find((c) => (c.id || c._id) === selectedCompanyId)
     : null
-  // Show skeleton only when actively loading AND we have no cached data to display yet
-  const isCompanyLoading = (companiesLoading || !initialLoadDone) && allCompanies.length === 0
+  // Show skeleton only when actively loading/resetting AND we have no companies to display yet
+  const isCompanyLoading = (companiesLoading || isResetting || !initialLoadDone) && allCompanies.length === 0
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -131,84 +118,8 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     loadUserData()
   }, [])
 
-  useEffect(() => {
-    // Seed companies from localStorage cache (set by CompanyProvider)
-    if (typeof window !== "undefined") {
-      try {
-        const cached = localStorage.getItem("companies_cache")
-        if (cached) {
-          const companies = JSON.parse(cached)
-          setAllCompanies(companies)
-          setHasNoCompanies(companies.length === 0)
-        }
-      } catch {
-        // ignore
-      }
-    }
-
-    // Listen for refresh events to reload companies cache from localStorage
-    const handleRefresh = () => {
-      if (typeof window !== "undefined") {
-        try {
-          const cached = localStorage.getItem("companies_cache")
-          if (cached) {
-            const companies = JSON.parse(cached)
-            setAllCompanies(companies)
-            setHasNoCompanies(companies.length === 0)
-          } else {
-            // Cache cleared (e.g. fresh login) — will be repopulated by CompanyProvider
-            setAllCompanies([])
-          }
-        } catch {
-          // ignore
-        }
-      }
-    }
-
-    // Listen for fresh login to sync company list once CompanyProvider repopulates the cache
-    const handleUserLoggedIn = () => {
-      // Small delay so CompanyProvider's loadCompanies has time to write the cache
-      setTimeout(() => {
-        if (typeof window !== "undefined") {
-          try {
-            const cached = localStorage.getItem("companies_cache")
-            if (cached) {
-              const companies = JSON.parse(cached)
-              setAllCompanies(companies)
-              setHasNoCompanies(companies.length === 0)
-            }
-          } catch {
-            // ignore
-          }
-        }
-      }, 1500)
-    }
-
-    const handleCheckoutComplete = () => {
-      // Force refresh companies cache after checkout
-      if (typeof window !== "undefined") {
-        try {
-          const cached = localStorage.getItem("companies_cache")
-          if (cached) {
-            const companies = JSON.parse(cached)
-            setAllCompanies(companies)
-            setHasNoCompanies(companies.length === 0)
-          }
-        } catch {
-          // ignore
-        }
-      }
-    }
-
-    window.addEventListener("client-dashboard-refresh", handleRefresh)
-    window.addEventListener("checkout-completed", handleCheckoutComplete)
-    window.addEventListener("user-logged-in", handleUserLoggedIn)
-    return () => {
-      window.removeEventListener("client-dashboard-refresh", handleRefresh)
-      window.removeEventListener("checkout-completed", handleCheckoutComplete)
-      window.removeEventListener("user-logged-in", handleUserLoggedIn)
-    }
-  }, [])
+  // Companies are now sourced reactively from CompanyProvider context (allCompanies above).
+  // No localStorage polling needed — the context keeps allCompanies in sync automatically.
 
   // Intentionally removed: the visibilitychange listener was triggering a full
   // company re-fetch (and skeleton re-render) every time the user switched tabs.
