@@ -381,12 +381,7 @@ function AddonCheckoutContent() {
   if (isLoading) {
     return (
       <ClientShell>
-        <div className="flex items-center justify-center min-h-[400px]">
-          <div className="text-center">
-            <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-            <p className="text-slate-600">Loading addon details...</p>
-          </div>
-        </div>
+        <AddonCheckoutSkeleton />
       </ClientShell>
     )
   }
@@ -474,17 +469,117 @@ function AddonCheckoutContent() {
   )
 }
 
+function AddonCheckoutSkeleton() {
+  return (
+    <div className="max-w-4xl mx-auto space-y-6">
+      {/* Back button */}
+      <div className="h-9 w-36 bg-slate-200 rounded-md animate-pulse" />
+
+      <div className="grid md:grid-cols-2 gap-6 items-start">
+        {/* Left card — addon details */}
+        <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-5">
+          {/* Icon + name */}
+          <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-xl bg-slate-200 animate-pulse flex-shrink-0" />
+            <div className="space-y-2 flex-1">
+              <div className="h-5 w-40 bg-slate-200 rounded animate-pulse" />
+              <div className="h-4 w-24 bg-slate-100 rounded animate-pulse" />
+            </div>
+          </div>
+
+          {/* Features list */}
+          <div className="space-y-2">
+            <div className="h-4 w-32 bg-slate-200 rounded animate-pulse" />
+            {Array(5).fill(null).map((_, i) => (
+              <div key={i} className="flex items-center gap-2">
+                <div className="w-3.5 h-3.5 rounded bg-slate-200 animate-pulse flex-shrink-0" />
+                <div className="h-4 bg-slate-100 rounded animate-pulse" style={{ width: `${65 + (i % 3) * 10}%` }} />
+              </div>
+            ))}
+          </div>
+
+          {/* Total row */}
+          <div className="pt-4 border-t flex items-center justify-between">
+            <div className="h-5 w-12 bg-slate-200 rounded animate-pulse" />
+            <div className="h-10 w-24 bg-slate-200 rounded animate-pulse" />
+          </div>
+        </div>
+
+        {/* Right card — payment form */}
+        <div className="bg-white rounded-lg border border-slate-200 p-6 space-y-5">
+          {/* Card header */}
+          <div className="space-y-2 pb-3 border-b">
+            <div className="h-5 w-44 bg-slate-200 rounded animate-pulse" />
+            <div className="h-4 w-64 bg-slate-100 rounded animate-pulse" />
+          </div>
+
+          {/* Payment method header */}
+          <div className="h-5 w-40 bg-slate-200 rounded animate-pulse" />
+
+          {/* Instruction box */}
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-2">
+            <div className="h-4 w-36 bg-slate-200 rounded animate-pulse" />
+            {Array(4).fill(null).map((_, i) => (
+              <div key={i} className="h-3.5 bg-slate-100 rounded animate-pulse" style={{ width: `${80 - i * 8}%` }} />
+            ))}
+          </div>
+
+          {/* Notice box */}
+          <div className="p-4 rounded-lg bg-slate-50 border border-slate-200 space-y-1.5">
+            <div className="h-4 w-40 bg-slate-200 rounded animate-pulse" />
+            <div className="h-3.5 w-full bg-slate-100 rounded animate-pulse" />
+            <div className="h-3.5 w-3/4 bg-slate-100 rounded animate-pulse" />
+          </div>
+
+          <div className="h-px bg-slate-200" />
+
+          {/* Phone input */}
+          <div className="space-y-2">
+            <div className="h-4 w-48 bg-slate-200 rounded animate-pulse" />
+            <div className="h-10 w-full bg-slate-100 rounded-md animate-pulse" />
+            <div className="h-3 w-52 bg-slate-100 rounded animate-pulse" />
+          </div>
+
+          {/* File input */}
+          <div className="space-y-2">
+            <div className="h-4 w-40 bg-slate-200 rounded animate-pulse" />
+            <div className="h-10 w-full bg-slate-100 rounded-md animate-pulse" />
+            <div className="h-3 w-44 bg-slate-100 rounded animate-pulse" />
+          </div>
+
+          <div className="h-px bg-slate-200" />
+
+          {/* Totals */}
+          <div className="space-y-2">
+            <div className="flex justify-between">
+              <div className="h-4 w-16 bg-slate-100 rounded animate-pulse" />
+              <div className="h-4 w-12 bg-slate-100 rounded animate-pulse" />
+            </div>
+            <div className="flex justify-between">
+              <div className="h-4 w-24 bg-slate-100 rounded animate-pulse" />
+              <div className="h-4 w-6 bg-slate-100 rounded animate-pulse" />
+            </div>
+            <div className="h-px bg-slate-200 my-1" />
+            <div className="flex justify-between pt-1">
+              <div className="h-5 w-10 bg-slate-200 rounded animate-pulse" />
+              <div className="h-5 w-14 bg-slate-200 rounded animate-pulse" />
+            </div>
+          </div>
+
+          {/* Submit button */}
+          <div className="h-10 w-full bg-slate-200 rounded-md animate-pulse" />
+        </div>
+      </div>
+    </div>
+  )
+}
+
 export default function AddonCheckoutPage() {
   return (
     <Suspense
       fallback={
         <ClientShell>
-          <div className="flex items-center justify-center min-h-[400px]">
-            <div className="text-center">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] animate-pulse mx-auto mb-4"></div>
-              <p className="text-slate-600">Loading...</p>
-            </div>
-          </div>
+          <AddonCheckoutSkeleton />
         </ClientShell>
       }
     >
