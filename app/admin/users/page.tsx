@@ -1,12 +1,13 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn, Users, UserCheck, Clock, ShoppingCart, DollarSign, Copy, Check } from "lucide-react"
+import { Search, UserPlus, Edit, Building2, FileText, Key, LogIn, Users, UserCheck, Clock, ShoppingCart, DollarSign, Copy, Check, Trash2 } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import Link from "next/link"
@@ -64,6 +65,9 @@ export default function UsersPage() {
   const [confirmPassword, setConfirmPassword] = useState("")
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [userToDelete, setUserToDelete] = useState<User | null>(null)
+  const [deleting, setDeleting] = useState(false)
   const ITEMS_PER_PAGE = 8
   const { toast } = useToast()
   const router = useRouter()
@@ -396,6 +400,31 @@ export default function UsersPage() {
     setEditModalOpen(true)
   }
 
+  const handleDeleteUser = async () => {
+    if (!userToDelete) return
+    try {
+      setDeleting(true)
+      const token = authService.getToken()
+      const response = await fetch(`/api/users/${userToDelete.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      })
+      if (response.ok) {
+        await loadData()
+        toast({ title: "User deleted", description: `${userToDelete.name} has been permanently deleted.` })
+      } else {
+        const err = await response.json().catch(() => ({}))
+        throw new Error(err.message || "Delete failed")
+      }
+    } catch (error) {
+      toast({ title: "Error", description: error instanceof Error ? error.message : "Failed to delete user", variant: "destructive" })
+    } finally {
+      setDeleting(false)
+      setDeleteDialogOpen(false)
+      setUserToDelete(null)
+    }
+  }
+
   if (loading) {
     return (
       <div className="space-y-6 p-6 animate-pulse">
@@ -540,6 +569,15 @@ export default function UsersPage() {
                           <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-slate-600" onClick={() => handleLoginAsUser(user)} title="Login as User">
                             <LogIn className="h-3.5 w-3.5" />
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 w-8 p-0 text-slate-400 hover:text-red-600 hover:bg-red-50"
+                            title="Delete User"
+                            onClick={() => { setUserToDelete(user); setDeleteDialogOpen(true) }}
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </Button>
                         </div>
                       </td>
                     </tr>
@@ -647,6 +685,28 @@ export default function UsersPage() {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete User</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to permanently delete <strong>{userToDelete?.name}</strong>? This will also remove all
+              their companies, orders, documents, and associated data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              disabled={deleting}
+              className="bg-red-600 hover:bg-red-700 focus:ring-red-600"
+            >
+              {deleting ? "Deleting…" : "Delete User"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

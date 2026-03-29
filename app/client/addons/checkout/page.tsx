@@ -424,6 +424,12 @@ function AddonCheckoutContent() {
                 </div>
               </div>
 
+              {/* Description */}
+              {addon.description && (
+                <p className="text-sm text-slate-600 leading-relaxed mb-5">{addon.description}</p>
+              )}
+              </div>
+
               {/* Features list — compact, scrollable if many items */}
               {addon.features && addon.features.length > 0 && (
                 <div className="mb-5">
