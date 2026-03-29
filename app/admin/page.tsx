@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { RevenueChartCarousel } from "@/components/admin/revenue-chart-carousel"
 import {
   DollarSign,
@@ -745,17 +745,17 @@ export default function AdminDashboard() {
         </div>
       </div>
 
-      {/* All States Drawer */}
-      <Sheet open={statesDrawerOpen} onOpenChange={setStatesDrawerOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-md bg-white/95 backdrop-blur-md border-l border-white/40 overflow-y-auto">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      {/* All States Modal */}
+      <Dialog open={statesDrawerOpen} onOpenChange={setStatesDrawerOpen}>
+        <DialogContent className="max-w-md w-full max-h-[80vh] flex flex-col bg-white/95 backdrop-blur-md">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <MapPin className="h-5 w-5 text-[#880000]" />
               All States Breakdown
-            </SheetTitle>
+            </DialogTitle>
             <p className="text-sm text-slate-600">{stateBreakdown.length} states — {stateBreakdown.reduce((s, x) => s + x.count, 0)} total companies</p>
-          </SheetHeader>
-          <div className="space-y-2">
+          </DialogHeader>
+          <div className="overflow-y-auto flex-1 space-y-2 pr-1">
             {stateBreakdown.map((state, index) => (
               <div key={index} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all">
                 <div className="flex items-center gap-3 flex-1 min-w-0">
@@ -779,20 +779,20 @@ export default function AdminDashboard() {
               </div>
             ))}
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
 
-      {/* All Orders Drawer */}
-      <Sheet open={ordersDrawerOpen} onOpenChange={setOrdersDrawerOpen}>
-        <SheetContent side="right" className="w-full sm:max-w-lg bg-white/95 backdrop-blur-md border-l border-white/40 overflow-y-auto">
-          <SheetHeader className="mb-6">
-            <SheetTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+      {/* All Orders Modal */}
+      <Dialog open={ordersDrawerOpen} onOpenChange={setOrdersDrawerOpen}>
+        <DialogContent className="max-w-lg w-full max-h-[80vh] flex flex-col bg-white/95 backdrop-blur-md">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
               <ShoppingCart className="h-5 w-5 text-[#880000]" />
               All Recent Orders
-            </SheetTitle>
+            </DialogTitle>
             <p className="text-sm text-slate-600">{allOrders.length} orders total</p>
-          </SheetHeader>
-          <div className="space-y-2">
+          </DialogHeader>
+          <div className="overflow-y-auto flex-1 space-y-2 pr-1">
             {allOrders.map((order) => (
               <div
                 key={order.id}
@@ -802,7 +802,7 @@ export default function AdminDashboard() {
                   router.push(`/admin/orders/${order.id}`)
                 }}
               >
-                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
                   <div className="p-1.5 rounded-lg bg-gradient-to-br from-[#880000]/15 to-[#ff0d13]/10 flex-shrink-0">
                     <ShoppingCart className="h-4 w-4 text-[#880000]" />
                   </div>
@@ -849,8 +849,8 @@ export default function AdminDashboard() {
               Manage All Orders
             </Button>
           </div>
-        </SheetContent>
-      </Sheet>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
