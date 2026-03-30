@@ -134,7 +134,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
 
   // Mailing Address
   const [editingMailing, setEditingMailing] = useState(false)
-  const [mailingDraft, setMailingDraft] = useState({ street: "", city: "", state: "", zip: "" })
+  const [mailingDraft, setMailingDraft] = useState({ street: "", city: "", state: "", zip: "", servicePeriod: "" })
   const [mailingSaving, setMailingSaving] = useState(false)
   const [deletingMailing, setDeletingMailing] = useState(false)
 
@@ -212,6 +212,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
       city: mailing?.city || "",
       state: mailing?.state || "",
       zip: mailing?.zip || "",
+      servicePeriod: mailing?.servicePeriod || "",
     })
     setEditingMailing(true)
   }
@@ -224,6 +225,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
           city: mailingDraft.city.trim(),
           state: mailingDraft.state.trim(),
           zip: mailingDraft.zip.trim(),
+          servicePeriod: mailingDraft.servicePeriod.trim(),
         },
       })
       setEditingMailing(false)
@@ -234,7 +236,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
   const handleDeleteMailing = async () => {
     setDeletingMailing(true)
     try {
-      await update({ mailingAddress: { street: "", city: "", state: "", zip: "" } })
+      await update({ mailingAddress: { street: "", city: "", state: "", zip: "", servicePeriod: "" } })
     } finally {
       setDeletingMailing(false)
     }
@@ -526,6 +528,16 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                   />
                 </div>
               </div>
+              <div>
+                <Label className="text-xs font-medium text-gray-600 mb-1 block">Service Period</Label>
+                <Input
+                  value={mailingDraft.servicePeriod}
+                  onChange={(e) => setMailingDraft((d) => ({ ...d, servicePeriod: e.target.value }))}
+                  placeholder="e.g. Annual, 1 Year"
+                  className="text-sm"
+                  disabled={mailingSaving}
+                />
+              </div>
               <div className="flex gap-2 pt-1">
                 <Button size="sm" onClick={handleSaveMailing} disabled={mailingSaving || !mailingDraft.street.trim()} className="h-8 text-xs">
                   {mailingSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
@@ -539,7 +551,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
             </div>
           ) : (
             <div className="rounded-xl border border-gray-200 overflow-hidden">
-              <div className="flex items-start gap-3 px-4 py-3">
+              <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
                 <MapPin className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
                 <div className="flex-1 min-w-0">
                   <p className="text-xs text-gray-400 mb-0.5">Address</p>
@@ -552,6 +564,16 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                 </div>
                 <CopyButton value={mailingAddressString} />
               </div>
+              {mailing.servicePeriod && (
+                <div className="flex items-start gap-3 px-4 py-3">
+                  <Calendar className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-400 mb-0.5">Service Period</p>
+                    <p className="text-sm text-gray-900 font-medium break-words">{mailing.servicePeriod}</p>
+                  </div>
+                  <CopyButton value={mailing.servicePeriod} />
+                </div>
+              )}
             </div>
           )}
         </InfoCard>
