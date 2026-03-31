@@ -745,20 +745,18 @@ export default function CompanyPage() {
                 </span>
               </div>
 
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {companyData.taxFilingDate
-                    ? new Date(companyData.taxFilingDate).toLocaleDateString("en-US", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    : new Date(
-                        new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                      ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-                </span>
-              </div>
+              {companyData.registeredAgent?.expiryDate && (
+                <div className="flex flex-col py-2 gap-2">
+                  <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                    {new Date(companyData.registeredAgent.expiryDate).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -813,20 +811,18 @@ export default function CompanyPage() {
                 </span>
               </div>
 
-              <div className="flex flex-col py-2 gap-2">
-                <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
-                <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
-                  {companyData.taxFilingDate
-                    ? new Date(companyData.taxFilingDate).toLocaleDateString("en-US", {
-                        day: "numeric",
-                        month: "long",
-                        year: "numeric",
-                      })
-                    : new Date(
-                        new Date(companyData.orderDate).setFullYear(new Date(companyData.orderDate).getFullYear() + 1),
-                      ).toLocaleDateString("en-US", { day: "numeric", month: "long", year: "numeric" })}
-                </span>
-              </div>
+              {companyData.mailingAddress?.expiryDate && (
+                <div className="flex flex-col py-2 gap-2">
+                  <span className="text-slate-600 text-sm sm:text-base text-left">Expiry Date</span>
+                  <span className="font-medium text-slate-900 text-sm sm:text-base text-left">
+                    {new Date(companyData.mailingAddress.expiryDate).toLocaleDateString("en-US", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })}
+                  </span>
+                </div>
+              )}
             </div>
           </div>
         )}

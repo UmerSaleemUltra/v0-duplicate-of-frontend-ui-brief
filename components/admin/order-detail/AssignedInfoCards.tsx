@@ -128,13 +128,13 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
 
   // Registered Agent
   const [editingAgent, setEditingAgent] = useState(false)
-  const [agentDraft, setAgentDraft] = useState({ name: "", address: "", city: "", state: "", zip: "", servicePeriod: "" })
+  const [agentDraft, setAgentDraft] = useState({ name: "", address: "", city: "", state: "", zip: "", servicePeriod: "", expiryDate: "" })
   const [agentSaving, setAgentSaving] = useState(false)
   const [deletingAgent, setDeletingAgent] = useState(false)
 
   // Mailing Address
   const [editingMailing, setEditingMailing] = useState(false)
-  const [mailingDraft, setMailingDraft] = useState({ street: "", city: "", state: "", zip: "", servicePeriod: "" })
+  const [mailingDraft, setMailingDraft] = useState({ street: "", city: "", state: "", zip: "", servicePeriod: "", expiryDate: "" })
   const [mailingSaving, setMailingSaving] = useState(false)
   const [deletingMailing, setDeletingMailing] = useState(false)
 
@@ -174,6 +174,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
       state: agent?.state || "",
       zip: agent?.zip || "",
       servicePeriod: agent?.servicePeriod || "",
+      expiryDate: agent?.expiryDate || "",
     })
     setEditingAgent(true)
   }
@@ -189,6 +190,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
           state: agentDraft.state.trim(),
           zip: agentDraft.zip.trim(),
           servicePeriod: agentDraft.servicePeriod.trim(),
+          expiryDate: agentDraft.expiryDate.trim(),
         },
       })
       setEditingAgent(false)
@@ -199,7 +201,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
   const handleDeleteAgent = async () => {
     setDeletingAgent(true)
     try {
-      await update({ registeredAgent: { name: "", address: "", city: "", state: "", zip: "", servicePeriod: "" } })
+      await update({ registeredAgent: { name: "", address: "", city: "", state: "", zip: "", servicePeriod: "", expiryDate: "" } })
     } finally {
       setDeletingAgent(false)
     }
@@ -213,6 +215,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
       state: mailing?.state || "",
       zip: mailing?.zip || "",
       servicePeriod: mailing?.servicePeriod || "",
+      expiryDate: mailing?.expiryDate || "",
     })
     setEditingMailing(true)
   }
@@ -226,6 +229,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
           state: mailingDraft.state.trim(),
           zip: mailingDraft.zip.trim(),
           servicePeriod: mailingDraft.servicePeriod.trim(),
+          expiryDate: mailingDraft.expiryDate.trim(),
         },
       })
       setEditingMailing(false)
@@ -236,7 +240,7 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
   const handleDeleteMailing = async () => {
     setDeletingMailing(true)
     try {
-      await update({ mailingAddress: { street: "", city: "", state: "", zip: "", servicePeriod: "" } })
+      await update({ mailingAddress: { street: "", city: "", state: "", zip: "", servicePeriod: "", expiryDate: "" } })
     } finally {
       setDeletingMailing(false)
     }
@@ -417,6 +421,16 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                   disabled={agentSaving}
                 />
               </div>
+              <div>
+                <Label className="text-xs font-medium text-gray-600 mb-1 block">Expiry Date</Label>
+                <Input
+                  type="date"
+                  value={agentDraft.expiryDate}
+                  onChange={(e) => setAgentDraft((d) => ({ ...d, expiryDate: e.target.value }))}
+                  className="text-sm"
+                  disabled={agentSaving}
+                />
+              </div>
               <div className="flex gap-2 pt-1">
                 <Button size="sm" onClick={handleSaveAgent} disabled={agentSaving || !agentDraft.name.trim()} className="h-8 text-xs">
                   {agentSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
@@ -460,13 +474,25 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                 </div>
               )}
               {agent.servicePeriod && (
-                <div className="flex items-start gap-3 px-4 py-3">
+                <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
                   <Phone className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-400 mb-0.5">Service Period</p>
                     <p className="text-sm text-gray-900 font-medium break-words">{agent.servicePeriod}</p>
                   </div>
                   <CopyButton value={agent.servicePeriod} />
+                </div>
+              )}
+              {agent.expiryDate && (
+                <div className="flex items-start gap-3 px-4 py-3">
+                  <Calendar className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-400 mb-0.5">Expiry Date</p>
+                    <p className="text-sm text-gray-900 font-medium break-words">
+                      {new Date(agent.expiryDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                    </p>
+                  </div>
+                  <CopyButton value={new Date(agent.expiryDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} />
                 </div>
               )}
             </div>
@@ -538,6 +564,16 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                   disabled={mailingSaving}
                 />
               </div>
+              <div>
+                <Label className="text-xs font-medium text-gray-600 mb-1 block">Expiry Date</Label>
+                <Input
+                  type="date"
+                  value={mailingDraft.expiryDate}
+                  onChange={(e) => setMailingDraft((d) => ({ ...d, expiryDate: e.target.value }))}
+                  className="text-sm"
+                  disabled={mailingSaving}
+                />
+              </div>
               <div className="flex gap-2 pt-1">
                 <Button size="sm" onClick={handleSaveMailing} disabled={mailingSaving || !mailingDraft.street.trim()} className="h-8 text-xs">
                   {mailingSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin mr-1" /> : null}
@@ -565,13 +601,25 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                 <CopyButton value={mailingAddressString} />
               </div>
               {mailing.servicePeriod && (
-                <div className="flex items-start gap-3 px-4 py-3">
+                <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
                   <Calendar className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-400 mb-0.5">Service Period</p>
                     <p className="text-sm text-gray-900 font-medium break-words">{mailing.servicePeriod}</p>
                   </div>
                   <CopyButton value={mailing.servicePeriod} />
+                </div>
+              )}
+              {mailing.expiryDate && (
+                <div className="flex items-start gap-3 px-4 py-3">
+                  <Calendar className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xs text-gray-400 mb-0.5">Expiry Date</p>
+                    <p className="text-sm text-gray-900 font-medium break-words">
+                      {new Date(mailing.expiryDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                    </p>
+                  </div>
+                  <CopyButton value={new Date(mailing.expiryDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} />
                 </div>
               )}
             </div>
