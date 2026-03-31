@@ -7,7 +7,6 @@ import {
   Hash,
   Building2,
   MapPin,
-  Phone,
   Copy,
   Check,
   Receipt,
@@ -412,16 +411,6 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                 </div>
               </div>
               <div>
-                <Label className="text-xs font-medium text-gray-600 mb-1 block">Service Period</Label>
-                <Input
-                  value={agentDraft.servicePeriod}
-                  onChange={(e) => setAgentDraft((d) => ({ ...d, servicePeriod: e.target.value }))}
-                  placeholder="e.g. Annual, 1 Year"
-                  className="text-sm"
-                  disabled={agentSaving}
-                />
-              </div>
-              <div>
                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Expiry Date</Label>
                 <Input
                   type="date"
@@ -471,16 +460,6 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                     </div>
                   </div>
                   <CopyButton value={agentAddressString} />
-                </div>
-              )}
-              {agent.servicePeriod && (
-                <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
-                  <Phone className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 mb-0.5">Service Period</p>
-                    <p className="text-sm text-gray-900 font-medium break-words">{agent.servicePeriod}</p>
-                  </div>
-                  <CopyButton value={agent.servicePeriod} />
                 </div>
               )}
               {agent.expiryDate && (
@@ -555,16 +534,6 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                 </div>
               </div>
               <div>
-                <Label className="text-xs font-medium text-gray-600 mb-1 block">Service Period</Label>
-                <Input
-                  value={mailingDraft.servicePeriod}
-                  onChange={(e) => setMailingDraft((d) => ({ ...d, servicePeriod: e.target.value }))}
-                  placeholder="e.g. Annual, 1 Year"
-                  className="text-sm"
-                  disabled={mailingSaving}
-                />
-              </div>
-              <div>
                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Expiry Date</Label>
                 <Input
                   type="date"
@@ -600,16 +569,6 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                 </div>
                 <CopyButton value={mailingAddressString} />
               </div>
-              {mailing.servicePeriod && (
-                <div className="flex items-start gap-3 px-4 py-3 border-b border-gray-100 last:border-b-0">
-                  <Calendar className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs text-gray-400 mb-0.5">Service Period</p>
-                    <p className="text-sm text-gray-900 font-medium break-words">{mailing.servicePeriod}</p>
-                  </div>
-                  <CopyButton value={mailing.servicePeriod} />
-                </div>
-              )}
               {mailing.expiryDate && (
                 <div className="flex items-start gap-3 px-4 py-3">
                   <Calendar className="w-4 h-4 text-gray-300 shrink-0 mt-0.5" />
