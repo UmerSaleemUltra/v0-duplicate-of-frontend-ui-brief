@@ -20,6 +20,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface AssignedInfoCardsProps {
   company: any
@@ -159,6 +160,20 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
   const [deletingTax, setDeletingTax] = useState(false)
 
   // ── Helpers ────────────────────────────────────────────────────────────────
+
+  // Calculates an expiry date string (YYYY-MM-DD) by adding N years to a start date string.
+  const calcExpiryFromStart = (startDateStr: string, years: number): string => {
+    if (!startDateStr) return ""
+    // Parse as local date to avoid UTC offset shifting the day
+    const [y, m, d] = startDateStr.split("-").map(Number)
+    const date = new Date(y, m - 1, d)
+    date.setFullYear(date.getFullYear() + years)
+    const yy = date.getFullYear()
+    const mm = String(date.getMonth() + 1).padStart(2, "0")
+    const dd = String(date.getDate()).padStart(2, "0")
+    return `${yy}-${mm}-${dd}`
+  }
+
   const update = async (patch: Record<string, any>) => {
     if (!onUpdateCompany) return
     await onUpdateCompany(patch)
@@ -410,6 +425,43 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                   />
                 </div>
               </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <Label className="text-xs font-medium text-gray-600 mb-1 block">Start Date</Label>
+                  <Input
+                    type="date"
+                    value={agentDraft.servicePeriod}
+                    onChange={(e) => {
+                      const startDate = e.target.value
+                      setAgentDraft((d) => ({ ...d, servicePeriod: startDate }))
+                    }}
+                    className="text-sm"
+                    disabled={agentSaving}
+                  />
+                </div>
+                <div>
+                  <Label className="text-xs font-medium text-gray-600 mb-1 block">Duration</Label>
+                  <Select
+                    value=""
+                    onValueChange={(val) => {
+                      const years = parseInt(val)
+                      if (agentDraft.servicePeriod) {
+                        setAgentDraft((d) => ({ ...d, expiryDate: calcExpiryFromStart(d.servicePeriod, years) }))
+                      }
+                    }}
+                    disabled={agentSaving}
+                  >
+                    <SelectTrigger className="text-sm h-9">
+                      <SelectValue placeholder="Set duration" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="1">1 Year</SelectItem>
+                      <SelectItem value="2">2 Years</SelectItem>
+                      <SelectItem value="3">3 Years</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
               <div>
                 <Label className="text-xs font-medium text-gray-600 mb-1 block">Expiry Date</Label>
                 <Input
@@ -468,10 +520,10 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-400 mb-0.5">Expiry Date</p>
                     <p className="text-sm text-gray-900 font-medium break-words">
-                      {new Date(agent.expiryDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                      {new Date(agent.expiryDate + 'T00:00:00').toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                     </p>
                   </div>
-                  <CopyButton value={new Date(agent.expiryDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} />
+                  <CopyButton value={new Date(agent.expiryDate + 'T00:00:00').toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} />
                 </div>
               )}
             </div>
@@ -575,10 +627,10 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                   <div className="flex-1 min-w-0">
                     <p className="text-xs text-gray-400 mb-0.5">Expiry Date</p>
                     <p className="text-sm text-gray-900 font-medium break-words">
-                      {new Date(mailing.expiryDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
+                      {new Date(mailing.expiryDate + 'T00:00:00').toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })}
                     </p>
                   </div>
-                  <CopyButton value={new Date(mailing.expiryDate).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} />
+                  <CopyButton value={new Date(mailing.expiryDate + 'T00:00:00').toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" })} />
                 </div>
               )}
             </div>
