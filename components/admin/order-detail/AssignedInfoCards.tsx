@@ -20,7 +20,6 @@ import {
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 interface AssignedInfoCardsProps {
   company: any
@@ -423,43 +422,6 @@ export function AssignedInfoCards({ company, onUpdateCompany }: AssignedInfoCard
                     className="text-sm"
                     disabled={agentSaving}
                   />
-                </div>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <div>
-                  <Label className="text-xs font-medium text-gray-600 mb-1 block">Start Date</Label>
-                  <Input
-                    type="date"
-                    value={agentDraft.servicePeriod}
-                    onChange={(e) => {
-                      const startDate = e.target.value
-                      setAgentDraft((d) => ({ ...d, servicePeriod: startDate }))
-                    }}
-                    className="text-sm"
-                    disabled={agentSaving}
-                  />
-                </div>
-                <div>
-                  <Label className="text-xs font-medium text-gray-600 mb-1 block">Duration</Label>
-                  <Select
-                    value=""
-                    onValueChange={(val) => {
-                      const years = parseInt(val)
-                      if (agentDraft.servicePeriod) {
-                        setAgentDraft((d) => ({ ...d, expiryDate: calcExpiryFromStart(d.servicePeriod, years) }))
-                      }
-                    }}
-                    disabled={agentSaving}
-                  >
-                    <SelectTrigger className="text-sm h-9">
-                      <SelectValue placeholder="Set duration" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="1">1 Year</SelectItem>
-                      <SelectItem value="2">2 Years</SelectItem>
-                      <SelectItem value="3">3 Years</SelectItem>
-                    </SelectContent>
-                  </Select>
                 </div>
               </div>
               <div>
