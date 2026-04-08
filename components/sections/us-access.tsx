@@ -14,8 +14,12 @@ const platforms = [
     logo: "https://cdn.brandfetch.io/idawOgYOsG/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
   },
   {
+    name: "Shopify",
+    logo: "https://cdn.brandfetch.io/idC0T6HUjp/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+  },
+  {
     name: "eBay",
-    logo: "https://cdn.brandfetch.io/idjTS-RPU1/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+    logo: "https://cdn.brandfetch.io/idC0T6HUjp/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
   },
   {
     name: "Airwallex",
