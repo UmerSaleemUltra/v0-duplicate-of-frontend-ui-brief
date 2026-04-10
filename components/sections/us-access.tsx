@@ -13,6 +13,7 @@ const platforms = [
     name: "Amazon",
     logo: "https://cdn.brandfetch.io/idawOgYOsG/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
   },
+  
   {
     name: "eBay",
     logo: "https://cdn.brandfetch.io/idjTS-RPU1/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
