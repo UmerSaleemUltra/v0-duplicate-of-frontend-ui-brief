@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Mail, Lock, ArrowRight, ArrowLeft, Eye, EyeOff, User } from "lucide-react"
+import { Mail, Lock, ArrowRight, ArrowLeft, Eye, EyeOff, User, ShieldCheck } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -35,6 +35,7 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPassword, setShowPassword] = useState(false)
   const [phone, setPhone] = useState<string>("")
+  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   useEffect(() => {
     if (data?.phone) {
@@ -73,6 +74,10 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
       newErrors.password = "Password is required"
     } else if (data.password.length < 8) {
       newErrors.password = "Password must be at least 8 characters"
+    }
+
+    if (!acceptedTerms) {
+      newErrors.terms = "You must accept the terms and conditions to proceed"
     }
 
     setErrors(newErrors)
@@ -226,6 +231,59 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
           </div>
           {errors.password && <p className="text-xs text-red-600 break-words">{errors.password}</p>}
           <p className="text-xs text-slate-500 break-words">Choose a strong password to secure your account</p>
+        </div>
+
+        {/* Terms and Conditions */}
+        <div className="space-y-3 pt-1">
+          <div className="flex items-start gap-2">
+            <ShieldCheck className="w-4 h-4 text-[#880000] mt-0.5 shrink-0" />
+            <p className="text-sm font-semibold text-slate-900">
+              Do you accept our terms and conditions?{" "}
+              <span className="text-[#880000]">*</span>
+            </p>
+          </div>
+          <p className="text-sm text-slate-600 leading-relaxed pl-6">
+            To ensure a smooth experience, please review our terms and conditions here:{" "}
+            <a
+              href="/terms"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#880000] font-medium underline underline-offset-2 hover:text-[#ff0d13] transition-colors"
+            >
+              Buzz Filing Terms &amp; Conditions
+            </a>
+            . By proceeding, you acknowledge and accept these terms.
+          </p>
+          <label className="flex items-center gap-3 cursor-pointer group pl-6">
+            <div className="relative flex items-center">
+              <input
+                type="checkbox"
+                checked={acceptedTerms}
+                onChange={(e) => {
+                  setAcceptedTerms(e.target.checked)
+                  if (errors.terms) setErrors((prev) => ({ ...prev, terms: "" }))
+                }}
+                className="peer sr-only"
+              />
+              <div
+                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all
+                  ${acceptedTerms
+                    ? "bg-[#880000] border-[#880000]"
+                    : "bg-white border-slate-300 group-hover:border-[#880000]"
+                  }`}
+              >
+                {acceptedTerms && (
+                  <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
+                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
+                )}
+              </div>
+            </div>
+            <span className="text-sm text-slate-700 select-none">Yes I agree</span>
+          </label>
+          {errors.terms && (
+            <p className="text-xs text-red-600 pl-6">{errors.terms}</p>
+          )}
         </div>
 
         {errors.submit && (
