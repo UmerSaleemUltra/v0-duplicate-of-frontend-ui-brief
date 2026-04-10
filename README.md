@@ -1,7 +1,5 @@
 # Buzz Filing - US LLC Formation & Business Services
 
-[![Deployed on Vercel](https://img.shields.io/badge/Deployed%20on-Vercel-black?style=for-the-badge&logo=vercel)](https://vercel.com/filings-buzzfilingcs-projects/v0-frontend-ui-brief)
-
 ## About Buzz Filing
 
 
