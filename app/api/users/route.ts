@@ -149,7 +149,6 @@ export async function POST(req: NextRequest) {
       name,
       phone: phone || null,
       password: hashedPassword,
-      plainPassword: password,
       role: role || "client",
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),

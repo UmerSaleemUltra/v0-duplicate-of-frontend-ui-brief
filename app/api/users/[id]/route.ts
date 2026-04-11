@@ -48,7 +48,6 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         name: user.name,
         phone: user.phone || null,
         role: user.role,
-        plainPassword: user.plainPassword || "",
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
@@ -112,7 +111,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 })
       }
       updateData.password = await bcrypt.hash(password, 10)
-      updateData.plainPassword = password
     }
 
     const result = await db
