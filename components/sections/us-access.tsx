@@ -16,7 +16,7 @@ const platforms = [
   
   {
     name: "eBay",
-    logo: "https://cdn.brandfetch.io/idjTS-RPU1/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B",
+    logo: "https://cdn.brandfetch.io/idoGsFQrHx/w/800/h/151/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B",
   },
   {
     name: "Airwallex",
