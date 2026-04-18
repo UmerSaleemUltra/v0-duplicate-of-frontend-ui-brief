@@ -312,11 +312,11 @@
 .dark .bg-slate-200        { background-color: #2a2a2a !important; }
 .dark .bg-slate-300        { background-color: #333333 !important; }
 
-/* Glass / semi-transparent panels */
-.dark .bg-white\/50,
-.dark .backdrop-blur-md    { background-color: rgba(26,26,26,0.85) !important; }
-.dark .bg-white\/60        { background-color: rgba(30,30,30,0.9) !important; }
+/* Glass / semi-transparent panels — polished dark surfaces */
+.dark .bg-white\/50        { background-color: rgba(255,255,255,0.04) !important; backdrop-filter: blur(12px) !important; }
+.dark .bg-white\/60        { background-color: rgba(255,255,255,0.06) !important; }
 .dark .bg-white\/90        { background-color: rgba(26,26,26,0.95) !important; }
+.dark .backdrop-blur-md:not([class*="bg-white"]) { background-color: rgba(26,26,26,0.85) !important; }
 
 /* Rounded cards with explicit bg-white */
 .dark .rounded-2xl.bg-white,
@@ -402,9 +402,11 @@
 .dark .border-gray-200  { border-color: rgba(255,255,255,0.12) !important; }
 .dark .border-slate-300,
 .dark .border-gray-300  { border-color: rgba(255,255,255,0.18) !important; }
-.dark .border-white\/40 { border-color: rgba(255,255,255,0.12) !important; }
-.dark .border-b,
-.dark .border-t,
+.dark .border-white\/40 { border-color: rgba(255,255,255,0.1) !important; }
+.dark .border-b         { border-bottom-color: rgba(255,255,255,0.1) !important; }
+.dark .border-t         { border-top-color: rgba(255,255,255,0.1) !important; }
+.dark .border-l         { border-left-color: rgba(255,255,255,0.1) !important; }
+.dark .border-r         { border-right-color: rgba(255,255,255,0.1) !important; }
 .dark .border           { border-color: rgba(255,255,255,0.1) !important; }
 .dark .divide-y > * + *,
 .dark .divide-slate-100 > * + *,
@@ -415,9 +417,18 @@
 .dark .hover\:bg-slate-50:hover,
 .dark .hover\:bg-slate-50\/50:hover,
 .dark .hover\:bg-slate-50\/60:hover,
-.dark .hover\:bg-gray-50:hover    { background-color: rgba(255,255,255,0.05) !important; }
+.dark .hover\:bg-gray-50:hover    { background-color: rgba(255,255,255,0.06) !important; }
 .dark .hover\:bg-white\/60:hover  { background-color: rgba(255,255,255,0.08) !important; }
 .dark .hover\:border-slate-300:hover { border-color: rgba(255,255,255,0.25) !important; }
+
+/* Ghost buttons hover in dark — subtle white lift */
+.dark button:not([class*="bg-[#ff"]):not([class*="bg-red"]):not([class*="bg-emerald"]):hover,
+.dark [role="button"]:not([class*="bg-[#ff"]):hover {
+  background-color: rgba(255,255,255,0.07) !important;
+}
+
+/* Table row hover — clean lift */
+.dark tbody tr:hover       { background-color: rgba(255,255,255,0.04) !important; }
 
 /* ── 9. Gradient text / bg headers ─────────────────────────── */
 /* The dashboard h1 uses bg-clip-text + gradient — strip it in dark */
@@ -429,11 +440,27 @@
   -webkit-text-fill-color: #ffffff !important;
   color: #ffffff !important;
 }
-/* Gradient icon backgrounds → solid dark */
-.dark .bg-gradient-to-br,
-.dark [class*="from-slate-100"] { background-image: none !important; background-color: #2a2a2a !important; }
+
+/* Stat card accent overlays (emerald/red glow) — keep them, just dim */
+.dark .bg-gradient-to-br.from-emerald-500\/10 { background-image: radial-gradient(circle, rgba(74,222,128,0.08), transparent) !important; }
+.dark .bg-gradient-to-br.from-red-500\/10     { background-image: radial-gradient(circle, rgba(248,113,113,0.08), transparent) !important; }
+
+/* Stat card icon container — slate gradient → refined dark surface */
+.dark .bg-gradient-to-br.from-slate-100,
+.dark .bg-gradient-to-br.from-slate-100.to-slate-50 {
+  background-image: none !important;
+  background-color: rgba(255,255,255,0.08) !important;
+  border: 1px solid rgba(255,255,255,0.1) !important;
+}
+
+/* All other br gradients that are not accent overlays → strip */
+.dark .bg-gradient-to-br:not([class*="from-emerald"]):not([class*="from-red"]):not([class*="from-slate-100"]) {
+  background-image: none !important;
+  background-color: rgba(255,255,255,0.06) !important;
+}
+
 /* Skeleton gradient backgrounds */
-.dark .animate-pulse [class*="bg-gradient"] { background-image: none !important; background-color: #2a2a2a !important; }
+.dark .animate-pulse [class*="bg-gradient"] { background-image: none !important; background-color: #262626 !important; }
 
 /* ── 10. Skeleton loading ───────────────────────────────────── */
 .dark .animate-pulse .bg-slate-100,
@@ -500,3 +527,43 @@
 
 /* ── 15. Glass card ─────────────────────────────────────────── */
 .dark .glass-card { background-color: rgba(26,26,26,0.9) !important; }
+
+/* ── 16. Sidebar layering — slightly elevated from main bg ──── */
+/* The sidebar uses bg-background which is #0f0f0f — give it a lift */
+.dark aside .bg-background,
+.dark aside               { background-color: #171717 !important; }
+
+/* ── 17. Icon wrapper backgrounds — polished surfaces ─────────── */
+/* Any small rounded icon container that wraps a lucide icon */
+.dark .rounded-xl.p-2,
+.dark .rounded-xl.p-3,
+.dark .rounded-lg.p-2,
+.dark .rounded-lg.p-3 {
+  background-color: rgba(255,255,255,0.07) !important;
+}
+
+/* ── 18. Badge / chip backgrounds in dark ─────────────────────── */
+.dark .rounded-full.bg-slate-100,
+.dark .rounded-full.bg-gray-100 { background-color: rgba(255,255,255,0.08) !important; }
+
+/* ── 19. Shadow on cards — deeper in dark for lift ───────────── */
+.dark .shadow-lg  { box-shadow: 0 4px 24px rgba(0,0,0,0.4) !important; }
+.dark .shadow-xl  { box-shadow: 0 8px 32px rgba(0,0,0,0.5) !important; }
+.dark .shadow-sm  { box-shadow: 0 1px 6px rgba(0,0,0,0.3) !important; }
+
+/* ── 20. Ghost / outline button hover in dark — crisp white lift */
+.dark .hover\:bg-accent:hover { background-color: rgba(255,255,255,0.08) !important; }
+.dark .hover\:bg-accent\/80:hover { background-color: rgba(255,255,255,0.06) !important; }
+/* Ensure ghost button icon and text both stay white */
+.dark .hover\:bg-accent:hover svg,
+.dark .hover\:bg-accent:hover span { color: rgba(255,255,255,0.9) !important; }
+
+/* ── 21. Recharts / chart colors in dark ─────────────────────── */
+.dark .recharts-cartesian-axis-tick text { fill: rgba(255,255,255,0.5) !important; }
+.dark .recharts-cartesian-grid line      { stroke: rgba(255,255,255,0.07) !important; }
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: #1e1e1e !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #ffffff !important;
+}
+.dark .recharts-legend-item-text { color: rgba(255,255,255,0.7) !important; }
