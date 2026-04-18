@@ -50,32 +50,32 @@
 }
 
 .dark {
-  --background: oklch(0.15 0 0);
+  --background: oklch(0 0 0);
   --foreground: oklch(0.98 0 0);
-  --card: oklch(0.18 0 0);
+  --card: oklch(0.1 0 0);
   --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.18 0 0);
+  --popover: oklch(0.1 0 0);
   --popover-foreground: oklch(0.98 0 0);
   --primary: oklch(0.45 0.18 25);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.25 0 0);
+  --secondary: oklch(0.15 0 0);
   --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.4 0 0);
-  --muted-foreground: oklch(0.6 0 0);
-  --accent: oklch(0.25 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.55 0 0);
+  --accent: oklch(0.15 0 0);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.5 0.18 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.3 0 0);
-  --input: oklch(0.3 0 0);
+  --border: oklch(0.2 0 0);
+  --input: oklch(0.15 0 0);
   --ring: oklch(0.45 0.18 25);
-  --sidebar: oklch(0.15 0.01 264);
+  --sidebar: oklch(0.07 0.01 264);
   --sidebar-foreground: oklch(0.98 0.002 264);
   --sidebar-primary: oklch(0.45 0.18 25);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.22 0.015 264);
+  --sidebar-accent: oklch(0.13 0.015 264);
   --sidebar-accent-foreground: oklch(0.98 0.002 264);
-  --sidebar-border: oklch(0.25 0.015 264);
+  --sidebar-border: oklch(0.18 0.015 264);
   --sidebar-ring: oklch(0.45 0.18 25);
 }
 
@@ -302,26 +302,26 @@
 
 /* ── 2. Wrapper & page backgrounds ─────────────────────────── */
 .dark,
-.dark .bg-background      { background-color: #0f0f0f !important; }
-.dark .bg-white            { background-color: #1a1a1a !important; }
+.dark .bg-background      { background-color: #000000 !important; }
+.dark .bg-white            { background-color: #111111 !important; }
 .dark .bg-gray-50,
-.dark .bg-slate-50         { background-color: #161616 !important; }
+.dark .bg-slate-50         { background-color: #0a0a0a !important; }
 .dark .bg-gray-100,
-.dark .bg-slate-100        { background-color: #222222 !important; }
+.dark .bg-slate-100        { background-color: #1a1a1a !important; }
 .dark .bg-gray-200,
-.dark .bg-slate-200        { background-color: #2a2a2a !important; }
-.dark .bg-slate-300        { background-color: #333333 !important; }
+.dark .bg-slate-200        { background-color: #222222 !important; }
+.dark .bg-slate-300        { background-color: #2a2a2a !important; }
 
 /* Glass / semi-transparent panels — polished dark surfaces */
 .dark .bg-white\/50        { background-color: rgba(255,255,255,0.04) !important; backdrop-filter: blur(12px) !important; }
 .dark .bg-white\/60        { background-color: rgba(255,255,255,0.06) !important; }
-.dark .bg-white\/90        { background-color: rgba(26,26,26,0.95) !important; }
-.dark .backdrop-blur-md:not([class*="bg-white"]) { background-color: rgba(26,26,26,0.85) !important; }
+.dark .bg-white\/90        { background-color: rgba(10,10,10,0.95) !important; }
+.dark .backdrop-blur-md:not([class*="bg-white"]) { background-color: rgba(10,10,10,0.85) !important; }
 
 /* Rounded cards with explicit bg-white */
 .dark .rounded-2xl.bg-white,
 .dark .rounded-xl.bg-white,
-.dark .rounded-lg.bg-white { background-color: #1a1a1a !important; }
+.dark .rounded-lg.bg-white { background-color: #111111 !important; }
 
 /* ── 3. ALL text → white ────────────────────────────────────── */
 /* Primary text */
@@ -465,10 +465,14 @@
 /* ── 10. Skeleton loading ───────────────────────────────────── */
 .dark .animate-pulse .bg-slate-100,
 .dark .animate-pulse .bg-slate-200,
-.dark .animate-pulse .bg-slate-300 { background-color: #262626 !important; }
+.dark .animate-pulse .bg-slate-300 { background-color: #1a1a1a !important; }
+/* Blog skeleton uses hardcoded Apple hex */
+.dark .animate-pulse [class*="bg-\[\#f5f5f7\]"] { background-color: #1a1a1a !important; }
+.dark .animate-pulse [class*="bg-\[\#e8e8ed\]"] { background-color: #222222 !important; }
+.dark .animate-pulse .rounded-2xl.overflow-hidden { background-color: #111111 !important; }
 
 /* ── 11. Table ──────────────────────────────────────────────── */
-.dark thead tr             { background-color: #1e1e1e !important; }
+.dark thead tr             { background-color: #0d0d0d !important; }
 .dark tbody tr             { background-color: transparent !important; }
 .dark tbody tr:hover       { background-color: rgba(255,255,255,0.04) !important; }
 /* Active pagination page button — scoped to pagination only */
@@ -479,7 +483,7 @@
 .dark input,
 .dark textarea,
 .dark select {
-  background-color: #1e1e1e !important;
+  background-color: #111111 !important;
   color: #ffffff !important;
   border-color: rgba(255,255,255,0.15) !important;
 }
@@ -489,7 +493,7 @@
 /* ── 13. Radix dropdowns (notification, filter dropdowns) ───── */
 .dark [data-radix-popper-content-wrapper] > div,
 .dark [data-radix-popper-content-wrapper] {
-  background-color: #1a1a1a !important;
+  background-color: #111111 !important;
   border-color: rgba(255,255,255,0.12) !important;
 }
 .dark [data-radix-popper-content-wrapper] * { color: rgba(255,255,255,0.9) !important; }
@@ -500,7 +504,7 @@
 
 /* ── 14. Modals / Dialogs ───────────────────────────────────── */
 /* DialogContent and AlertDialogContent use [role="dialog"] */
-.dark [role="dialog"]                   { background-color: #1a1a1a !important; border-color: rgba(255,255,255,0.12) !important; }
+.dark [role="dialog"]                   { background-color: #0f0f0f !important; border-color: rgba(255,255,255,0.12) !important; }
 .dark [role="dialog"] > *               { color: rgba(255,255,255,0.9) !important; }
 .dark [role="dialog"] h1,
 .dark [role="dialog"] h2,
@@ -557,14 +561,14 @@
 .dark .milestone-progress-fill   { background-color: #ff3b30 !important; }
 /* Card wrapper */
 .dark .dark-card {
-  background-color: #1a1a1a !important;
+  background-color: #111111 !important;
   border-color: rgba(255,255,255,0.08) !important;
 }
 
 /* ── 16. Sidebar layering — slightly elevated from main bg ──── */
-/* The sidebar uses bg-background which is #0f0f0f — give it a lift */
+/* The sidebar uses bg-background which is #000000 — give it a subtle lift */
 .dark aside .bg-background,
-.dark aside               { background-color: #171717 !important; }
+.dark aside               { background-color: #0a0a0a !important; }
 
 /* ── 17. Icon wrapper backgrounds — polished surfaces ─────────── */
 /* Any small rounded icon container that wraps a lucide icon */
@@ -591,7 +595,123 @@
 .dark .hover\:bg-accent:hover svg,
 .dark .hover\:bg-accent:hover span { color: rgba(255,255,255,0.9) !important; }
 
-/* ── 21. Recharts / chart colors in dark ─────────────────────── */
+/* ── 21. Apple-hex hardcoded colors used in blog & order-detail pages ──
+   These pages inline hex values like #1d1d1f, #6e6e73, #f5f5f7 which
+   are invisible/clashing in dark mode. We target them via [style] and
+   [class*] attribute selectors.
+   ──────────────────────────────────────────────────────────────────── */
+
+/* -- Backgrounds: light gray Apple surfaces → dark equivalents -- */
+.dark [class*="bg-\[\#f5f5f7\]"]  { background-color: #1a1a1a !important; }
+.dark [class*="bg-\[\#e8e8ed\]"]  { background-color: #222222 !important; }
+.dark [class*="bg-\[\#fafafa\]"]  { background-color: #0d0d0d !important; }
+.dark [class*="bg-\[\#d2d2d7\]"]  { background-color: #2a2a2a !important; }
+.dark [class*="bg-\[\#1d1d1f\]"]  { background-color: #ffffff !important; }
+
+/* -- Text: Apple gray text → proper dark-mode contrast -- */
+.dark [class*="text-\[\#1d1d1f\]"]  { color: #ffffff !important; }
+.dark [class*="text-\[\#6e6e73\]"]  { color: rgba(255,255,255,0.5) !important; }
+.dark [class*="text-\[\#86868b\]"]  { color: rgba(255,255,255,0.4) !important; }
+.dark [class*="text-\[\#0071e3\]"]  { color: #ff3b30 !important; }
+
+/* -- Borders: Apple gray borders → subtle dark borders -- */
+.dark [class*="border-\[\#d2d2d7\]"]  { border-color: rgba(255,255,255,0.1) !important; }
+.dark [class*="divide-\[\#f5f5f7\]"] > * + * { border-color: rgba(255,255,255,0.07) !important; }
+.dark [class*="border-\[\#f5f5f7\]"]  { border-color: rgba(255,255,255,0.06) !important; }
+
+/* -- Hover states: Apple hover surfaces → dark lift -- */
+.dark [class*="hover\:bg-\[\#f5f5f7\]"]:hover  { background-color: rgba(255,255,255,0.07) !important; }
+.dark [class*="hover\:bg-\[\#e8e8ed\]"]:hover  { background-color: rgba(255,255,255,0.09) !important; }
+.dark [class*="hover\:bg-\[\#fff1f0\]"]:hover  { background-color: rgba(255,59,48,0.12) !important; }
+
+/* -- Blog card: white card with border → dark card -- */
+.dark .group.bg-white.rounded-2xl          { background-color: #111111 !important; }
+.dark [class*="border-\[\#d2d2d7\]"]       { border-color: rgba(255,255,255,0.1) !important; }
+
+/* -- Blog image placeholder bg -- */
+.dark [class*="bg-\[\#e8e8ed\]"]  { background-color: #1e1e1e !important; }
+
+/* -- Blog card hover shadow in dark -- */
+.dark .group:hover.rounded-2xl { box-shadow: 0 8px 30px rgba(0,0,0,0.6) !important; }
+
+/* -- Blog status pills -- */
+.dark [class*="bg-\[#d1fae5\]"]  { background-color: rgba(74,222,128,0.15) !important; }
+.dark [class*="text-\[#065f46\]"] { color: #4ade80 !important; }
+
+/* -- Inline style overrides: elements using style="background-color:#..." --
+   We can't target inline styles by CSS attr selector in all browsers cleanly,
+   so we use data attrs on elements we control. The direct class approach above
+   covers all Tailwind classes. For raw gray-500/gray-900 text in dialogs: */
+.dark .text-gray-900  { color: #ffffff !important; }
+.dark .text-gray-500  { color: rgba(255,255,255,0.45) !important; }
+.dark .text-gray-400  { color: rgba(255,255,255,0.35) !important; }
+.dark .border-gray-200 { border-color: rgba(255,255,255,0.1) !important; }
+
+/* -- Blog/order form card sections (divide-y uses hardcoded #f5f5f7) -- */
+.dark .divide-y.divide-\[\#f5f5f7\] > * + * { border-color: rgba(255,255,255,0.07) !important; }
+
+/* -- Toolbar/formatting bar in blog editor -- */
+.dark [class*="bg-\[\#f5f5f7\]"][class*="border-\[\#d2d2d7\]"] {
+  background-color: #1a1a1a !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+
+/* -- Blog editor toolbar buttons -- */
+.dark [class*="text-\[\#1d1d1f\]"][class*="hover\:bg-\[\#e8e8ed\]"] {
+  color: rgba(255,255,255,0.85) !important;
+}
+.dark [class*="text-\[\#1d1d1f\]"][class*="hover\:bg-\[\#e8e8ed\]"]:hover {
+  background-color: rgba(255,255,255,0.09) !important;
+}
+
+/* -- Form action footer bar (bg-[#fafafa]) -- */
+.dark [class*="bg-\[\#fafafa\]"] {
+  background-color: #0d0d0d !important;
+  border-color: rgba(255,255,255,0.07) !important;
+}
+
+/* -- Cancel button (border + white bg) -- */
+.dark [class*="border-\[\#d2d2d7\]"][class*="bg-white"] {
+  background-color: #1a1a1a !important;
+  border-color: rgba(255,255,255,0.15) !important;
+  color: #ffffff !important;
+}
+.dark [class*="border-\[\#d2d2d7\]"][class*="hover\:bg-\[\#f5f5f7\]"]:hover {
+  background-color: rgba(255,255,255,0.09) !important;
+}
+
+/* -- Upload image dashed zone -- */
+.dark [class*="border-dashed"][class*="border-\[\#d2d2d7\]"] {
+  background-color: #111111 !important;
+  border-color: rgba(255,255,255,0.15) !important;
+}
+
+/* -- Copy icon hover in blog truncated text -- */
+.dark [class*="text-\[\#86868b\]"][class*="hover\:text-\[\#1d1d1f\]"]:hover {
+  color: #ffffff !important;
+}
+
+/* -- Back button circle (bg-[#f5f5f7]) -- */
+.dark [class*="bg-\[\#f5f5f7\]"][class*="hover\:bg-\[\#e8e8ed\]"] {
+  background-color: #1a1a1a !important;
+  color: #ffffff !important;
+}
+.dark [class*="bg-\[\#f5f5f7\]"][class*="hover\:bg-\[\#e8e8ed\]"]:hover {
+  background-color: #222222 !important;
+}
+
+/* -- Order detail: Tabs list -- */
+.dark [role="tablist"]               { background-color: #111111 !important; border-color: rgba(255,255,255,0.08) !important; }
+.dark [role="tab"]                   { color: rgba(255,255,255,0.5) !important; }
+.dark [role="tab"][data-state="active"] { background-color: #000000 !important; color: #ffffff !important; }
+
+/* -- Order detail: Notification dialog hardcoded colors -- */
+.dark .border-gray-200.rounded-lg { border-color: rgba(255,255,255,0.1) !important; background-color: #111111 !important; }
+.dark .text-gray-900 { color: #ffffff !important; }
+.dark .text-gray-600 { color: rgba(255,255,255,0.6) !important; }
+.dark .hover\:bg-red-50:hover { background-color: rgba(255,59,48,0.12) !important; }
+
+/* ── 22. Recharts / chart colors in dark ─────────────────────── */
 .dark .recharts-cartesian-axis-tick text { fill: rgba(255,255,255,0.5) !important; }
 .dark .recharts-cartesian-grid line      { stroke: rgba(255,255,255,0.07) !important; }
 .dark .recharts-tooltip-wrapper .recharts-default-tooltip {
