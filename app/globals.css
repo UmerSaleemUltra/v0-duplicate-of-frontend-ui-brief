@@ -276,3 +276,98 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ─────────────────────────────────────────────────────────────
+   Admin dark mode — scoped overrides
+   All hardcoded slate/white/gray classes flip automatically
+   when the .dark wrapper class is applied in AdminShell.
+   ───────────────────────────────────────────────────────────── */
+.dark .bg-white           { background-color: oklch(0.18 0 0) !important; }
+.dark .bg-gray-50         { background-color: oklch(0.15 0 0) !important; }
+.dark .bg-gray-100        { background-color: oklch(0.2 0 0) !important; }
+.dark .bg-slate-50        { background-color: oklch(0.18 0 0) !important; }
+.dark .bg-slate-100       { background-color: oklch(0.22 0 0) !important; }
+.dark .bg-slate-200       { background-color: oklch(0.26 0 0) !important; }
+
+.dark .text-slate-900     { color: oklch(0.98 0 0) !important; }
+.dark .text-slate-800     { color: oklch(0.92 0 0) !important; }
+.dark .text-slate-700     { color: oklch(0.82 0 0) !important; }
+.dark .text-slate-600     { color: oklch(0.72 0 0) !important; }
+.dark .text-slate-500     { color: oklch(0.62 0 0) !important; }
+.dark .text-slate-400     { color: oklch(0.52 0 0) !important; }
+.dark .text-gray-900      { color: oklch(0.98 0 0) !important; }
+.dark .text-gray-700      { color: oklch(0.82 0 0) !important; }
+.dark .text-gray-600      { color: oklch(0.72 0 0) !important; }
+.dark .text-gray-500      { color: oklch(0.62 0 0) !important; }
+
+.dark .border-slate-200   { border-color: oklch(0.3 0 0) !important; }
+.dark .border-slate-100   { border-color: oklch(0.25 0 0) !important; }
+.dark .border-slate-300   { border-color: oklch(0.35 0 0) !important; }
+.dark .border-gray-200    { border-color: oklch(0.3 0 0) !important; }
+.dark .border-gray-100    { border-color: oklch(0.25 0 0) !important; }
+.dark .border-b-slate-100 { border-bottom-color: oklch(0.25 0 0) !important; }
+
+.dark .divide-slate-100 > * + * { border-color: oklch(0.25 0 0) !important; }
+.dark .divide-slate-200 > * + * { border-color: oklch(0.3 0 0) !important; }
+.dark .divide-gray-100 > * + *  { border-color: oklch(0.25 0 0) !important; }
+.dark .divide-y > * + *         { border-color: oklch(0.25 0 0) !important; }
+
+.dark .hover\:bg-slate-50\/60:hover { background-color: oklch(0.22 0 0 / 0.6) !important; }
+.dark .hover\:bg-slate-50:hover     { background-color: oklch(0.22 0 0) !important; }
+
+/* Stat card glassmorphic — dark flip */
+.dark .bg-white\/50,
+.dark .backdrop-blur-md.bg-white\/50 {
+  background-color: oklch(0.18 0 0 / 0.7) !important;
+  border-color: oklch(0.3 0 0 / 0.4) !important;
+}
+.dark .border-white\/40 { border-color: oklch(0.3 0 0 / 0.4) !important; }
+.dark .bg-white\/60     { background-color: oklch(0.2 0 0 / 0.6) !important; }
+.dark .bg-white\/90     { background-color: oklch(0.18 0 0 / 0.9) !important; }
+
+/* Gradient text on dashboard header — dark fix */
+.dark .bg-gradient-to-r.from-slate-900.to-slate-700 {
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  -webkit-text-fill-color: oklch(0.98 0 0) !important;
+  color: oklch(0.98 0 0) !important;
+}
+
+/* Table row hover */
+.dark .hover\:bg-slate-50\/50:hover { background-color: oklch(0.22 0 0 / 0.5) !important; }
+
+/* Pagination active button */
+.dark .bg-slate-900 { background-color: oklch(0.92 0 0) !important; color: oklch(0.1 0 0) !important; }
+
+/* Skeleton shimmer */
+.dark .bg-slate-200 { background-color: oklch(0.26 0 0) !important; }
+.dark .bg-slate-100 { background-color: oklch(0.22 0 0) !important; }
+
+/* Input inside dark */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: oklch(0.2 0 0) !important;
+  color: oklch(0.98 0 0) !important;
+  border-color: oklch(0.3 0 0) !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder { color: oklch(0.5 0 0) !important; }
+
+/* Cards with explicit bg-white border border-slate-200 */
+.dark .rounded-2xl.bg-white,
+.dark .rounded-lg.bg-white  {
+  background-color: oklch(0.18 0 0) !important;
+  border-color: oklch(0.28 0 0) !important;
+}
+
+/* thead background for tables */
+.dark thead tr { background-color: oklch(0.2 0 0) !important; }
+
+/* Ensure bg-background is correct in dark context */
+.dark .bg-background { background-color: oklch(0.15 0 0) !important; }
+
+/* Smooth transition for all admin elements on toggle */
+.dark *, :is(.dark *) {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
+}

@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Package, LogOut, Shield, Sun, Moon } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { AdminNotificationDropdown } from "@/components/admin/admin-notification-dropdown"
+import { useDarkMode } from "@/hooks/use-dark-mode"
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -33,19 +34,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [userInitials, setUserInitials] = useState("AU")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [isDark, setIsDark] = useState(false)
-
-  useEffect(() => {
-    const saved = localStorage.getItem("admin-dark-mode")
-    if (saved === "true") setIsDark(true)
-  }, [])
-
-  const toggleDark = () => {
-    setIsDark((prev) => {
-      localStorage.setItem("admin-dark-mode", String(!prev))
-      return !prev
-    })
-  }
+  const { isDark, toggle: toggleDark } = useDarkMode()
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -99,7 +88,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className={`min-h-screen bg-gray-50${isDark ? " dark" : ""}`}>
+    <div className={`min-h-screen bg-background${isDark ? " dark" : ""}`}>
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background border-r border-border px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center">
