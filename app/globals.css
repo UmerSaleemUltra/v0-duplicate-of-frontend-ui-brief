@@ -16,7 +16,7 @@
   }
 }
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark, .dark *));
 
 :root {
   --background: oklch(1 0 0);
@@ -50,32 +50,32 @@
 }
 
 .dark {
-  --background: oklch(0.15 0 0);
+  --background: oklch(0 0 0);
   --foreground: oklch(0.98 0 0);
-  --card: oklch(0.18 0 0);
+  --card: oklch(0.1 0 0);
   --card-foreground: oklch(0.98 0 0);
-  --popover: oklch(0.18 0 0);
+  --popover: oklch(0.1 0 0);
   --popover-foreground: oklch(0.98 0 0);
   --primary: oklch(0.45 0.18 25);
   --primary-foreground: oklch(1 0 0);
-  --secondary: oklch(0.25 0 0);
+  --secondary: oklch(0.15 0 0);
   --secondary-foreground: oklch(0.98 0 0);
-  --muted: oklch(0.4 0 0);
-  --muted-foreground: oklch(0.6 0 0);
-  --accent: oklch(0.25 0 0);
+  --muted: oklch(0.2 0 0);
+  --muted-foreground: oklch(0.55 0 0);
+  --accent: oklch(0.15 0 0);
   --accent-foreground: oklch(0.98 0 0);
   --destructive: oklch(0.5 0.18 25);
   --destructive-foreground: oklch(0.98 0 0);
-  --border: oklch(0.3 0 0);
-  --input: oklch(0.3 0 0);
+  --border: oklch(0.2 0 0);
+  --input: oklch(0.15 0 0);
   --ring: oklch(0.45 0.18 25);
-  --sidebar: oklch(0.15 0.01 264);
+  --sidebar: oklch(0.07 0.01 264);
   --sidebar-foreground: oklch(0.98 0.002 264);
   --sidebar-primary: oklch(0.45 0.18 25);
   --sidebar-primary-foreground: oklch(0.99 0 0);
-  --sidebar-accent: oklch(0.22 0.015 264);
+  --sidebar-accent: oklch(0.13 0.015 264);
   --sidebar-accent-foreground: oklch(0.98 0.002 264);
-  --sidebar-border: oklch(0.25 0.015 264);
+  --sidebar-border: oklch(0.18 0.015 264);
   --sidebar-ring: oklch(0.45 0.18 25);
 }
 
@@ -178,6 +178,16 @@
   h6 {
     @apply text-sm font-medium tracking-tight text-slate-900;
   }
+
+  /* Headings inside dark admin wrapper */
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6 {
+    color: oklch(0.98 0 0);
+  }
 }
 
 @layer utilities {
@@ -276,3 +286,401 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN DARK MODE — single source of truth (#000000 black base)
+   The .dark class is applied on the AdminShell outer div.
+   Everything below is scoped to .dark so the public site,
+   login page, and client portal are NEVER affected.
+   ═══════════════════════════════════════════════════════════════ */
+
+/* ─── SKELETON SHIMMER: black base + red shimmer ─────────────── */
+@keyframes skeleton-shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ─── 1. Smooth transitions ─────────────────────────────────── */
+:is(.dark) *,
+:is(.dark *) {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease !important;
+}
+
+/* ─── 2. Backgrounds — everything black ─────────────────────── */
+.dark,
+.dark .bg-background       { background-color: #000000 !important; }
+.dark .bg-white             { background-color: #0d0d0d !important; }
+.dark .bg-gray-50,
+.dark .bg-slate-50          { background-color: #050505 !important; }
+.dark .bg-gray-100,
+.dark .bg-slate-100         { background-color: #111111 !important; }
+.dark .bg-gray-200,
+.dark .bg-slate-200         { background-color: #181818 !important; }
+.dark .bg-slate-300,
+.dark .bg-gray-300          { background-color: #222222 !important; }
+
+/* Glass / semi-transparent panels */
+.dark .bg-white\/50         { background-color: rgba(255,255,255,0.03) !important; backdrop-filter: blur(16px) !important; }
+.dark .bg-white\/60         { background-color: rgba(255,255,255,0.05) !important; }
+.dark .bg-white\/90         { background-color: rgba(8,8,8,0.95) !important; }
+.dark .backdrop-blur-md:not([class*="bg-white"]) { background-color: rgba(5,5,5,0.88) !important; }
+
+/* Rounded cards */
+.dark .rounded-2xl.bg-white,
+.dark .rounded-xl.bg-white,
+.dark .rounded-lg.bg-white  { background-color: #0d0d0d !important; }
+
+/* Apple hex surfaces (blog / order-detail pages) */
+.dark [class*="bg-\[\#f5f5f7\]"],
+.dark [class*="bg-\[\#fafafa\]"] { background-color: #0d0d0d !important; }
+.dark [class*="bg-\[\#e8e8ed\]"] { background-color: #151515 !important; }
+.dark [class*="bg-\[\#d2d2d7\]"] { background-color: #1c1c1c !important; }
+.dark [class*="bg-\[\#1d1d1f\]"] { background-color: #000000 !important; }
+
+/* ─── 3. Text — all white ────────────────────────────────────── */
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700,
+.dark .text-foreground,
+.dark .text-gray-900,
+.dark [class*="text-\[\#1d1d1f\]"] { color: #ffffff !important; }
+
+/* Muted / secondary text */
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400,
+.dark .text-slate-300,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-gray-300,
+.dark .text-muted-foreground,
+.dark [class*="text-\[\#6e6e73\]"],
+.dark [class*="text-\[\#86868b\]"] { color: rgba(255,255,255,0.45) !important; }
+
+/* Raw HTML elements */
+.dark p                { color: rgba(255,255,255,0.88) !important; }
+.dark span:not([class*="bg-"]):not([class*="text-red"]):not([class*="text-emerald"]):not([class*="text-amber"]):not([class*="text-blue"]):not([class*="text-green"])
+                       { color: rgba(255,255,255,0.88) !important; }
+.dark label            { color: rgba(255,255,255,0.88) !important; }
+.dark li               { color: rgba(255,255,255,0.82) !important; }
+.dark td, .dark th     { color: rgba(255,255,255,0.88) !important; }
+.dark dt, .dark dd     { color: rgba(255,255,255,0.82) !important; }
+.dark caption          { color: rgba(255,255,255,0.65) !important; }
+.dark a:not([class*="text-red"]):not([class*="text-[#ff"]) { color: rgba(255,255,255,0.82) !important; }
+.dark h1, .dark h2, .dark h3,
+.dark h4, .dark h5, .dark h6 { color: #ffffff !important; }
+
+/* ─── 4. Icons — white ───────────────────────────────────────── */
+.dark svg { color: rgba(255,255,255,0.88) !important; }
+
+/* ─── 5. Status / accent text colors ────────────────────────── */
+.dark .text-emerald-500,
+.dark .text-emerald-600,
+.dark .text-emerald-700 { color: #4ade80 !important; }
+.dark .text-amber-500,
+.dark .text-amber-600,
+.dark .text-amber-700   { color: #fbbf24 !important; }
+.dark .text-blue-500,
+.dark .text-blue-600,
+.dark .text-blue-700    { color: #60a5fa !important; }
+.dark .text-indigo-500,
+.dark .text-indigo-600  { color: #818cf8 !important; }
+.dark .text-purple-500,
+.dark .text-purple-600  { color: #c084fc !important; }
+.dark .text-orange-500,
+.dark .text-orange-600  { color: #fb923c !important; }
+.dark .text-green-500,
+.dark .text-green-600   { color: #4ade80 !important; }
+.dark .text-red-400,
+.dark .text-red-500,
+.dark .text-red-600     { color: #f87171 !important; }
+.dark .text-\[\#ff3b30\],
+.dark .text-\[\#ff0d13\],
+.dark [class*="text-\[\#0071e3\]"] { color: #ff3b30 !important; }
+
+/* ─── 6. Status badge backgrounds ───────────────────────────── */
+.dark .bg-emerald-500\/15,
+.dark .bg-emerald-100   { background-color: rgba(74,222,128,0.13) !important; }
+.dark .bg-red-500\/15,
+.dark .bg-red-100       { background-color: rgba(248,113,113,0.13) !important; }
+.dark .bg-amber-500\/15,
+.dark .bg-amber-100     { background-color: rgba(251,191,36,0.13) !important; }
+.dark .bg-blue-100      { background-color: rgba(96,165,250,0.13) !important; }
+.dark .bg-purple-100    { background-color: rgba(192,132,252,0.13) !important; }
+.dark [class*="bg-\[#d1fae5\]"] { background-color: rgba(74,222,128,0.13) !important; }
+.dark [class*="text-\[#065f46\]"] { color: #4ade80 !important; }
+
+/* ─── 7. Borders ─────────────────────────────────────────────── */
+.dark .border-slate-100,
+.dark .border-gray-100  { border-color: rgba(255,255,255,0.07) !important; }
+.dark .border-slate-200,
+.dark .border-gray-200  { border-color: rgba(255,255,255,0.1) !important; }
+.dark .border-slate-300,
+.dark .border-gray-300  { border-color: rgba(255,255,255,0.15) !important; }
+.dark .border-white\/40,
+.dark [class*="border-\[\#d2d2d7\]"],
+.dark [class*="border-\[\#f5f5f7\]"] { border-color: rgba(255,255,255,0.08) !important; }
+.dark .border-b  { border-bottom-color: rgba(255,255,255,0.08) !important; }
+.dark .border-t  { border-top-color:    rgba(255,255,255,0.08) !important; }
+.dark .border-l  { border-left-color:   rgba(255,255,255,0.08) !important; }
+.dark .border-r  { border-right-color:  rgba(255,255,255,0.08) !important; }
+.dark .border    { border-color: rgba(255,255,255,0.08) !important; }
+.dark .divide-y > * + *,
+.dark .divide-slate-100 > * + *,
+.dark .divide-slate-200 > * + *,
+.dark .divide-gray-100  > * + *,
+.dark [class*="divide-\[\#f5f5f7\]"] > * + *,
+.dark .divide-y.divide-\[\#f5f5f7\] > * + * { border-color: rgba(255,255,255,0.07) !important; }
+
+/* ─── 8. Hover states ────────────────────────────────────────── */
+.dark .hover\:bg-slate-50:hover,
+.dark .hover\:bg-slate-50\/50:hover,
+.dark .hover\:bg-slate-50\/60:hover,
+.dark .hover\:bg-gray-50:hover,
+.dark [class*="hover\:bg-\[\#f5f5f7\]"]:hover,
+.dark [class*="hover\:bg-\[\#e8e8ed\]"]:hover { background-color: rgba(255,255,255,0.06) !important; }
+.dark .hover\:bg-white\/60:hover               { background-color: rgba(255,255,255,0.06) !important; }
+.dark .hover\:border-slate-300:hover           { border-color: rgba(255,255,255,0.22) !important; }
+.dark [class*="hover\:bg-\[\#fff1f0\]"]:hover  { background-color: rgba(255,59,48,0.12) !important; }
+.dark .hover\:bg-accent:hover                  { background-color: rgba(255,255,255,0.07) !important; }
+.dark .hover\:bg-accent\/80:hover              { background-color: rgba(255,255,255,0.05) !important; }
+.dark .hover\:bg-red-50:hover                  { background-color: rgba(255,59,48,0.12) !important; }
+.dark tbody tr:hover                           { background-color: rgba(255,255,255,0.04) !important; }
+
+/* Ghost button hover */
+.dark button:not([class*="bg-[#ff"]):not([class*="bg-red"]):not([class*="bg-emerald"]):hover,
+.dark [role="button"]:not([class*="bg-[#ff"]):hover {
+  background-color: rgba(255,255,255,0.06) !important;
+}
+
+/* Blog back / icon circle buttons */
+.dark [class*="bg-\[\#f5f5f7\]"][class*="hover\:bg-\[\#e8e8ed\]"] {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+}
+.dark [class*="bg-\[\#f5f5f7\]"][class*="hover\:bg-\[\#e8e8ed\]"]:hover {
+  background-color: #1a1a1a !important;
+}
+
+/* ─── 9. Gradient text / headers ────────────────────────────── */
+.dark [class*="bg-gradient"][class*="bg-clip-text"],
+.dark .bg-clip-text {
+  background-image: none !important;
+  -webkit-background-clip: unset !important;
+  background-clip: unset !important;
+  -webkit-text-fill-color: #ffffff !important;
+  color: #ffffff !important;
+}
+/* Stat card accent overlays — keep dim */
+.dark .bg-gradient-to-br.from-emerald-500\/10 { background-image: radial-gradient(circle, rgba(74,222,128,0.07), transparent) !important; }
+.dark .bg-gradient-to-br.from-red-500\/10     { background-image: radial-gradient(circle, rgba(248,113,113,0.07), transparent) !important; }
+/* Stat card icon container */
+.dark .bg-gradient-to-br.from-slate-100,
+.dark .bg-gradient-to-br.from-slate-100.to-slate-50 {
+  background-image: none !important;
+  background-color: rgba(255,255,255,0.07) !important;
+  border: 1px solid rgba(255,255,255,0.09) !important;
+}
+/* All other br gradients → strip to dark */
+.dark .bg-gradient-to-br:not([class*="from-emerald"]):not([class*="from-red"]):not([class*="from-slate-100"]) {
+  background-image: none !important;
+  background-color: rgba(255,255,255,0.05) !important;
+}
+
+/* ─── 10. SKELETONS — black base + red shimmer ───────────────── */
+/* Covers every animate-pulse child across all admin pages */
+.dark .animate-pulse > *,
+.dark .animate-pulse .bg-slate-100,
+.dark .animate-pulse .bg-slate-200,
+.dark .animate-pulse .bg-slate-300,
+.dark .animate-pulse .bg-gray-100,
+.dark .animate-pulse .bg-gray-200,
+.dark .animate-pulse .bg-white,
+.dark .animate-pulse [class*="bg-\[\#f5f5f7\]"],
+.dark .animate-pulse [class*="bg-\[\#e8e8ed\]"],
+.dark .animate-pulse .rounded-full,
+.dark .animate-pulse .rounded-lg,
+.dark .animate-pulse .rounded-xl,
+.dark .animate-pulse .rounded-2xl,
+.dark .animate-pulse .h-4,
+.dark .animate-pulse .h-3,
+.dark .animate-pulse .h-2,
+.dark .animate-pulse .h-6,
+.dark .animate-pulse .h-8,
+.dark .animate-pulse .h-10,
+.dark .animate-pulse .h-12,
+.dark .animate-pulse .w-full {
+  background-color: transparent !important;
+  background-image: linear-gradient(
+    90deg,
+    #111111 0%,
+    #1a0000 40%,
+    #2a0a0a 50%,
+    #1a0000 60%,
+    #111111 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite !important;
+}
+/* Strip gradient backgrounds inside pulse containers */
+.dark .animate-pulse [class*="bg-gradient"] {
+  background-image: linear-gradient(
+    90deg,
+    #111111 0%,
+    #1a0000 40%,
+    #2a0a0a 50%,
+    #1a0000 60%,
+    #111111 100%
+  ) !important;
+  background-size: 200% 100% !important;
+  animation: skeleton-shimmer 1.8s ease-in-out infinite !important;
+}
+
+/* ─── 11. Tables ─────────────────────────────────────────────── */
+.dark thead tr  { background-color: #080808 !important; }
+.dark tbody tr  { background-color: transparent !important; }
+
+/* Pagination active page */
+.dark [aria-label="pagination"] .bg-slate-900,
+.dark nav .bg-slate-900 { background-color: #e5e7eb !important; color: #111111 !important; }
+
+/* ─── 12. Inputs / textarea / select ─────────────────────────── */
+.dark input,
+.dark textarea,
+.dark select {
+  background-color: #0d0d0d !important;
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+.dark input::placeholder,
+.dark textarea::placeholder { color: rgba(255,255,255,0.28) !important; }
+
+/* ─── 13. Radix dropdowns ────────────────────────────────────── */
+.dark [data-radix-popper-content-wrapper] > div,
+.dark [data-radix-popper-content-wrapper] {
+  background-color: #0d0d0d !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+.dark [data-radix-popper-content-wrapper] * { color: rgba(255,255,255,0.88) !important; }
+.dark [data-radix-popper-content-wrapper] [class*="border"] { border-color: rgba(255,255,255,0.08) !important; }
+.dark [data-radix-popper-content-wrapper] .text-red-600,
+.dark [data-radix-popper-content-wrapper] [class*="text-red"] { color: #f87171 !important; }
+
+/* ─── 14. Modals / Dialogs ───────────────────────────────────── */
+.dark [role="dialog"] {
+  background-color: #0a0a0a !important;
+  border-color: rgba(255,255,255,0.1) !important;
+}
+.dark [role="dialog"] h1, .dark [role="dialog"] h2,
+.dark [role="dialog"] h3, .dark [role="dialog"] h4,
+.dark [role="dialog"] h5, .dark [role="dialog"] h6 { color: #ffffff !important; }
+.dark [role="dialog"] p                            { color: rgba(255,255,255,0.82) !important; }
+.dark [role="dialog"] label                        { color: rgba(255,255,255,0.88) !important; }
+.dark [role="dialog"] span:not([class*="bg-"])     { color: rgba(255,255,255,0.82) !important; }
+.dark [role="dialog"] svg                          { color: rgba(255,255,255,0.88) !important; }
+.dark [role="dialog"] input,
+.dark [role="dialog"] textarea,
+.dark [role="dialog"] select {
+  background-color: #111111 !important;
+  color: #ffffff !important;
+  border-color: rgba(255,255,255,0.12) !important;
+}
+.dark [role="dialog"] .bg-white,
+.dark [role="dialog"] .bg-slate-50,
+.dark [role="dialog"] .bg-gray-50  { background-color: #111111 !important; }
+.dark [role="dialog"] .border-slate-200,
+.dark [role="dialog"] .border-gray-200,
+.dark [role="dialog"] .border-b,
+.dark [role="dialog"] .border-t    { border-color: rgba(255,255,255,0.08) !important; }
+.dark [data-radix-alert-dialog-overlay],
+.dark [data-radix-dialog-overlay]  { background-color: rgba(0,0,0,0.82) !important; }
+
+/* ─── 15. Glass card ─────────────────────────────────────────── */
+.dark .glass-card { background-color: rgba(10,10,10,0.92) !important; }
+
+/* ─── 16. Milestone timeline ─────────────────────────────────── */
+.milestone-dot-completed   { background-color: #1c1917; }
+.milestone-dot-pending     { background-color: #f5f5f4; }
+.milestone-icon-pending    { color: #a8a29e; }
+.milestone-line-completed  { background-color: #d6d3d1; }
+.milestone-line-pending    { background-color: #f5f5f4; }
+.milestone-label-completed { color: #1c1917; }
+.milestone-label-pending   { color: #a8a29e; }
+.milestone-label-muted     { color: #a8a29e; }
+.milestone-header-border   { border-color: #f5f5f4; }
+.milestone-progress-track  { background-color: #f5f5f4; }
+.milestone-progress-fill   { background-color: #1c1917; }
+.dark .milestone-dot-completed   { background-color: #ff3b30 !important; }
+.dark .milestone-dot-pending     { background-color: rgba(255,255,255,0.07) !important; border: 1px solid rgba(255,255,255,0.1) !important; }
+.dark .milestone-icon-pending    { color: rgba(255,255,255,0.28) !important; }
+.dark .milestone-line-completed  { background-color: rgba(255,59,48,0.35) !important; }
+.dark .milestone-line-pending    { background-color: rgba(255,255,255,0.07) !important; }
+.dark .milestone-label-completed { color: #ffffff !important; }
+.dark .milestone-label-pending   { color: rgba(255,255,255,0.32) !important; }
+.dark .milestone-label-muted     { color: rgba(255,255,255,0.32) !important; }
+.dark .milestone-header-border   { border-color: rgba(255,255,255,0.07) !important; }
+.dark .milestone-progress-track  { background-color: rgba(255,255,255,0.07) !important; }
+.dark .milestone-progress-fill   { background-color: #ff3b30 !important; }
+.dark .dark-card { background-color: #0d0d0d !important; border-color: rgba(255,255,255,0.07) !important; }
+
+/* ─── 17. Sidebar ────────────────────────────────────────────── */
+.dark aside .bg-background,
+.dark aside { background-color: #080808 !important; }
+
+/* ─── 18. Icon wrapper chips ─────────────────────────────────── */
+.dark .rounded-xl.p-2,
+.dark .rounded-xl.p-3,
+.dark .rounded-lg.p-2,
+.dark .rounded-lg.p-3  { background-color: rgba(255,255,255,0.06) !important; }
+.dark .rounded-full.bg-slate-100,
+.dark .rounded-full.bg-gray-100 { background-color: rgba(255,255,255,0.07) !important; }
+
+/* ─── 19. Shadows ────────────────────────────────────────────── */
+.dark .shadow-lg  { box-shadow: 0 4px 28px rgba(0,0,0,0.6) !important; }
+.dark .shadow-xl  { box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important; }
+.dark .shadow-sm  { box-shadow: 0 1px 8px  rgba(0,0,0,0.5) !important; }
+
+/* ─── 20. Tabs ───────────────────────────────────────────────── */
+.dark [role="tablist"] { background-color: #0d0d0d !important; border-color: rgba(255,255,255,0.07) !important; }
+.dark [role="tab"]     { color: rgba(255,255,255,0.45) !important; }
+.dark [role="tab"][data-state="active"] { background-color: #000000 !important; color: #ffffff !important; }
+
+/* ─── 21. Blog-specific ──────────────────────────────────────── */
+.dark .group.bg-white.rounded-2xl { background-color: #0d0d0d !important; }
+.dark .group:hover.rounded-2xl    { box-shadow: 0 8px 32px rgba(0,0,0,0.7) !important; }
+/* Editor toolbar */
+.dark [class*="bg-\[\#f5f5f7\]"][class*="border-\[\#d2d2d7\]"] {
+  background-color: #111111 !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
+.dark [class*="text-\[\#1d1d1f\]"][class*="hover\:bg-\[\#e8e8ed\]"] { color: rgba(255,255,255,0.82) !important; }
+.dark [class*="text-\[\#1d1d1f\]"][class*="hover\:bg-\[\#e8e8ed\]"]:hover { background-color: rgba(255,255,255,0.07) !important; }
+/* Upload zone */
+.dark [class*="border-dashed"][class*="border-\[\#d2d2d7\]"] {
+  background-color: #080808 !important;
+  border-color: rgba(255,255,255,0.14) !important;
+}
+/* Footer bar */
+.dark [class*="bg-\[\#fafafa\]"] { background-color: #080808 !important; border-color: rgba(255,255,255,0.06) !important; }
+/* Cancel button */
+.dark [class*="border-\[\#d2d2d7\]"][class*="bg-white"] {
+  background-color: #111111 !important;
+  border-color: rgba(255,255,255,0.12) !important;
+  color: #ffffff !important;
+}
+/* Copy hover */
+.dark [class*="text-\[\#86868b\]"][class*="hover\:text-\[\#1d1d1f\]"]:hover { color: #ffffff !important; }
+
+/* ─── 22. Recharts ───────────────────────────────────────────── */
+.dark .recharts-cartesian-axis-tick text { fill: rgba(255,255,255,0.4) !important; }
+.dark .recharts-cartesian-grid line      { stroke: rgba(255,255,255,0.06) !important; }
+.dark .recharts-tooltip-wrapper .recharts-default-tooltip {
+  background-color: #0d0d0d !important;
+  border-color: rgba(255,255,255,0.1) !important;
+  color: #ffffff !important;
+}
+.dark .recharts-legend-item-text { color: rgba(255,255,255,0.65) !important; }

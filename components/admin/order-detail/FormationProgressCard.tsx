@@ -39,21 +39,21 @@ function MilestoneStep({
     <div className="flex gap-4">
       <div className="flex flex-col items-center">
         <div
-          className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors ${
-            completed ? "bg-stone-900" : "bg-stone-100"
+          className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 transition-colors milestone-dot ${
+            completed ? "milestone-dot-completed" : "milestone-dot-pending"
           }`}
         >
-          <span className={`${completed ? "text-white" : "text-stone-400"}`}>{icon}</span>
+          <span className={completed ? "text-white" : "milestone-icon-pending"}>{icon}</span>
         </div>
         {!isLast && (
-          <div className={`w-px flex-1 mt-1 mb-1 min-h-[1.25rem] ${completed ? "bg-stone-300" : "bg-stone-100"}`} />
+          <div className={`w-px flex-1 mt-1 mb-1 min-h-[1.25rem] milestone-line ${completed ? "milestone-line-completed" : "milestone-line-pending"}`} />
         )}
       </div>
-      <div className={`pb-${isLast ? "0" : "4"} pt-0.5 flex-1`}>
-        <p className={`text-sm leading-tight font-medium ${completed ? "text-stone-900" : "text-stone-400"}`}>
+      <div className={`${isLast ? "pb-0" : "pb-4"} pt-0.5 flex-1`}>
+        <p className={`text-sm leading-tight font-medium ${completed ? "milestone-label-completed" : "milestone-label-pending"}`}>
           {label}
         </p>
-        {completed && <p className="text-xs text-stone-400 mt-0.5">Completed</p>}
+        {completed && <p className="text-xs milestone-label-muted mt-0.5">Completed</p>}
       </div>
     </div>
   )
@@ -81,18 +81,18 @@ export function FormationProgressCard({
 
   return (
     <>
-      <div className="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden">
+      <div className="bg-white rounded-2xl border border-stone-200/80 shadow-sm overflow-hidden dark-card">
         {/* Header */}
-        <div className="px-6 py-4 border-b border-stone-100">
+        <div className="px-6 py-4 border-b border-stone-100 milestone-header-border">
           <div className="flex items-center justify-between mb-3">
-            <span className="text-sm font-semibold text-stone-800 tracking-tight">Formation Progress</span>
-            <span className="text-xs font-medium text-stone-400">
+            <span className="text-sm font-semibold milestone-label-completed tracking-tight">Formation Progress</span>
+            <span className="text-xs font-medium milestone-label-muted">
               {completedDefaultMilestones}/{totalDefaultMilestones}
             </span>
           </div>
-          <div className="w-full h-1 bg-stone-100 rounded-full overflow-hidden">
+          <div className="w-full h-1 bg-stone-100 rounded-full overflow-hidden milestone-progress-track">
             <div
-              className="h-full bg-stone-900 rounded-full transition-all duration-700"
+              className="h-full bg-stone-900 rounded-full transition-all duration-700 milestone-progress-fill"
               style={{ width: `${completionPercentage}%` }}
             />
           </div>
@@ -114,8 +114,8 @@ export function FormationProgressCard({
 
           {/* Custom milestones */}
           {company?.customMilestones && company.customMilestones.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-stone-100">
-              <p className="text-xs font-medium text-stone-400 uppercase tracking-widest mb-3">Custom</p>
+            <div className="mt-4 pt-4 border-t border-stone-100 milestone-header-border">
+              <p className="text-xs font-medium milestone-label-muted uppercase tracking-widest mb-3">Custom</p>
               <div className="space-y-0">
                 {company.customMilestones.map((m: any, i: number) => (
                   <div
@@ -124,24 +124,24 @@ export function FormationProgressCard({
                   >
                     <div className="flex flex-col items-center">
                       <div
-                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 ${
-                          m.completed ? "bg-stone-900" : "bg-stone-100"
+                        className={`w-7 h-7 rounded-full flex items-center justify-center shrink-0 milestone-dot ${
+                          m.completed ? "milestone-dot-completed" : "milestone-dot-pending"
                         }`}
                       >
-                        <Hash className={`w-3.5 h-3.5 ${m.completed ? "text-white" : "text-stone-400"}`} />
+                        <Hash className={`w-3.5 h-3.5 ${m.completed ? "text-white" : "milestone-icon-pending"}`} />
                       </div>
                       {i < company.customMilestones.length - 1 && (
-                        <div className={`w-px flex-1 mt-1 mb-1 min-h-[1.25rem] ${m.completed ? "bg-stone-300" : "bg-stone-100"}`} />
+                        <div className={`w-px flex-1 mt-1 mb-1 min-h-[1.25rem] milestone-line ${m.completed ? "milestone-line-completed" : "milestone-line-pending"}`} />
                       )}
                     </div>
                     <div className={`${i < company.customMilestones.length - 1 ? "pb-4" : "pb-0"} pt-0.5 flex-1 flex items-start justify-between`}>
                       <div>
-                        <p className={`text-sm leading-tight font-medium ${m.completed ? "text-stone-900" : "text-stone-400"}`}>
+                        <p className={`text-sm leading-tight font-medium ${m.completed ? "milestone-label-completed" : "milestone-label-pending"}`}>
                           {m.title}
                         </p>
                         {m.completed
-                          ? <p className="text-xs text-stone-400 mt-0.5">Completed</p>
-                          : m.description && <p className="text-xs text-stone-400 mt-0.5">{m.description}</p>
+                          ? <p className="text-xs milestone-label-muted mt-0.5">Completed</p>
+                          : m.description && <p className="text-xs milestone-label-muted mt-0.5">{m.description}</p>
                         }
                       </div>
                       <button
