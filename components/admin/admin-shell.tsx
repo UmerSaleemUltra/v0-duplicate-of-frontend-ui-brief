@@ -2,7 +2,6 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import Image from "next/image"
 import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
@@ -92,14 +91,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background border-r border-border px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center">
-              <Image
-              src="/images/buzz-filing-logo.png"
-              alt="BuzzFiling Admin"
-              width={240}
-              height={150}
-              className="w-[200px] lg:w-[240px] h-auto dark:brightness-0 dark:invert"
-              priority
-            />
+            <span className="text-base font-bold tracking-tight text-foreground">
+              Buzz<span className="text-[#ff3b30]">Filing</span>
+            </span>
           </div>
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
@@ -143,13 +137,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </SheetTrigger>
           <SheetContent side="left" className="w-72 p-0 bg-background">
             <div className="flex h-16 shrink-0 items-center px-6 border-b border-border">
-              <Image
-                src="/images/buzz-filing-logo.png"
-                alt="BuzzFiling Admin"
-                width={220}
-                height={138}
-                className="w-[200px] sm:w-[220px] h-auto dark:brightness-0 dark:invert"
-              />
+              <span className="text-base font-bold tracking-tight text-foreground">
+                Buzz<span className="text-[#ff3b30]">Filing</span>
+              </span>
             </div>
             <nav className="flex flex-1 flex-col px-6 py-4">
               <ul role="list" className="space-y-1">

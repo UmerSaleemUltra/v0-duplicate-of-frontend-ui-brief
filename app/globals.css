@@ -16,7 +16,7 @@
   }
 }
 
-@custom-variant dark (&:is(.dark *));
+@custom-variant dark (&:is(.dark, .dark *));
 
 :root {
   --background: oklch(1 0 0);
@@ -178,6 +178,16 @@
   h6 {
     @apply text-sm font-medium tracking-tight text-slate-900;
   }
+
+  /* Headings inside dark admin wrapper */
+  .dark h1,
+  .dark h2,
+  .dark h3,
+  .dark h4,
+  .dark h5,
+  .dark h6 {
+    color: oklch(0.98 0 0);
+  }
 }
 
 @layer utilities {
@@ -277,97 +287,175 @@
   }
 }
 
-/* ─────────────────────────────────────────────────────────────
-   Admin dark mode — scoped overrides
-   All hardcoded slate/white/gray classes flip automatically
-   when the .dark wrapper class is applied in AdminShell.
-   ───────────────────────────────────────────────────────────── */
-.dark .bg-white           { background-color: oklch(0.18 0 0) !important; }
-.dark .bg-gray-50         { background-color: oklch(0.15 0 0) !important; }
-.dark .bg-gray-100        { background-color: oklch(0.2 0 0) !important; }
-.dark .bg-slate-50        { background-color: oklch(0.18 0 0) !important; }
-.dark .bg-slate-100       { background-color: oklch(0.22 0 0) !important; }
-.dark .bg-slate-200       { background-color: oklch(0.26 0 0) !important; }
+/* ═══════════════════════════════════════════════════════════════
+   ADMIN DARK MODE — comprehensive scoped overrides
+   Applied when .dark is present on the AdminShell wrapper div.
+   Covers every hardcoded color class used across all admin pages
+   and components — no individual page files need to be edited.
+   ═══════════════════════════════════════════════════════════════ */
 
-.dark .text-slate-900     { color: oklch(0.98 0 0) !important; }
-.dark .text-slate-800     { color: oklch(0.92 0 0) !important; }
-.dark .text-slate-700     { color: oklch(0.82 0 0) !important; }
-.dark .text-slate-600     { color: oklch(0.72 0 0) !important; }
-.dark .text-slate-500     { color: oklch(0.62 0 0) !important; }
-.dark .text-slate-400     { color: oklch(0.52 0 0) !important; }
-.dark .text-gray-900      { color: oklch(0.98 0 0) !important; }
-.dark .text-gray-700      { color: oklch(0.82 0 0) !important; }
-.dark .text-gray-600      { color: oklch(0.72 0 0) !important; }
-.dark .text-gray-500      { color: oklch(0.62 0 0) !important; }
-
-.dark .border-slate-200   { border-color: oklch(0.3 0 0) !important; }
-.dark .border-slate-100   { border-color: oklch(0.25 0 0) !important; }
-.dark .border-slate-300   { border-color: oklch(0.35 0 0) !important; }
-.dark .border-gray-200    { border-color: oklch(0.3 0 0) !important; }
-.dark .border-gray-100    { border-color: oklch(0.25 0 0) !important; }
-.dark .border-b-slate-100 { border-bottom-color: oklch(0.25 0 0) !important; }
-
-.dark .divide-slate-100 > * + * { border-color: oklch(0.25 0 0) !important; }
-.dark .divide-slate-200 > * + * { border-color: oklch(0.3 0 0) !important; }
-.dark .divide-gray-100 > * + *  { border-color: oklch(0.25 0 0) !important; }
-.dark .divide-y > * + *         { border-color: oklch(0.25 0 0) !important; }
-
-.dark .hover\:bg-slate-50\/60:hover { background-color: oklch(0.22 0 0 / 0.6) !important; }
-.dark .hover\:bg-slate-50:hover     { background-color: oklch(0.22 0 0) !important; }
-
-/* Stat card glassmorphic — dark flip */
-.dark .bg-white\/50,
-.dark .backdrop-blur-md.bg-white\/50 {
-  background-color: oklch(0.18 0 0 / 0.7) !important;
-  border-color: oklch(0.3 0 0 / 0.4) !important;
+/* ── Smooth transitions on every element inside dark wrapper ── */
+:is(.dark *) {
+  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
 }
-.dark .border-white\/40 { border-color: oklch(0.3 0 0 / 0.4) !important; }
-.dark .bg-white\/60     { background-color: oklch(0.2 0 0 / 0.6) !important; }
-.dark .bg-white\/90     { background-color: oklch(0.18 0 0 / 0.9) !important; }
 
-/* Gradient text on dashboard header — dark fix */
-.dark .bg-gradient-to-r.from-slate-900.to-slate-700 {
+/* ── Background colors ── */
+.dark .bg-white          { background-color: oklch(0.18 0 0) !important; }
+.dark .bg-gray-50        { background-color: oklch(0.15 0 0) !important; }
+.dark .bg-gray-100       { background-color: oklch(0.20 0 0) !important; }
+.dark .bg-gray-200       { background-color: oklch(0.24 0 0) !important; }
+.dark .bg-slate-50       { background-color: oklch(0.18 0 0) !important; }
+.dark .bg-slate-100      { background-color: oklch(0.22 0 0) !important; }
+.dark .bg-slate-200      { background-color: oklch(0.26 0 0) !important; }
+.dark .bg-slate-300      { background-color: oklch(0.30 0 0) !important; }
+.dark .bg-slate-900      { background-color: oklch(0.92 0 0) !important; }
+.dark .bg-background     { background-color: oklch(0.15 0 0) !important; }
+
+/* ── Glass / opacity backgrounds ── */
+.dark .bg-white\/50  { background-color: oklch(0.18 0 0 / 0.75) !important; }
+.dark .bg-white\/60  { background-color: oklch(0.20 0 0 / 0.80) !important; }
+.dark .bg-white\/90  { background-color: oklch(0.18 0 0 / 0.92) !important; }
+.dark .border-white\/40 { border-color: oklch(0.35 0 0 / 0.5) !important; }
+
+/* ── Text colors — all shades ── */
+.dark .text-slate-900 { color: oklch(0.98 0 0) !important; }
+.dark .text-slate-800 { color: oklch(0.92 0 0) !important; }
+.dark .text-slate-700 { color: oklch(0.82 0 0) !important; }
+.dark .text-slate-600 { color: oklch(0.70 0 0) !important; }
+.dark .text-slate-500 { color: oklch(0.60 0 0) !important; }
+.dark .text-slate-400 { color: oklch(0.52 0 0) !important; }
+.dark .text-slate-300 { color: oklch(0.45 0 0) !important; }
+.dark .text-gray-900  { color: oklch(0.98 0 0) !important; }
+.dark .text-gray-700  { color: oklch(0.82 0 0) !important; }
+.dark .text-gray-600  { color: oklch(0.70 0 0) !important; }
+.dark .text-gray-500  { color: oklch(0.60 0 0) !important; }
+.dark .text-gray-400  { color: oklch(0.50 0 0) !important; }
+.dark .text-gray-300  { color: oklch(0.42 0 0) !important; }
+
+/* Icon accent colors — keep vibrant but slightly lighter for dark bg */
+.dark .text-blue-600    { color: oklch(0.72 0.15 240) !important; }
+.dark .text-indigo-600  { color: oklch(0.72 0.15 268) !important; }
+.dark .text-purple-600  { color: oklch(0.72 0.15 300) !important; }
+.dark .text-emerald-600 { color: oklch(0.72 0.14 162) !important; }
+.dark .text-green-600   { color: oklch(0.72 0.15 145) !important; }
+.dark .text-amber-600   { color: oklch(0.80 0.16 80) !important; }
+.dark .text-orange-600  { color: oklch(0.78 0.16 55) !important; }
+.dark .text-red-600     { color: oklch(0.66 0.20 25) !important; }
+.dark .text-red-500     { color: oklch(0.62 0.20 25) !important; }
+
+/* Status badge background adjustments */
+.dark .bg-emerald-500\/15 { background-color: oklch(0.72 0.14 162 / 0.2) !important; }
+.dark .bg-red-500\/15     { background-color: oklch(0.62 0.20 25 / 0.2) !important; }
+.dark .bg-amber-500\/15   { background-color: oklch(0.80 0.16 80 / 0.2) !important; }
+
+/* ── Borders ── */
+.dark .border-slate-100  { border-color: oklch(0.25 0 0) !important; }
+.dark .border-slate-200  { border-color: oklch(0.30 0 0) !important; }
+.dark .border-slate-300  { border-color: oklch(0.35 0 0) !important; }
+.dark .border-gray-100   { border-color: oklch(0.25 0 0) !important; }
+.dark .border-gray-200   { border-color: oklch(0.30 0 0) !important; }
+.dark .border-gray-300   { border-color: oklch(0.35 0 0) !important; }
+.dark .divide-slate-100 > * + * { border-color: oklch(0.25 0 0) !important; }
+.dark .divide-slate-200 > * + * { border-color: oklch(0.30 0 0) !important; }
+.dark .divide-gray-100  > * + * { border-color: oklch(0.25 0 0) !important; }
+.dark .divide-y         > * + * { border-color: oklch(0.25 0 0) !important; }
+
+/* ── Hover states ── */
+.dark .hover\:bg-slate-50:hover      { background-color: oklch(0.22 0 0) !important; }
+.dark .hover\:bg-slate-50\/50:hover  { background-color: oklch(0.22 0 0 / 0.5) !important; }
+.dark .hover\:bg-slate-50\/60:hover  { background-color: oklch(0.22 0 0 / 0.6) !important; }
+.dark .hover\:bg-gray-50:hover       { background-color: oklch(0.22 0 0) !important; }
+.dark .hover\:border-slate-300:hover { border-color: oklch(0.38 0 0) !important; }
+
+/* ── Gradient text headers ── */
+.dark .bg-gradient-to-r.from-slate-900.to-slate-700,
+.dark [class*="bg-gradient"][class*="from-slate-9"] {
   background-image: none !important;
   -webkit-background-clip: unset !important;
+  background-clip: unset !important;
   -webkit-text-fill-color: oklch(0.98 0 0) !important;
   color: oklch(0.98 0 0) !important;
 }
 
-/* Table row hover */
-.dark .hover\:bg-slate-50\/50:hover { background-color: oklch(0.22 0 0 / 0.5) !important; }
+/* ── Stat icon background ── */
+.dark .from-slate-100.to-slate-50 {
+  --tw-gradient-from: oklch(0.24 0 0) !important;
+  --tw-gradient-to: oklch(0.20 0 0) !important;
+}
+.dark .bg-gradient-to-br.from-slate-100 { background-color: oklch(0.24 0 0) !important; background-image: none !important; }
 
-/* Pagination active button */
-.dark .bg-slate-900 { background-color: oklch(0.92 0 0) !important; color: oklch(0.1 0 0) !important; }
+/* ── Table ── */
+.dark thead tr        { background-color: oklch(0.20 0 0) !important; }
+.dark tbody tr        { background-color: transparent !important; }
+.dark tbody tr:hover  { background-color: oklch(0.22 0 0) !important; }
 
-/* Skeleton shimmer */
-.dark .bg-slate-200 { background-color: oklch(0.26 0 0) !important; }
-.dark .bg-slate-100 { background-color: oklch(0.22 0 0) !important; }
+/* ── Pagination ── */
+.dark .bg-slate-900 { background-color: oklch(0.85 0 0) !important; color: oklch(0.1 0 0) !important; }
 
-/* Input inside dark */
+/* ── Inputs, textareas, selects ── */
 .dark input,
 .dark textarea,
 .dark select {
-  background-color: oklch(0.2 0 0) !important;
+  background-color: oklch(0.20 0 0) !important;
   color: oklch(0.98 0 0) !important;
-  border-color: oklch(0.3 0 0) !important;
+  border-color: oklch(0.32 0 0) !important;
 }
 .dark input::placeholder,
-.dark textarea::placeholder { color: oklch(0.5 0 0) !important; }
+.dark textarea::placeholder { color: oklch(0.48 0 0) !important; }
 
-/* Cards with explicit bg-white border border-slate-200 */
+/* ── Notification dropdown ── */
+.dark [data-radix-popper-content-wrapper] [class*="bg-gray-50"],
+.dark [data-radix-popper-content-wrapper] [class*="bg-white"] {
+  background-color: oklch(0.20 0 0) !important;
+}
+.dark [data-radix-popper-content-wrapper] [class*="text-gray-900"],
+.dark [data-radix-popper-content-wrapper] [class*="text-gray-700"] {
+  color: oklch(0.90 0 0) !important;
+}
+.dark [data-radix-popper-content-wrapper] [class*="text-gray-500"],
+.dark [data-radix-popper-content-wrapper] [class*="text-gray-400"] {
+  color: oklch(0.60 0 0) !important;
+}
+.dark [data-radix-popper-content-wrapper] [class*="border-b"],
+.dark [data-radix-popper-content-wrapper] [class*="border-gray-200"] {
+  border-color: oklch(0.30 0 0) !important;
+}
+.dark [data-radix-popper-content-wrapper] {
+  background-color: oklch(0.18 0 0) !important;
+  border-color: oklch(0.30 0 0) !important;
+}
+
+/* ── Dialog / modal content ── */
+.dark [role="dialog"] {
+  background-color: oklch(0.18 0 0) !important;
+  border-color: oklch(0.30 0 0) !important;
+  color: oklch(0.98 0 0) !important;
+}
+.dark [role="dialog"] .bg-slate-50 { background-color: oklch(0.22 0 0) !important; }
+.dark [role="dialog"] .border-slate-200 { border-color: oklch(0.30 0 0) !important; }
+.dark [role="dialog"] .border-t,
+.dark [role="dialog"] .border-b { border-color: oklch(0.30 0 0) !important; }
+.dark [role="dialog"] [class*="text-slate-"] { color: oklch(0.82 0 0) !important; }
+.dark [role="dialog"] [class*="text-slate-9"] { color: oklch(0.98 0 0) !important; }
+.dark [role="dialog"] [class*="text-slate-5"] { color: oklch(0.58 0 0) !important; }
+
+/* ── Skeleton loading ── */
+.dark .animate-pulse .bg-slate-200,
+.dark .animate-pulse .bg-gradient-to-r { background-color: oklch(0.26 0 0) !important; background-image: none !important; }
+.dark .animate-pulse .bg-slate-100     { background-color: oklch(0.22 0 0) !important; }
+.dark .animate-pulse .bg-slate-300     { background-color: oklch(0.30 0 0) !important; }
+.dark .animate-pulse .bg-gradient-to-b { background-color: oklch(0.24 0 0) !important; background-image: none !important; }
+
+/* ── Glass card utility ── */
+.dark .glass-card { background-color: oklch(0.20 0 0 / 0.85) !important; }
+
+/* ── Rounded cards ── */
 .dark .rounded-2xl.bg-white,
-.dark .rounded-lg.bg-white  {
+.dark .rounded-xl.bg-white,
+.dark .rounded-lg.bg-white {
   background-color: oklch(0.18 0 0) !important;
   border-color: oklch(0.28 0 0) !important;
 }
 
-/* thead background for tables */
-.dark thead tr { background-color: oklch(0.2 0 0) !important; }
-
-/* Ensure bg-background is correct in dark context */
-.dark .bg-background { background-color: oklch(0.15 0 0) !important; }
-
-/* Smooth transition for all admin elements on toggle */
-.dark *, :is(.dark *) {
-  transition: background-color 0.2s ease, border-color 0.2s ease, color 0.15s ease;
-}
+/* ── Body base — ensure slate-900 body text flips ── */
+.dark body { background-color: oklch(0.15 0 0) !important; color: oklch(0.98 0 0) !important; }
