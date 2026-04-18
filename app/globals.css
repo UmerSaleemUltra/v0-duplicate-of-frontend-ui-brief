@@ -471,8 +471,9 @@
 .dark thead tr             { background-color: #1e1e1e !important; }
 .dark tbody tr             { background-color: transparent !important; }
 .dark tbody tr:hover       { background-color: rgba(255,255,255,0.04) !important; }
-/* Active pagination page button */
-.dark .bg-slate-900        { background-color: #e5e7eb !important; color: #111111 !important; }
+/* Active pagination page button — scoped to pagination only */
+.dark [aria-label="pagination"] .bg-slate-900,
+.dark nav .bg-slate-900 { background-color: #e5e7eb !important; color: #111111 !important; }
 
 /* ── 12. Inputs / textarea / select ────────────────────────── */
 .dark input,
@@ -527,6 +528,38 @@
 
 /* ── 15. Glass card ─────────────────────────────────────────── */
 .dark .glass-card { background-color: rgba(26,26,26,0.9) !important; }
+
+/* ── Milestone timeline semantic classes ────────────────────── */
+/* Light mode */
+.milestone-dot-completed   { background-color: #1c1917; }
+.milestone-dot-pending     { background-color: #f5f5f4; }
+.milestone-icon-pending    { color: #a8a29e; }
+.milestone-line-completed  { background-color: #d6d3d1; }
+.milestone-line-pending    { background-color: #f5f5f4; }
+.milestone-label-completed { color: #1c1917; }
+.milestone-label-pending   { color: #a8a29e; }
+.milestone-label-muted     { color: #a8a29e; }
+.milestone-header-border   { border-color: #f5f5f4; }
+.milestone-progress-track  { background-color: #f5f5f4; }
+.milestone-progress-fill   { background-color: #1c1917; }
+
+/* Dark mode overrides */
+.dark .milestone-dot-completed   { background-color: #ff3b30 !important; }
+.dark .milestone-dot-pending     { background-color: rgba(255,255,255,0.08) !important; border: 1px solid rgba(255,255,255,0.12) !important; }
+.dark .milestone-icon-pending    { color: rgba(255,255,255,0.3) !important; }
+.dark .milestone-line-completed  { background-color: rgba(255,59,48,0.4) !important; }
+.dark .milestone-line-pending    { background-color: rgba(255,255,255,0.08) !important; }
+.dark .milestone-label-completed { color: #ffffff !important; }
+.dark .milestone-label-pending   { color: rgba(255,255,255,0.35) !important; }
+.dark .milestone-label-muted     { color: rgba(255,255,255,0.35) !important; }
+.dark .milestone-header-border   { border-color: rgba(255,255,255,0.08) !important; }
+.dark .milestone-progress-track  { background-color: rgba(255,255,255,0.08) !important; }
+.dark .milestone-progress-fill   { background-color: #ff3b30 !important; }
+/* Card wrapper */
+.dark .dark-card {
+  background-color: #1a1a1a !important;
+  border-color: rgba(255,255,255,0.08) !important;
+}
 
 /* ── 16. Sidebar layering — slightly elevated from main bg ──── */
 /* The sidebar uses bg-background which is #0f0f0f — give it a lift */
