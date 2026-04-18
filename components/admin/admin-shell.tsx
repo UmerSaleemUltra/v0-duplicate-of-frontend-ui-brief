@@ -90,11 +90,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     <div className={`min-h-screen bg-background${isDark ? " dark" : ""}`}>
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background border-r border-border px-6 pb-4">
-          <div className="flex h-16 shrink-0 items-center">
-            <span className="text-base font-bold tracking-tight text-foreground">
-              Buzz<span className="text-[#ff3b30]">Filing</span>
-            </span>
-          </div>
+          <div className="flex h-16 shrink-0 items-center" />
           <nav className="flex flex-1 flex-col">
             <ul role="list" className="flex flex-1 flex-col gap-y-7">
               <li>
@@ -136,11 +132,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-72 p-0 bg-background">
-            <div className="flex h-16 shrink-0 items-center px-6 border-b border-border">
-              <span className="text-base font-bold tracking-tight text-foreground">
-                Buzz<span className="text-[#ff3b30]">Filing</span>
-              </span>
-            </div>
+            <div className="flex h-16 shrink-0 items-center px-6 border-b border-border" />
             <nav className="flex flex-1 flex-col px-6 py-4">
               <ul role="list" className="space-y-1">
                 {navigation.map((item) => {
@@ -171,7 +163,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
           </SheetContent>
         </Sheet>
 
-        <div className="flex-1 text-sm font-semibold leading-6 text-foreground">BuzzFiling Admin</div>
+        <div className="flex-1" />
 
         <div className="flex items-center gap-x-2">
           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={toggleDark} title="Toggle dark mode">

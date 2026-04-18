@@ -317,31 +317,60 @@
 .dark .bg-white\/90  { background-color: oklch(0.18 0 0 / 0.92) !important; }
 .dark .border-white\/40 { border-color: oklch(0.35 0 0 / 0.5) !important; }
 
-/* ── Text colors — all shades ── */
-.dark .text-slate-900 { color: oklch(0.98 0 0) !important; }
-.dark .text-slate-800 { color: oklch(0.92 0 0) !important; }
-.dark .text-slate-700 { color: oklch(0.82 0 0) !important; }
-.dark .text-slate-600 { color: oklch(0.70 0 0) !important; }
-.dark .text-slate-500 { color: oklch(0.60 0 0) !important; }
-.dark .text-slate-400 { color: oklch(0.52 0 0) !important; }
-.dark .text-slate-300 { color: oklch(0.45 0 0) !important; }
-.dark .text-gray-900  { color: oklch(0.98 0 0) !important; }
-.dark .text-gray-700  { color: oklch(0.82 0 0) !important; }
-.dark .text-gray-600  { color: oklch(0.70 0 0) !important; }
-.dark .text-gray-500  { color: oklch(0.60 0 0) !important; }
-.dark .text-gray-400  { color: oklch(0.50 0 0) !important; }
-.dark .text-gray-300  { color: oklch(0.42 0 0) !important; }
+/* ── ALL text white in dark mode ── */
+/* All slate and gray text classes → full white */
+.dark .text-slate-900,
+.dark .text-slate-800,
+.dark .text-slate-700,
+.dark .text-gray-900,
+.dark .text-gray-800,
+.dark .text-gray-700 { color: oklch(0.98 0 0) !important; }
 
-/* Icon accent colors — keep vibrant but slightly lighter for dark bg */
-.dark .text-blue-600    { color: oklch(0.72 0.15 240) !important; }
-.dark .text-indigo-600  { color: oklch(0.72 0.15 268) !important; }
-.dark .text-purple-600  { color: oklch(0.72 0.15 300) !important; }
-.dark .text-emerald-600 { color: oklch(0.72 0.14 162) !important; }
-.dark .text-green-600   { color: oklch(0.72 0.15 145) !important; }
-.dark .text-amber-600   { color: oklch(0.80 0.16 80) !important; }
-.dark .text-orange-600  { color: oklch(0.78 0.16 55) !important; }
-.dark .text-red-600     { color: oklch(0.66 0.20 25) !important; }
-.dark .text-red-500     { color: oklch(0.62 0.20 25) !important; }
+/* Muted text — dimmer white so hierarchy is preserved */
+.dark .text-slate-600,
+.dark .text-slate-500,
+.dark .text-slate-400,
+.dark .text-slate-300,
+.dark .text-gray-600,
+.dark .text-gray-500,
+.dark .text-gray-400,
+.dark .text-gray-300,
+.dark .text-muted-foreground { color: oklch(0.62 0 0) !important; }
+
+/* Base elements — p, span, label, li, td, th → white */
+.dark p,
+.dark span:not([class*="bg-"]),
+.dark label,
+.dark li,
+.dark td,
+.dark th,
+.dark dt,
+.dark dd,
+.dark caption { color: oklch(0.98 0 0) !important; }
+
+/* ── ALL icons white in dark mode ── */
+/* Lucide icons use currentColor via stroke, forcing parent color white covers them */
+/* But we also target SVG directly for safety */
+.dark svg { color: oklch(0.98 0 0) !important; }
+
+/* Override: colored status badge text stays colored but lighter/brighter */
+.dark .text-emerald-600,
+.dark .text-emerald-700 { color: oklch(0.82 0.14 162) !important; }
+.dark .text-amber-600,
+.dark .text-amber-700   { color: oklch(0.88 0.16 80) !important; }
+.dark .text-blue-600,
+.dark .text-blue-700    { color: oklch(0.82 0.15 240) !important; }
+.dark .text-indigo-600  { color: oklch(0.82 0.15 268) !important; }
+.dark .text-purple-600  { color: oklch(0.82 0.15 300) !important; }
+.dark .text-orange-600  { color: oklch(0.86 0.16 55) !important; }
+.dark .text-green-600   { color: oklch(0.82 0.15 145) !important; }
+.dark .text-red-600,
+.dark .text-red-500,
+.dark .text-red-400     { color: oklch(0.72 0.20 25) !important; }
+
+/* Brand red always stays red */
+.dark .text-\[\#ff3b30\] { color: #ff3b30 !important; }
+.dark .text-\[\#ff0d13\] { color: #ff0d13 !important; }
 
 /* Status badge background adjustments */
 .dark .bg-emerald-500\/15 { background-color: oklch(0.72 0.14 162 / 0.2) !important; }
@@ -410,11 +439,11 @@
 }
 .dark [data-radix-popper-content-wrapper] [class*="text-gray-900"],
 .dark [data-radix-popper-content-wrapper] [class*="text-gray-700"] {
-  color: oklch(0.90 0 0) !important;
+  color: oklch(0.98 0 0) !important;
 }
 .dark [data-radix-popper-content-wrapper] [class*="text-gray-500"],
 .dark [data-radix-popper-content-wrapper] [class*="text-gray-400"] {
-  color: oklch(0.60 0 0) !important;
+  color: oklch(0.62 0 0) !important;
 }
 .dark [data-radix-popper-content-wrapper] [class*="border-b"],
 .dark [data-radix-popper-content-wrapper] [class*="border-gray-200"] {
@@ -435,9 +464,12 @@
 .dark [role="dialog"] .border-slate-200 { border-color: oklch(0.30 0 0) !important; }
 .dark [role="dialog"] .border-t,
 .dark [role="dialog"] .border-b { border-color: oklch(0.30 0 0) !important; }
-.dark [role="dialog"] [class*="text-slate-"] { color: oklch(0.82 0 0) !important; }
-.dark [role="dialog"] [class*="text-slate-9"] { color: oklch(0.98 0 0) !important; }
-.dark [role="dialog"] [class*="text-slate-5"] { color: oklch(0.58 0 0) !important; }
+.dark [role="dialog"] [class*="text-slate-"]  { color: oklch(0.98 0 0) !important; }
+.dark [role="dialog"] [class*="text-slate-5"] { color: oklch(0.62 0 0) !important; }
+.dark [role="dialog"] [class*="text-slate-4"] { color: oklch(0.62 0 0) !important; }
+.dark [role="dialog"] p,
+.dark [role="dialog"] span:not([class*="bg-"]),
+.dark [role="dialog"] label { color: oklch(0.98 0 0) !important; }
 
 /* ── Skeleton loading ── */
 .dark .animate-pulse .bg-slate-200,
