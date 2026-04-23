@@ -46,9 +46,11 @@ export default function AdminDashboard() {
   const [chartData, setChartData] = useState<any[]>([])
   const [statesDrawerOpen, setStatesDrawerOpen] = useState(false)
   const [ordersDrawerOpen, setOrdersDrawerOpen] = useState(false)
+  const [citiesDrawerOpen, setCitiesDrawerOpen] = useState(false)
   const [allOrders, setAllOrders] = useState<any[]>([])
   const [packageData, setPackageData] = useState<any[]>([])
   const [heatmapData, setHeatmapData] = useState<any[]>([])
+  const [cityBreakdown, setCityBreakdown] = useState<{ city: string; country: string; count: number; percentage: number }[]>([])
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -232,6 +234,31 @@ export default function AdminDashboard() {
         
         setChartData(monthlyChartData)
 
+        // Top Cities — derived from members[].city across all companies
+        const cityCount: Record<string, { count: number; country: string }> = {}
+        allCompanies.forEach((company: any) => {
+          const members = company.members || []
+          members.forEach((member: any) => {
+            const raw = (member.city || "").trim()
+            if (!raw) return
+            const cityKey = raw.toLowerCase()
+            if (!cityCount[cityKey]) {
+              cityCount[cityKey] = { count: 0, country: (member.country || "").trim() }
+            }
+            cityCount[cityKey].count += 1
+          })
+        })
+        const totalMemberCount = Object.values(cityCount).reduce((s, v) => s + v.count, 0)
+        const cityBreakdownData = Object.entries(cityCount)
+          .map(([key, val]) => ({
+            city: key.replace(/\b\w/g, (c) => c.toUpperCase()),
+            country: val.country,
+            count: val.count,
+            percentage: totalMemberCount > 0 ? Math.round((val.count / totalMemberCount) * 100) : 0,
+          }))
+          .sort((a, b) => b.count - a.count)
+        setCityBreakdown(cityBreakdownData)
+
         // Best-selling packages
         const packageCount: Record<string, { count: number; revenue: number }> = {}
         allOrders.forEach((order: any) => {
@@ -330,6 +357,32 @@ export default function AdminDashboard() {
             </div>
           </div>
           <div className="h-[300px] bg-gradient-to-b from-slate-200 to-slate-100 rounded-lg"></div>
+        </div>
+
+        {/* Top Cities Skeleton */}
+        <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6">
+          <div className="space-y-2 mb-4">
+            <div className="h-6 bg-slate-200 rounded w-32"></div>
+            <div className="h-4 bg-slate-100 rounded w-56"></div>
+          </div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="p-4 rounded-xl bg-white/60 border border-white/40 space-y-3">
+                <div className="flex justify-between items-start gap-2">
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="h-5 w-8 bg-slate-200 rounded-md"></div>
+                    <div className="flex-1 space-y-1">
+                      <div className="h-4 bg-slate-200 rounded w-full"></div>
+                      <div className="h-3 bg-slate-100 rounded w-10"></div>
+                    </div>
+                  </div>
+                  <div className="h-5 w-16 bg-slate-200 rounded-full flex-shrink-0"></div>
+                </div>
+                <div className="h-1.5 bg-slate-200 rounded-full w-full"></div>
+                <div className="h-3 bg-slate-100 rounded w-16 ml-auto"></div>
+              </div>
+            ))}
+          </div>
         </div>
 
         {/* Bottom Section Skeleton */}
@@ -745,6 +798,80 @@ export default function AdminDashboard() {
         </div>
       </div>
 
+      {/* Top Cities Section */}
+      <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 md:mb-6">
+          <div>
+            <h3 className="text-lg md:text-xl font-bold text-slate-900">Top Cities</h3>
+            <p className="text-xs md:text-sm text-slate-700 mt-1">
+              Member cities from all orders — {cityBreakdown.reduce((s, c) => s + c.count, 0)} total members across {cityBreakdown.length} {cityBreakdown.length === 1 ? "city" : "cities"}
+            </p>
+          </div>
+          {cityBreakdown.length > 8 && (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCitiesDrawerOpen(true)}
+              className="border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg self-start md:self-auto"
+            >
+              <MapPin className="h-3.5 w-3.5 mr-1.5" />
+              View All ({cityBreakdown.length})
+            </Button>
+          )}
+        </div>
+
+        {cityBreakdown.length === 0 ? (
+          <p className="text-center text-slate-500 py-8 text-sm">No member city data found</p>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+            {cityBreakdown.slice(0, 8).map((city, index) => {
+              const maxCount = cityBreakdown[0]?.count || 1
+              const barPct = Math.round((city.count / maxCount) * 100)
+              const rankColors = [
+                "from-[#880000] to-[#ff0d13]",
+                "from-slate-700 to-slate-500",
+                "from-slate-500 to-slate-400",
+                "from-slate-400 to-slate-300",
+              ]
+              const rankColor = rankColors[index] || rankColors[3]
+
+              return (
+                <div
+                  key={city.city}
+                  className="p-3 md:p-4 rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:bg-white/80 transition-all duration-300 group"
+                >
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <span className={`flex-shrink-0 text-xs font-bold px-1.5 py-0.5 rounded-md bg-gradient-to-r ${rankColor} text-white`}>
+                        #{index + 1}
+                      </span>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate-900 truncate leading-tight">{city.city}</p>
+                        {city.country && (
+                          <p className="text-xs text-slate-500 truncate">{city.country}</p>
+                        )}
+                      </div>
+                    </div>
+                    <span className="flex-shrink-0 text-xs font-bold text-slate-700 bg-slate-100/80 px-2 py-0.5 rounded-full">
+                      {city.count} {city.count === 1 ? "member" : "members"}
+                    </span>
+                  </div>
+                  <div className="space-y-1">
+                    <div className="w-full bg-white/40 rounded-full h-1.5">
+                      <div
+                        className={`bg-gradient-to-r ${rankColor} h-1.5 rounded-full transition-all duration-500`}
+                        style={{ width: `${barPct}%` }}
+                      />
+                    </div>
+                    <p className="text-xs text-slate-500 text-right">{city.percentage}% of members</p>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
       {/* All States Modal */}
       <Dialog open={statesDrawerOpen} onOpenChange={setStatesDrawerOpen}>
         <DialogContent className="max-w-md w-full max-h-[80vh] flex flex-col bg-white/95 backdrop-blur-md">
@@ -775,6 +902,48 @@ export default function AdminDashboard() {
                 </div>
                 <Badge variant="outline" className="ml-3 flex-shrink-0 text-slate-700 border-slate-200">
                   {state.count} {state.count === 1 ? 'co.' : 'cos.'}
+                </Badge>
+              </div>
+            ))}
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* All Cities Modal */}
+      <Dialog open={citiesDrawerOpen} onOpenChange={setCitiesDrawerOpen}>
+        <DialogContent className="max-w-md w-full max-h-[80vh] flex flex-col bg-white/95 backdrop-blur-md">
+          <DialogHeader className="mb-4">
+            <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-[#880000]" />
+              All Cities Breakdown
+            </DialogTitle>
+            <p className="text-sm text-slate-600">
+              {cityBreakdown.length} {cityBreakdown.length === 1 ? "city" : "cities"} — {cityBreakdown.reduce((s, c) => s + c.count, 0)} total members
+            </p>
+          </DialogHeader>
+          <div className="overflow-y-auto flex-1 space-y-2 pr-1">
+            {cityBreakdown.map((city, index) => (
+              <div key={city.city} className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-100 hover:bg-slate-100 transition-all">
+                <div className="flex items-center gap-3 flex-1 min-w-0">
+                  <span className="text-xs font-bold text-slate-400 w-6 text-center flex-shrink-0">#{index + 1}</span>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-slate-900 text-sm truncate">{city.city}</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {city.country && (
+                        <span className="text-xs text-slate-400 flex-shrink-0">{city.country}</span>
+                      )}
+                      <div className="flex-1 bg-slate-200 rounded-full h-1.5">
+                        <div
+                          className="bg-gradient-to-r from-[#880000] to-[#ff0d13] h-1.5 rounded-full transition-all"
+                          style={{ width: `${city.percentage}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-slate-500 flex-shrink-0">{city.percentage}%</span>
+                    </div>
+                  </div>
+                </div>
+                <Badge variant="outline" className="ml-3 flex-shrink-0 text-slate-700 border-slate-200">
+                  {city.count} {city.count === 1 ? "member" : "members"}
                 </Badge>
               </div>
             ))}
