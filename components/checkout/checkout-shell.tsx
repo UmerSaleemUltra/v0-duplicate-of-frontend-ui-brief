@@ -14,21 +14,69 @@ type CheckoutShellProps = {
   currentStep: number
   data: CheckoutData
   children: React.ReactNode
+  isAuthenticated?: boolean
+  originalStep?: number
+}
+
+// Generate or retrieve session ID for tracking
+const getSessionId = (): string => {
+  if (typeof window === "undefined") return ""
+  let sessionId = sessionStorage.getItem("checkout_session_id")
+  if (!sessionId) {
+    sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
+    sessionStorage.setItem("checkout_session_id", sessionId)
+  }
+  return sessionId
 }
 
 export function CheckoutShell({ steps, currentStep, data, children }: CheckoutShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [saveMessage, setSaveMessage] = useState<string>("")
 
+  // Track abandoned checkout progress
   useEffect(() => {
-    console.log("[v0] Checkout: Current step:", currentStep)
-    console.log("[v0] Checkout: Data state:", data?.state?.name || "No state selected")
+    const trackAbandonedCheckout = async () => {
+      // Only track if user has entered some data
+      if (!data.email && !data.state && !data.businessName) return
+      
+      const sessionId = getSessionId()
+      if (!sessionId) return
 
+      try {
+        await fetch("/api/abandoned-checkouts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            sessionId,
+            email: data.email || null,
+            name: data.name || null,
+            phone: data.phone || null,
+            lastStep: currentStep,
+            state: data.state || null,
+            packageType: data.packageType || null,
+            businessName: data.businessName || null,
+            estimatedTotal: data.totalAmount || 0,
+            packagePrice: data.packagePrice || 0,
+            addons: data.addons || []
+          })
+        })
+      } catch (error) {
+        // Silent fail - don't interrupt checkout
+        console.error("Failed to track checkout progress:", error)
+      }
+    }
+
+    // Debounce tracking to avoid too many requests
+    const timeoutId = setTimeout(trackAbandonedCheckout, 2000)
+    return () => clearTimeout(timeoutId)
+  }, [currentStep, data.email, data.state, data.businessName, data.totalAmount, data.packagePrice, data.name, data.phone, data.packageType, data.addons])
+
+  useEffect(() => {
     // Clear save message when step changes
     if (saveMessage) {
       setSaveMessage("")
     }
-  }, [currentStep, data])
+  }, [currentStep, data, saveMessage])
 
   const stepDescriptions = [
     "Create Your Account",

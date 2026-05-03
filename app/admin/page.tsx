@@ -21,6 +21,12 @@ import {
   ChevronRight,
   MapPin,
   LayoutList,
+  ShoppingBag,
+  Mail,
+  Phone,
+  RefreshCw,
+  TrendingDown,
+  Eye,
 } from "lucide-react"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
@@ -51,6 +57,21 @@ export default function AdminDashboard() {
   const [packageData, setPackageData] = useState<any[]>([])
   const [heatmapData, setHeatmapData] = useState<any[]>([])
   const [cityBreakdown, setCityBreakdown] = useState<{ city: string; country: string; count: number; percentage: number }[]>([])
+  const [abandonedCheckouts, setAbandonedCheckouts] = useState<any[]>([])
+  const [abandonedStats, setAbandonedStats] = useState<{
+    total: number
+    last24h: number
+    last7Days: number
+    potentialRevenue: number
+    stepBreakdown: Record<string, number>
+  }>({
+    total: 0,
+    last24h: 0,
+    last7Days: 0,
+    potentialRevenue: 0,
+    stepBreakdown: {}
+  })
+  const [abandonedDrawerOpen, setAbandonedDrawerOpen] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
