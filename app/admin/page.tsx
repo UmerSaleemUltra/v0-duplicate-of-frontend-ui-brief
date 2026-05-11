@@ -21,6 +21,12 @@ import {
   ChevronRight,
   MapPin,
   LayoutList,
+  ShoppingBag,
+  Mail,
+  Phone,
+  RefreshCw,
+  TrendingDown,
+  Eye,
 } from "lucide-react"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
@@ -51,6 +57,21 @@ export default function AdminDashboard() {
   const [packageData, setPackageData] = useState<any[]>([])
   const [heatmapData, setHeatmapData] = useState<any[]>([])
   const [cityBreakdown, setCityBreakdown] = useState<{ city: string; country: string; count: number; percentage: number }[]>([])
+  const [abandonedCheckouts, setAbandonedCheckouts] = useState<any[]>([])
+  const [abandonedStats, setAbandonedStats] = useState<{
+    total: number
+    last24h: number
+    last7Days: number
+    potentialRevenue: number
+    stepBreakdown: Record<string, number>
+  }>({
+    total: 0,
+    last24h: 0,
+    last7Days: 0,
+    potentialRevenue: 0,
+    stepBreakdown: {}
+  })
+  const [abandonedDrawerOpen, setAbandonedDrawerOpen] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -287,6 +308,24 @@ export default function AdminDashboard() {
           return { day, ...hours }
         })
         setHeatmapData(heatmap)
+
+        // Fetch abandoned checkouts
+        try {
+          const abandonedRes = await fetch("/api/abandoned-checkouts", {
+            headers: { Authorization: `Bearer ${token}` },
+          })
+          if (abandonedRes.ok) {
+            const abandonedJson = await abandonedRes.json()
+            if (abandonedJson.success) {
+              setAbandonedCheckouts(abandonedJson.data || [])
+              setAbandonedStats(abandonedJson.stats || {
+                total: 0, last24h: 0, last7Days: 0, potentialRevenue: 0, stepBreakdown: {}
+              })
+            }
+          }
+        } catch (e) {
+          // silent fail
+        }
 
         console.log("[v0] Admin Dashboard: State breakdown set:", breakdown.length)
 
@@ -871,6 +910,272 @@ export default function AdminDashboard() {
           </div>
         )}
       </div>
+
+      {/* Abandoned Checkout Tracker Section */}
+      <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-lg">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-5 md:mb-6">
+          <div>
+            <div className="flex items-center gap-2">
+              <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500/20 to-red-500/10">
+                <TrendingDown className="h-4 w-4 text-orange-600" />
+              </div>
+              <h3 className="text-lg md:text-xl font-bold text-slate-900">Abandoned Checkouts</h3>
+            </div>
+            <p className="text-xs md:text-sm text-slate-600 mt-1 ml-9">Users who started but did not complete checkout (last 30 days)</p>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setAbandonedDrawerOpen(true)}
+            className="self-start md:self-auto border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg"
+          >
+            <Eye className="h-3.5 w-3.5 mr-1.5" />
+            View All ({abandonedStats.total})
+          </Button>
+        </div>
+
+        {/* Abandoned Stats Row */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5">
+          {[
+            { label: "Total Abandoned", value: abandonedStats.total, icon: ShoppingBag, color: "from-orange-500/20 to-orange-400/10", iconColor: "text-orange-600" },
+            { label: "Last 24 Hours", value: abandonedStats.last24h, icon: Clock, color: "from-amber-500/20 to-amber-400/10", iconColor: "text-amber-600" },
+            { label: "Last 7 Days", value: abandonedStats.last7Days, icon: Calendar, color: "from-red-500/20 to-red-400/10", iconColor: "text-red-600" },
+            { label: "Lost Revenue", value: `$${abandonedStats.potentialRevenue.toLocaleString()}`, icon: DollarSign, color: "from-rose-500/20 to-rose-400/10", iconColor: "text-rose-600" },
+          ].map((item, i) => {
+            const Icon = item.icon
+            return (
+              <div key={i} className="p-3 md:p-4 rounded-xl bg-white/60 border border-white/40">
+                <div className="flex items-center gap-2 mb-2">
+                  <div className={`p-1.5 rounded-lg bg-gradient-to-br ${item.color}`}>
+                    <Icon className={`h-3.5 w-3.5 ${item.iconColor}`} />
+                  </div>
+                  <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest">{item.label}</p>
+                </div>
+                <p className="text-xl md:text-2xl font-bold text-slate-900">{item.value}</p>
+              </div>
+            )
+          })}
+        </div>
+
+        {/* Step Breakdown Bar */}
+        {Object.keys(abandonedStats.stepBreakdown).length > 0 && (
+          <div className="mb-5 p-4 rounded-xl bg-white/60 border border-white/40">
+            <p className="text-xs font-semibold text-slate-500 uppercase tracking-widest mb-3">Drop-off by Checkout Step</p>
+            <div className="space-y-2">
+              {Object.entries(abandonedStats.stepBreakdown)
+                .filter(([, count]) => count > 0)
+                .sort(([, a], [, b]) => b - a)
+                .map(([step, count]) => {
+                  const max = Math.max(...Object.values(abandonedStats.stepBreakdown))
+                  const pct = max > 0 ? Math.round((count / max) * 100) : 0
+                  return (
+                    <div key={step} className="flex items-center gap-3">
+                      <span className="text-xs font-medium text-slate-600 w-28 flex-shrink-0">{step}</span>
+                      <div className="flex-1 bg-white/40 rounded-full h-2">
+                        <div
+                          className="bg-gradient-to-r from-orange-500 to-red-500 h-2 rounded-full transition-all"
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="text-xs font-bold text-slate-700 w-6 text-right">{count}</span>
+                    </div>
+                  )
+                })}
+            </div>
+          </div>
+        )}
+
+        {/* Recent Abandoned - top 5 */}
+        {abandonedCheckouts.length === 0 ? (
+          <div className="text-center py-10">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 mb-3">
+              <ShoppingBag className="h-5 w-5 text-slate-400" />
+            </div>
+            <p className="text-sm text-slate-500">No abandoned checkouts found</p>
+            <p className="text-xs text-slate-400 mt-1">Users who start checkout will appear here</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {abandonedCheckouts.slice(0, 5).map((item, i) => {
+              const stepNames = ["Account", "State & Package", "Business Info", "Owner Info", "Review", "Payment"]
+              const stepName = stepNames[item.lastStep] || "Unknown"
+              const stepColors = ["bg-slate-200 text-slate-700", "bg-blue-100 text-blue-700", "bg-purple-100 text-purple-700", "bg-amber-100 text-amber-700", "bg-orange-100 text-orange-700", "bg-red-100 text-red-700"]
+              const stepColor = stepColors[item.lastStep] || stepColors[0]
+              const timeAgo = (() => {
+                const diff = Date.now() - new Date(item.updatedAt || item.createdAt).getTime()
+                const mins = Math.floor(diff / 60000)
+                if (mins < 60) return `${mins}m ago`
+                const hrs = Math.floor(mins / 60)
+                if (hrs < 24) return `${hrs}h ago`
+                return `${Math.floor(hrs / 24)}d ago`
+              })()
+
+              return (
+                <div key={i} className="flex items-center justify-between p-3 md:p-4 rounded-xl bg-white/60 border border-white/40 hover:bg-white/80 transition-all group">
+                  <div className="flex items-center gap-3 flex-1 min-w-0">
+                    <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500/15 to-red-500/10 flex-shrink-0">
+                      <ShoppingBag className="h-4 w-4 text-orange-600" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <p className="text-sm font-semibold text-slate-900 truncate">
+                          {item.name || item.email || item.businessName || "Anonymous"}
+                        </p>
+                        <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${stepColor} flex-shrink-0`}>
+                          Stopped at: {stepName}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3 mt-0.5">
+                        {item.email && (
+                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                            <Mail className="h-3 w-3" />{item.email}
+                          </span>
+                        )}
+                        {item.phone && (
+                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                            <Phone className="h-3 w-3" />{item.phone}
+                          </span>
+                        )}
+                        {item.state && (
+                          <span className="flex items-center gap-1 text-xs text-slate-500">
+                            <MapPin className="h-3 w-3" />{item.state}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-3">
+                    {item.estimatedTotal > 0 && (
+                      <span className="text-sm font-bold text-slate-800">${item.estimatedTotal.toLocaleString()}</span>
+                    )}
+                    <span className="text-xs text-slate-400">{timeAgo}</span>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* Abandoned Checkouts Full Modal */}
+      <Dialog open={abandonedDrawerOpen} onOpenChange={setAbandonedDrawerOpen}>
+        <DialogContent className="max-w-2xl w-full max-h-[85vh] flex flex-col bg-white/95 backdrop-blur-md">
+          <DialogHeader className="mb-2">
+            <DialogTitle className="text-xl font-bold text-slate-900 flex items-center gap-2">
+              <TrendingDown className="h-5 w-5 text-orange-600" />
+              All Abandoned Checkouts
+            </DialogTitle>
+            <p className="text-sm text-slate-600">
+              {abandonedStats.total} abandoned — ${abandonedStats.potentialRevenue.toLocaleString()} potential revenue lost
+            </p>
+          </DialogHeader>
+
+          {/* Summary Stats inside modal */}
+          <div className="grid grid-cols-3 gap-2 mb-3">
+            <div className="p-3 rounded-xl bg-orange-50 border border-orange-100 text-center">
+              <p className="text-lg font-bold text-orange-700">{abandonedStats.last24h}</p>
+              <p className="text-xs text-orange-600">Last 24h</p>
+            </div>
+            <div className="p-3 rounded-xl bg-amber-50 border border-amber-100 text-center">
+              <p className="text-lg font-bold text-amber-700">{abandonedStats.last7Days}</p>
+              <p className="text-xs text-amber-600">Last 7 Days</p>
+            </div>
+            <div className="p-3 rounded-xl bg-rose-50 border border-rose-100 text-center">
+              <p className="text-lg font-bold text-rose-700">${abandonedStats.potentialRevenue.toLocaleString()}</p>
+              <p className="text-xs text-rose-600">Lost Revenue</p>
+            </div>
+          </div>
+
+          <div className="overflow-y-auto flex-1 space-y-2 pr-1">
+            {abandonedCheckouts.length === 0 ? (
+              <div className="text-center py-12">
+                <ShoppingBag className="h-10 w-10 text-slate-300 mx-auto mb-3" />
+                <p className="text-slate-500 text-sm">No abandoned checkouts found in the last 30 days</p>
+              </div>
+            ) : (
+              abandonedCheckouts.map((item, i) => {
+                const stepNames = ["Account", "State & Package", "Business Info", "Owner Info", "Review", "Payment"]
+                const stepName = stepNames[item.lastStep] || "Unknown"
+                const stepColors = ["bg-slate-100 text-slate-600", "bg-blue-100 text-blue-700", "bg-purple-100 text-purple-700", "bg-amber-100 text-amber-700", "bg-orange-100 text-orange-700", "bg-red-100 text-red-700"]
+                const stepColor = stepColors[item.lastStep] || stepColors[0]
+                const createdDate = new Date(item.createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })
+                const timeAgo = (() => {
+                  const diff = Date.now() - new Date(item.updatedAt || item.createdAt).getTime()
+                  const mins = Math.floor(diff / 60000)
+                  if (mins < 60) return `${mins}m ago`
+                  const hrs = Math.floor(mins / 60)
+                  if (hrs < 24) return `${hrs}h ago`
+                  return `${Math.floor(hrs / 24)}d ago`
+                })()
+
+                return (
+                  <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white transition-all">
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap mb-1">
+                          <p className="text-sm font-semibold text-slate-900">
+                            {item.name || item.businessName || "Anonymous User"}
+                          </p>
+                          <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${stepColor}`}>
+                            {stepName}
+                          </span>
+                          {item.packageType && (
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-[#880000]/10 text-[#880000] font-medium">
+                              {item.packageType}
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
+                          {item.email && (
+                            <span className="flex items-center gap-1 text-xs text-slate-500">
+                              <Mail className="h-3 w-3 flex-shrink-0" />{item.email}
+                            </span>
+                          )}
+                          {item.phone && (
+                            <span className="flex items-center gap-1 text-xs text-slate-500">
+                              <Phone className="h-3 w-3 flex-shrink-0" />{item.phone}
+                            </span>
+                          )}
+                          {item.state && (
+                            <span className="flex items-center gap-1 text-xs text-slate-500">
+                              <MapPin className="h-3 w-3 flex-shrink-0" />{item.state}
+                            </span>
+                          )}
+                          {item.businessName && item.name !== item.businessName && (
+                            <span className="text-xs text-slate-500">Biz: {item.businessName}</span>
+                          )}
+                        </div>
+                        {item.addons && item.addons.length > 0 && (
+                          <div className="flex flex-wrap gap-1 mt-2">
+                            {item.addons.map((addon: string, ai: number) => (
+                              <span key={ai} className="text-xs px-1.5 py-0.5 rounded bg-slate-200 text-slate-600">{addon}</span>
+                            ))}
+                          </div>
+                        )}
+                        <p className="text-xs text-slate-400 mt-2">{createdDate} · Updated {timeAgo}</p>
+                      </div>
+                      <div className="flex flex-col items-end gap-2 flex-shrink-0">
+                        {item.estimatedTotal > 0 && (
+                          <span className="text-base font-bold text-slate-800">${item.estimatedTotal.toLocaleString()}</span>
+                        )}
+                        <div className="flex items-center gap-1">
+                          {Array.from({ length: 6 }, (_, s) => (
+                            <div
+                              key={s}
+                              className={`h-1.5 w-4 rounded-full ${s <= item.lastStep ? "bg-gradient-to-r from-[#880000] to-[#ff0d13]" : "bg-slate-200"}`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-xs text-slate-400">Step {item.lastStep + 1} of 6</span>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* All States Modal */}
       <Dialog open={statesDrawerOpen} onOpenChange={setStatesDrawerOpen}>
