@@ -106,7 +106,7 @@ export default function OrdersPage() {
   const [dataLoading, setDataLoading] = useState(true)
 
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 8
+  const ITEMS_PER_PAGE = 20
 
   const [totalRevenue, setTotalRevenue] = useState(0)
   const [totalOrders, setTotalOrders] = useState(0)
