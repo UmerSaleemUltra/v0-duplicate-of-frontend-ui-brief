@@ -103,7 +103,7 @@ export async function POST(request: NextRequest) {
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.log("[v0] API Error in POST /api/addons/assign:", error)
+    console.log(" API Error in POST /api/addons/assign:", error)
     return NextResponse.json(
       {
         success: false,

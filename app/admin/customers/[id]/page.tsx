@@ -48,10 +48,10 @@ export default function CustomerDetailPage() {
 
   useEffect(() => {
     if (customer) {
-      console.log("[v0] Customer loaded:", customer.name)
-      console.log("[v0] Companies:", companies)
+      console.log(" Customer loaded:", customer.name)
+      console.log(" Companies:", companies)
       companies.forEach((company, index) => {
-        console.log(`[v0] Company ${index + 1}:`, {
+        console.log(` Company ${index + 1}:`, {
           name: company.name,
           ein: company.ein,
           itin: company.itin,
@@ -70,14 +70,14 @@ export default function CustomerDetailPage() {
         return
       }
 
-      console.log("[v0] Loading customer data for ID:", customerId)
+      console.log(" Loading customer data for ID:", customerId)
 
       const userResponse = await fetch(`/api/users/${customerId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
       if (!userResponse.ok) {
-        console.error("[v0] Failed to fetch customer:", userResponse.status)
+        console.error(" Failed to fetch customer:", userResponse.status)
         toast({
           title: "Error",
           description: "Failed to load customer data",
@@ -91,7 +91,7 @@ export default function CustomerDetailPage() {
       const user = userResult.data || userResult
 
       if (!user) {
-        console.error("[v0] User not found in response")
+        console.error(" User not found in response")
         toast({
           title: "Error",
           description: "Customer not found",
@@ -102,7 +102,7 @@ export default function CustomerDetailPage() {
       }
 
       setCustomer(user)
-      console.log("[v0] Customer loaded:", user.email)
+      console.log(" Customer loaded:", user.email)
 
       const timestamp = Date.now()
       const compResponse = await fetch(`/api/companies?_t=${timestamp}`, {
@@ -127,7 +127,7 @@ export default function CustomerDetailPage() {
         })
 
         setCompanies(userCompanies)
-        console.log("[v0] Companies loaded:", userCompanies.length)
+        console.log(" Companies loaded:", userCompanies.length)
 
         const userOrders = userCompanies.flatMap((company: any) => {
           const companyOrders = company.orders || []
@@ -139,10 +139,10 @@ export default function CustomerDetailPage() {
         })
 
         setOrders(userOrders)
-        console.log("[v0] Orders extracted from companies:", userOrders.length)
+        console.log(" Orders extracted from companies:", userOrders.length)
       }
     } catch (error) {
-      console.error("[v0] Error loading customer:", error)
+      console.error(" Error loading customer:", error)
       toast({
         title: "Error",
         description: "Failed to load customer data",
@@ -163,7 +163,7 @@ export default function CustomerDetailPage() {
         return
       }
 
-      console.log("[v0] Saving company:", companyNameInput)
+      console.log(" Saving company:", companyNameInput)
 
       setLoadingCompany(selectedCompany.id)
 
@@ -204,7 +204,7 @@ export default function CustomerDetailPage() {
         throw new Error(response.error || "Failed to update company")
       }
     } catch (error: any) {
-      console.error("[v0] Error saving company:", error)
+      console.error(" Error saving company:", error)
       toast({
         title: "Error",
         description: "Failed to update company information",
@@ -225,7 +225,7 @@ export default function CustomerDetailPage() {
         return
       }
 
-      console.log("[v0] Saving tax details for company:", selectedCompany.id)
+      console.log(" Saving tax details for company:", selectedCompany.id)
 
       setLoadingCompany(selectedCompany.id)
 
@@ -250,7 +250,7 @@ export default function CustomerDetailPage() {
         throw new Error(response.error || "Failed to update tax details")
       }
     } catch (error: any) {
-      console.error("[v0] Error saving tax details:", error)
+      console.error(" Error saving tax details:", error)
       toast({
         title: "Error",
         description: "Failed to update tax information",
@@ -279,7 +279,7 @@ export default function CustomerDetailPage() {
         return
       }
 
-      console.log("[v0] Deleting customer:", customerId)
+      console.log(" Deleting customer:", customerId)
 
       const userResponse = await fetch(`/api/users/${customerId}`, {
         method: "DELETE",
@@ -291,7 +291,7 @@ export default function CustomerDetailPage() {
         throw new Error(errorData.error || "Failed to delete customer")
       }
 
-      console.log("[v0] Customer deleted successfully")
+      console.log(" Customer deleted successfully")
 
       toast({
         title: "Success",
@@ -300,7 +300,7 @@ export default function CustomerDetailPage() {
 
       router.push("/admin/customers")
     } catch (error: any) {
-      console.error("[v0] Error deleting customer:", error)
+      console.error(" Error deleting customer:", error)
       toast({
         title: "Error",
         description: error.message || "Failed to delete customer",
@@ -322,10 +322,10 @@ export default function CustomerDetailPage() {
         })
         return
       }
-      console.log("[v0] Removing EIN for company:", company.id)
+      console.log(" Removing EIN for company:", company.id)
       const response = await ApiClient.companies.update(company.id, { ein: null }, token)
       if (response.success) {
-        console.log("[v0] EIN removed successfully, sending notification")
+        console.log(" EIN removed successfully, sending notification")
         await sendIdNotification(customer.id, company.name, "EIN", "removed", undefined, token)
 
         toast({
@@ -337,7 +337,7 @@ export default function CustomerDetailPage() {
         throw new Error(response.error || "Failed to remove EIN")
       }
     } catch (error) {
-      console.error("[v0] Error removing EIN:", error)
+      console.error(" Error removing EIN:", error)
       toast({
         title: "Error",
         description: "Failed to remove EIN",
@@ -355,11 +355,11 @@ export default function CustomerDetailPage() {
     token?: string,
   ) => {
     if (!token) {
-      console.error("[v0] Cannot send notification: No token provided")
+      console.error(" Cannot send notification: No token provided")
       return
     }
 
-    console.log(`[v0] Attempting to send ${idType} ${action} notification to user ${userId}`)
+    console.log(` Attempting to send ${idType} ${action} notification to user ${userId}`)
 
     try {
       const notificationData = {
@@ -379,19 +379,19 @@ export default function CustomerDetailPage() {
         },
       }
 
-      console.log("[v0] Notification data:", notificationData)
+      console.log(" Notification data:", notificationData)
 
       const response = await ApiClient.notifications.create(notificationData, token)
 
-      console.log("[v0] Notification API response:", response)
+      console.log(" Notification API response:", response)
 
       if (response.success) {
-        console.log(`[v0] ✓ ${idType} ${action} notification sent successfully to user ${userId}`)
+        console.log(` ✓ ${idType} ${action} notification sent successfully to user ${userId}`)
       } else {
-        console.error(`[v0] ✗ Failed to send ${idType} notification:`, response)
+        console.error(` ✗ Failed to send ${idType} notification:`, response)
       }
     } catch (error) {
-      console.error(`[v0] ✗ Error sending ${idType} notification:`, error)
+      console.error(` ✗ Error sending ${idType} notification:`, error)
     }
   }
 

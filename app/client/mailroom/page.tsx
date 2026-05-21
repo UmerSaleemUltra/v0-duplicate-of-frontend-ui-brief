@@ -91,7 +91,7 @@ export default function MailroomPage() {
         localStorage.setItem(`mail_cache_${selectedCompanyId}`, JSON.stringify(normalizedItems))
       } catch { /* ignore */ }
     } catch (error) {
-      console.error("[v0] Error loading mail:", error)
+      console.error(" Error loading mail:", error)
       toast({
         title: "Error Loading Mail",
         description: "Failed to load mail items. Please try again.",
@@ -158,7 +158,7 @@ export default function MailroomPage() {
         description: `Downloading ${mail.attachments.length} file(s)`,
       })
     } catch (error) {
-      console.error("[v0] Download error:", error)
+      console.error(" Download error:", error)
       toast({
         title: "Download Failed",
         description: "Failed to download attachments. Please try again.",
@@ -186,7 +186,7 @@ export default function MailroomPage() {
         description: "Document opened in a new tab",
       })
     } catch (error) {
-      console.error("[v0] View error:", error)
+      console.error(" View error:", error)
       toast({
         title: "View Failed",
         description: "Failed to open document. Please try again.",

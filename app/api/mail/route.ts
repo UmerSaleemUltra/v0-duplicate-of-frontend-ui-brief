@@ -164,7 +164,7 @@ export async function POST(req: NextRequest) {
           subject: mailEmail.subject,
           html: mailEmail.html,
         }).catch((emailError) => {
-          console.log("[v0] Email sending failed (non-critical):", emailError)
+          console.log(" Email sending failed (non-critical):", emailError)
         })
 
         const adminEmail = emailTemplates.adminMailReceived(
@@ -181,11 +181,11 @@ export async function POST(req: NextRequest) {
           subject: adminEmail.subject,
           html: adminEmail.html,
         }).catch((adminEmailError) => {
-          console.log("[v0] Admin email sending failed (non-critical):", adminEmailError)
+          console.log(" Admin email sending failed (non-critical):", adminEmailError)
         })
       }
     } catch (emailError) {
-      console.log("[v0] Error in email notification logic:", emailError)
+      console.log(" Error in email notification logic:", emailError)
     }
 
     return addSecurityHeaders(
@@ -195,7 +195,7 @@ export async function POST(req: NextRequest) {
       }),
     )
   } catch (error) {
-    console.log("[v0] API Error in POST /api/mail:", error)
+    console.log(" API Error in POST /api/mail:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to create mail" }, { status: 500 }))
   }
 }

@@ -45,7 +45,7 @@ export default function CustomersPage() {
       const allUsers = Array.isArray(usersResponse.data) ? usersResponse.data : []
       const allCompanies = Array.isArray(companiesResponse.data) ? companiesResponse.data : []
 
-      console.log("[v0] Loaded customers data:", {
+      console.log(" Loaded customers data:", {
         users: allUsers.length,
         companies: allCompanies.length,
       })
@@ -59,7 +59,7 @@ export default function CustomersPage() {
         }))
       })
 
-      console.log("[v0] Extracted orders from companies:", allOrders.length)
+      console.log(" Extracted orders from companies:", allOrders.length)
 
       const normalizedCompanies = allCompanies.map((c: any) => ({
         ...c,
@@ -102,9 +102,9 @@ export default function CustomersPage() {
       setCustomers(customersWithDetails)
       setFilteredCustomers(customersWithDetails)
 
-      console.log("[v0] Customers loaded successfully:", customersWithDetails.length)
+      console.log(" Customers loaded successfully:", customersWithDetails.length)
     } catch (error) {
-      console.error("[v0] Error loading customers:", error)
+      console.error(" Error loading customers:", error)
       toast({
         title: "Error",
         description: "Failed to load customers",
@@ -149,7 +149,7 @@ export default function CustomersPage() {
 
       await ApiClient.users.delete(customerId, token)
 
-      console.log("[v0] Customer deleted successfully:", customerId)
+      console.log(" Customer deleted successfully:", customerId)
 
       toast({
         title: "Success",
@@ -158,7 +158,7 @@ export default function CustomersPage() {
 
       loadCustomers()
     } catch (error) {
-      console.error("[v0] Error deleting customer:", error)
+      console.error(" Error deleting customer:", error)
       toast({
         title: "Error",
         description: "Failed to delete customer",

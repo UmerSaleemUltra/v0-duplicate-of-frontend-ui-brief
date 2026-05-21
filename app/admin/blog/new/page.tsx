@@ -67,7 +67,7 @@ export default function NewBlogPost() {
         toast.error(data.error || "Failed to upload image")
       }
     } catch (error) {
-      console.error("[v0] Error uploading image:", error)
+      console.error(" Error uploading image:", error)
       toast.error("Error uploading image")
     } finally {
       setUploading(false)

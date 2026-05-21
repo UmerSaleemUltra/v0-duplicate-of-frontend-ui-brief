@@ -376,7 +376,7 @@ export default function OrderDetailPage() {
         description: `Successfully added "${newMilestone.title}"`,
       })
     } catch (error) {
-      console.log("[v0] Error adding custom milestone:", error)
+      console.log(" Error adding custom milestone:", error)
       toast({
         title: "Add Failed",
         description: "Failed to add custom milestone. Please try again.",
@@ -464,7 +464,7 @@ export default function OrderDetailPage() {
               }),
             })
           } catch (emailErr) {
-            console.log("[v0] Error sending milestone email:", emailErr)
+            console.log(" Error sending milestone email:", emailErr)
           }
         }
 
@@ -490,12 +490,12 @@ export default function OrderDetailPage() {
               }),
             })
           } catch (notifErr) {
-            console.log("[v0] Error sending milestone notification:", notifErr)
+            console.log(" Error sending milestone notification:", notifErr)
           }
         }
       }
     } catch (error) {
-      console.log("[v0] Error updating custom milestone:", error)
+      console.log(" Error updating custom milestone:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update custom milestone. Please try again.",
@@ -552,7 +552,7 @@ export default function OrderDetailPage() {
         description: "Custom milestone has been removed successfully",
       })
     } catch (error) {
-      console.log("[v0] Error deleting custom milestone:", error)
+      console.log(" Error deleting custom milestone:", error)
       toast({
         title: "Delete Failed",
         description: "Failed to delete custom milestone. Please try again.",
@@ -579,7 +579,7 @@ export default function OrderDetailPage() {
         return
       }
 
-      console.log("[v0] Loading order data for ID:", orderId)
+      console.log(" Loading order data for ID:", orderId)
 
       const response = await fetch(`/api/orders/${orderId}`, {
         headers: {
@@ -602,7 +602,7 @@ export default function OrderDetailPage() {
         throw new Error("Order data not found")
       }
 
-      console.log("[v0] Order data loaded successfully:", orderData)
+      console.log(" Order data loaded successfully:", orderData)
 
       setOrder(orderData)
       setCompany(orderData.company)
@@ -631,7 +631,7 @@ export default function OrderDetailPage() {
       })
 
       if (orderData.company?.milestones) {
-        console.log("[v0] Initializing milestones from company data:", orderData.company.milestones)
+        console.log(" Initializing milestones from company data:", orderData.company.milestones)
         setMilestones({
           orderSuccessfullyProcessed: orderData.company.milestones.orderSuccessfullyProcessed || false,
           registeredAgentAssigned: orderData.company.milestones.registeredAgentAssigned || false,
@@ -654,7 +654,7 @@ export default function OrderDetailPage() {
 
       if (orderData.company?.registeredAgent) {
         const agent = orderData.company.registeredAgent
-        console.log("[v0] Pre-populating registered agent form:", agent)
+        console.log(" Pre-populating registered agent form:", agent)
         setAgentForm({
           name: agent.name || "",
           company: agent.company || "",
@@ -670,7 +670,7 @@ export default function OrderDetailPage() {
 
       if (orderData.company?.mailingAddress) {
         const address = orderData.company.mailingAddress
-        console.log("[v0] Pre-populating mailing address form:", address)
+        console.log(" Pre-populating mailing address form:", address)
         setMailingAddress({
           street: address.street || "",
           city: address.city || "",
@@ -698,7 +698,7 @@ export default function OrderDetailPage() {
       setNewStatus(orderData.status || "")
       setError(null)
     } catch (error) {
-      console.error("[v0] Error loading order:", error)
+      console.error(" Error loading order:", error)
       setError(error instanceof Error ? error.message : "Failed to load order")
       toast({
         title: "Error",
@@ -757,7 +757,7 @@ export default function OrderDetailPage() {
         description: `Order status changed to ${newStatus}`,
       })
     } catch (error) {
-      console.log("[v0] Error updating status:", error)
+      console.log(" Error updating status:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update order status. Please try again.",
@@ -778,7 +778,7 @@ export default function OrderDetailPage() {
     if (!isTogglingOn && company.id) {
       const celebrationKey = `celebration_shown_${company.id}`
       localStorage.removeItem(celebrationKey)
-      console.log("[v0] Cleared celebration flag - milestone toggled off")
+      console.log(" Cleared celebration flag - milestone toggled off")
     }
 
     // Optimistic update - immediately update UI
@@ -800,7 +800,7 @@ export default function OrderDetailPage() {
         return
       }
 
-      console.log("[v0] Updating milestone:", milestone, "to:", isTogglingOn)
+      console.log(" Updating milestone:", milestone, "to:", isTogglingOn)
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -822,14 +822,14 @@ export default function OrderDetailPage() {
 
       const result = await response.json()
 
-      console.log("[v0] Milestone update successful:", result.data)
+      console.log(" Milestone update successful:", result.data)
 
       if (result.data?.milestones) {
         setMilestones(result.data.milestones)
         setCompany(result.data)
       } else {
         // If API doesn't return milestones, keep optimistic state
-        console.log("[v0] API didn't return milestones, keeping optimistic state")
+        console.log(" API didn't return milestones, keeping optimistic state")
       }
 
       toast({
@@ -837,7 +837,7 @@ export default function OrderDetailPage() {
         description: `${milestone} has been ${isTogglingOn ? "completed" : "uncompleted"}`,
       })
     } catch (error) {
-      console.error("[v0] Error updating milestone:", error)
+      console.error(" Error updating milestone:", error)
       // Revert to previous state on error
       setMilestones(previousMilestones)
       toast({
@@ -942,7 +942,7 @@ export default function OrderDetailPage() {
         }
       }
     } catch (error) {
-      console.log("[v0] Error uploading document:", error)
+      console.log(" Error uploading document:", error)
       toast({
         title: "Upload Failed",
         description: error instanceof Error ? error.message : "Failed to upload document. Please try again.",
@@ -1040,7 +1040,7 @@ export default function OrderDetailPage() {
 
     setAgentUpdating(true)
     try {
-      console.log("[v0] Assigning registered agent:", agentForm)
+      console.log(" Assigning registered agent:", agentForm)
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -1073,7 +1073,7 @@ export default function OrderDetailPage() {
       const result = await response.json()
       const updatedCompany = result.data || result.company
 
-      console.log("[v0] Registered agent assigned successfully:", updatedCompany.registeredAgent)
+      console.log(" Registered agent assigned successfully:", updatedCompany.registeredAgent)
 
       setCompany(updatedCompany)
       setMilestones(updatedCompany.milestones || milestones)
@@ -1084,7 +1084,7 @@ export default function OrderDetailPage() {
         description: "Registered agent has been successfully assigned to the company",
       })
     } catch (error) {
-      console.error("[v0] Error assigning registered agent:", error)
+      console.error(" Error assigning registered agent:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to assign registered agent. Please try again.",
@@ -1143,7 +1143,7 @@ export default function OrderDetailPage() {
 
     setAddressUpdating(true)
     try {
-      console.log("[v0] Assigning mailing address:", mailingAddress)
+      console.log(" Assigning mailing address:", mailingAddress)
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -1170,7 +1170,7 @@ export default function OrderDetailPage() {
       const result = await response.json()
       const updatedCompany = result.data || result.company
 
-      console.log("[v0] Mailing address assigned successfully:", updatedCompany.mailingAddress)
+      console.log(" Mailing address assigned successfully:", updatedCompany.mailingAddress)
 
       setCompany(updatedCompany)
       setMilestones(updatedCompany.milestones || milestones)
@@ -1181,7 +1181,7 @@ export default function OrderDetailPage() {
         description: "Mailing address has been successfully assigned to the company",
       })
     } catch (error) {
-      console.error("[v0] Error assigning mailing address:", error)
+      console.error(" Error assigning mailing address:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to assign mailing address. Please try again.",
@@ -1204,7 +1204,7 @@ export default function OrderDetailPage() {
 
     setEinUpdating(true)
     try {
-      console.log("[v0] Assigning EIN:", einValue)
+      console.log(" Assigning EIN:", einValue)
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -1222,7 +1222,7 @@ export default function OrderDetailPage() {
       const result = await response.json()
       const updatedCompany = result.data || result.company
 
-      console.log("[v0] EIN assigned successfully")
+      console.log(" EIN assigned successfully")
 
       setCompany(updatedCompany)
       setMilestones(updatedCompany.milestones || milestones)
@@ -1234,7 +1234,7 @@ export default function OrderDetailPage() {
         description: "EIN has been successfully assigned to the company",
       })
     } catch (error) {
-      console.error("[v0] Error assigning EIN:", error)
+      console.error(" Error assigning EIN:", error)
       toast({
         title: "Error",
         description: "Failed to assign EIN. Please try again.",
@@ -1309,7 +1309,7 @@ export default function OrderDetailPage() {
         description: `ITIN has been successfully assigned to ${memberName || "the member"}`,
       })
     } catch (error) {
-      console.error("[v0] Error assigning ITIN:", error)
+      console.error(" Error assigning ITIN:", error)
       toast({
         title: "Error",
         description: "Failed to assign ITIN. Please try again.",
@@ -1332,7 +1332,7 @@ export default function OrderDetailPage() {
 
     setBusinessIdUpdating(true)
     try {
-      console.log("[v0] Assigning Business ID:", businessIdValue)
+      console.log(" Assigning Business ID:", businessIdValue)
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -1350,7 +1350,7 @@ export default function OrderDetailPage() {
       const result = await response.json()
       const updatedCompany = result.data || result.company
 
-      console.log("[v0] Business ID assigned successfully")
+      console.log(" Business ID assigned successfully")
 
       setCompany(updatedCompany)
       setMilestones(updatedCompany.milestones || milestones)
@@ -1362,7 +1362,7 @@ export default function OrderDetailPage() {
         description: "Business ID has been successfully assigned to the company",
       })
     } catch (error) {
-      console.error("[v0] Error assigning Business ID:", error)
+      console.error(" Error assigning Business ID:", error)
       toast({
         title: "Error",
         description: "Failed to assign Business ID. Please try again.",
@@ -1409,7 +1409,7 @@ export default function OrderDetailPage() {
         description: `${field} has been updated`,
       })
     } catch (error) {
-      console.log("[v0] Error updating company info:", error)
+      console.log(" Error updating company info:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update company info. Please try again.",
@@ -1419,10 +1419,10 @@ export default function OrderDetailPage() {
   }
 
   const handleDeleteOrder = async () => {
-    console.log("[v0] Delete order initiated", { orderId: order?.id, companyId: company?.id })
+    console.log(" Delete order initiated", { orderId: order?.id, companyId: company?.id })
 
     if (!order?.id || !company?.id) {
-      console.log("[v0] Delete failed - missing IDs", { orderId: order?.id, companyId: company?.id })
+      console.log(" Delete failed - missing IDs", { orderId: order?.id, companyId: company?.id })
       toast({
         title: "Error",
         description: "Cannot delete order - missing order or company ID",
@@ -1436,7 +1436,7 @@ export default function OrderDetailPage() {
       const token = authService.getToken()
       if (!token) throw new Error("No authentication token")
 
-      console.log("[v0] Sending delete request to API", {
+      console.log(" Sending delete request to API", {
         url: `/api/companies/${company.id}/orders/${order.id}`,
       })
 
@@ -1447,16 +1447,16 @@ export default function OrderDetailPage() {
         },
       })
 
-      console.log("[v0] Delete response status:", response.status)
+      console.log(" Delete response status:", response.status)
 
       if (!response.ok) {
         const error = await response.json()
-        console.log("[v0] Delete error response:", error)
+        console.log(" Delete error response:", error)
         throw new Error(error.error || "Failed to delete order")
       }
 
       const result = await response.json()
-      console.log("[v0] Delete successful:", result)
+      console.log(" Delete successful:", result)
 
       toast({
         title: "Success",
@@ -1469,7 +1469,7 @@ export default function OrderDetailPage() {
         router.push("/admin/orders")
       }
     } catch (err: any) {
-      console.error("[v0] Delete error:", err)
+      console.error(" Delete error:", err)
       toast({
         title: "Error",
         description: err.message || "Failed to delete order",
@@ -1572,7 +1572,7 @@ export default function OrderDetailPage() {
       // Reload order data to reflect changes, especially for ITIN if updated
       fetchOrderData()
     } catch (err: any) {
-      console.error("[v0] Tax update error:", err)
+      console.error(" Tax update error:", err)
       toast({
         title: "Error",
         description: err.message || "Failed to update tax information",
@@ -1630,7 +1630,7 @@ export default function OrderDetailPage() {
 
       await loadOrderData()
     } catch (error) {
-      console.error("[v0] Error updating company status:", error)
+      console.error(" Error updating company status:", error)
       toast({
         title: "Update Failed",
         description: error instanceof Error ? error.message : "Failed to update company status",
@@ -1687,7 +1687,7 @@ export default function OrderDetailPage() {
 
       await loadOrderData()
     } catch (error) {
-      console.error("[v0] Error updating registered agent status:", error)
+      console.error(" Error updating registered agent status:", error)
       toast({
         title: "Update Failed",
         description: error instanceof Error ? error.message : "Failed to update registered agent status",
@@ -1744,7 +1744,7 @@ export default function OrderDetailPage() {
 
       await loadOrderData()
     } catch (error) {
-      console.error("[v0] Error updating business address status:", error)
+      console.error(" Error updating business address status:", error)
       toast({
         title: "Update Failed",
         description: error instanceof Error ? error.message : "Failed to update business address status",
@@ -1800,7 +1800,7 @@ export default function OrderDetailPage() {
 
       await loadOrderData()
     } catch (error) {
-      console.error("[v0] Error updating service status:", error)
+      console.error(" Error updating service status:", error)
       toast({
         title: "Update Failed",
         description: error instanceof Error ? error.message : "Failed to update service status",
@@ -1998,7 +1998,7 @@ export default function OrderDetailPage() {
 
     setEinUpdating(true)
     try {
-      console.log("[v0] Removing EIN")
+      console.log(" Removing EIN")
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -2020,7 +2020,7 @@ export default function OrderDetailPage() {
       const result = await response.json()
       const updatedCompany = result.data || result.company
 
-      console.log("[v0] EIN removed successfully")
+      console.log(" EIN removed successfully")
 
       setCompany(updatedCompany)
       setMilestones(updatedCompany.milestones || { ...milestones, einObtained: false })
@@ -2032,7 +2032,7 @@ export default function OrderDetailPage() {
 
       await loadOrderData()
     } catch (error) {
-      console.error("[v0] Error removing EIN:", error)
+      console.error(" Error removing EIN:", error)
       toast({
         title: "Error",
         description: "Failed to remove EIN. Please try again.",
@@ -2048,7 +2048,7 @@ export default function OrderDetailPage() {
 
     setItinUpdating(true)
     try {
-      console.log("[v0] Removing ITIN")
+      console.log(" Removing ITIN")
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -2066,7 +2066,7 @@ export default function OrderDetailPage() {
       const result = await response.json()
       const updatedCompany = result.data || result.company
 
-      console.log("[v0] ITIN removed successfully")
+      console.log(" ITIN removed successfully")
 
       setCompany(updatedCompany)
 
@@ -2077,7 +2077,7 @@ export default function OrderDetailPage() {
 
       await loadOrderData()
     } catch (error) {
-      console.error("[v0] Error removing ITIN:", error)
+      console.error(" Error removing ITIN:", error)
       toast({
         title: "Error",
         description: "Failed to remove ITIN. Please try again.",
@@ -2093,7 +2093,7 @@ export default function OrderDetailPage() {
 
     setBusinessIdUpdating(true)
     try {
-      console.log("[v0] Removing Business ID")
+      console.log(" Removing Business ID")
 
       const response = await fetch(`/api/companies/${company.id}`, {
         method: "PUT",
@@ -2115,7 +2115,7 @@ export default function OrderDetailPage() {
       const result = await response.json()
       const updatedCompany = result.data || result.company
 
-      console.log("[v0] Business ID removed successfully")
+      console.log(" Business ID removed successfully")
 
       setCompany(updatedCompany)
       setMilestones(updatedCompany.milestones || { ...milestones, companyFormationCompleted: false })
@@ -2127,7 +2127,7 @@ export default function OrderDetailPage() {
 
       await loadOrderData()
     } catch (error) {
-      console.error("[v0] Error removing Business ID:", error)
+      console.error(" Error removing Business ID:", error)
       toast({
         title: "Error",
         description: "Failed to remove Business ID. Please try again.",
@@ -2596,7 +2596,7 @@ export default function OrderDetailPage() {
         description: "Customer information has been successfully updated.",
       })
     } catch (error) {
-      console.error("[v0] Error saving customer info:", error)
+      console.error(" Error saving customer info:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update customer information. Please try again.",
@@ -2649,7 +2649,7 @@ export default function OrderDetailPage() {
         description: "Company information has been successfully updated.",
       })
     } catch (error) {
-      console.error("[v0] Error saving company info:", error)
+      console.error(" Error saving company info:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update company information. Please try again.",

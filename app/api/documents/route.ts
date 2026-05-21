@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
       }),
     )
   } catch (error) {
-    console.log("[v0] API Error in POST /api/documents:", error)
+    console.log(" API Error in POST /api/documents:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to upload document" }, { status: 500 }))
   }
 }

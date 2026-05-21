@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
 
     const total = await collection.countDocuments(query)
 
-    console.log("[v0] Fetched", posts.length, "blog posts")
+    console.log(" Fetched", posts.length, "blog posts")
 
     return NextResponse.json({
       success: true,
@@ -48,7 +48,7 @@ export async function GET(request: NextRequest) {
       },
     })
   } catch (error) {
-    console.error("[v0] Error fetching blog posts:", error)
+    console.error(" Error fetching blog posts:", error)
     return NextResponse.json(
       { success: false, error: error instanceof Error ? error.message : "Failed to fetch blog posts" },
       { status: 500 },

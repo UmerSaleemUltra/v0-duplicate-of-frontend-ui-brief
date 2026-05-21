@@ -43,7 +43,7 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
         return
       }
 
-      console.log("[v0] Fetching document:", resolvedParams.id)
+      console.log(" Fetching document:", resolvedParams.id)
 
       const response = await fetch(`/api/documents/${resolvedParams.id}`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -54,7 +54,7 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
       }
 
       const result = await response.json()
-      console.log("[v0] Document loaded:", result)
+      console.log(" Document loaded:", result)
 
       const doc = result.data || result
       setDocument(doc)
@@ -71,7 +71,7 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
         }
       }
     } catch (error) {
-      console.error("[v0] Error loading document:", error)
+      console.error(" Error loading document:", error)
     } finally {
       setLoading(false)
     }

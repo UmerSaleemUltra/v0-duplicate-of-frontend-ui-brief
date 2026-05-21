@@ -111,7 +111,7 @@ export async function POST(request: NextRequest) {
 
         receiptUrl = uploadResult.url
       } catch (uploadError) {
-        console.error("[v0] Failed to upload receipt file:", uploadError)
+        console.error(" Failed to upload receipt file:", uploadError)
         return NextResponse.json(
           { success: false, error: "Failed to upload receipt file" },
           { status: 500 },
@@ -231,7 +231,7 @@ export async function POST(request: NextRequest) {
       }
 
       const notificationResult = await db.collection("notifications").insertOne(newNotification)
-      console.log("[v0] Addon purchase notification created:", notificationResult.insertedId)
+      console.log(" Addon purchase notification created:", notificationResult.insertedId)
       
       // Broadcast notification to all connected clients
       broadcastUpdate("notifications", "created", {
@@ -239,7 +239,7 @@ export async function POST(request: NextRequest) {
         ...newNotification,
       })
       
-      console.log("[v0] Notification broadcast sent")
+      console.log(" Notification broadcast sent")
 
       // Send admin notification
       try {
@@ -259,13 +259,13 @@ export async function POST(request: NextRequest) {
             subject: adminAddonEmail.subject,
             html: adminAddonEmail.html,
           })
-          console.log("[v0] Admin addon purchase notification sent successfully")
+          console.log(" Admin addon purchase notification sent successfully")
         }
       } catch (adminEmailError) {
-        console.error("[v0] Admin addon purchase notification failed:", adminEmailError)
+        console.error(" Admin addon purchase notification failed:", adminEmailError)
       }
     } catch (notificationError) {
-      console.error("[v0] Failed to create notification:", notificationError)
+      console.error(" Failed to create notification:", notificationError)
       // Continue anyway - notification failure shouldn't block the purchase
     }
 
@@ -281,7 +281,7 @@ export async function POST(request: NextRequest) {
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.error("[v0] API Error in POST /api/addons/purchase:", error)
+    console.error(" API Error in POST /api/addons/purchase:", error)
     return NextResponse.json(
       {
         success: false,

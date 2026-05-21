@@ -334,7 +334,7 @@ export default function ClientDashboard() {
               )
             }
           } catch (error) {
-            console.error("[v0] Error sending completion notification:", error)
+            console.error(" Error sending completion notification:", error)
           }
         }
 
@@ -523,7 +523,7 @@ export default function ClientDashboard() {
           router.push("/admin")
           return
         } catch (error) {
-          console.error("[v0] Error restoring admin session:", error)
+          console.error(" Error restoring admin session:", error)
         }
       }
 
@@ -545,7 +545,7 @@ export default function ClientDashboard() {
       setCopiedState(true)
       setTimeout(() => setCopiedState(false), 2000)
     } catch (error) {
-      console.error("[v0] Failed to copy to clipboard:", error)
+      console.error(" Failed to copy to clipboard:", error)
       alert("Failed to copy. Please try again.")
     }
   }

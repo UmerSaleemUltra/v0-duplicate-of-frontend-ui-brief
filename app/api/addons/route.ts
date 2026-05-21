@@ -137,7 +137,7 @@ export async function GET(request: NextRequest) {
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.log("[v0] API Error in GET /api/addons:", error)
+    console.log(" API Error in GET /api/addons:", error)
     return NextResponse.json({ success: false, error: "Failed to fetch addons" }, { status: 500 })
   }
 }
@@ -277,7 +277,7 @@ export async function POST(request: NextRequest) {
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.log("[v0] API Error in POST /api/addons:", error)
+    console.log(" API Error in POST /api/addons:", error)
     return NextResponse.json(
       {
         success: false,
@@ -353,7 +353,7 @@ export async function PUT(request: NextRequest) {
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.log("[v0] API Error in PUT /api/addons:", error)
+    console.log(" API Error in PUT /api/addons:", error)
     return NextResponse.json(
       {
         success: false,
@@ -405,7 +405,7 @@ export async function DELETE(request: NextRequest) {
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.log("[v0] API Error in DELETE /api/addons:", error)
+    console.log(" API Error in DELETE /api/addons:", error)
     return NextResponse.json(
       {
         success: false,

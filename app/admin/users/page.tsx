@@ -270,10 +270,10 @@ export default function UsersPage() {
 
   const handleLoginAsUser = async (user: User) => {
     try {
-      console.log("[v0] Starting login as user process:", user.email)
+      console.log(" Starting login as user process:", user.email)
 
       if (!authService || typeof authService.getToken !== "function") {
-        console.error("[v0] authService not properly initialized")
+        console.error(" authService not properly initialized")
         toast({
           title: "Error",
           description: "Authentication service error. Please refresh the page.",
@@ -285,7 +285,7 @@ export default function UsersPage() {
       const token = authService.getToken()
 
       if (!token) {
-        console.log("[v0] No admin token found")
+        console.log(" No admin token found")
         toast({
           title: "Error",
           description: "Authentication required. Please log in again.",
@@ -298,7 +298,7 @@ export default function UsersPage() {
       const adminData = authService.getCurrentUser()
 
       if (!adminData) {
-        console.log("[v0] No admin user data found")
+        console.log(" No admin user data found")
         toast({
           title: "Error",
           description: "Admin session expired. Please log in again.",
@@ -309,7 +309,7 @@ export default function UsersPage() {
       }
 
       if (!user.id || !user.name || !user.email) {
-        console.log("[v0] Invalid user data:", user)
+        console.log(" Invalid user data:", user)
         toast({
           title: "Error",
           description: "Invalid user data. Cannot access account.",
@@ -325,7 +325,7 @@ export default function UsersPage() {
           sessionStorage.setItem("impersonating_user_id", user.id)
           sessionStorage.setItem("impersonating_user_name", user.name)
           sessionStorage.setItem("impersonating_user_email", user.email)
-          console.log("[v0] Session storage set successfully")
+          console.log(" Session storage set successfully")
 
           // Create a client user object and set it in authService
           const clientUser = {
@@ -337,9 +337,9 @@ export default function UsersPage() {
 
           // Use the admin token but set the user as client
           authService.setAuth(token, clientUser)
-          console.log("[v0] Auth context updated to client user")
+          console.log(" Auth context updated to client user")
         } catch (storageError) {
-          console.error("[v0] Failed to set session storage:", storageError)
+          console.error(" Failed to set session storage:", storageError)
           toast({
             title: "Error",
             description: "Failed to initialize admin mode. Please try again.",
@@ -349,7 +349,7 @@ export default function UsersPage() {
         }
       }
 
-      console.log("[v0] Admin accessing user account:", user.name, user.id)
+      console.log(" Admin accessing user account:", user.name, user.id)
 
       toast({
         title: "Logged in as User",
@@ -360,7 +360,7 @@ export default function UsersPage() {
         window.location.href = "/client/dashboard"
       }, 100)
     } catch (error) {
-      console.error("[v0] Error logging in as user:", error)
+      console.error(" Error logging in as user:", error)
       toast({
         title: "Error",
         description: "Failed to login as user. Please try again.",

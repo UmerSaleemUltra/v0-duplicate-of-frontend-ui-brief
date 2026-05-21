@@ -71,9 +71,9 @@ export async function GET(req: NextRequest) {
       .limit(200)
       .toArray()
 
-    console.log(`[v0] GET /api/companies - Found ${companies.length} companies`)
+    console.log(` GET /api/companies - Found ${companies.length} companies`)
     console.log(
-      `[v0] Sample company data:`,
+      ` Sample company data:`,
       companies[0]
         ? {
             id: companies[0]._id.toString(),
@@ -135,7 +135,7 @@ export async function GET(req: NextRequest) {
     response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60")
     return addSecurityHeaders(response)
   } catch (error) {
-    console.error("[v0] GET /api/companies error:", error)
+    console.error(" GET /api/companies error:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch companies" }, { status: 500 }))
   }
 }
@@ -145,11 +145,11 @@ export async function POST(req: NextRequest) {
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
-    console.log("[v0] POST /api/companies - Auth header present:", !!authHeader)
-    console.log("[v0] POST /api/companies - Token extracted:", !!token)
+    console.log(" POST /api/companies - Auth header present:", !!authHeader)
+    console.log(" POST /api/companies - Token extracted:", !!token)
 
     if (!token || token.trim() === "") {
-      console.log("[v0] POST /api/companies - REJECTED: No token provided")
+      console.log(" POST /api/companies - REJECTED: No token provided")
       return addSecurityHeaders(
         NextResponse.json(
           {
@@ -163,7 +163,7 @@ export async function POST(req: NextRequest) {
 
     const decoded = verifyToken(token)
     if (!decoded || !decoded.userId) {
-      console.log("[v0] POST /api/companies - REJECTED: Invalid or expired token")
+      console.log(" POST /api/companies - REJECTED: Invalid or expired token")
       return addSecurityHeaders(
         NextResponse.json(
           {
@@ -175,7 +175,7 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    console.log("[v0] POST /api/companies - Authenticated user:", decoded.userId, "Role:", decoded.role)
+    console.log(" POST /api/companies - Authenticated user:", decoded.userId, "Role:", decoded.role)
 
     const body = await req.json()
 
@@ -302,7 +302,7 @@ export async function POST(req: NextRequest) {
 
     const createdCompany = { id: companyId, ...newCompany }
 
-    console.log("[v0] POST /api/companies - Company created successfully:", companyId, "for user:", decoded.userId)
+    console.log(" POST /api/companies - Company created successfully:", companyId, "for user:", decoded.userId)
 
     broadcastUpdate("companies", "created", createdCompany)
 
@@ -338,7 +338,7 @@ export async function POST(req: NextRequest) {
 
         broadcastUpdate("notifications", "created", { userId: decoded.userId })
       } catch (notificationError) {
-        console.error("[v0] Error sending welcome notification:", notificationError)
+        console.error(" Error sending welcome notification:", notificationError)
       }
     }
 
@@ -379,14 +379,14 @@ export async function POST(req: NextRequest) {
             subject: emailTemplate.subject,
             html: emailTemplate.html,
           })
-          console.log("[v0] Order confirmation email sent to:", user.email)
+          console.log(" Order confirmation email sent to:", user.email)
         }
 
         // Send admin notification
         try {
-          console.log("[v0] Starting admin email send for new company order:", companyId)
+          console.log(" Starting admin email send for new company order:", companyId)
           const adminEmail = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
-          console.log("[v0] Admin email configured as:", adminEmail)
+          console.log(" Admin email configured as:", adminEmail)
           
           const adminOrderEmail = emailTemplates.adminNewOrder(
             user?.name || "Customer",
@@ -396,7 +396,7 @@ export async function POST(req: NextRequest) {
             companyId,
             user?.email || "Unknown",
           )
-          console.log("[v0] Admin email template created:", adminOrderEmail.subject)
+          console.log(" Admin email template created:", adminOrderEmail.subject)
           
           const adminEmailResult = await sendEmail({
             to: adminEmail,
@@ -404,20 +404,20 @@ export async function POST(req: NextRequest) {
             html: adminOrderEmail.html,
           })
           
-          console.log("[v0] Admin notification email result:", adminEmailResult)
+          console.log(" Admin notification email result:", adminEmailResult)
           if (!adminEmailResult?.success) {
-            console.error("[v0] Admin email failed:", adminEmailResult?.error)
+            console.error(" Admin email failed:", adminEmailResult?.error)
           } else {
-            console.log("[v0] Admin email sent successfully to:", adminEmail)
+            console.log(" Admin email sent successfully to:", adminEmail)
           }
         } catch (adminEmailError) {
-          console.error("[v0] Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
-          console.error("[v0] Admin email full error:", adminEmailError)
+          console.error(" Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
+          console.error(" Admin email full error:", adminEmailError)
         }
 
         broadcastUpdate("notifications", "created", { userId: decoded.userId, companyId })
       } catch (orderError) {
-        console.error("[v0] Error sending order notification/email:", orderError)
+        console.error(" Error sending order notification/email:", orderError)
       }
     }
 
@@ -428,7 +428,7 @@ export async function POST(req: NextRequest) {
       }),
     )
   } catch (error: any) {
-    console.error("[v0] POST /api/companies error:", error)
+    console.error(" POST /api/companies error:", error)
     return addSecurityHeaders(
       NextResponse.json(
         {

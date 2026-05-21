@@ -88,7 +88,7 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
   ]
 
   const handleSaveProgress = () => {
-    console.log("[v0] Checkout: Saving progress at step:", currentStep)
+    console.log(" Checkout: Saving progress at step:", currentStep)
     const result = saveProgress()
     setSaveMessage(result.message)
 

@@ -155,13 +155,13 @@ export default function OrdersPage() {
         const companiesData = await companiesResponse.json()
         const ordersData = await ordersResponse.json()
 
-        console.log("[v0] Orders API Response:", ordersData)
+        console.log(" Orders API Response:", ordersData)
         
         const allUsers = usersData.data || usersData || []
         const allCompanies = companiesData.data || companiesData || []
         const apiOrders = ordersData.data || ordersData || []
         
-        console.log("[v0] Loaded orders count:", apiOrders.length)
+        console.log(" Loaded orders count:", apiOrders.length)
 
         // Use orders from API or fallback to extracting from companies
         let allOrders = apiOrders.length > 0 
@@ -177,7 +177,7 @@ export default function OrdersPage() {
               }))
             })
         
-        console.log("[v0] All orders after merge:", allOrders.length)
+        console.log(" All orders after merge:", allOrders.length)
 
         // Normalize order IDs and ensure required fields exist
         allOrders = allOrders.map((order: any) => ({
@@ -349,7 +349,7 @@ export default function OrdersPage() {
         description: `Exported ${filteredOrders.length} orders to CSV`,
       })
     } catch (error) {
-      console.error("[v0] Export error:", error)
+      console.error(" Export error:", error)
       toast({
         title: "Error",
         description: "Failed to export orders",
@@ -473,7 +473,7 @@ export default function OrdersPage() {
       setOrders(sortedOrders)
       setFilteredOrders(sortedOrders)
     } catch (error: any) {
-      console.error("[v0] Delete error:", error)
+      console.error(" Delete error:", error)
       toast({
         title: "Error",
         description: error.message || "Failed to delete order",

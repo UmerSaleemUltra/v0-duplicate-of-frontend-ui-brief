@@ -184,7 +184,7 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
 
         window.location.href = "/admin/users"
       } catch (error) {
-        console.error("[v0] Error exiting admin mode:", error)
+        console.error(" Error exiting admin mode:", error)
         authService.logout()
         router.push("/login")
       }

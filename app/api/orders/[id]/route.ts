@@ -11,10 +11,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
   try {
     const { id } = await params
 
-    console.log("[v0] GET /api/orders/[id] - Order ID:", id)
+    console.log(" GET /api/orders/[id] - Order ID:", id)
 
     if (!id || typeof id !== "string" || id.trim() === "") {
-      console.log("[v0] Invalid order ID format")
+      console.log(" Invalid order ID format")
       return addSecurityHeaders(NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 }))
     }
 
@@ -23,7 +23,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       try {
         validateObjectId(id, "Order ID")
       } catch (validationError) {
-        console.log("[v0] ObjectId validation failed:", validationError)
+        console.log(" ObjectId validation failed:", validationError)
         return addSecurityHeaders(NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 }))
       }
     }
@@ -32,20 +32,20 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     const token = authHeader?.replace("Bearer ", "")
 
     if (!token) {
-      console.log("[v0] No auth token provided")
+      console.log(" No auth token provided")
       return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
     }
 
     const decoded = verifyToken(token)
     if (!decoded) {
-      console.log("[v0] Invalid token")
+      console.log(" Invalid token")
       return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
     }
 
-    console.log("[v0] Auth verified for user:", decoded.userId, "role:", decoded.role)
+    console.log(" Auth verified for user:", decoded.userId, "role:", decoded.role)
 
     const { db } = await connectDB()
-    console.log("[v0] Database connected")
+    console.log(" Database connected")
 
     let orderDoc = null
     let orderSource = null
@@ -54,14 +54,14 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       orderDoc = await db.collection("orders").findOne({ _id: new ObjectId(id) })
       if (orderDoc) {
         orderSource = "orders collection"
-        console.log("[v0] Order found in orders collection")
+        console.log(" Order found in orders collection")
       }
     } catch (error) {
-      console.log("[v0] Error searching orders collection:", error)
+      console.log(" Error searching orders collection:", error)
     }
 
     if (!orderDoc) {
-      console.log("[v0] Order not found in orders collection, searching companies...")
+      console.log(" Order not found in orders collection, searching companies...")
       try {
         // Search for embedded order by string ID first
         let companyWithOrder = await db.collection("companies").findOne({
@@ -98,7 +98,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         if (companyWithOrder && companyWithOrder.orders) {
-          console.log("[v0] Found company with embedded orders:", companyWithOrder._id.toString())
+          console.log(" Found company with embedded orders:", companyWithOrder._id.toString())
 
           const embeddedOrder = companyWithOrder.orders.find((order: any) => {
             const orderId = order._id?.toString() || order.id?.toString() || order.id
@@ -106,7 +106,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           })
 
           if (embeddedOrder) {
-            console.log("[v0] Found embedded order in company")
+            console.log(" Found embedded order in company")
             orderSource = "embedded in companies collection"
             orderDoc = {
               ...embeddedOrder,
@@ -117,12 +117,12 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           }
         }
       } catch (error) {
-        console.log("[v0] Error searching companies collection:", error)
+        console.log(" Error searching companies collection:", error)
       }
     }
 
     if (!orderDoc) {
-      console.log("[v0] Order not found in either collection")
+      console.log(" Order not found in either collection")
       return addSecurityHeaders(
         NextResponse.json(
           {
@@ -134,10 +134,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       )
     }
 
-    console.log("[v0] Order found:", orderDoc._id?.toString() || orderDoc.id, "from", orderSource)
+    console.log(" Order found:", orderDoc._id?.toString() || orderDoc.id, "from", orderSource)
 
     if (decoded.role !== "admin" && orderDoc.userId?.toString() !== decoded.userId) {
-      console.log("[v0] Access forbidden - user:", decoded.userId, "order user:", orderDoc.userId?.toString())
+      console.log(" Access forbidden - user:", decoded.userId, "order user:", orderDoc.userId?.toString())
       return addSecurityHeaders(NextResponse.json({ error: "Forbidden" }, { status: 403 }))
     }
 
@@ -193,7 +193,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
         }
       }
     } catch (error) {
-      console.log("[v0] Error fetching company data:", error)
+      console.log(" Error fetching company data:", error)
     }
 
     try {
@@ -282,10 +282,10 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
     return addSecurityHeaders(NextResponse.json(result))
   } catch (error) {
-    console.log("[v0] Error in order GET:", error)
+    console.log(" Error in order GET:", error)
     if (error instanceof Error) {
-      console.log("[v0] Error message:", error.message)
-      console.log("[v0] Error stack:", error.stack)
+      console.log(" Error message:", error.message)
+      console.log(" Error stack:", error.stack)
       return addSecurityHeaders(
         NextResponse.json(
           {
@@ -307,7 +307,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     try {
       validateObjectId(id, "Order ID")
     } catch (validationError) {
-      console.log("[v0] ObjectId validation failed in PUT:", validationError)
+      console.log(" ObjectId validation failed in PUT:", validationError)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid Order ID format" }, { status: 400 }))
     }
 
@@ -346,14 +346,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           order = embeddedOrder
           isEmbeddedOrder = true
           companyId = company._id
-          console.log("[v0] Found embedded order in company:", company._id.toString())
+          console.log(" Found embedded order in company:", company._id.toString())
           break
         }
       }
     }
 
     if (!order) {
-      console.log("[v0] Order not found in PUT:", id)
+      console.log(" Order not found in PUT:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
@@ -411,11 +411,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             if (user) {
               const completionEmail = emailTemplates.orderCompleted(user.name, company.name)
               await sendEmail({ to: user.email, subject: completionEmail.subject, html: completionEmail.html })
-              console.log("[v0] Sent order completion email to:", user.email)
+              console.log(" Sent order completion email to:", user.email)
             }
           }
         } catch (emailError) {
-          console.log("[v0] Error sending order completion email (non-critical):", emailError)
+          console.log(" Error sending order completion email (non-critical):", emailError)
         }
       }
     }
@@ -458,7 +458,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       )
 
       if (!updatedCompany) {
-        console.log("[v0] Update by _id failed, trying by id field")
+        console.log(" Update by _id failed, trying by id field")
         updatedCompany = await db.collection("companies").findOneAndUpdate(
           { _id: companyIdObj },
           {
@@ -502,7 +502,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     if (!result) {
-      console.log("[v0] Update operation returned no result")
+      console.log(" Update operation returned no result")
       return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
     }
 
@@ -519,10 +519,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }),
     )
   } catch (error) {
-    console.log("[v0] PUT Error:", error)
+    console.log(" PUT Error:", error)
     if (error instanceof Error) {
-      console.log("[v0] Error details:", error.message)
-      console.log("[v0] Error stack:", error.stack)
+      console.log(" Error details:", error.message)
+      console.log(" Error stack:", error.stack)
     }
     return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
   }
@@ -602,7 +602,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
           companyIdObj = order.companyId
         }
       } catch (conversionError) {
-        console.log("[v0] Error converting companyId:", conversionError)
+        console.log(" Error converting companyId:", conversionError)
       }
     }
 
@@ -620,9 +620,9 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
         ])
 
         await db.collection("companies").deleteOne({ _id: companyIdObj })
-        console.log("[v0] Successfully deleted related company data")
+        console.log(" Successfully deleted related company data")
       } catch (deleteError) {
-        console.log("[v0] Error deleting related data (non-critical):", deleteError)
+        console.log(" Error deleting related data (non-critical):", deleteError)
       }
     }
 
@@ -642,7 +642,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       }),
     )
   } catch (error) {
-    console.error("[v0] DELETE ERROR:", error)
+    console.error(" DELETE ERROR:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to delete order" }, { status: 500 }))
   }
 }

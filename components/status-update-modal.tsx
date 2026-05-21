@@ -30,7 +30,7 @@ export function StatusUpdateModal({ open, onOpenChange, title, currentStatus, on
       await onUpdate(selectedStatus)
       onOpenChange(false)
     } catch (error) {
-      console.error("[v0] Error updating status:", error)
+      console.error(" Error updating status:", error)
     } finally {
       setLoading(false)
     }

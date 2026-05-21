@@ -53,12 +53,12 @@ export default function UserDetailPage() {
     try {
       const token = authService.getToken()
       if (!token) {
-        console.log("[v0] No auth token found")
+        console.log(" No auth token found")
         router.push("/login")
         return
       }
 
-      console.log("[v0] Loading user data for ID:", params.id)
+      console.log(" Loading user data for ID:", params.id)
 
       const timestamp = Date.now()
       const [userResponse, compResponse, docsResponse] = await Promise.allSettled([
@@ -78,7 +78,7 @@ export default function UserDetailPage() {
 
       if (userResponse.status === "fulfilled" && userResponse.value.ok) {
         const userResult = await userResponse.value.json()
-        console.log("[v0] User API response:", userResult)
+        console.log(" User API response:", userResult)
 
         const userData = userResult.data || userResult
 
@@ -87,10 +87,10 @@ export default function UserDetailPage() {
             ...userData,
             id: userData.id || userData._id || params.id,
           }
-          console.log("[v0] User loaded successfully:", normalizedUser.email)
+          console.log(" User loaded successfully:", normalizedUser.email)
           setUser(normalizedUser)
         } else {
-          console.log("[v0] Invalid user data structure:", userData)
+          console.log(" Invalid user data structure:", userData)
           toast({
             title: "Error",
             description: "User not found or invalid data",
@@ -101,7 +101,7 @@ export default function UserDetailPage() {
         }
       } else {
         console.log(
-          "[v0] User API failed:",
+          " User API failed:",
           userResponse.status === "fulfilled" ? userResponse.value.status : "rejected",
         )
         toast({
@@ -120,7 +120,7 @@ export default function UserDetailPage() {
           return normalizeId(c.userId) === normalizeId(params.id)
         })
         setCompanies(userCompanies)
-        console.log("[v0] Companies loaded:", userCompanies.length)
+        console.log(" Companies loaded:", userCompanies.length)
 
         const userOrders = userCompanies.flatMap((company: any) => {
           const companyOrders = company.orders || []
@@ -132,9 +132,9 @@ export default function UserDetailPage() {
         })
 
         setOrders(userOrders)
-        console.log("[v0] Orders extracted from companies:", userOrders.length)
+        console.log(" Orders extracted from companies:", userOrders.length)
       } else {
-        console.log("[v0] Failed to load companies")
+        console.log(" Failed to load companies")
       }
 
       if (docsResponse.status === "fulfilled" && docsResponse.value.ok) {
@@ -145,10 +145,10 @@ export default function UserDetailPage() {
         })
         setDocuments(userDocs)
       } else {
-        console.log("[v0] Failed to load documents")
+        console.log(" Failed to load documents")
       }
     } catch (error) {
-      console.log("[v0] Error loading user details:", error)
+      console.log(" Error loading user details:", error)
       toast({
         title: "Error",
         description: "Failed to load user details",
@@ -209,7 +209,7 @@ export default function UserDetailPage() {
       try {
         requestBody = JSON.stringify(companyEdits)
       } catch (jsonError) {
-        console.log("[v0] JSON serialization error:", jsonError)
+        console.log(" JSON serialization error:", jsonError)
         throw new Error("Failed to process company data")
       }
 
@@ -236,7 +236,7 @@ export default function UserDetailPage() {
       setCompanyEdits({})
       loadData()
     } catch (error) {
-      console.log("[v0] Error updating company:", error)
+      console.log(" Error updating company:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to update company",
@@ -269,7 +269,7 @@ export default function UserDetailPage() {
         return
       }
 
-      console.log("[v0] Changing password for user:", params.id)
+      console.log(" Changing password for user:", params.id)
 
       const response = await fetch(`/api/users/${params.id}`, {
         method: "PUT",
@@ -282,7 +282,7 @@ export default function UserDetailPage() {
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.log("[v0] Password change failed:", response.status, errorText)
+        console.log(" Password change failed:", response.status, errorText)
 
         let errorMessage = "Failed to change password"
         try {
@@ -296,7 +296,7 @@ export default function UserDetailPage() {
       }
 
       const result = await response.json()
-      console.log("[v0] Password changed successfully:", result)
+      console.log(" Password changed successfully:", result)
 
       toast({
         title: "Success",
@@ -306,7 +306,7 @@ export default function UserDetailPage() {
       setShowPasswordDialog(false)
       setNewPassword("")
     } catch (error) {
-      console.error("[v0] Error changing password:", error)
+      console.error(" Error changing password:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to change password",

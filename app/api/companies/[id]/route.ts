@@ -84,7 +84,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       }),
     )
   } catch (error) {
-    console.log("[v0] Error fetching company:", error)
+    console.log(" Error fetching company:", error)
     if (error instanceof Error) {
       return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch company" }, { status: 500 }))
     }
@@ -169,7 +169,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
     if (body.milestones) {
       console.log(
-        "[v0] Milestone update request - Company:",
+        " Milestone update request - Company:",
         company.name,
         "Old milestones:",
         company.milestones,
@@ -215,7 +215,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
 
       for (const [key, config] of Object.entries(milestoneMap)) {
         if (!oldMilestones[key] && newMilestones[key]) {
-          console.log("[v0] Milestone completed:", key, "-", config.title)
+          console.log(" Milestone completed:", key, "-", config.title)
           try {
             await db.collection("notifications").insertOne({
               userId: company.userId,
@@ -246,17 +246,17 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 if (emailTemplateFunc) {
                   const milestoneEmail = emailTemplateFunc(user.name, company.name)
                   await sendEmail({ to: user.email, subject: milestoneEmail.subject, html: milestoneEmail.html })
-                  console.log("[v0] Sent milestone email:", config.emailTemplate)
+                  console.log(" Sent milestone email:", config.emailTemplate)
                 }
               }
             } catch (emailError) {
-              console.log("[v0] Error sending milestone email (non-critical):", emailError)
+              console.log(" Error sending milestone email (non-critical):", emailError)
             }
           } catch (notifError) {
-            console.log("[v0] Error creating milestone notification:", notifError)
+            console.log(" Error creating milestone notification:", notifError)
           }
         } else if (oldMilestones[key] && !newMilestones[key]) {
-          console.log("[v0] Milestone uncompleted:", key, "-", config.title)
+          console.log(" Milestone uncompleted:", key, "-", config.title)
           try {
             await db.collection("notifications").deleteMany({
               userId: company.userId,
@@ -265,7 +265,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               "metadata.milestoneName": key,
             })
           } catch (deleteError) {
-            console.log("[v0] Error deleting milestone notification:", deleteError)
+            console.log(" Error deleting milestone notification:", deleteError)
           }
         }
       }
@@ -280,7 +280,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     if (body.milestones) {
-      console.log("[v0] Milestone update completed successfully. Updated milestones:", result.milestones)
+      console.log(" Milestone update completed successfully. Updated milestones:", result.milestones)
     }
 
     const updatedCompany = { id: result._id.toString(), ...result }
@@ -294,7 +294,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }),
     )
   } catch (error) {
-    console.error("[v0] Error updating company:", error)
+    console.error(" Error updating company:", error)
     if (error instanceof Error) {
       return addSecurityHeaders(NextResponse.json({ error: "Failed to update company" }, { status: 500 }))
     }

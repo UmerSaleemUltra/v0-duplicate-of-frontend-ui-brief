@@ -66,7 +66,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     broadcastUpdate("companies", "updated", updatedCompany)
 
-    console.log(`[v0] Admin updated ${statusType} to ${statusValue} for company:`, company.name)
+    console.log(` Admin updated ${statusType} to ${statusValue} for company:`, company.name)
 
     return addSecurityHeaders(
       NextResponse.json({
@@ -75,7 +75,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       }),
     )
   } catch (error) {
-    console.error("[v0] Error updating company status:", error)
+    console.error(" Error updating company status:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to update status" }, { status: 500 }))
   }
 }

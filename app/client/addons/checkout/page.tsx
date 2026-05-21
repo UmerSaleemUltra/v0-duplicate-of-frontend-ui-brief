@@ -82,7 +82,7 @@ function AddonCheckoutContent() {
           router.push("/client/addons")
         }
       } catch (error) {
-        console.error("[v0] Error fetching addon:", error)
+        console.error(" Error fetching addon:", error)
         toast({
           title: "Error",
           description: error instanceof Error ? error.message : "Failed to load addon",
@@ -208,7 +208,7 @@ function AddonCheckoutContent() {
             }),
           })
         } catch (emailError) {
-          console.error("[v0] Failed to send email:", emailError)
+          console.error(" Failed to send email:", emailError)
         }
 
         try {
@@ -234,7 +234,7 @@ function AddonCheckoutContent() {
             }),
           })
         } catch (notifError) {
-          console.error("[v0] Failed to create notification:", notifError)
+          console.error(" Failed to create notification:", notifError)
         }
       }
 
@@ -245,7 +245,7 @@ function AddonCheckoutContent() {
 
       router.push("/client/company")
     } catch (error) {
-      console.error("[v0] Error purchasing addon:", error)
+      console.error(" Error purchasing addon:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to submit payment. Please try again.",

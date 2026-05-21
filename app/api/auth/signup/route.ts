@@ -67,17 +67,17 @@ export async function POST(request: NextRequest) {
 
     // Send welcome email (non-blocking)
     const welcomeTemplate = emailTemplates.welcome(sanitizedName)
-    console.log("[v0] Attempting to send welcome email to:", email)
+    console.log(" Attempting to send welcome email to:", email)
     sendEmail({
       to: email,
       subject: welcomeTemplate.subject,
       html: welcomeTemplate.html,
     })
       .then((result) => {
-        console.log("[v0] Welcome email result:", result)
+        console.log(" Welcome email result:", result)
       })
       .catch((error) => {
-        console.error("[v0] Welcome email failed:", error)
+        console.error(" Welcome email failed:", error)
       })
 
     const { password: _, ...userWithoutPassword } = newUser

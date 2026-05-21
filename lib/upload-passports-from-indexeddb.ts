@@ -6,34 +6,34 @@ export async function uploadPassportsFromIndexedDB(
   userId: string,
   companyId?: string,
 ): Promise<Member[]> {
-  console.log("\n[v0] === PASSPORT UPLOAD PROCESS START ===")
-  console.log("[v0] Members to process:", members.length)
-  console.log("[v0] User ID:", userId)
-  console.log("[v0] Company ID:", companyId || "none (pre-account creation)")
+  console.log("\n === PASSPORT UPLOAD PROCESS START ===")
+  console.log(" Members to process:", members.length)
+  console.log(" User ID:", userId)
+  console.log(" Company ID:", companyId || "none (pre-account creation)")
 
   try {
     // Get all stored files from IndexedDB/localStorage
     const storedFiles = await getAllFilesFromIndexedDB()
-    console.log(`[v0] Retrieved ${storedFiles.length} stored files`)
+    console.log(` Retrieved ${storedFiles.length} stored files`)
 
     if (storedFiles.length === 0) {
-      console.log("[v0] ⚠️ No files found in storage")
+      console.log(" ⚠️ No files found in storage")
       return members
     }
 
     const uploadResults = await Promise.allSettled(
       members.map(async (member, index) => {
-        console.log(`\n[v0] Processing member ${index + 1}/${members.length}:`, member.name)
-        console.log("[v0] Member passport IndexedDB ID:", member.passportIndexedDBId)
+        console.log(`\n Processing member ${index + 1}/${members.length}:`, member.name)
+        console.log(" Member passport IndexedDB ID:", member.passportIndexedDBId)
 
         const storedFile = storedFiles.find((sf) => sf.id === member.passportIndexedDBId)
 
         if (!storedFile) {
-          console.log(`[v0] ⚠️ No stored file found for member ${member.name}`)
+          console.log(` ⚠️ No stored file found for member ${member.name}`)
           return member
         }
 
-        console.log(`[v0] Found file for ${member.name}:`, {
+        console.log(` Found file for ${member.name}:`, {
           fileName: storedFile.file.name,
           fileSize: storedFile.file.size,
           fileType: storedFile.file.type,
@@ -41,7 +41,7 @@ export async function uploadPassportsFromIndexedDB(
 
         try {
           if (!userId || userId === "undefined" || userId === "null") {
-            console.error(`[v0] ❌ Invalid userId for member ${member.name}`)
+            console.error(` ❌ Invalid userId for member ${member.name}`)
             throw new Error("Invalid userId - account must be created first")
           }
 
@@ -57,7 +57,7 @@ export async function uploadPassportsFromIndexedDB(
           formData.append("memberId", member.id || `member_${index}`)
           formData.append("memberName", member.name || "Unknown Member")
 
-          console.log(`[v0] Uploading passport for ${member.name}...`)
+          console.log(` Uploading passport for ${member.name}...`)
 
           const response = await fetch("/api/passports/upload", {
             method: "POST",
@@ -70,17 +70,17 @@ export async function uploadPassportsFromIndexedDB(
           try {
             result = JSON.parse(responseText)
           } catch (e) {
-            console.error(`[v0] ❌ Failed to parse response for ${member.name}:`, responseText)
+            console.error(` ❌ Failed to parse response for ${member.name}:`, responseText)
             throw new Error(`Server returned invalid JSON: ${responseText}`)
           }
 
           if (!response.ok) {
-            console.error(`[v0] ❌ Upload failed for ${member.name}:`, result)
+            console.error(` ❌ Upload failed for ${member.name}:`, result)
             throw new Error(result.error || `Upload failed with status ${response.status}`)
           }
 
-          console.log(`[v0] ✅ Passport uploaded successfully for ${member.name}`)
-          console.log("[v0] Upload result:", result)
+          console.log(` ✅ Passport uploaded successfully for ${member.name}`)
+          console.log(" Upload result:", result)
 
           // Return member with updated passport URLs
           return {
@@ -90,7 +90,7 @@ export async function uploadPassportsFromIndexedDB(
             passportId: result.data?.id,
           }
         } catch (error) {
-          console.error(`[v0] ❌ Error uploading passport for ${member.name}:`, error)
+          console.error(` ❌ Error uploading passport for ${member.name}:`, error)
           throw error
         }
       }),
@@ -111,21 +111,21 @@ export async function uploadPassportsFromIndexedDB(
       }
     })
 
-    console.log(`\n[v0] Upload complete: ${updatedMembers.length - failedUploads.length}/${members.length} successful`)
+    console.log(`\n Upload complete: ${updatedMembers.length - failedUploads.length}/${members.length} successful`)
 
     if (failedUploads.length > 0) {
-      console.error("[v0] ❌ Failed uploads:", failedUploads)
+      console.error(" ❌ Failed uploads:", failedUploads)
       throw new Error(`Failed to upload ${failedUploads.length} passport(s). Please check the console for details.`)
     }
 
     // Clear storage after successful upload
     await clearAllFilesFromIndexedDB()
-    console.log("[v0] ✅ Storage cleared after successful upload")
+    console.log(" ✅ Storage cleared after successful upload")
 
-    console.log("[v0] === PASSPORT UPLOAD PROCESS COMPLETE ===\n")
+    console.log(" === PASSPORT UPLOAD PROCESS COMPLETE ===\n")
     return updatedMembers
   } catch (error) {
-    console.error("[v0] ❌ Fatal error in passport upload process:", error)
+    console.error(" ❌ Fatal error in passport upload process:", error)
     throw error
   }
 }

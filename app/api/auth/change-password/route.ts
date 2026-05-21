@@ -70,7 +70,7 @@ export const POST = requireAuth(async (request: NextRequest, user) => {
         html: emailTemplate.html,
       })
     } catch (emailError) {
-      console.error("[v0] Password change email failed:", emailError)
+      console.error(" Password change email failed:", emailError)
       // Don't fail the password change if email fails
     }
 

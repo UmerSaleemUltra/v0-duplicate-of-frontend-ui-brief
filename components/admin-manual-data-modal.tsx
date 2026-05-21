@@ -58,7 +58,7 @@ export function AdminManualDataModal({
       onUpdate()
       onOpenChange(false)
     } catch (error) {
-      console.error("[v0] Error updating manual data:", error)
+      console.error(" Error updating manual data:", error)
       toast({
         title: "Error",
         description: "Failed to update data",

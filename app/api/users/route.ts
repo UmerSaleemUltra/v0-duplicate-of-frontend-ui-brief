@@ -83,7 +83,7 @@ export async function GET(req: NextRequest) {
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.error("[v0] Error fetching users:", error)
+    console.error(" Error fetching users:", error)
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
   }
 }
@@ -156,7 +156,7 @@ export async function POST(req: NextRequest) {
 
     const result = await db.collection("users").insertOne(newUser)
 
-    console.log("[v0] User created:", result.insertedId.toString())
+    console.log(" User created:", result.insertedId.toString())
 
     broadcast("user_created", {
       id: result.insertedId.toString(),
@@ -180,7 +180,7 @@ export async function POST(req: NextRequest) {
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.error("[v0] Error creating user:", error)
+    console.error(" Error creating user:", error)
     return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
   }
 }

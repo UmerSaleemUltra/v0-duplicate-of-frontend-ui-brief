@@ -100,7 +100,7 @@ export default function DocumentsPage() {
 
   const handleDownload = async (doc: any) => {
     try {
-      console.log("[v0] Starting download for:", doc.title)
+      console.log(" Starting download for:", doc.title)
       const token = authService.getToken()
 
       if (!token) {
@@ -116,7 +116,7 @@ export default function DocumentsPage() {
         // Download all files using API proxy
         for (const fileInfo of doc.fileUrls) {
           if (!fileInfo.id && !doc.id) {
-            console.error("[v0] Missing document ID for file:", fileInfo.name)
+            console.error(" Missing document ID for file:", fileInfo.name)
             continue
           }
 
@@ -140,7 +140,7 @@ export default function DocumentsPage() {
       } else {
         // Single file download using API proxy
         if (!doc.id) {
-          console.error("[v0] Document ID not available for:", doc.title)
+          console.error(" Document ID not available for:", doc.title)
           toast({
             title: "Download Failed",
             description: "Document ID not available.",
@@ -165,7 +165,7 @@ export default function DocumentsPage() {
         })
       }
     } catch (error) {
-      console.error("[v0] Download error:", error)
+      console.error(" Download error:", error)
       toast({
         title: "Download Failed",
         description: "Failed to download document. Please try again.",

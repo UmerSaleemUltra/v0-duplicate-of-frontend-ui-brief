@@ -95,7 +95,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }),
     )
   } catch (error) {
-    console.error("[v0] Error updating order:", error)
+    console.error(" Error updating order:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
   }
 }
@@ -120,7 +120,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 
     const { id, orderId } = await params
 
-    console.log("[v0] DELETE order - Company ID:", id, "Order ID:", orderId)
+    console.log(" DELETE order - Company ID:", id, "Order ID:", orderId)
 
     const { db } = await connectDB()
 
@@ -128,13 +128,13 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     try {
       companyObjectId = new ObjectId(id)
     } catch (error) {
-      console.error("[v0] Invalid company ID format:", id)
+      console.error(" Invalid company ID format:", id)
       return addSecurityHeaders(NextResponse.json({ error: "Invalid company ID format" }, { status: 400 }))
     }
 
     const company = await db.collection("companies").findOne({ _id: companyObjectId })
 
-    console.log("[v0] Company found:", company ? "Yes" : "No", company?._id?.toString())
+    console.log(" Company found:", company ? "Yes" : "No", company?._id?.toString())
 
     if (!company) {
       return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
@@ -143,14 +143,14 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const orders = company.orders || []
     const orderToDelete = orders.find((order: any) => order.id === orderId)
 
-    console.log("[v0] Order found in company:", orderToDelete ? "Yes" : "No")
+    console.log(" Order found in company:", orderToDelete ? "Yes" : "No")
 
     if (!orderToDelete) {
       return addSecurityHeaders(NextResponse.json({ error: "Order not found" }, { status: 404 }))
     }
 
     if (orders.length === 1) {
-      console.log("[v0] Deleting company because it has only one order")
+      console.log(" Deleting company because it has only one order")
 
       await db.collection("companies").deleteOne({ _id: companyObjectId })
 
@@ -194,7 +194,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       }),
     )
   } catch (error) {
-    console.error("[v0] Error deleting order:", error)
+    console.error(" Error deleting order:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to delete order" }, { status: 500 }))
   }
 }

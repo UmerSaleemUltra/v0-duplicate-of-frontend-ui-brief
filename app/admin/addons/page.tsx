@@ -197,7 +197,7 @@ export default function AdminAddonsPage() {
         })
       }
     } catch (error) {
-      console.error("[v0] Error saving addon:", error)
+      console.error(" Error saving addon:", error)
       toast({
         title: "Error",
         description: error instanceof Error ? error.message : "Failed to save addon",

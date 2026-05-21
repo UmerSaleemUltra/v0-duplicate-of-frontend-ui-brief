@@ -19,22 +19,22 @@ const transporter = nodemailer.createTransport(EMAIL_CONFIG)
 let isVerified = false
 transporter.verify((error, success) => {
   if (error) {
-    console.error("[v0] Email transport verification failed:", error)
+    console.error(" Email transport verification failed:", error)
   } else {
     isVerified = true
-    console.log("[v0] Email transport verified successfully")
+    console.log(" Email transport verified successfully")
   }
 })
 
 export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
   try {
     if (!to || !subject || !html) {
-      console.error("[v0] Missing required email parameters:", { to: !!to, subject: !!subject, html: !!html })
+      console.error(" Missing required email parameters:", { to: !!to, subject: !!subject, html: !!html })
       return { success: false, error: "Missing email parameters" }
     }
 
-    console.log("[v0] Sending email to:", to, "| Subject:", subject)
-    console.log("[v0] Email config:", {
+    console.log(" Sending email to:", to, "| Subject:", subject)
+    console.log(" Email config:", {
       host: EMAIL_CONFIG.host,
       port: EMAIL_CONFIG.port,
       user: EMAIL_CONFIG.auth.user,
@@ -48,10 +48,10 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
       html,
     })
 
-    console.log("[v0] Email sent successfully:", info.messageId)
+    console.log(" Email sent successfully:", info.messageId)
     return { success: true, messageId: info.messageId }
   } catch (error: any) {
-    console.error("[v0] Email send error details:", {
+    console.error(" Email send error details:", {
       message: error.message,
       code: error.code,
       command: error.command,
@@ -63,16 +63,16 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
 
 export async function sendAdminEmail({ subject, html }: { subject: string; html: string }) {
   const adminEmail = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
-  console.log("[v0] Sending admin email to:", adminEmail, "| Subject:", subject)
+  console.log(" Sending admin email to:", adminEmail, "| Subject:", subject)
   return sendEmail({ to: adminEmail, subject, html })
 }
 
 export async function sendUserEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
   if (!to) {
-    console.error("[v0] sendUserEmail: No recipient email provided")
+    console.error(" sendUserEmail: No recipient email provided")
     return { success: false, error: "No recipient email provided" }
   }
-  console.log("[v0] Sending user email to:", to, "| Subject:", subject)
+  console.log(" Sending user email to:", to, "| Subject:", subject)
   return sendEmail({ to, subject, html })
 }
 

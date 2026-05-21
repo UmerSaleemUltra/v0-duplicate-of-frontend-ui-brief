@@ -406,14 +406,14 @@ Notes: ${mail.notes || "None"}
       const token = authService.getToken()
       if (!token) throw new Error("No auth token")
 
-      console.log("[v0] Updating mail item:", mailToEdit.id)
-      console.log("[v0] Has file:", !!editFile)
+      console.log(" Updating mail item:", mailToEdit.id)
+      console.log(" Has file:", !!editFile)
 
       let response
 
       if (editFile) {
         // Update with file using FormData
-        console.log("[v0] Updating with file using FormData")
+        console.log(" Updating with file using FormData")
         const formData = new FormData()
         formData.append("file", editFile)
         formData.append("subject", editSubject)
@@ -430,7 +430,7 @@ Notes: ${mail.notes || "None"}
         })
       } else {
         // Update without file using JSON
-        console.log("[v0] Updating without file using JSON")
+        console.log(" Updating without file using JSON")
         const updateData = {
           subject: editSubject,
           from: editFrom,
@@ -448,16 +448,16 @@ Notes: ${mail.notes || "None"}
         })
       }
 
-      console.log("[v0] Response status:", response.status)
+      console.log(" Response status:", response.status)
 
       if (!response.ok) {
         const errorText = await response.text()
-        console.error("[v0] Mail update failed:", response.status, errorText)
+        console.error(" Mail update failed:", response.status, errorText)
         throw new Error(`Mail update failed with status ${response.status}`)
       }
 
       const updatedMail = await response.json()
-      console.log("[v0] Mail updated successfully:", updatedMail)
+      console.log(" Mail updated successfully:", updatedMail)
 
       setMailItems(
         mailItems.map((item) =>
@@ -480,9 +480,9 @@ Notes: ${mail.notes || "None"}
         description: editFile ? "Mail and document have been updated" : "Mail details have been updated",
       })
 
-      console.log("[v0] Mail item updated successfully")
+      console.log(" Mail item updated successfully")
     } catch (error) {
-      console.error("[v0] Error updating mail:", error)
+      console.error(" Error updating mail:", error)
       toast({
         title: "Update Failed",
         description: "Failed to update mail item. Please try again.",

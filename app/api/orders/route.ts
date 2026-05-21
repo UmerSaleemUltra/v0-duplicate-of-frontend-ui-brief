@@ -149,7 +149,7 @@ export async function POST(req: NextRequest) {
         },
       )
     } catch (milestoneError) {
-      console.log("[v0] Failed to mark first milestone complete:", milestoneError)
+      console.log(" Failed to mark first milestone complete:", milestoneError)
     }
 
     try {
@@ -158,7 +158,7 @@ export async function POST(req: NextRequest) {
         .findOne({ _id: new ObjectId(decoded.userId) }, { projection: { name: 1, email: 1 } })
 
       if (user) {
-        console.log("[v0] Attempting to send order confirmation email to:", user.email)
+        console.log(" Attempting to send order confirmation email to:", user.email)
         const orderEmail = emailTemplates.orderConfirmation(
           user.name,
           companyName,
@@ -172,18 +172,18 @@ export async function POST(req: NextRequest) {
           subject: orderEmail.subject,
           html: orderEmail.html,
         })
-        console.log("[v0] Order confirmation email result:", emailResult)
+        console.log(" Order confirmation email result:", emailResult)
         if (!emailResult?.success) {
-          console.error("[v0] User email failed with result:", emailResult)
+          console.error(" User email failed with result:", emailResult)
         } else {
-          console.log("[v0] User email sent successfully to:", user.email)
+          console.log(" User email sent successfully to:", user.email)
         }
 
         // Send admin notification
         try {
-          console.log("[v0] Starting admin email send for order:", orderId)
+          console.log(" Starting admin email send for order:", orderId)
           const adminEmail = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
-          console.log("[v0] Admin email configured as:", adminEmail)
+          console.log(" Admin email configured as:", adminEmail)
           
           const adminOrderEmail = emailTemplates.adminNewOrder(
             user.name || "Customer",
@@ -193,28 +193,28 @@ export async function POST(req: NextRequest) {
             orderId,
             user.email,
           )
-          console.log("[v0] Admin email template created:", adminOrderEmail.subject)
+          console.log(" Admin email template created:", adminOrderEmail.subject)
           
           const adminEmailResult = await sendAdminEmail({
             subject: adminOrderEmail.subject,
             html: adminOrderEmail.html,
           })
           
-          console.log("[v0] Admin notification email result:", adminEmailResult)
+          console.log(" Admin notification email result:", adminEmailResult)
           if (!adminEmailResult?.success) {
-            console.error("[v0] Admin email failed:", adminEmailResult?.error)
+            console.error(" Admin email failed:", adminEmailResult?.error)
           } else {
-            console.log("[v0] Admin email sent successfully to:", adminEmail)
+            console.log(" Admin email sent successfully to:", adminEmail)
           }
         } catch (adminEmailError) {
-          console.error("[v0] Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
-          console.error("[v0] Admin email full error:", adminEmailError)
+          console.error(" Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
+          console.error(" Admin email full error:", adminEmailError)
         }
       } else {
-        console.log("[v0] User not found for email notification:", decoded.userId)
+        console.log(" User not found for email notification:", decoded.userId)
       }
     } catch (emailError) {
-      console.error("[v0] Order confirmation email failed:", emailError)
+      console.error(" Order confirmation email failed:", emailError)
     }
 
     try {

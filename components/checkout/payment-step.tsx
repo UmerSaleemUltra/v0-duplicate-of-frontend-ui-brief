@@ -90,7 +90,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
     setIsSubmitting(true)
 
     try {
-      console.log("[v0] ========== PAYMENT SUBMISSION STARTED ==========")
+      console.log(" ========== PAYMENT SUBMISSION STARTED ==========")
 
       if (paymentMethod === "already_paid") {
         if (!whatsappPhone.trim()) {
@@ -114,11 +114,11 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         }
       }
 
-      console.log("[v0] ✅ Payment information validated")
+      console.log(" ✅ Payment information validated")
       setShowValidationError(false)
 
-      console.log("\n[v0] === PAYMENT SUBMISSION START ===")
-      console.log("[v0] Checkout data:", data)
+      console.log("\n === PAYMENT SUBMISSION START ===")
+      console.log(" Checkout data:", data)
 
       let userId = data.userId
       let currentToken = authService.getToken()
@@ -149,7 +149,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       }
 
       if (!userId || !currentToken) {
-        console.log("[v0] No userId or token found, creating/logging in account...")
+        console.log(" No userId or token found, creating/logging in account...")
 
         const email = data.email?.trim()
         const password = data.password?.trim()
@@ -160,7 +160,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           throw new Error("Email and password are required")
         }
 
-        console.log("[v0] Step 1: Creating/logging in account for:", email)
+        console.log(" Step 1: Creating/logging in account for:", email)
 
         const signupResponse = await fetch("/api/auth/signup", {
           method: "POST",
@@ -172,7 +172,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
         if (!signupResponse.ok) {
           if (signupData.error?.includes("already exists") || signupData.error?.includes("already registered")) {
-            console.log("[v0] Email exists, attempting login...")
+            console.log(" Email exists, attempting login...")
             const loginResponse = await fetch("/api/auth/login", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -185,7 +185,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
               throw new Error(loginData.error || "Login failed after signup error")
             }
 
-            console.log("[v0] ✅ Login successful")
+            console.log(" ✅ Login successful")
             currentToken = loginData.data.token
             userId = loginData.data.user.id
 
@@ -199,7 +199,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             throw new Error(signupData.error || "Account creation failed")
           }
         } else {
-          console.log("[v0] ✅ Account created successfully")
+          console.log(" ✅ Account created successfully")
           currentToken = signupData.data.token
           userId = signupData.data.user.id
 
@@ -214,34 +214,34 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         const updatedData = { ...data, userId }
         saveCheckoutData(updatedData)
 
-        console.log("[v0] User ID set to:", userId)
+        console.log(" User ID set to:", userId)
       }
 
       if (!userId) {
-        console.error("[v0] ❌ Failed to retrieve userId after authentication")
+        console.error(" ❌ Failed to retrieve userId after authentication")
         throw new Error("User ID is missing - authentication may have failed. Please refresh and try again.")
       }
 
-      console.log("[v0] Verified userId:", userId)
-      console.log("[v0] Verified token:", currentToken ? "Present" : "Missing")
+      console.log(" Verified userId:", userId)
+      console.log(" Verified token:", currentToken ? "Present" : "Missing")
 
-      console.log("\n[v0] === STEP 2: UPLOADING PASSPORTS ===")
-      console.log(`[v0] Found ${data.members?.length || 0} members to process`)
+      console.log("\n === STEP 2: UPLOADING PASSPORTS ===")
+      console.log(` Found ${data.members?.length || 0} members to process`)
 
       const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
 
       let updatedMembers
       try {
         updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], userId, "")
-        console.log("[v0] ✅ All passports uploaded successfully")
-        console.log("[v0] Updated members with passport URLs:", updatedMembers)
+        console.log(" ✅ All passports uploaded successfully")
+        console.log(" Updated members with passport URLs:", updatedMembers)
       } catch (uploadError) {
-        console.error("[v0] ❌ Passport upload error:", uploadError)
+        console.error(" ❌ Passport upload error:", uploadError)
         throw uploadError
       }
 
-      console.log("\n[v0] === STEP 3: CREATING COMPANY WITH EMBEDDED ORDER ===")
-      console.log("[v0] Company details:", {
+      console.log("\n === STEP 3: CREATING COMPANY WITH EMBEDDED ORDER ===")
+      console.log(" Company details:", {
         name: data.businessName,
         type: data.entityType,
         state: data.state,
@@ -307,7 +307,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         },
       }
 
-      console.log("[v0] Company payload with embedded order")
+      console.log(" Company payload with embedded order")
 
       const companyResponse = await fetch("/api/companies", {
         method: "POST",
@@ -321,15 +321,15 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       const companyData = await companyResponse.json()
 
       if (!companyResponse.ok) {
-        console.error("[v0] ❌ Company creation failed:", companyData.error)
+        console.error(" ❌ Company creation failed:", companyData.error)
         throw new Error(companyData.error || "Failed to create company")
       }
 
-      console.log("[v0] ✅ Company and order created successfully with ID:", companyData.data.id)
-      console.log("[v0] ✅ Order embedded in company")
+      console.log(" ✅ Company and order created successfully with ID:", companyData.data.id)
+      console.log(" ✅ Order embedded in company")
 
-      console.log("\n[v0] === CLEANING UP ===")
-      console.log("[v0] Clearing checkout data from localStorage...")
+      console.log("\n === CLEANING UP ===")
+      console.log(" Clearing checkout data from localStorage...")
       localStorage.removeItem("checkoutData")
       localStorage.removeItem("checkoutStep")
       
@@ -341,21 +341,21 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
         // ignore
       }
       
-      console.log("[v0] ✅ Checkout data cleared")
+      console.log(" ✅ Checkout data cleared")
 
-      console.log("\n[v0] === CHECKOUT COMPLETED SUCCESSFULLY ===")
-      console.log("[v0] Dispatching checkout-completed event...")
+      console.log("\n === CHECKOUT COMPLETED SUCCESSFULLY ===")
+      console.log(" Dispatching checkout-completed event...")
       
       // Dispatch event to notify CompanyProvider to refresh
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("checkout-completed"))
       }
       
-      console.log("[v0] Redirecting to dashboard...")
+      console.log(" Redirecting to dashboard...")
 
       window.location.href = "/client/dashboard"
     } catch (error: any) {
-      console.error("[v0] ❌ Payment submission error:", error)
+      console.error(" ❌ Payment submission error:", error)
       setErrors({ submit: error.message || "Payment submission failed. Please try again." })
     } finally {
       setIsSubmitting(false)

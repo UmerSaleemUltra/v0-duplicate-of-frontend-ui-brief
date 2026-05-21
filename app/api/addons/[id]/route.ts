@@ -10,7 +10,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id } = await params
 
     if (!ObjectId.isValid(id)) {
-      console.log("[v0] Invalid addon ID format:", id)
+      console.log(" Invalid addon ID format:", id)
       return apiError("Invalid addon ID format", 400)
     }
 
@@ -31,7 +31,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.log("[v0] API Error in GET /api/addons/[id]:", error)
+    console.log(" API Error in GET /api/addons/[id]:", error)
     return apiError("Failed to get addon", 500)
   }
 }
@@ -45,7 +45,7 @@ export const PUT = requireAuth(async (request: NextRequest, user, { params }: { 
     const { id } = await params
 
     if (!ObjectId.isValid(id)) {
-      console.log("[v0] Invalid addon ID format:", id)
+      console.log(" Invalid addon ID format:", id)
       return apiError("Invalid addon ID format", 400)
     }
 
@@ -102,7 +102,7 @@ export const PUT = requireAuth(async (request: NextRequest, user, { params }: { 
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.log("[v0] API Error in PUT /api/addons/[id]:", error)
+    console.log(" API Error in PUT /api/addons/[id]:", error)
     return apiError("Failed to update addon", 500)
   }
 })
@@ -117,7 +117,7 @@ export const DELETE = requireAuth(
       const { id } = await params
 
       if (!ObjectId.isValid(id)) {
-        console.log("[v0] Invalid addon ID format:", id)
+        console.log(" Invalid addon ID format:", id)
         return apiError("Invalid addon ID format", 400)
       }
 
@@ -136,7 +136,7 @@ export const DELETE = requireAuth(
       addSecurityHeaders(response)
       return response
     } catch (error) {
-      console.log("[v0] API Error in DELETE /api/addons/[id]:", error)
+      console.log(" API Error in DELETE /api/addons/[id]:", error)
       return apiError("Failed to delete addon", 500)
     }
   },

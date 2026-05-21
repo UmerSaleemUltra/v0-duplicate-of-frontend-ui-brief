@@ -59,7 +59,7 @@ export default function ForgotPasswordPage() {
         setError(data.error || "Failed to send reset link")
       }
     } catch (err) {
-      console.error("[v0] Forgot password error:", err)
+      console.error(" Forgot password error:", err)
       setError("An error occurred. Please try again.")
     } finally {
       setLoading(false)
@@ -84,7 +84,7 @@ export default function ForgotPasswordPage() {
         setError(data.error || "Failed to resend link")
       }
     } catch (err) {
-      console.error("[v0] Resend error:", err)
+      console.error(" Resend error:", err)
       setError("An error occurred. Please try again.")
     } finally {
       setLoading(false)

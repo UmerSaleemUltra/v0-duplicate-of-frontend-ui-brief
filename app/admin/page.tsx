@@ -103,10 +103,10 @@ export default function AdminDashboard() {
       }
 
       try {
-        console.log("[v0] Admin Dashboard: Starting data load...")
+        console.log(" Admin Dashboard: Starting data load...")
         const token = authService.getToken()
         if (!token) {
-          console.log("[v0] Admin Dashboard: No token found")
+          console.log(" Admin Dashboard: No token found")
           return
         }
 
@@ -124,14 +124,14 @@ export default function AdminDashboard() {
         const allUsers = usersResponse.data || []
         const allCompanies = companiesResponse.data || companiesResponse || []
 
-        console.log("[v0] Admin Dashboard: Fetched data", {
+        console.log(" Admin Dashboard: Fetched data", {
           usersCount: allUsers.length,
           companiesCount: allCompanies.length,
         })
 
         const allOrders = allCompanies.flatMap((company: any) => {
           const companyOrders = company.orders || []
-          console.log(`[v0] Company ${company.name}: ${companyOrders.length} orders`)
+          console.log(` Company ${company.name}: ${companyOrders.length} orders`)
 
           return companyOrders.map((order: any) => ({
             ...order,
@@ -147,7 +147,7 @@ export default function AdminDashboard() {
           }))
         })
 
-        console.log("[v0] Admin Dashboard: Total orders extracted:", allOrders.length)
+        console.log(" Admin Dashboard: Total orders extracted:", allOrders.length)
 
         const sortedOrders = allOrders
           .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -161,7 +161,7 @@ export default function AdminDashboard() {
 
         setAllOrders(sortedOrders)
         setOrders(sortedOrders.slice(0, 5))
-        console.log("[v0] Admin Dashboard: Recent orders set:", sortedOrders.length)
+        console.log(" Admin Dashboard: Recent orders set:", sortedOrders.length)
 
         const now = new Date()
         const startOfYear = new Date(now.getFullYear(), 0, 1)
@@ -174,7 +174,7 @@ export default function AdminDashboard() {
           })
           .reduce((sum: number, order: any) => {
             const orderAmount = order.pricing?.total || order.amount || order.total || 0
-            console.log(`[v0] Order ${order.id}: amount=${orderAmount}`)
+            console.log(` Order ${order.id}: amount=${orderAmount}`)
             return sum + orderAmount
           }, 0)
 
@@ -188,7 +188,7 @@ export default function AdminDashboard() {
             return sum + orderAmount
           }, 0)
 
-        console.log("[v0] Admin Dashboard: Revenue calculated", {
+        console.log(" Admin Dashboard: Revenue calculated", {
           yearRevenue,
           currentMonthRevenue,
           totalOrders: allOrders.length,
@@ -327,12 +327,12 @@ export default function AdminDashboard() {
           // silent fail
         }
 
-        console.log("[v0] Admin Dashboard: State breakdown set:", breakdown.length)
+        console.log(" Admin Dashboard: State breakdown set:", breakdown.length)
 
         setDataLoaded(true)
 
         const loadTime = Date.now() - startTime
-        console.log(`[v0] Admin Dashboard: Data loaded in ${loadTime}ms`)
+        console.log(` Admin Dashboard: Data loaded in ${loadTime}ms`)
 
         if (loadTime < 100) {
           setIsLoadingData(false)
@@ -340,7 +340,7 @@ export default function AdminDashboard() {
           setTimeout(() => setIsLoadingData(false), 300)
         }
       } catch (error) {
-        console.error("[v0] Admin Dashboard: Error loading data", error)
+        console.error(" Admin Dashboard: Error loading data", error)
         if (error instanceof Error && error.message.includes("Unauthorized")) {
           authService.logout()
           router.push("/login")

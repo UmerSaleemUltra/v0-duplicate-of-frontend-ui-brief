@@ -38,7 +38,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    console.log("[v0] User fetched:", user.email)
+    console.log(" User fetched:", user.email)
 
     const response = NextResponse.json({
       success: true,
@@ -55,7 +55,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     addSecurityHeaders(response)
     return response
   } catch (error: any) {
-    console.error("[v0] Error fetching user:", error)
+    console.error(" Error fetching user:", error)
     return NextResponse.json(
       {
         error: "Failed to fetch user",
@@ -121,7 +121,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    console.log("[v0] User updated:", result.email)
+    console.log(" User updated:", result.email)
 
     // Broadcast logout if email or password changed
     if (email || password) {
@@ -151,7 +151,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.error("[v0] Error updating user:", error)
+    console.error(" Error updating user:", error)
     return NextResponse.json({ error: "Failed to update user" }, { status: 500 })
   }
 }
@@ -180,7 +180,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     const userId = new ObjectId(id)
     const userIdString = id
 
-    console.log("[v0] Deleting user and all related data:", id)
+    console.log(" Deleting user and all related data:", id)
 
     await Promise.all([
       db.collection("companies").deleteMany({ userId: userIdString }),
@@ -196,7 +196,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    console.log("[v0] User deleted successfully")
+    console.log(" User deleted successfully")
 
     // Broadcast logout when user is deleted
     broadcast("force_logout", {
@@ -214,7 +214,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     addSecurityHeaders(response)
     return response
   } catch (error) {
-    console.error("[v0] Error deleting user:", error)
+    console.error(" Error deleting user:", error)
     return NextResponse.json({ error: "Failed to delete user" }, { status: 500 })
   }
 }

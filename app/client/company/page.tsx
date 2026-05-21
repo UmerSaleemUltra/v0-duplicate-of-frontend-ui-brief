@@ -59,7 +59,7 @@ export default function CompanyPage() {
   useEffect(() => {
     const fetchCompanyData = async () => {
       setLoading(true)
-      console.log("[v0] Fetching company details for:", selectedCompanyId)
+      console.log(" Fetching company details for:", selectedCompanyId)
 
       if (!selectedCompanyId) {
         setLoading(false)
@@ -92,10 +92,10 @@ export default function CompanyPage() {
             return
           }
 
-          console.log("[v0] Company data from API:", selectedComp)
-          console.log("[v0] businessAddressStatus value:", selectedComp.businessAddressStatus)
-          console.log("[v0] mailingAddressStatus value:", selectedComp.mailingAddressStatus)
-          console.log("[v0] All address-related fields:", {
+          console.log(" Company data from API:", selectedComp)
+          console.log(" businessAddressStatus value:", selectedComp.businessAddressStatus)
+          console.log(" mailingAddressStatus value:", selectedComp.mailingAddressStatus)
+          console.log(" All address-related fields:", {
             businessAddressStatus: selectedComp.businessAddressStatus,
             mailingAddressStatus: selectedComp.mailingAddressStatus,
             businessAddress: selectedComp.businessAddress,
@@ -241,7 +241,7 @@ export default function CompanyPage() {
           } catch { /* ignore */ }
 
           console.log(
-            "[v0] Tax data fetched - Classification:",
+            " Tax data fetched - Classification:",
             selectedComp.taxClassification,
             "Annual Report:",
             selectedComp.annualReportFilingDate,
@@ -254,7 +254,7 @@ export default function CompanyPage() {
 
         setLoading(false)
       } catch (err) {
-        console.error("[v0] Load company error:", err)
+        console.error(" Load company error:", err)
         setError("Failed to load company data")
         setLoading(false)
       }
@@ -263,7 +263,7 @@ export default function CompanyPage() {
     fetchCompanyData()
 
     const handleRefresh = () => {
-      console.log("[v0] Company page refresh triggered")
+      console.log(" Company page refresh triggered")
       fetchCompanyData()
     }
 
@@ -276,7 +276,7 @@ export default function CompanyPage() {
 
   useEffect(() => {
     if (companyData) {
-      console.log("[v0] Tax Info Check - companyData:", {
+      console.log(" Tax Info Check - companyData:", {
         taxClassification: companyData?.taxClassification,
         annualReportFilingDate: companyData?.annualReportFilingDate,
         irsFilingDate: companyData?.irsFilingDate,
@@ -291,7 +291,7 @@ export default function CompanyPage() {
           companyData?.irsFilingDate,
       )
 
-      console.log("[v0] hasTaxInfo will be set to:", hasTax)
+      console.log(" hasTaxInfo will be set to:", hasTax)
       setHasTaxInfo(hasTax)
     }
   }, [companyData])

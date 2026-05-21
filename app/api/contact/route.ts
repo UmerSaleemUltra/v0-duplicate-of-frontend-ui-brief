@@ -85,7 +85,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "Failed to send email" }, { status: 500 })
     }
   } catch (error: any) {
-    console.error("[v0] Contact form error:", error)
+    console.error(" Contact form error:", error)
     return NextResponse.json({ success: false, error: "Internal server error" }, { status: 500 })
   }
 }

@@ -86,7 +86,7 @@ export function NotificationDropdown() {
       setNotifications(userNotifications)
       setLoading(false)
     } catch (error) {
-      console.error("[v0] Error loading notifications:", error)
+      console.error(" Error loading notifications:", error)
       setLoading(false)
     }
   }
@@ -109,7 +109,7 @@ export function NotificationDropdown() {
       await ApiClient.notifications.markAsRead(id, token)
       setNotifications(notifications.map((n) => (n.id === id ? { ...n, read: true, isRead: true } : n)))
     } catch (error) {
-      console.error("[v0] Error marking notification as read:", error)
+      console.error(" Error marking notification as read:", error)
     }
   }
 
@@ -125,7 +125,7 @@ export function NotificationDropdown() {
 
       setNotifications(notifications.map((n) => ({ ...n, read: true, isRead: true })))
     } catch (error) {
-      console.error("[v0] Error marking all as read:", error)
+      console.error(" Error marking all as read:", error)
     }
   }
 

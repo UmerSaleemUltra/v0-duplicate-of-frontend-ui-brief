@@ -3,11 +3,11 @@ import { put } from "@vercel/blob"
 
 export async function POST(request: NextRequest) {
   try {
-    console.log("[v0] Receipt upload API called")
+    console.log(" Receipt upload API called")
 
     const token = "vercel_blob_rw_enipxGoXoWBCpr7X_5w7RhF4GZzv9S4dBcF8lVwfbINaiXm"
     if (!token) {
-      console.error("[v0] BLOB_READ_WRITE_TOKEN is not configured")
+      console.error(" BLOB_READ_WRITE_TOKEN is not configured")
       return NextResponse.json(
         {
           success: false,
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const file = formData.get("receipt") as File
     const orderId = formData.get("orderId") as string
 
-    console.log("[v0] Receipt upload - orderId:", orderId, "file:", file?.name)
+    console.log(" Receipt upload - orderId:", orderId, "file:", file?.name)
 
     if (!file) {
       return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 })
@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     const pathname = `payment-receipts/${orderId}/receipt-${Date.now()}.${file.name.split(".").pop()}`
 
-    console.log("[v0] Uploading to blob storage:", pathname)
+    console.log(" Uploading to blob storage:", pathname)
 
     const blob = await put(pathname, file, {
       access: "public",
@@ -54,7 +54,7 @@ export async function POST(request: NextRequest) {
       token: token,
     })
 
-    console.log("[v0] Upload successful:", blob.url)
+    console.log(" Upload successful:", blob.url)
 
     return NextResponse.json({
       success: true,
@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
       },
     })
   } catch (error: any) {
-    console.error("[v0] Payment receipt upload error:", error)
+    console.error(" Payment receipt upload error:", error)
     return NextResponse.json(
       {
         success: false,
