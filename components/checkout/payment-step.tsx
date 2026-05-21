@@ -345,6 +345,24 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       console.log(" ✅ Company and order created successfully with ID:", companyData.data.id)
       console.log(" ✅ Order embedded in company")
 
+      // Mark the abandoned checkout as recovered so it disappears from the admin panel
+      try {
+        const sessionId = sessionStorage.getItem("checkout_session_id")
+        if (sessionId) {
+          await fetch("/api/abandoned-checkouts", {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${currentToken}`,
+            },
+            body: JSON.stringify({ sessionId, recovered: true }),
+          })
+          sessionStorage.removeItem("checkout_session_id")
+        }
+      } catch {
+        // Silent fail — don't block the user from reaching dashboard
+      }
+
       console.log("\n === CLEANING UP ===")
       console.log(" Clearing checkout data from localStorage...")
       localStorage.removeItem("checkoutData")

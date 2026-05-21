@@ -1009,37 +1009,29 @@ export default function AdminDashboard() {
                 if (hrs < 24) return `${hrs}h ago`
                 return `${Math.floor(hrs / 24)}d ago`
               })()
-              // Hide personal details for users who completed their order
-              const isConverted = item.recovered === true
-              const displayName = isConverted ? "Order Completed" : (item.name || item.email || item.businessName || "Anonymous")
 
               return (
                 <div key={i} className="flex items-center justify-between p-3 md:p-4 rounded-xl bg-white/60 border border-white/40 hover:bg-white/80 transition-all group">
                   <div className="flex items-center gap-3 flex-1 min-w-0">
-                    <div className={`p-1.5 rounded-lg flex-shrink-0 ${isConverted ? "bg-green-500/15" : "bg-gradient-to-br from-orange-500/15 to-red-500/10"}`}>
-                      <ShoppingBag className={`h-4 w-4 ${isConverted ? "text-green-600" : "text-orange-600"}`} />
+                    <div className="p-1.5 rounded-lg bg-gradient-to-br from-orange-500/15 to-red-500/10 flex-shrink-0">
+                      <ShoppingBag className="h-4 w-4 text-orange-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <p className={`text-sm font-semibold truncate ${isConverted ? "text-green-700" : "text-slate-900"}`}>
-                          {displayName}
+                        <p className="text-sm font-semibold text-slate-900 truncate">
+                          {item.name || item.email || item.businessName || "Anonymous"}
                         </p>
                         <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${stepColor} flex-shrink-0`}>
                           Stopped at: {stepName}
                         </span>
-                        {isConverted && (
-                          <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700 flex-shrink-0">
-                            Converted
-                          </span>
-                        )}
                       </div>
                       <div className="flex items-center gap-3 mt-0.5">
-                        {!isConverted && item.email && (
+                        {item.email && (
                           <span className="flex items-center gap-1 text-xs text-slate-500">
                             <Mail className="h-3 w-3" />{item.email}
                           </span>
                         )}
-                        {!isConverted && item.phone && (
+                        {item.phone && (
                           <span className="flex items-center gap-1 text-xs text-slate-500">
                             <Phone className="h-3 w-3" />{item.phone}
                           </span>
@@ -1115,17 +1107,14 @@ export default function AdminDashboard() {
                   if (hrs < 24) return `${hrs}h ago`
                   return `${Math.floor(hrs / 24)}d ago`
                 })()
-                // Hide personal details for users who completed their order
-                const isConverted = item.recovered === true
-                const displayName = isConverted ? "Order Completed" : (item.name || item.businessName || "Anonymous User")
 
                 return (
-                  <div key={i} className={`p-4 rounded-xl border transition-all ${isConverted ? "bg-green-50 border-green-100" : "bg-slate-50 border-slate-100 hover:bg-white"}`}>
+                  <div key={i} className="p-4 rounded-xl bg-slate-50 border border-slate-100 hover:bg-white transition-all">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap mb-1">
-                          <p className={`text-sm font-semibold ${isConverted ? "text-green-700" : "text-slate-900"}`}>
-                            {displayName}
+                          <p className="text-sm font-semibold text-slate-900">
+                            {item.name || item.businessName || "Anonymous User"}
                           </p>
                           <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${stepColor}`}>
                             {stepName}
@@ -1135,19 +1124,14 @@ export default function AdminDashboard() {
                               {item.packageType}
                             </span>
                           )}
-                          {isConverted && (
-                            <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-green-100 text-green-700">
-                              Converted to Order
-                            </span>
-                          )}
                         </div>
                         <div className="flex flex-wrap items-center gap-x-4 gap-y-1 mt-1">
-                          {!isConverted && item.email && (
+                          {item.email && (
                             <span className="flex items-center gap-1 text-xs text-slate-500">
                               <Mail className="h-3 w-3 flex-shrink-0" />{item.email}
                             </span>
                           )}
-                          {!isConverted && item.phone && (
+                          {item.phone && (
                             <span className="flex items-center gap-1 text-xs text-slate-500">
                               <Phone className="h-3 w-3 flex-shrink-0" />{item.phone}
                             </span>
@@ -1157,7 +1141,7 @@ export default function AdminDashboard() {
                               <MapPin className="h-3 w-3 flex-shrink-0" />{item.state}
                             </span>
                           )}
-                          {!isConverted && item.businessName && item.name !== item.businessName && (
+                          {item.businessName && item.name !== item.businessName && (
                             <span className="text-xs text-slate-500">Biz: {item.businessName}</span>
                           )}
                         </div>
