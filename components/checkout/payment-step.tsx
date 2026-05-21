@@ -303,6 +303,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           addonsTotal: addonsTotal,
           subtotal: packageWithStateFee + addonsTotal,
           total: totalAmount,
+          promoCode: data.promoCode || null,
           selectedAddons: data.addons || [],
           paymentMethod: paymentMethod,
           paymentStatus: "pending",

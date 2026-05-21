@@ -244,6 +244,7 @@ export async function POST(req: NextRequest) {
               subtotal: orderData.subtotal || 0,
               total: orderData.total || 0,
             },
+            promoCode: orderData.promoCode || null,
             selectedAddons: orderData.selectedAddons || purchasedAddons || [],
             paymentInfo: {
               method: orderData.paymentMethod || "stripe",
@@ -258,6 +259,19 @@ export async function POST(req: NextRequest) {
           },
         ]
       : []
+
+    // Increment promo code usage if one was applied
+    if (orderData?.promoCode?.code) {
+      try {
+        await db.collection("promo_codes").updateOne(
+          { code: orderData.promoCode.code },
+          { $inc: { usedCount: 1 } }
+        )
+      } catch (error) {
+        console.error("Failed to increment promo code usage:", error)
+        // Don't fail the order if promo code update fails
+      }
+    }
 
     const totalRevenue = initialOrders.reduce((sum, order) => sum + (order.pricing?.total || 0), 0)
 

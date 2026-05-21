@@ -7,7 +7,7 @@ import { usePathname, useRouter } from "next/navigation"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
-import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Package, LogOut, Shield, Sun, Moon } from "lucide-react"
+import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Package, LogOut, Shield, Sun, Moon, Tag } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { AdminNotificationDropdown } from "@/components/admin/admin-notification-dropdown"
 import { useDarkMode } from "@/hooks/use-dark-mode"
@@ -20,6 +20,7 @@ const navigation = [
   { name: "Documents", href: "/admin/documents", icon: FileText },
   { name: "Mailroom", href: "/admin/mailroom", icon: Mail },
   { name: "Addons", href: "/admin/addons", icon: Package },
+  { name: "Promo Codes", href: "/admin/promo-codes", icon: Tag },
   { name: "Blog", href: "/admin/blog", icon: FileText },
   { name: "Security", href: "/admin/security", icon: Shield },
 ]
