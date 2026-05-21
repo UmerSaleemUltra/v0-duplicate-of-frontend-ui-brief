@@ -162,10 +162,27 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
 
         console.log(" Step 1: Creating/logging in account for:", email)
 
+        // Generate a secure checkout token first (required for signup)
+        console.log("[v0] Generating checkout token...")
+        const tokenResponse = await fetch("/api/checkout/token", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email }),
+        })
+
+        if (!tokenResponse.ok) {
+          const tokenError = await tokenResponse.json()
+          throw new Error(tokenError.error || "Failed to initialize checkout session")
+        }
+
+        const { data: tokenData } = await tokenResponse.json()
+        const checkoutToken = tokenData.checkoutToken
+        console.log("[v0] Checkout token generated")
+
         const signupResponse = await fetch("/api/auth/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name, phone, role: "client" }),
+          body: JSON.stringify({ email, password, name, phone, role: "client", checkoutToken }),
         })
 
         const signupData = await signupResponse.json()

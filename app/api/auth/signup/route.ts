@@ -5,6 +5,7 @@ import { sendEmail, emailTemplates } from "@/config/email"
 import { apiResponse, apiError } from "@/lib/api-middleware"
 import { validateEmail, validatePassword, validatePhone, sanitizeString } from "@/lib/validation"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
+import { verifyCheckoutToken, invalidateCheckoutToken } from "@/lib/checkout-token"
 
 export async function GET() {
   return addSecurityHeaders(apiError("Please use POST method to signup", 405))
@@ -14,7 +15,18 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json()
-    const { name, email, phone, password } = body
+    const { name, email, phone, password, checkoutToken } = body
+
+    // SECURITY: Require checkout token to prevent direct API signups
+    // Users must go through the proper checkout flow to create an account
+    if (!checkoutToken) {
+      return addSecurityHeaders(apiError("Invalid request. Please complete checkout to create an account.", 403))
+    }
+
+    const tokenValidation = await verifyCheckoutToken(checkoutToken, email)
+    if (!tokenValidation.valid) {
+      return addSecurityHeaders(apiError(tokenValidation.error || "Invalid or expired checkout session. Please restart checkout.", 403))
+    }
 
     if (!name || !email || !password) {
       return addSecurityHeaders(apiError("Please provide your name, email, and password", 400))
@@ -58,6 +70,9 @@ export async function POST(request: NextRequest) {
 
     const result = await usersCollection.insertOne(newUser)
     const userId = result.insertedId.toString()
+
+    // Invalidate the checkout token after successful signup (one-time use)
+    await invalidateCheckoutToken(checkoutToken)
 
     const token = generateToken({
       userId,
