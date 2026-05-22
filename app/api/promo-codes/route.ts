@@ -4,6 +4,7 @@ import { verifyToken } from "@/config/jwt"
 import { apiResponse, apiError } from "@/lib/api-middleware"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { ObjectId } from "mongodb"
+import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 
 // Promo code schema:
 // {
@@ -130,8 +131,13 @@ export async function POST(request: NextRequest) {
 
     const result = await db.collection("promo_codes").insertOne(promoCode)
 
+    const createdPromoCode = { ...promoCode, _id: result.insertedId }
+    
+    // Broadcast realtime update
+    broadcastUpdate("promo-codes", "created", createdPromoCode)
+
     return addSecurityHeaders(
-      apiResponse({ ...promoCode, _id: result.insertedId }, "Promo code created successfully")
+      apiResponse(createdPromoCode, "Promo code created successfully")
     )
   } catch (error: any) {
     console.error("Error creating promo code:", error)
@@ -190,6 +196,9 @@ export async function PATCH(request: NextRequest) {
       return addSecurityHeaders(apiError("Promo code not found", 404))
     }
 
+    // Broadcast realtime update
+    broadcastUpdate("promo-codes", "updated", result)
+
     return addSecurityHeaders(apiResponse(result, "Promo code updated successfully"))
   } catch (error: any) {
     console.error("Error updating promo code:", error)
@@ -224,6 +233,9 @@ export async function DELETE(request: NextRequest) {
     if (result.deletedCount === 0) {
       return addSecurityHeaders(apiError("Promo code not found", 404))
     }
+
+    // Broadcast realtime update
+    broadcastUpdate("promo-codes", "deleted", { _id: id })
 
     return addSecurityHeaders(apiResponse(null, "Promo code deleted successfully"))
   } catch (error: any) {

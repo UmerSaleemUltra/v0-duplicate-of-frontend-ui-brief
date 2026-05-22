@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -43,6 +43,7 @@ import {
   RefreshCw,
   Copy,
   Check,
+  Radio,
 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
@@ -90,6 +91,73 @@ export default function PromoCodesPage() {
   const [editingCode, setEditingCode] = useState<PromoCode | null>(null)
   const [formData, setFormData] = useState(emptyPromoCode)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [isLive, setIsLive] = useState(false)
+
+  // Realtime SSE connection
+  useEffect(() => {
+    const token = authService.getToken()
+    if (!token) return
+
+    let eventSource: EventSource | null = null
+    let reconnectTimeout: NodeJS.Timeout | null = null
+
+    const connect = () => {
+      eventSource = new EventSource(`/api/realtime/sse?token=${token}`)
+
+      eventSource.onopen = () => {
+        setIsLive(true)
+        if (reconnectTimeout) {
+          clearTimeout(reconnectTimeout)
+          reconnectTimeout = null
+        }
+      }
+
+      eventSource.onerror = () => {
+        setIsLive(false)
+        eventSource?.close()
+        // Reconnect after 5 seconds
+        reconnectTimeout = setTimeout(connect, 5000)
+      }
+
+      eventSource.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          if (data.resource === "promo-codes") {
+            handleRealtimeUpdate(data.action, data.data)
+          }
+        } catch (e) {
+          // Ignore parse errors
+        }
+      }
+    }
+
+    connect()
+
+    return () => {
+      eventSource?.close()
+      if (reconnectTimeout) clearTimeout(reconnectTimeout)
+    }
+  }, [])
+
+  // Handle realtime updates
+  const handleRealtimeUpdate = useCallback((action: string, data: any) => {
+    switch (action) {
+      case "created":
+        setPromoCodes((prev) => [data, ...prev])
+        toast.info(`New promo code "${data.code}" created`)
+        break
+      case "updated":
+        setPromoCodes((prev) =>
+          prev.map((code) => (code._id === data._id ? data : code))
+        )
+        toast.info(`Promo code "${data.code}" updated`)
+        break
+      case "deleted":
+        setPromoCodes((prev) => prev.filter((code) => code._id !== data._id))
+        toast.info("Promo code deleted")
+        break
+    }
+  }, [])
 
   useEffect(() => {
     const user = authService.getCurrentUser()
@@ -176,7 +244,7 @@ export default function PromoCodesPage() {
       if (data.success) {
         toast.success(editingCode ? "Promo code updated" : "Promo code created")
         setIsDialogOpen(false)
-        fetchPromoCodes()
+        // SSE will handle updating the list in realtime
       } else {
         toast.error(data.error || "Failed to save promo code")
       }
@@ -200,7 +268,7 @@ export default function PromoCodesPage() {
       const data = await response.json()
       if (data.success) {
         toast.success("Promo code deleted")
-        fetchPromoCodes()
+        // SSE will handle updating the list in realtime
       } else {
         toast.error(data.error || "Failed to delete promo code")
       }
@@ -224,7 +292,7 @@ export default function PromoCodesPage() {
       const data = await response.json()
       if (data.success) {
         toast.success(`Promo code ${code.isActive ? "deactivated" : "activated"}`)
-        fetchPromoCodes()
+        // SSE will handle updating the list in realtime
       } else {
         toast.error(data.error || "Failed to update promo code")
       }
@@ -271,7 +339,15 @@ export default function PromoCodesPage() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-slate-900">Promo Codes</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-bold text-slate-900">Promo Codes</h1>
+            {isLive && (
+              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1">
+                <Radio className="h-3 w-3 animate-pulse" />
+                Live
+              </Badge>
+            )}
+          </div>
           <p className="text-sm text-slate-500 mt-1">Manage discount codes for checkout</p>
         </div>
         <div className="flex items-center gap-2">
