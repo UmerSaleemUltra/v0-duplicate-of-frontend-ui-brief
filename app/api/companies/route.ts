@@ -386,7 +386,7 @@ export async function POST(req: NextRequest) {
             order.orderType,
             `$${order.pricing.total}`,
             order.id,
-            name,
+            order.promoCode || null,
           )
           await sendEmail({
             to: user.email,
@@ -409,6 +409,7 @@ export async function POST(req: NextRequest) {
             `$${order.pricing.total}`,
             companyId,
             user?.email || "Unknown",
+            order.promoCode || null,
           )
           console.log(" Admin email template created:", adminOrderEmail.subject)
           

@@ -169,9 +169,18 @@ export const emailTemplates = {
     packageType: string,
     totalAmount: string,
     orderId: string,
+    promoCode?: { code: string; discountType: string; discountValue: number; discountAmount: number } | null,
   ) => {
     const raw = (packageType || "").toLowerCase().trim()
     const packageLabel = raw.includes("advanced") ? "Advanced" : "Starter"
+    const promoHtml = promoCode ? `
+                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                        <strong>Promo Code:</strong> <span style="color: #880000; font-weight: 600;">${promoCode.code}</span>
+                        (${promoCode.discountType === "percentage" ? `${promoCode.discountValue}% off` : `$${promoCode.discountValue} off`})
+                      </li>
+                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #16a34a; line-height: 1.6;">
+                        <strong>You Saved:</strong> $${promoCode.discountAmount}
+                      </li>` : ""
     return {
     subject: "Your Order Has Been Confirmed",
     html: `
@@ -213,7 +222,7 @@ export const emailTemplates = {
                       </li>
                       <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
                         <strong>Package:</strong> ${packageLabel}
-                      </li>
+                      </li>${promoHtml}
                       <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
                         <strong>Total Amount:</strong> ${totalAmount}
                       </li>
@@ -1256,7 +1265,13 @@ export const emailTemplates = {
     totalAmount: string,
     orderId: string,
     clientEmail: string,
-  ) => ({
+    promoCode?: { code: string; discountType: string; discountValue: number; discountAmount: number } | null,
+  ) => {
+    const promoHtml = promoCode ? `
+                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #16a34a; line-height: 1.6;">
+                        <strong>Promo Code Used:</strong> ${promoCode.code} (${promoCode.discountType === "percentage" ? `${promoCode.discountValue}% off` : `$${promoCode.discountValue} off`}) - Saved $${promoCode.discountAmount}
+                      </li>` : ""
+    return {
     subject: `New Order Placed - ${companyName}`,
     html: `
     <!DOCTYPE html>
@@ -1306,7 +1321,7 @@ export const emailTemplates = {
                       </li>
                       <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
                         <strong>Package Type:</strong> ${packageType}
-                      </li>
+                      </li>${promoHtml}
                       <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
                         <strong>Total Amount:</strong> $${totalAmount}
                       </li>
@@ -1337,7 +1352,7 @@ export const emailTemplates = {
       </body>
     </html>
     `,
-  }),
+  }},
 
   adminAddonPurchase: (
     clientName: string,
