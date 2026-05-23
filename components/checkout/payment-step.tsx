@@ -6,7 +6,7 @@ import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare, X } from "lucide-react"
+import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare, X, Tag } from "lucide-react"
 import { packagePricing } from "@/lib/pricing"
 import { STATE_FEES } from "@/lib/constants"
 import { toast } from "@/components/ui/use-toast"
@@ -272,7 +272,8 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
       const addonsTotal =
         data.addonsTotal ||
         (Array.isArray(data.addons) ? data.addons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) : 0)
-      const totalAmount = packageWithStateFee + addonsTotal
+      const promoDiscount = data.promoCode?.discountAmount || 0
+      const totalAmount = Math.max(0, packageWithStateFee + addonsTotal - promoDiscount)
 
       const companyPayload = {
         name: data.businessName,
@@ -461,7 +462,9 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
   const addonsTotal =
     data.addonsTotal ||
     (Array.isArray(data.addons) ? data.addons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) : 0)
-  const totalAmount = packageWithStateFee + addonsTotal
+  const promoDiscount = data.promoCode?.discountAmount || 0
+  const subtotalBeforeDiscount = packageWithStateFee + addonsTotal
+  const totalAmount = Math.max(0, subtotalBeforeDiscount - promoDiscount)
 
   const isPaymentValid = paymentMethod === "already_paid" ? whatsappPhone.trim() !== "" : receiptUrl !== ""
 
@@ -604,12 +607,40 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
             </div>
           ) : null}
 
+          {/* Promo Code Applied */}
+          {data.promoCode && (
+            <div className="flex items-center justify-between gap-4 py-3 md:py-4 border-b border-green-200 bg-green-50 px-3 md:px-4 rounded-lg mx-0 my-2">
+              <div className="flex items-center gap-2">
+                <Tag className="w-4 h-4 text-green-600" />
+                <span className="text-sm md:text-base text-green-700 font-medium">
+                  Promo: <span className="font-[family-name:var(--font-unbounded)] tracking-wider">{data.promoCode.code}</span>
+                </span>
+                <span className="text-xs text-green-600">
+                  ({data.promoCode.discountType === "percentage" 
+                    ? `${data.promoCode.discountValue}% off` 
+                    : `$${data.promoCode.discountValue} off`})
+                </span>
+              </div>
+              <div className="text-right flex-shrink-0">
+                <span className="font-semibold text-green-700 text-sm md:text-base">-${data.promoCode.discountAmount}</span>
+                {pkrRate && (
+                  <p className="text-xs text-green-600">
+                    -{Math.round(data.promoCode.discountAmount * pkrRate).toLocaleString()} PKR
+                  </p>
+                )}
+              </div>
+            </div>
+          )}
+
           <div className="p-4 md:p-6 bg-slate-50 border-t border-slate-200 rounded-lg">
             <div className="flex items-center justify-between gap-4">
               <div>
                 <p className="text-sm md:text-base font-semibold text-slate-900">Total Amount</p>
               </div>
               <div className="text-right">
+                {data.promoCode && (
+                  <p className="text-sm text-slate-400 line-through">${subtotalBeforeDiscount.toFixed(2)}</p>
+                )}
                 <p className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900">${calculateTotal()}</p>
                 <p className="text-xs md:text-sm text-slate-600 mt-0.5">
                   {Math.round(Number.parseFloat(calculateTotal()) * PKR_RATE).toLocaleString()} PKR
