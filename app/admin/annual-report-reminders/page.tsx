@@ -91,7 +91,6 @@ export default function AnnualReportRemindersPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [urgencyFilter, setUrgencyFilter] = useState("all")
   const [isLive, setIsLive] = useState(false)
-  const router = useRouter()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
