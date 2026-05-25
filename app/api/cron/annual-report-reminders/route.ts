@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
 import { getDatabase } from "@/config/database"
-import { sendEmail } from "@/config/smtp"
-import { emailTemplates } from "@/config/email"
+import { sendEmail, emailTemplates } from "@/config/email"
 import { STATE_ANNUAL_REPORT_DEADLINES, calculateNextDueDate } from "@/lib/annual-report-deadlines"
 
 // This endpoint is called by Vercel Cron Jobs
