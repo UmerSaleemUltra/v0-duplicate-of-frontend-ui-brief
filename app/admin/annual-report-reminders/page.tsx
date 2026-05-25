@@ -44,7 +44,7 @@ import {
   DollarSign,
   RefreshCw,
   Mail,
-  Snooze,
+  Timer,
   FileCheck,
   Radio,
 } from "lucide-react"
@@ -301,15 +301,46 @@ export default function AnnualReportRemindersPage() {
           </div>
           <p className="text-sm text-slate-500 mt-0.5">Track and send annual report filing reminders to clients</p>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={fetchReminders}
-          className="h-9 border-slate-200 text-slate-700 text-xs rounded-xl"
-        >
-          <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
-          Refresh
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={async () => {
+              try {
+                const token = authService.getToken()
+                const res = await fetch("/api/cron/annual-report-reminders", {
+                  method: "POST",
+                  headers: { Authorization: `Bearer ${token}` },
+                })
+                const data = await res.json()
+                if (data.success) {
+                  toast({
+                    title: "Auto-Send Complete",
+                    description: `Sent ${data.remindersSent?.length || 0} reminders`,
+                  })
+                  fetchReminders()
+                } else {
+                  toast({ title: "Error", description: data.error, variant: "destructive" })
+                }
+              } catch {
+                toast({ title: "Error", description: "Failed to run auto-send", variant: "destructive" })
+              }
+            }}
+            className="h-9 border-slate-200 text-slate-700 text-xs rounded-xl"
+          >
+            <Send className="h-3.5 w-3.5 mr-1.5" />
+            Auto-Send Due
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={fetchReminders}
+            className="h-9 border-slate-200 text-slate-700 text-xs rounded-xl"
+          >
+            <RefreshCw className="h-3.5 w-3.5 mr-1.5" />
+            Refresh
+          </Button>
+        </div>
       </div>
 
       {/* Summary Cards */}
@@ -521,15 +552,15 @@ export default function AnnualReportRemindersPage() {
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => handleAction("snooze", reminder, 7)}>
-                          <Snooze className="h-4 w-4 mr-2" />
+                          <Timer className="h-4 w-4 mr-2" />
                           Snooze 7 days
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleAction("snooze", reminder, 14)}>
-                          <Snooze className="h-4 w-4 mr-2" />
+                          <Timer className="h-4 w-4 mr-2" />
                           Snooze 14 days
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={() => handleAction("snooze", reminder, 30)}>
-                          <Snooze className="h-4 w-4 mr-2" />
+                          <Timer className="h-4 w-4 mr-2" />
                           Snooze 30 days
                         </DropdownMenuItem>
                         <DropdownMenuSeparator />
