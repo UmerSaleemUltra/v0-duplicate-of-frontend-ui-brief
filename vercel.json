@@ -1,8 +1,0 @@
-{
-  "crons": [
-    {
-      "path": "/api/cron/annual-report-reminders",
-      "schedule": "0 9 * * *"
-    }
-  ]
-}

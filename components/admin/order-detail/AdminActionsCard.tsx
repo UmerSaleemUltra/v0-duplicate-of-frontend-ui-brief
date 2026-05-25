@@ -18,7 +18,6 @@ import {
   UploadCloud,
   Mail,
   Package,
-  CalendarClock,
 } from "lucide-react"
 
 interface AdminActionsCardProps {
@@ -49,8 +48,6 @@ interface AdminActionsCardProps {
   onUploadMail: () => void
   onAddAddon: () => void
   onAddCustomAddon: () => void
-  onSendAnnualReport: () => void
-  annualReportSending?: boolean
 }
 
 function ActionRow({
@@ -111,8 +108,6 @@ export function AdminActionsCard({
   onUploadMail,
   onAddAddon,
   onAddCustomAddon,
-  onSendAnnualReport,
-  annualReportSending = false,
 }: AdminActionsCardProps) {
   return (
     <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
@@ -187,13 +182,6 @@ export function AdminActionsCard({
           loadingLabel="Loading..."
         />
         <ActionRow icon={<Plus className="w-4 h-4" />} label="Add Custom Addon to Client" onClick={onAddCustomAddon} />
-        <ActionRow
-          icon={<CalendarClock className="w-4 h-4" />}
-          label="Send Annual Report Reminder"
-          onClick={onSendAnnualReport}
-          loading={annualReportSending}
-          loadingLabel="Sending Reminder..."
-        />
         <ActionRow icon={<UploadCloud className="w-4 h-4" />} label="Upload Document" onClick={onUploadDocument} />
         <ActionRow icon={<Mail className="w-4 h-4" />} label="Upload Mail" onClick={onUploadMail} />
         <ActionRow icon={<Download className="w-4 h-4" />} label="Download Invoice" onClick={onDownloadInvoice} />

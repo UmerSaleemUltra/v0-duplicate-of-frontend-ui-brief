@@ -147,7 +147,6 @@ export default function OrderDetailPage() {
   const [milestoneUpdating, setMilestoneUpdating] = useState(false)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleting, setDeleting] = useState(false)
-  const [annualReportSending, setAnnualReportSending] = useState(false)
   const [deletingMilestoneId, setDeletingMilestoneId] = useState<string | null>(null)
   const [companyStatusDialogOpen, setCompanyStatusDialogOpen] = useState(false)
   const [registeredAgentStatusDialogOpen, setRegisteredAgentStatusDialogOpen] = useState(false)
@@ -2397,32 +2396,6 @@ export default function OrderDetailPage() {
     }
   }
 
-  const handleSendAnnualReport = async () => {
-    if (!company?._id) {
-      toast({ title: "Error", description: "Company not found", variant: "destructive" })
-      return
-    }
-    setAnnualReportSending(true)
-    try {
-      const token = authService.getToken()
-      const res = await fetch("/api/annual-report-reminders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ action: "send_reminder", companyId: company._id.toString() }),
-      })
-      const data = await res.json()
-      if (data.success) {
-        toast({ title: "Reminder Sent", description: data.message })
-      } else {
-        toast({ title: "Failed", description: data.error || "Could not send reminder", variant: "destructive" })
-      }
-    } catch {
-      toast({ title: "Error", description: "Could not send reminder", variant: "destructive" })
-    } finally {
-      setAnnualReportSending(false)
-    }
-  }
-
   const generateInvoice = () => {
     if (!order) return
 
@@ -2987,8 +2960,6 @@ export default function OrderDetailPage() {
                 setCustomAddonPrice("")
                 setCustomAddonDialogOpen(true)
               }}
-              onSendAnnualReport={handleSendAnnualReport}
-              annualReportSending={annualReportSending}
               onRequestDocument={() => setRequestDocumentDialogOpen(true)}
             />
           </TabsContent>
