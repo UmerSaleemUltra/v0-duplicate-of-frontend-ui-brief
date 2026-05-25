@@ -1439,4 +1439,132 @@ export const emailTemplates = {
     </html>
     `,
   }),
+
+  annualReportReminder: (
+    clientName: string,
+    companyName: string,
+    state: string,
+    dueDate: string,
+    daysUntil: number,
+    fee: number,
+  ) => {
+    const urgencyColor = daysUntil <= 14 ? "#dc2626" : daysUntil <= 30 ? "#f59e0b" : "#16a34a"
+    const urgencyText = daysUntil <= 14 ? "URGENT" : daysUntil <= 30 ? "Upcoming" : "Reminder"
+    
+    return {
+      subject: `${urgencyText}: Annual Report Due for ${companyName} - ${state}`,
+      html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+                
+                <tr>
+                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 20px 40px;">
+                    <div style="background-color: ${urgencyColor}; color: white; padding: 12px 20px; border-radius: 8px; text-align: center; margin-bottom: 20px;">
+                      <span style="font-size: 12px; text-transform: uppercase; letter-spacing: 1px;">${urgencyText}</span>
+                      <p style="margin: 5px 0 0 0; font-size: 24px; font-weight: bold;">${daysUntil} Days Until Due Date</p>
+                    </div>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
+                      Hello ${clientName},
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      This is a friendly reminder that your <strong>Annual Report</strong> for <strong>${companyName}</strong> in <strong>${state}</strong> is due soon.
+                    </p>
+                    
+                    <div style="background-color: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 20px; margin-bottom: 20px;">
+                      <p style="margin: 0 0 10px 0; font-size: 14px; color: #000000; font-weight: 600;">
+                        Filing Details:
+                      </p>
+                      
+                      <table width="100%" cellpadding="0" cellspacing="0">
+                        <tr>
+                          <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                            <span style="font-size: 13px; color: #64748b;">Company</span>
+                          </td>
+                          <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                            <span style="font-size: 13px; color: #0f172a; font-weight: 600;">${companyName}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                            <span style="font-size: 13px; color: #64748b;">State</span>
+                          </td>
+                          <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                            <span style="font-size: 13px; color: #0f172a; font-weight: 600;">${state}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0;">
+                            <span style="font-size: 13px; color: #64748b;">Due Date</span>
+                          </td>
+                          <td style="padding: 8px 0; border-bottom: 1px solid #e2e8f0; text-align: right;">
+                            <span style="font-size: 13px; color: ${urgencyColor}; font-weight: 600;">${dueDate}</span>
+                          </td>
+                        </tr>
+                        <tr>
+                          <td style="padding: 8px 0;">
+                            <span style="font-size: 13px; color: #64748b;">State Filing Fee</span>
+                          </td>
+                          <td style="padding: 8px 0; text-align: right;">
+                            <span style="font-size: 13px; color: #0f172a; font-weight: 600;">$${fee}</span>
+                          </td>
+                        </tr>
+                      </table>
+                    </div>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      <strong>Why is this important?</strong> Filing your annual report on time keeps your company in good standing with the state. Late filings may result in penalties, late fees, or even administrative dissolution of your company.
+                    </p>
+                    
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      <strong>Need help filing?</strong> Buzz Filing can handle your annual report filing for you. Simply reply to this email or contact our support team.
+                    </p>
+                    
+                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> for your business needs.
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="padding: 0 40px 40px 40px; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #999999;">
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
+                    </p>
+                  </td>
+                </tr>
+                
+                <tr>
+                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
+                </tr>
+                
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+    }
+  },
 }
