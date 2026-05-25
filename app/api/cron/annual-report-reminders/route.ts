@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server"
-import { getDatabase } from "@/config/database"
+import { connectDB } from "@/lib/mongodb"
 import { sendEmail, emailTemplates } from "@/config/email"
 import { STATE_ANNUAL_REPORT_DEADLINES, calculateNextDueDate } from "@/lib/annual-report-deadlines"
 
@@ -16,7 +16,7 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
-    const db = await getDatabase()
+    const { db } = await connectDB()
     const now = new Date()
     
     // Get reminder settings

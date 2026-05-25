@@ -151,8 +151,8 @@ export async function POST(req: NextRequest) {
       const nextDueDate = calculateNextDueDate(state, new Date(company.createdAt || company.formationDate))
       const daysUntil = nextDueDate ? getDaysUntilDeadline(nextDueDate) : 0
 
-      // Import email functions dynamically to avoid circular deps
-      const { sendUserEmail, emailTemplates } = await import("@/config/email")
+      // Import email functions
+      const { sendEmail, emailTemplates } = await import("@/config/email")
       
       const emailTemplate = emailTemplates.annualReportReminder(
         user.name || "Valued Client",
@@ -163,7 +163,11 @@ export async function POST(req: NextRequest) {
         deadline?.fee || 0,
       )
 
-      await sendUserEmail(user.email, emailTemplate.subject, emailTemplate.html)
+      await sendEmail({
+        to: user.email,
+        subject: emailTemplate.subject,
+        html: emailTemplate.html,
+      })
 
       // Update or create reminder record
       await db.collection("annual_report_reminders").updateOne(
