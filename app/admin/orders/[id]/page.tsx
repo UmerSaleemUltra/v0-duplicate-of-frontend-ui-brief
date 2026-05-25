@@ -2396,6 +2396,33 @@ export default function OrderDetailPage() {
     }
   }
 
+  const handleSendAnnualReportReminder = async () => {
+    if (!company?._id && !company?.id) {
+      toast({ title: "Error", description: "Company not found", variant: "destructive" })
+      return
+    }
+    setAnnualReportSending(true)
+    try {
+      const token = authService.getToken()
+      const companyId = company._id?.toString?.() || company.id
+      const res = await fetch("/api/annual-report-reminders", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: "send_reminder", companyId }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast({ title: "Reminder Sent", description: data.message })
+      } else {
+        toast({ title: "Failed", description: data.error || "Could not send reminder", variant: "destructive" })
+      }
+    } catch {
+      toast({ title: "Error", description: "Could not send reminder", variant: "destructive" })
+    } finally {
+      setAnnualReportSending(false)
+    }
+  }
+
   const generateInvoice = () => {
     if (!order) return
 
@@ -2960,6 +2987,8 @@ export default function OrderDetailPage() {
                 setCustomAddonPrice("")
                 setCustomAddonDialogOpen(true)
               }}
+              onSendAnnualReportReminder={handleSendAnnualReportReminder}
+              annualReportSending={annualReportSending}
               onRequestDocument={() => setRequestDocumentDialogOpen(true)}
             />
           </TabsContent>
