@@ -20,6 +20,20 @@ export async function GET(req: NextRequest) {
     const db = await getDatabase()
     const now = new Date()
     
+    // Get reminder settings
+    const settings = await db.collection("annual_report_settings").findOne({ type: "global" })
+    const reminderDays = settings?.reminderDays || [60, 30, 14, 7, 3, 1]
+    const enableAutoSend = settings?.enableAutoSend !== false
+    
+    if (!enableAutoSend) {
+      return NextResponse.json({
+        success: true,
+        message: "Auto-send is disabled",
+        remindersSent: [],
+        timestamp: new Date().toISOString(),
+      })
+    }
+    
     // Get all companies with their formation state
     const companies = await db.collection("companies").find({
       status: { $ne: "dissolved" },
@@ -51,8 +65,6 @@ export async function GET(req: NextRequest) {
       })
 
       // Determine if we should send a reminder based on days until due
-      // Send reminders at: 60 days, 30 days, 14 days, 7 days, 3 days, 1 day
-      const reminderDays = [60, 30, 14, 7, 3, 1]
       const shouldSendReminder = reminderDays.includes(daysUntil) && daysUntil > 0
 
       if (!shouldSendReminder) continue

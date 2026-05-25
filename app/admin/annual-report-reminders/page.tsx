@@ -47,6 +47,7 @@ import {
   Timer,
   FileCheck,
   Radio,
+  Settings,
 } from "lucide-react"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { authService } from "@/lib/auth"
@@ -90,6 +91,7 @@ export default function AnnualReportRemindersPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [urgencyFilter, setUrgencyFilter] = useState("all")
   const [isLive, setIsLive] = useState(false)
+  const router = useRouter()
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [confirmDialog, setConfirmDialog] = useState<{
     open: boolean
@@ -302,6 +304,15 @@ export default function AnnualReportRemindersPage() {
           <p className="text-sm text-slate-500 mt-0.5">Track and send annual report filing reminders to clients</p>
         </div>
         <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => router.push("/admin/annual-report-reminders/settings")}
+            className="h-9 border-slate-200 text-slate-700 text-xs rounded-xl"
+          >
+            <Settings className="h-3.5 w-3.5 mr-1.5" />
+            Settings
+          </Button>
           <Button
             variant="outline"
             size="sm"
