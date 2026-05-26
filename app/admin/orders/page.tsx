@@ -21,6 +21,10 @@ import {
   X,
   Calendar,
   ChevronDown,
+  SlidersHorizontal,
+  MapPin,
+  CreditCard,
+  Package,
 } from "lucide-react"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
 import {
@@ -33,6 +37,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { useAuthGuard } from "@/lib/use-auth-guard"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
@@ -100,8 +111,15 @@ export default function OrdersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
+  const [packageFilter, setPackageFilter] = useState("all")
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("all-time")
   const [dateRangeLabel, setDateRangeLabel] = useState("All Time")
+  const [customDateFrom, setCustomDateFrom] = useState("")
+  const [customDateTo, setCustomDateTo] = useState("")
+  const [minAmount, setMinAmount] = useState("")
+  const [maxAmount, setMaxAmount] = useState("")
+  const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
   const router = useRouter()
   const [dataLoading, setDataLoading] = useState(true)
 
@@ -264,6 +282,14 @@ export default function OrdersPage() {
         const orderDate = new Date(order.createdAt)
         return orderDate >= threeMonthsAgo
       })
+    } else if (dateFilter === "custom" && customDateFrom && customDateTo) {
+      const fromDate = new Date(customDateFrom)
+      const toDate = new Date(customDateTo)
+      toDate.setHours(23, 59, 59, 999)
+      filtered = filtered.filter((order) => {
+        const orderDate = new Date(order.createdAt)
+        return orderDate >= fromDate && orderDate <= toDate
+      })
     }
     // "all-time" doesn't filter by date
 
@@ -289,13 +315,43 @@ export default function OrdersPage() {
       filtered = filtered.filter((order) => order.state && order.state.toLowerCase() === stateFilter.toLowerCase())
     }
 
+    // Package type filtering
+    if (packageFilter !== "all") {
+      filtered = filtered.filter((order) => {
+        const pkg = (order.packageType || "").toLowerCase()
+        return pkg.includes(packageFilter.toLowerCase())
+      })
+    }
+
+    // Payment method filtering
+    if (paymentMethodFilter !== "all") {
+      filtered = filtered.filter((order) => {
+        const method = (order.paymentMethod || order.paymentInfo?.method || "").toLowerCase()
+        return method.includes(paymentMethodFilter.toLowerCase())
+      })
+    }
+
+    // Amount range filtering
+    if (minAmount !== "") {
+      const min = parseFloat(minAmount)
+      if (!isNaN(min)) {
+        filtered = filtered.filter((order) => (order.pricing?.total || order.amount || order.total || 0) >= min)
+      }
+    }
+    if (maxAmount !== "") {
+      const max = parseFloat(maxAmount)
+      if (!isNaN(max)) {
+        filtered = filtered.filter((order) => (order.pricing?.total || order.amount || order.total || 0) <= max)
+      }
+    }
+
     setFilteredOrders(filtered)
     setCurrentPage(1) // Reset to first page when filters change
     setTotalRevenue(
       filtered.reduce((acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0), 0),
     )
     setTotalOrders(filtered.length)
-  }, [searchQuery, statusFilter, stateFilter, dateFilter, orders])
+  }, [searchQuery, statusFilter, stateFilter, packageFilter, paymentMethodFilter, dateFilter, customDateFrom, customDateTo, minAmount, maxAmount, orders])
 
   useEffect(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
@@ -310,7 +366,35 @@ export default function OrdersPage() {
   const handleDateRangeSelect = (range: string, label: string) => {
     setDateFilter(range)
     setDateRangeLabel(label)
+    if (range !== "custom") {
+      setCustomDateFrom("")
+      setCustomDateTo("")
+    }
   }
+
+  const clearAllFilters = () => {
+    setSearchQuery("")
+    setStatusFilter("all")
+    setStateFilter("all")
+    setPackageFilter("all")
+    setPaymentMethodFilter("all")
+    setDateFilter("all-time")
+    setDateRangeLabel("All Time")
+    setCustomDateFrom("")
+    setCustomDateTo("")
+    setMinAmount("")
+    setMaxAmount("")
+  }
+
+  const activeFilterCount = [
+    statusFilter !== "all",
+    stateFilter !== "all",
+    packageFilter !== "all",
+    paymentMethodFilter !== "all",
+    dateFilter !== "all-time",
+    minAmount !== "",
+    maxAmount !== "",
+  ].filter(Boolean).length
 
   const handleExportOrders = () => {
     try {
@@ -557,27 +641,45 @@ export default function OrdersPage() {
       </div>
 
       <div className="bg-white border border-slate-200 rounded-2xl p-4 space-y-3">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <Input
-            placeholder="Search by Order ID, Customer, Email, or Company..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-9 pr-9 h-10 border-slate-200 text-sm rounded-xl"
-          />
-          {searchQuery && (
-            <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-600">
-              <X className="h-4 w-4" />
-            </button>
-          )}
+        {/* Search bar + toggle */}
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+            <Input
+              placeholder="Search by Order ID, customer name, email, or company..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-9 h-10 border-slate-200 text-sm rounded-xl"
+            />
+            {searchQuery && (
+              <button onClick={() => setSearchQuery("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600">
+                <X className="h-4 w-4" />
+              </button>
+            )}
+          </div>
+          <Button
+            variant={showAdvancedFilters ? "default" : "outline"}
+            size="sm"
+            onClick={() => setShowAdvancedFilters(!showAdvancedFilters)}
+            className={`h-10 px-4 rounded-xl gap-2 relative ${showAdvancedFilters ? "bg-slate-900 text-white hover:bg-slate-800" : "border-slate-200 text-slate-600"}`}
+          >
+            <SlidersHorizontal className="h-4 w-4" />
+            Filters
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 h-4 w-4 rounded-full bg-red-500 text-white text-[10px] flex items-center justify-center font-semibold">
+                {activeFilterCount}
+              </span>
+            )}
+          </Button>
         </div>
 
+        {/* Quick status + period row */}
         <div className="flex flex-wrap gap-2 items-center">
           <span className="text-xs text-slate-400">Status:</span>
-          {["all", "pending", "processing", "completed"].map((s) => (
+          {["all", "pending", "processing", "completed", "Order Proceeded"].map((s) => (
             <button key={s} onClick={() => setStatusFilter(s)}
               className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${statusFilter === s ? "bg-slate-900 text-white" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`}>
-              {s === "all" ? "All" : s.charAt(0).toUpperCase() + s.slice(1)}
+              {s === "all" ? "All" : s === "Order Proceeded" ? "Proceeded" : s.charAt(0).toUpperCase() + s.slice(1)}
             </button>
           ))}
           <span className="text-xs text-slate-400 ml-2">Period:</span>
@@ -593,15 +695,123 @@ export default function OrdersPage() {
               <DropdownMenuItem onClick={() => handleDateRangeSelect("last-month", "Last Month")}>Last Month</DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDateRangeSelect("last-3-months", "Last 3 Months")}>Last 3 Months</DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDateRangeSelect("all-time", "All Time")}>All Time</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => handleDateRangeSelect("custom", "Custom Range")}>Custom Range</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
-          {(searchQuery || statusFilter !== "all" || stateFilter !== "all") && (
-            <button onClick={() => { setSearchQuery(""); setStatusFilter("all"); setStateFilter("all") }}
-              className="ml-auto text-xs text-slate-400 hover:text-slate-600">
-              Clear
+          {(activeFilterCount > 0 || searchQuery) && (
+            <button onClick={clearAllFilters} className="ml-auto text-xs text-red-500 hover:text-red-600 font-medium">
+              Clear all
             </button>
           )}
         </div>
+
+        {/* Advanced filters panel */}
+        {showAdvancedFilters && (
+          <div className="pt-3 border-t border-slate-100 space-y-3">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+              {/* State */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                  <MapPin className="h-3 w-3" /> State
+                </label>
+                <Select value={stateFilter} onValueChange={setStateFilter}>
+                  <SelectTrigger className="h-9 text-xs rounded-xl border-slate-200">
+                    <SelectValue placeholder="All States" />
+                  </SelectTrigger>
+                  <SelectContent className="max-h-60">
+                    <SelectItem value="all">All States</SelectItem>
+                    {US_STATES.map((state) => (
+                      <SelectItem key={state} value={state.toLowerCase()}>{state}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Package */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                  <Package className="h-3 w-3" /> Package
+                </label>
+                <Select value={packageFilter} onValueChange={setPackageFilter}>
+                  <SelectTrigger className="h-9 text-xs rounded-xl border-slate-200">
+                    <SelectValue placeholder="All Packages" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Packages</SelectItem>
+                    <SelectItem value="starter">Starter</SelectItem>
+                    <SelectItem value="advanced">Advanced</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Payment Method */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                  <CreditCard className="h-3 w-3" /> Payment
+                </label>
+                <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
+                  <SelectTrigger className="h-9 text-xs rounded-xl border-slate-200">
+                    <SelectValue placeholder="All Methods" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Methods</SelectItem>
+                    <SelectItem value="stripe">Stripe</SelectItem>
+                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
+                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Amount Range */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                  <DollarSign className="h-3 w-3" /> Amount
+                </label>
+                <div className="flex items-center gap-1.5">
+                  <Input
+                    type="number"
+                    placeholder="Min"
+                    value={minAmount}
+                    onChange={(e) => setMinAmount(e.target.value)}
+                    className="h-9 text-xs rounded-xl border-slate-200"
+                  />
+                  <span className="text-slate-300 text-sm">—</span>
+                  <Input
+                    type="number"
+                    placeholder="Max"
+                    value={maxAmount}
+                    onChange={(e) => setMaxAmount(e.target.value)}
+                    className="h-9 text-xs rounded-xl border-slate-200"
+                  />
+                </div>
+              </div>
+            </div>
+
+            {/* Custom date range */}
+            {dateFilter === "custom" && (
+              <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
+                <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
+                  <Calendar className="h-3 w-3" /> Date Range:
+                </label>
+                <div className="flex items-center gap-2">
+                  <Input
+                    type="date"
+                    value={customDateFrom}
+                    onChange={(e) => setCustomDateFrom(e.target.value)}
+                    className="h-9 text-xs rounded-xl border-slate-200 w-36"
+                  />
+                  <span className="text-xs text-slate-400">to</span>
+                  <Input
+                    type="date"
+                    value={customDateTo}
+                    onChange={(e) => setCustomDateTo(e.target.value)}
+                    className="h-9 text-xs rounded-xl border-slate-200 w-36"
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="bg-white border border-slate-200 rounded-2xl overflow-hidden">
@@ -613,7 +823,7 @@ export default function OrdersPage() {
           {paginatedOrders.length === 0 ? (
             <div className="text-center py-16">
               <p className="text-sm text-slate-400">
-                {searchQuery || statusFilter !== "all" || stateFilter !== "all" ? "No matching orders" : "No orders yet"}
+                {searchQuery || activeFilterCount > 0 ? "No orders match your search" : "No orders yet"}
               </p>
             </div>
           ) : (

@@ -1,7 +1,8 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ArrowRight, ArrowLeft, Building2, Users, MapPin, Globe, FileText, Shield, Edit2, User, X } from "lucide-react"
+import { ArrowRight, ArrowLeft, Building2, Users, MapPin, Globe, FileText, Shield, Edit2, User, X, Tag, Loader2, Check } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
 import type { CheckoutData } from "@/app/checkout/page"
 import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/local-storage"
 import { useToast } from "@/hooks/use-toast"
@@ -28,6 +29,15 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
   const { toast } = useToast()
   const [passportData, setPassportData] = useState<Record<string, PassportData | null>>({})
   const [isCreatingCompany, setIsCreatingCompany] = useState(false)
+  const [promoCodeInput, setPromoCodeInput] = useState("")
+  const [isValidatingPromo, setIsValidatingPromo] = useState(false)
+  const [promoError, setPromoError] = useState("")
+  const [appliedPromo, setAppliedPromo] = useState<{
+    code: string
+    discountType: "percentage" | "fixed"
+    discountValue: number
+    discountAmount: number
+  } | null>(formData?.promoCode || null)
 
   useEffect(() => {
     const loadPassports = async () => {
@@ -79,7 +89,60 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
 
   const addonsTotal = itinPrice + resellerCertPrice + websitePrice
   const subtotal = basePackagePrice + stateFilingFee
-  const total = subtotal + addonsTotal
+  const discountAmount = appliedPromo?.discountAmount || 0
+  const total = Math.max(0, subtotal + addonsTotal - discountAmount)
+
+  const handleApplyPromoCode = async () => {
+    if (!promoCodeInput.trim()) {
+      setPromoError("Please enter a promo code")
+      return
+    }
+
+    setIsValidatingPromo(true)
+    setPromoError("")
+
+    try {
+      const response = await fetch("/api/promo-codes/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          code: promoCodeInput.trim(),
+          orderAmount: subtotal + addonsTotal,
+          packageType: formData?.packageType,
+          email: formData?.email,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (data.success && data.data?.valid) {
+        const promo = {
+          code: data.data.code,
+          discountType: data.data.discountType,
+          discountValue: data.data.discountValue,
+          discountAmount: data.data.discountAmount,
+        }
+        setAppliedPromo(promo)
+        setPromoCodeInput("")
+        toast({
+          title: "Promo code applied!",
+          description: `You saved $${data.data.discountAmount}`,
+        })
+      } else {
+        setPromoError(data.error || "Invalid promo code")
+      }
+    } catch (error) {
+      setPromoError("Failed to validate promo code")
+    } finally {
+      setIsValidatingPromo(false)
+    }
+  }
+
+  const handleRemovePromoCode = () => {
+    setAppliedPromo(null)
+    setPromoCodeInput("")
+    setPromoError("")
+  }
 
   const handleRemoveItin = (memberId: string) => {
     if (updateData) {
@@ -155,6 +218,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
           packagePrice: basePackagePrice,
           stateFilingFee: stateFilingFee,
           totalAmount: total,
+          promoCode: appliedPromo,
         })
       }
 
@@ -528,11 +592,82 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
             </>
           )}
 
+          {/* Promo Code Section */}
+          <div className="pt-4 border-t border-slate-200">
+            <div className="flex items-center gap-2 mb-3">
+              <Tag className="w-4 h-4 text-slate-500" />
+              <span className="text-sm font-medium text-slate-700">Promo Code</span>
+            </div>
+            
+            {appliedPromo ? (
+              <div className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-green-600" />
+                  <span className="font-mono font-semibold text-green-800">{appliedPromo.code}</span>
+                  <span className="text-sm text-green-600">
+                    ({appliedPromo.discountType === "percentage" 
+                      ? `${appliedPromo.discountValue}% off` 
+                      : `$${appliedPromo.discountValue} off`})
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={handleRemovePromoCode}
+                  className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-2"
+                >
+                  <X className="w-4 h-4" />
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Enter promo code"
+                    value={promoCodeInput}
+                    onChange={(e) => {
+                      setPromoCodeInput(e.target.value.toUpperCase())
+                      setPromoError("")
+                    }}
+                    onKeyDown={(e) => e.key === "Enter" && handleApplyPromoCode()}
+                    className="font-mono uppercase flex-1"
+                  />
+                  <Button
+                    variant="outline"
+                    onClick={handleApplyPromoCode}
+                    disabled={isValidatingPromo || !promoCodeInput.trim()}
+                    className="px-4"
+                  >
+                    {isValidatingPromo ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      "Apply"
+                    )}
+                  </Button>
+                </div>
+                {promoError && (
+                  <p className="text-xs text-red-600">{promoError}</p>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Discount Line */}
+          {appliedPromo && (
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-2">
+              <span className="text-sm text-green-600 font-medium">Discount ({appliedPromo.code})</span>
+              <span className="text-sm font-semibold text-green-600 flex-shrink-0">-${appliedPromo.discountAmount}</span>
+            </div>
+          )}
+
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 pt-4 border-t-2 border-slate-300">
             <div className="min-w-0">
               <p className="text-base md:text-lg font-semibold text-slate-900">Grand Total</p>
             </div>
             <div className="text-left sm:text-right">
+              {appliedPromo && (
+                <p className="text-sm text-slate-400 line-through">${subtotal + addonsTotal}</p>
+              )}
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">${total}</p>
             </div>
           </div>

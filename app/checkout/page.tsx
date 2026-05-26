@@ -74,6 +74,13 @@ export type CheckoutData = {
   packagePrice?: number
   stateFilingFee?: number
   addonsTotal?: number
+  // Promo Code
+  promoCode?: {
+    code: string
+    discountType: "percentage" | "fixed"
+    discountValue: number
+    discountAmount: number
+  } | null
 }
 
 const STEPS = ["Account", "State & Package", "Business Info", "Owner Info", "Review", "Payment"]
@@ -130,6 +137,7 @@ export default function CheckoutPage() {
     packagePrice: undefined,
     stateFilingFee: undefined,
     addonsTotal: undefined,
+    promoCode: null,
   })
 
   useEffect(() => {

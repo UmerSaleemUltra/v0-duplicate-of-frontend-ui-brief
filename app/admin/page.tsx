@@ -1045,8 +1045,8 @@ export default function AdminDashboard() {
                     </div>
                   </div>
                   <div className="flex flex-col items-end gap-1 flex-shrink-0 ml-3">
-                    {item.estimatedTotal > 0 && (
-                      <span className="text-sm font-bold text-slate-800">${item.estimatedTotal.toLocaleString()}</span>
+                    {item.estimatedTotal && item.estimatedTotal > 0 && (
+                      <span className="text-sm font-bold text-slate-800">${Number(item.estimatedTotal).toLocaleString()}</span>
                     )}
                     <span className="text-xs text-slate-400">{timeAgo}</span>
                   </div>
@@ -1147,16 +1147,18 @@ export default function AdminDashboard() {
                         </div>
                         {item.addons && item.addons.length > 0 && (
                           <div className="flex flex-wrap gap-1 mt-2">
-                            {item.addons.map((addon: string, ai: number) => (
-                              <span key={ai} className="text-xs px-1.5 py-0.5 rounded bg-slate-200 text-slate-600">{addon}</span>
+                            {item.addons.map((addon: any, ai: number) => (
+                              <span key={ai} className="text-xs px-1.5 py-0.5 rounded bg-slate-200 text-slate-600">
+                                {typeof addon === "string" ? addon : addon?.name || addon?.title || "Add-on"}
+                              </span>
                             ))}
                           </div>
                         )}
                         <p className="text-xs text-slate-400 mt-2">{createdDate} · Updated {timeAgo}</p>
                       </div>
                       <div className="flex flex-col items-end gap-2 flex-shrink-0">
-                        {item.estimatedTotal > 0 && (
-                          <span className="text-base font-bold text-slate-800">${item.estimatedTotal.toLocaleString()}</span>
+                        {item.estimatedTotal && item.estimatedTotal > 0 && (
+                          <span className="text-base font-bold text-slate-800">${Number(item.estimatedTotal).toLocaleString()}</span>
                         )}
                         <div className="flex items-center gap-1">
                           {Array.from({ length: 6 }, (_, s) => (

@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
       controller.enqueue(encoder.encode(data))
 
       // Listen for all realtime events
-      const events = ["orders", "companies", "documents", "mail", "notifications", "users", "passports", "addons"]
+      const events = ["orders", "companies", "documents", "mail", "notifications", "users", "passports", "addons", "promo-codes"]
       const unsubscribers: Array<() => void> = []
 
       events.forEach((resource) => {

@@ -85,6 +85,7 @@ export async function POST(req: NextRequest) {
       whatsappPhone,
       receiptUrl,
       members,
+      promoCode,
     } = body
 
     if (!companyId || !companyName || !type || !amount) {
@@ -114,6 +115,7 @@ export async function POST(req: NextRequest) {
       packagePrice,
       stateFilingFee,
       addonsTotal,
+      promoCode: promoCode || null,
       paymentStatus: "pending",
       paymentMethod: paymentMethod || "stripe",
       paymentInfo: {
@@ -164,7 +166,8 @@ export async function POST(req: NextRequest) {
           companyName,
           packageType || "Starter Package",
           (total || amount).toString(),
-          orderId
+          orderId,
+          promoCode || null
         )
 
         const emailResult = await sendUserEmail({
@@ -192,6 +195,7 @@ export async function POST(req: NextRequest) {
             (total || amount).toString(),
             orderId,
             user.email,
+            promoCode || null,
           )
           console.log(" Admin email template created:", adminOrderEmail.subject)
           

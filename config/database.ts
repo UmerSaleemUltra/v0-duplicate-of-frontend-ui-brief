@@ -102,6 +102,11 @@ export async function ensureIndexes(): Promise<void> {
         { orderId: 1 },
         { background: true, name: "idx_documents_order" }
       ),
+      // Promo codes: unique code lookup
+      db.collection("promo_codes").createIndex(
+        { code: 1 },
+        { background: true, unique: true, name: "idx_promo_codes_code" }
+      ),
     ])
   } catch {
     // Non-fatal — indexes may already exist or Atlas free tier limits apply

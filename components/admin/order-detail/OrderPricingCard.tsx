@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Receipt, Calendar, Phone, ExternalLink, Pencil, Check, X, Upload, Loader2 } from "lucide-react"
+import { Receipt, Calendar, Phone, ExternalLink, Pencil, Check, X, Upload, Loader2, Tag } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 
@@ -104,6 +104,7 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
   const packagePrice = pricing.packagePrice ?? 0
   const stateFee = pricing.stateFilingFee ?? 0
   const addonsTotal = pricing.addonsTotal ?? 0
+  const promoCode = order?.promoCode || null
 
   const whatsappPhone = order?.whatsappPhone || order?.paymentInfo?.whatsappPhone || ""
   const receiptUrl = order?.receiptUrl || order?.paymentInfo?.receiptUrl
@@ -275,6 +276,32 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
             onSave={(v) => savePricingField("addonsTotal", v)}
           />
         </div>
+
+        {/* Promo Code Applied */}
+        {promoCode && (
+          <div className="rounded-xl border border-green-200 bg-green-50 p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 rounded-lg bg-green-100 flex items-center justify-center">
+                <Tag className="w-4 h-4 text-green-600" />
+              </div>
+              <div className="flex-1">
+                <p className="text-xs font-medium text-green-600 mb-0.5">Promo Code Applied</p>
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="font-mono font-bold text-green-800 text-sm">{promoCode.code}</span>
+                  <span className="text-xs text-green-600">
+                    ({promoCode.discountType === "percentage" 
+                      ? `${promoCode.discountValue}% off` 
+                      : `$${promoCode.discountValue} off`})
+                  </span>
+                </div>
+              </div>
+              <div className="text-right">
+                <p className="text-xs text-green-600">Discount</p>
+                <p className="text-lg font-bold text-green-700">-${promoCode.discountAmount}</p>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Payment / order details */}
         <div className="rounded-xl border border-gray-200 overflow-hidden divide-y divide-gray-100">
