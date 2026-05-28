@@ -244,14 +244,8 @@ export default function PromoCodesPage() {
       if (data.success) {
         toast.success(editingCode ? "Promo code updated" : "Promo code created")
         setIsDialogOpen(false)
-        // Update local state immediately for instant UI feedback
-        if (editingCode) {
-          setPromoCodes((prev) =>
-            prev.map((code) => (code._id === data.data._id ? data.data : code))
-          )
-        } else {
-          setPromoCodes((prev) => [data.data, ...prev])
-        }
+        // Refresh the list from server to ensure UI is in sync
+        await fetchPromoCodes()
       } else {
         toast.error(data.error || "Failed to save promo code")
       }
@@ -275,8 +269,8 @@ export default function PromoCodesPage() {
       const data = await response.json()
       if (data.success) {
         toast.success("Promo code deleted")
-        // Update local state immediately for instant UI feedback
-        setPromoCodes((prev) => prev.filter((code) => code._id !== id))
+        // Refresh the list from server to ensure UI is in sync
+        await fetchPromoCodes()
       } else {
         toast.error(data.error || "Failed to delete promo code")
       }
@@ -300,10 +294,8 @@ export default function PromoCodesPage() {
       const data = await response.json()
       if (data.success) {
         toast.success(`Promo code ${code.isActive ? "deactivated" : "activated"}`)
-        // Update local state immediately for instant UI feedback
-        setPromoCodes((prev) =>
-          prev.map((c) => (c._id === code._id ? { ...c, isActive: !c.isActive } : c))
-        )
+        // Refresh the list from server to ensure UI is in sync
+        await fetchPromoCodes()
       } else {
         toast.error(data.error || "Failed to update promo code")
       }
