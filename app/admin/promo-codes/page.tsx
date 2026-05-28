@@ -244,7 +244,14 @@ export default function PromoCodesPage() {
       if (data.success) {
         toast.success(editingCode ? "Promo code updated" : "Promo code created")
         setIsDialogOpen(false)
-        // SSE will handle updating the list in realtime
+        // Update local state immediately for instant UI feedback
+        if (editingCode) {
+          setPromoCodes((prev) =>
+            prev.map((code) => (code._id === data.data._id ? data.data : code))
+          )
+        } else {
+          setPromoCodes((prev) => [data.data, ...prev])
+        }
       } else {
         toast.error(data.error || "Failed to save promo code")
       }
@@ -268,7 +275,8 @@ export default function PromoCodesPage() {
       const data = await response.json()
       if (data.success) {
         toast.success("Promo code deleted")
-        // SSE will handle updating the list in realtime
+        // Update local state immediately for instant UI feedback
+        setPromoCodes((prev) => prev.filter((code) => code._id !== id))
       } else {
         toast.error(data.error || "Failed to delete promo code")
       }
@@ -292,7 +300,10 @@ export default function PromoCodesPage() {
       const data = await response.json()
       if (data.success) {
         toast.success(`Promo code ${code.isActive ? "deactivated" : "activated"}`)
-        // SSE will handle updating the list in realtime
+        // Update local state immediately for instant UI feedback
+        setPromoCodes((prev) =>
+          prev.map((c) => (c._id === code._id ? { ...c, isActive: !c.isActive } : c))
+        )
       } else {
         toast.error(data.error || "Failed to update promo code")
       }
