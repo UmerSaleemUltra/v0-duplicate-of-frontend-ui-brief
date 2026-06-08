@@ -244,8 +244,9 @@ export default function PromoCodesPage() {
       if (data.success) {
         toast.success(editingCode ? "Promo code updated" : "Promo code created")
         setIsDialogOpen(false)
-        // Refresh the list from server to ensure UI is in sync
-        await fetchPromoCodes()
+        setFormData(emptyPromoCode)
+        setEditingCode(null)
+        // SSE will broadcast the update in real-time
       } else {
         toast.error(data.error || "Failed to save promo code")
       }
@@ -269,8 +270,7 @@ export default function PromoCodesPage() {
       const data = await response.json()
       if (data.success) {
         toast.success("Promo code deleted")
-        // Refresh the list from server to ensure UI is in sync
-        await fetchPromoCodes()
+        // SSE will broadcast the deletion in real-time
       } else {
         toast.error(data.error || "Failed to delete promo code")
       }
@@ -294,8 +294,7 @@ export default function PromoCodesPage() {
       const data = await response.json()
       if (data.success) {
         toast.success(`Promo code ${code.isActive ? "deactivated" : "activated"}`)
-        // Refresh the list from server to ensure UI is in sync
-        await fetchPromoCodes()
+        // SSE will broadcast the update in real-time
       } else {
         toast.error(data.error || "Failed to update promo code")
       }
