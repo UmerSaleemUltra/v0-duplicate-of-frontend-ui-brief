@@ -15,8 +15,8 @@ export default function Brands() {
       logo: "https://cdn.brandfetch.io/idY4rzp0Gt/w/820/h/94/theme/light/logo.png?c=1bxid64Mup7aczewSAYMX&t=1769383332682"
     },
     { 
-      name: "zyla",
-      logo: "https://cdn.brandfetch.io/id1R4rkJXF/w/1024/h/280/theme/dark/logo.png?c=1dxbfHSJFAPEGdCLU4o5B"
+      name: "PingPong",
+      logo: "https://cdn.brandfetch.io/ido1C-ChQB/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
     },
     { 
       name: "nsave",
