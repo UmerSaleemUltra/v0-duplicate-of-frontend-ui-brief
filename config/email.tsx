@@ -166,13 +166,10 @@ export const emailTemplates = {
   orderConfirmation: (
     name: string,
     companyName: string,
-    packageType: string,
     totalAmount: string,
     orderId: string,
     promoCode?: { code: string; discountType: string; discountValue: number; discountAmount: number } | null,
   ) => {
-    const raw = (packageType || "").toLowerCase().trim()
-    const packageLabel = raw.includes("advanced") ? "Advanced" : "Starter"
     const promoHtml = promoCode ? `
                       <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
                         <strong>Promo Code:</strong> <span style="color: #880000; font-weight: 600;">${promoCode.code}</span>
@@ -221,10 +218,6 @@ export const emailTemplates = {
                         <strong>Company Name:</strong> ${companyName}
                       </li>
                       <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Package:</strong> ${packageLabel}
-                      </li>${promoHtml}
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Total Amount:</strong> ${totalAmount}
                       </li>
                       <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
                         <strong>Order ID:</strong> ${orderId}
