@@ -163,22 +163,12 @@ export const emailTemplates = {
     `,
   }),
 
-  orderConfirmation: (
-    name: string,
-    companyName: string,
-    totalAmount: string,
-    orderId: string,
-    promoCode?: { code: string; discountType: string; discountValue: number; discountAmount: number } | null,
-  ) => {
-    const promoHtml = promoCode ? `
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Promo Code:</strong> <span style="color: #880000; font-weight: 600;">${promoCode.code}</span>
-                        (${promoCode.discountType === "percentage" ? `${promoCode.discountValue}% off` : `$${promoCode.discountValue} off`})
-                      </li>
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #16a34a; line-height: 1.6;">
-                        <strong>You Saved:</strong> $${promoCode.discountAmount}
-                      </li>` : ""
-    return {
+orderConfirmation: (
+  name: string,
+  companyName: string,
+  orderId: string,
+) => {
+  return {
     subject: "Your Order Has Been Confirmed",
     html: `
     <!DOCTYPE html>
@@ -202,7 +192,7 @@ export const emailTemplates = {
                 <tr>
                   <td style="padding: 0 40px 40px 40px;">
                     <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
+                      Hello ${name},
                     </p>
                     
                     <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
@@ -216,8 +206,6 @@ export const emailTemplates = {
                     <ul style="margin: 0 0 20px 0; padding-left: 20px;">
                       <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
                         <strong>Company Name:</strong> ${companyName}
-                      </li>
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
                       </li>
                       <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
                         <strong>Order ID:</strong> ${orderId}
@@ -258,7 +246,8 @@ export const emailTemplates = {
       </body>
     </html>
     `,
-  }},
+  };
+},
 
   passwordReset: (name: string, resetLink: string) => ({
     subject: "Reset Your Password - Buzz Filing",
