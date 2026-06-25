@@ -16,7 +16,7 @@ export default function Brands() {
     },
     { 
       name: "PingPong",
-      logo: "https://cdn.brandfetch.io/ido1C-ChQB/theme/dark/logo.svg?c=1dxbfHSJFAPEGdCLU4o5B"
+      logo: "https://b2b-cdn.pingpongx.com/static_platform/business-amber/tenantsLogo/ppLogo.png"
     },
     { 
       name: "nsave",
