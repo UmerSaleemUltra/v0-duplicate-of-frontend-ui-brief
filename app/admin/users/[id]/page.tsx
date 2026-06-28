@@ -410,10 +410,20 @@ export default function UserDetailPage() {
           <h1 className="text-2xl font-bold">{user.name}</h1>
           <p className="text-sm text-muted-foreground">{user.email}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={() => router.back()}>
-          <ArrowLeft className="h-4 w-4 mr-2" />
-          Back
-        </Button>
+        <div className="flex gap-2">
+          <Button 
+            variant="default" 
+            size="sm" 
+            onClick={() => router.push(`/admin/users/${params.id}/dashboard`)}
+          >
+            <FileText className="h-4 w-4 mr-2" />
+            View Dashboard
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => router.back()}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Back
+          </Button>
+        </div>
       </div>
 
       <Card>
