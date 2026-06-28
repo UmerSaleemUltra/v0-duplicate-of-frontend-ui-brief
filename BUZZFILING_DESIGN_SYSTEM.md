@@ -37,7 +37,7 @@
 
 ### Design Tokens (CSS Variables)
 
-```css
+\`\`\`css
 :root {
   /* Core Colors */
   --background: oklch(1 0 0);           /* White */
@@ -73,11 +73,11 @@
   /* Radius */
   --radius: 0.5rem;
 }
-```
+\`\`\`
 
 ### Brand Colors (Direct Use)
 
-```css
+\`\`\`css
 @theme inline {
   --color-brand: #ff0d13;
   --color-brand-hover: #d81c20;
@@ -100,7 +100,7 @@
   --color-glass-border: rgba(0, 0, 0, 0.08);
   --color-glass-hover: rgba(255, 255, 255, 0.85);
 }
-```
+\`\`\`
 
 ### Color Usage Guidelines
 
@@ -122,15 +122,15 @@
 
 ### Font Family
 
-```css
+\`\`\`css
 @theme inline {
   --font-sans: var(--font-unbounded), ui-sans-serif, system-ui, sans-serif;
 }
-```
+\`\`\`
 
 ### Font Import (layout.tsx)
 
-```tsx
+\`\`\`tsx
 import { Unbounded } from "next/font/google"
 
 const unbounded = Unbounded({
@@ -138,11 +138,11 @@ const unbounded = Unbounded({
   variable: "--font-unbounded",
   weight: ["200", "300", "400", "500", "600", "700", "800", "900"],
 })
-```
+\`\`\`
 
 ### Heading Styles
 
-```css
+\`\`\`css
 h1 {
   @apply text-2xl font-semibold tracking-tight text-slate-900;
   @apply sm:text-3xl lg:text-4xl;
@@ -171,7 +171,7 @@ h5 {
 h6 {
   @apply text-sm font-medium tracking-tight text-slate-900;
 }
-```
+\`\`\`
 
 ### Text Size Scale
 
@@ -209,15 +209,15 @@ h6 {
 
 ### Container
 
-```html
+\`\`\`html
 <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
   <!-- Content -->
 </div>
-```
+\`\`\`
 
 ### Grid Layouts
 
-```html
+\`\`\`html
 <!-- 2 Column -->
 <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
@@ -226,7 +226,7 @@ h6 {
 
 <!-- 4 Column -->
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-```
+\`\`\`
 
 ---
 
@@ -234,12 +234,12 @@ h6 {
 
 ### Radius Scale
 
-```css
+\`\`\`css
 --radius-sm: calc(var(--radius) - 2px);  /* 6px */
 --radius-md: var(--radius);               /* 8px */
 --radius-lg: calc(var(--radius) + 2px);  /* 10px */
 --radius-xl: calc(var(--radius) + 4px);  /* 12px */
-```
+\`\`\`
 
 ### Usage
 
@@ -269,11 +269,11 @@ h6 {
 
 ### Dark Mode Shadows
 
-```css
+\`\`\`css
 .dark .shadow-lg  { box-shadow: 0 4px 28px rgba(0,0,0,0.6) !important; }
 .dark .shadow-xl  { box-shadow: 0 8px 40px rgba(0,0,0,0.7) !important; }
 .dark .shadow-sm  { box-shadow: 0 1px 8px rgba(0,0,0,0.5) !important; }
-```
+\`\`\`
 
 ---
 
@@ -281,7 +281,7 @@ h6 {
 
 ### Button
 
-```tsx
+\`\`\`tsx
 const buttonVariants = cva(
   "inline-flex cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-lg text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:ring-2 focus-visible:ring-ring/20",
   {
@@ -309,11 +309,11 @@ const buttonVariants = cva(
     },
   }
 )
-```
+\`\`\`
 
 #### Button Examples
 
-```html
+\`\`\`html
 <!-- Primary (Gradient) -->
 <button class="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white rounded-lg px-5 py-2.5 font-medium hover:opacity-90 shadow-sm">
   Start Your Business
@@ -343,11 +343,11 @@ const buttonVariants = cva(
 <button class="border-2 border-white text-white rounded-full px-8 py-2.5 hover:bg-white/10 font-semibold">
   Login
 </button>
-```
+\`\`\`
 
 ### Card
 
-```tsx
+\`\`\`tsx
 function Card({ className, ...props }: React.ComponentProps<'div'>) {
   return (
     <div
@@ -359,11 +359,11 @@ function Card({ className, ...props }: React.ComponentProps<'div'>) {
     />
   )
 }
-```
+\`\`\`
 
 #### Card Examples
 
-```html
+\`\`\`html
 <!-- Basic Card -->
 <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
   <h3 class="text-lg font-semibold mb-2">Card Title</h3>
@@ -389,11 +389,11 @@ function Card({ className, ...props }: React.ComponentProps<'div'>) {
     Apply Now
   </button>
 </div>
-```
+\`\`\`
 
 ### Input
 
-```tsx
+\`\`\`tsx
 <input
   className={cn(
     "flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors",
@@ -402,11 +402,11 @@ function Card({ className, ...props }: React.ComponentProps<'div'>) {
     "disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50",
   )}
 />
-```
+\`\`\`
 
 ### Badge
 
-```tsx
+\`\`\`tsx
 const badgeVariants = cva(
   "inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
   {
@@ -419,11 +419,11 @@ const badgeVariants = cva(
     },
   }
 )
-```
+\`\`\`
 
 #### Badge Examples
 
-```html
+\`\`\`html
 <!-- Primary Badge -->
 <span class="inline-flex items-center rounded-full bg-[#ff0d13] text-white px-3 py-1 text-xs font-semibold">
   New
@@ -442,19 +442,19 @@ const badgeVariants = cva(
 <span class="inline-flex items-center rounded-full bg-blue-100 text-blue-700 px-3 py-1 text-xs font-semibold">
   In Progress
 </span>
-```
+\`\`\`
 
 ### Avatar
 
-```html
+\`\`\`html
 <div class="h-10 w-10 rounded-full bg-[#ff0d13]/10 flex items-center justify-center">
   <span class="text-[#ff0d13] text-sm font-medium">AU</span>
 </div>
-```
+\`\`\`
 
 ### Table
 
-```html
+\`\`\`html
 <table class="w-full">
   <thead>
     <tr class="border-b border-slate-200">
@@ -473,7 +473,7 @@ const badgeVariants = cva(
     </tr>
   </tbody>
 </table>
-```
+\`\`\`
 
 ---
 
@@ -481,7 +481,7 @@ const badgeVariants = cva(
 
 ### Keyframes
 
-```css
+\`\`\`css
 @keyframes shimmer {
   100% { transform: translateX(200%); }
 }
@@ -506,11 +506,11 @@ const badgeVariants = cva(
   0% { background-position: -200% 0; }
   100% { background-position: 200% 0; }
 }
-```
+\`\`\`
 
 ### Animation Classes
 
-```css
+\`\`\`css
 .animate-marquee {
   display: flex;
   gap: 1rem;
@@ -530,15 +530,15 @@ const badgeVariants = cva(
   .animate-marquee { animation: marquee 10s linear infinite; }
   .animate-marquee-reverse { animation: marquee-reverse 10s linear infinite; }
 }
-```
+\`\`\`
 
 ### Transitions
 
-```css
+\`\`\`css
 .transition-smooth {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
-```
+\`\`\`
 
 ---
 
@@ -548,7 +548,7 @@ The admin panel uses a **pure black (#000000)** base with red accents.
 
 ### Dark Mode Variables
 
-```css
+\`\`\`css
 .dark {
   --background: oklch(0 0 0);          /* Pure Black */
   --foreground: oklch(0.98 0 0);       /* White */
@@ -561,7 +561,7 @@ The admin panel uses a **pure black (#000000)** base with red accents.
   --border: oklch(0.2 0 0);
   --input: oklch(0.15 0 0);
 }
-```
+\`\`\`
 
 ### Dark Mode Background Mapping
 
@@ -583,14 +583,14 @@ The admin panel uses a **pure black (#000000)** base with red accents.
 
 ### Dark Mode Borders
 
-```css
+\`\`\`css
 .dark .border { border-color: rgba(255,255,255,0.08) !important; }
 .dark .border-slate-200 { border-color: rgba(255,255,255,0.1) !important; }
-```
+\`\`\`
 
 ### Dark Mode Skeleton Shimmer
 
-```css
+\`\`\`css
 .dark .animate-pulse > * {
   background-image: linear-gradient(
     90deg,
@@ -603,7 +603,7 @@ The admin panel uses a **pure black (#000000)** base with red accents.
   background-size: 200% 100% !important;
   animation: skeleton-shimmer 1.8s ease-in-out infinite !important;
 }
-```
+\`\`\`
 
 ---
 
@@ -611,7 +611,7 @@ The admin panel uses a **pure black (#000000)** base with red accents.
 
 ### Glass Card
 
-```css
+\`\`\`css
 .glass-card {
   @apply bg-white/90 backdrop-blur-sm;
 }
@@ -619,18 +619,18 @@ The admin panel uses a **pure black (#000000)** base with red accents.
 .dark .glass-card {
   @apply bg-slate-900/80 backdrop-blur-sm;
 }
-```
+\`\`\`
 
 ### Text Wrapping
 
-```css
+\`\`\`css
 .text-balance { text-wrap: balance; }
 .text-pretty { text-wrap: pretty; }
-```
+\`\`\`
 
 ### Scrollbar Hide
 
-```css
+\`\`\`css
 .scrollbar-hide {
   -ms-overflow-style: none;
   scrollbar-width: none;
@@ -638,17 +638,17 @@ The admin panel uses a **pure black (#000000)** base with red accents.
 .scrollbar-hide::-webkit-scrollbar {
   display: none;
 }
-```
+\`\`\`
 
 ### Safe Area Padding
 
-```css
+\`\`\`css
 @supports (padding: env(safe-area-inset-bottom)) {
   .pb-safe {
     padding-bottom: env(safe-area-inset-bottom);
   }
 }
-```
+\`\`\`
 
 ---
 
@@ -656,7 +656,7 @@ The admin panel uses a **pure black (#000000)** base with red accents.
 
 ### Hero Section
 
-```html
+\`\`\`html
 <div class="bg-gradient-to-r from-[#880000] to-[#ff0d13] py-16 md:py-24">
   <div class="max-w-7xl mx-auto px-4 text-center">
     <h1 class="text-4xl md:text-6xl font-extrabold text-white mb-6">
@@ -670,11 +670,11 @@ The admin panel uses a **pure black (#000000)** base with red accents.
     </a>
   </div>
 </div>
-```
+\`\`\`
 
 ### Navbar
 
-```html
+\`\`\`html
 <header class="bg-gradient-to-r from-[#880000] to-[#ff0d13]">
   <div class="max-w-7xl mx-auto px-4 h-20 flex items-center justify-between">
     <img src="/logo-white.png" alt="Logo" class="h-12" />
@@ -688,11 +688,11 @@ The admin panel uses a **pure black (#000000)** base with red accents.
     </div>
   </div>
 </header>
-```
+\`\`\`
 
 ### Footer
 
-```html
+\`\`\`html
 <footer class="bg-gradient-to-r from-[#880000] to-[#ff0d13] pt-16 pb-8">
   <div class="max-w-7xl mx-auto px-4">
     <div class="grid grid-cols-1 md:grid-cols-4 gap-8 mb-12">
@@ -716,11 +716,11 @@ The admin panel uses a **pure black (#000000)** base with red accents.
     </div>
   </div>
 </footer>
-```
+\`\`\`
 
 ### Section with Label
 
-```html
+\`\`\`html
 <section class="py-16 bg-white">
   <div class="max-w-6xl mx-auto px-4">
     <div class="text-center mb-12">
@@ -731,20 +731,20 @@ The admin panel uses a **pure black (#000000)** base with red accents.
     <!-- Content -->
   </div>
 </section>
-```
+\`\`\`
 
 ### Admin Page Header
 
-```html
+\`\`\`html
 <div class="mb-8">
   <h1 class="text-2xl font-semibold text-foreground">Dashboard</h1>
   <p class="text-muted-foreground mt-1">Welcome back, Admin</p>
 </div>
-```
+\`\`\`
 
 ### Admin Stat Cards Grid
 
-```html
+\`\`\`html
 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
   <div class="bg-card rounded-xl border p-6 shadow-sm">
     <div class="flex items-center justify-between mb-4">
@@ -760,13 +760,13 @@ The admin panel uses a **pure black (#000000)** base with red accents.
     </div>
   </div>
 </div>
-```
+\`\`\`
 
 ---
 
 ## Feature Checkmarks
 
-```html
+\`\`\`html
 <div class="flex items-start gap-3">
   <div class="flex-shrink-0 w-6 h-6 rounded-full bg-[#ff0d13] flex items-center justify-center">
     <svg width="14" height="11" viewBox="0 0 14 11" fill="none">
@@ -775,7 +775,7 @@ The admin panel uses a **pure black (#000000)** base with red accents.
   </div>
   <span class="text-slate-900 text-base">LLC Formation</span>
 </div>
-```
+\`\`\`
 
 ---
 
@@ -792,7 +792,7 @@ Change all instances of:
 
 ### 2. Update CSS Variables
 
-```css
+\`\`\`css
 :root {
   --primary: oklch(/* your color */);
   --ring: oklch(/* your color */);
@@ -803,7 +803,7 @@ Change all instances of:
   --color-brand-hover: #YOUR_DARKER_COLOR;
   --color-brand-secondary: #YOUR_SECONDARY;
 }
-```
+\`\`\`
 
 ### 3. Update Components
 
@@ -817,7 +817,7 @@ Replace Tailwind classes:
 
 ## File Structure
 
-```
+\`\`\`
 /app
   /globals.css          # All CSS variables, dark mode, utilities
   /layout.tsx           # Font imports, metadata
@@ -838,7 +838,7 @@ Replace Tailwind classes:
   /admin
     /admin-shell.tsx    # Admin layout wrapper
     ...
-```
+\`\`\`
 
 ---
 
