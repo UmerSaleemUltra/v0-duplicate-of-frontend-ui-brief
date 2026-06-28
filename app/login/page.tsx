@@ -5,7 +5,7 @@ import Image from "next/image"
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Mail, Lock, ArrowRight, Eye, EyeOff, Clock } from "lucide-react"
+import { Mail, Lock, ArrowRight, Eye, EyeOff, Clock, AlertCircle, CheckCircle, Loader } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -24,17 +24,24 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [retryAfter, setRetryAfter] = useState<number | null>(null)
   const [remainingTime, setRemainingTime] = useState<number | null>(null)
+  const [pageError, setPageError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Synchronous check — authService reads from in-memory / cookie on module init
-    const currentUser = authService.getCurrentUser()
-    if (currentUser) {
-      if (currentUser.role === "admin") {
-        router.replace("/admin")
+    try {
+      // Synchronous check — authService reads from in-memory / cookie on module init
+      const currentUser = authService.getCurrentUser()
+      if (currentUser) {
+        if (currentUser.role === "admin") {
+          router.replace("/admin")
+        } else {
+          router.replace("/client/dashboard")
+        }
       } else {
-        router.replace("/client/dashboard")
+        setAuthChecked(true)
       }
-    } else {
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : "An error occurred during authentication"
+      setPageError(errorMessage)
       setAuthChecked(true)
     }
   }, [router])
@@ -97,9 +104,48 @@ export default function LoginPage() {
   if (!authChecked) {
     return (
       <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-brand/20 animate-pulse mx-auto mb-4"></div>
-          <p className="text-muted">Checking authentication...</p>
+        <div className="w-full max-w-md">
+          <div className="glass-modal rounded-3xl p-8">
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-brand/20 flex items-center justify-center">
+                <Loader className="w-8 h-8 text-brand animate-spin" />
+              </div>
+              <div className="text-center">
+                <p className="text-foreground font-medium">Checking authentication...</p>
+                <p className="text-sm text-muted mt-2">Please wait a moment</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Show error boundary if page error exists
+  if (pageError) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-6">
+        <div className="w-full max-w-md">
+          <div className="glass-modal rounded-3xl p-8">
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="w-16 h-16 rounded-full bg-red-100 flex items-center justify-center">
+                <AlertCircle className="w-8 h-8 text-red-600" />
+              </div>
+              <div className="text-center">
+                <h2 className="text-xl font-bold text-foreground mb-2">Connection Error</h2>
+                <p className="text-sm text-muted mb-6">{pageError}</p>
+                <Button
+                  onClick={() => {
+                    setPageError(null)
+                    window.location.reload()
+                  }}
+                  className="bg-brand hover:bg-brand-hover text-white"
+                >
+                  Try Again
+                </Button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )
@@ -124,55 +170,70 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="space-y-6">
             {error && (
-              <div className="p-4 rounded-xl border bg-error/10 border-error/20 text-error text-sm">
-                {error}
-                {remainingTime && remainingTime > 0 && (
-                  <div className="mt-2 flex items-center gap-2 text-amber-700">
-                    <Clock className="w-4 h-4" />
-                    <span>
-                      Please wait {remainingTime} minute{remainingTime > 1 ? "s" : ""} before trying again
-                    </span>
+              <div className="p-4 rounded-xl border bg-red-50 border-red-200 text-red-900 text-sm animate-in fade-in slide-in-from-top-2 duration-300">
+                <div className="flex gap-3">
+                  <AlertCircle className="w-5 h-5 mt-0.5 flex-shrink-0 text-red-600" />
+                  <div className="flex-1">
+                    <p className="font-medium text-red-900">Sign in failed</p>
+                    <p className="text-red-800 text-sm mt-1">{error}</p>
+                    {remainingTime && remainingTime > 0 && (
+                      <div className="mt-3 flex items-center gap-2 p-2 rounded bg-amber-100/50">
+                        <Clock className="w-4 h-4 text-amber-700" />
+                        <span className="text-amber-700 text-sm font-medium">
+                          Please wait {remainingTime} minute{remainingTime > 1 ? "s" : ""} before trying again
+                        </span>
+                      </div>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             )}
 
             <div className="space-y-2">
-              <Label htmlFor="email">Email Address</Label>
+              <Label htmlFor="email" className="flex items-center gap-2">
+                Email Address
+                {email && !loading && <CheckCircle className="w-4 h-4 text-green-600" />}
+              </Label>
               <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted pointer-events-none" />
                 <Input
                   id="email"
                   type="email"
                   placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="pl-10 h-11"
+                  className="pl-10 h-11 transition-all focus:ring-2 focus:ring-brand/20"
                   required
                   disabled={loading || (retryAfter !== null && retryAfter > 0)}
+                  autoComplete="email"
                 />
               </div>
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="flex items-center gap-2">
+                Password
+                {password && !loading && <CheckCircle className="w-4 h-4 text-green-600" />}
+              </Label>
               <div className="relative">
-                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted" />
+                <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-muted pointer-events-none" />
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="••••••••"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="pl-10 pr-10 h-11"
+                  className="pl-10 pr-10 h-11 transition-all focus:ring-2 focus:ring-brand/20"
                   required
                   disabled={loading || (retryAfter !== null && retryAfter > 0)}
+                  autoComplete="current-password"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors"
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-muted hover:text-foreground transition-colors p-1"
                   disabled={loading || (retryAfter !== null && retryAfter > 0)}
+                  aria-label={showPassword ? "Hide password" : "Show password"}
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -198,11 +259,27 @@ export default function LoginPage() {
 
             <Button
               type="submit"
-              className="w-full bg-brand hover:bg-brand-hover text-white h-11"
-              disabled={loading || (retryAfter !== null && retryAfter > 0)}
+              className="w-full bg-brand hover:bg-brand-hover text-white h-11 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
+              disabled={loading || (retryAfter !== null && retryAfter > 0) || !email || !password}
             >
-              {loading ? "Signing in..." : retryAfter && retryAfter > 0 ? `Wait ${retryAfter}s` : "Sign In"}
-              {!loading && (!retryAfter || retryAfter <= 0) && <ArrowRight className="ml-2 w-4 h-4" />}
+              <div className="flex items-center justify-center gap-2">
+                {loading ? (
+                  <>
+                    <Loader className="w-4 h-4 animate-spin" />
+                    <span>Signing in...</span>
+                  </>
+                ) : retryAfter && retryAfter > 0 ? (
+                  <>
+                    <Clock className="w-4 h-4" />
+                    <span>Wait {retryAfter}s</span>
+                  </>
+                ) : (
+                  <>
+                    <span>Sign In</span>
+                    <ArrowRight className="w-4 h-4" />
+                  </>
+                )}
+              </div>
             </Button>
           </form>
 
