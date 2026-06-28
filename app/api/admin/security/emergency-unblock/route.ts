@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
-import { removeBannedIP, getDatabase } from "@/lib/security/security-db"
+import { removeBannedIP } from "@/lib/security/security-db"
+import { getDatabase } from "@/config/database"
 
 /**
  * EMERGENCY UNBLOCK ENDPOINT
