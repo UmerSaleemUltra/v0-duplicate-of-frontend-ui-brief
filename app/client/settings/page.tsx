@@ -1,16 +1,15 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { User, Lock, Info, Calendar, Hash, CheckCircle2, Copy, Eye, EyeOff, Bell } from "lucide-react"
+import { User, Lock, Info, Calendar, Hash, CheckCircle2, Copy, Eye, EyeOff } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { useToast } from "@/hooks/use-toast"
 import { ClientShell } from "@/components/client/client-shell"
 import { authService } from "@/lib/auth"
-import { useAuthGuard } from "@/hooks/use-auth-guard"
+import { useAuthGuard } from "@/hooks/use-auth-guard" // Import useAuthGuard hook
 import { Skeleton } from "@/components/ui/skeleton"
-import { Badge } from "@/components/ui/badge"
 
 export default function ClientSettingsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard()
@@ -28,8 +27,6 @@ export default function ClientSettingsPage() {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showNewPassword, setShowNewPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [notifications, setNotifications] = useState<any[]>([])
-  const [notificationsLoading, setNotificationsLoading] = useState(false)
 
   useEffect(() => {
     const loadUserData = async () => {
@@ -40,21 +37,14 @@ export default function ClientSettingsPage() {
           return
         }
 
-        const [userResponse, notifResponse] = await Promise.all([
-          fetch("/api/auth/me", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }),
-          fetch("/api/notifications", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          }).then(r => r.json()).catch(() => ({ data: [] }))
-        ])
+        const response = await fetch("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-        if (userResponse.ok) {
-          const data = await userResponse.json()
+        if (response.ok) {
+          const data = await response.json()
           setCurrentUser(data.data || data)
         } else {
           toast({
@@ -63,10 +53,6 @@ export default function ClientSettingsPage() {
             variant: "destructive",
           })
         }
-
-        // Set notifications
-        const notifData = notifResponse.data || notifResponse.notifications || []
-        setNotifications(Array.isArray(notifData) ? notifData : [])
       } catch (error) {
         toast({
           title: "Error",
@@ -191,23 +177,6 @@ export default function ClientSettingsPage() {
         <div>
           <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Settings</h1>
           <p className="text-slate-600 text-xs sm:text-sm md:text-base mt-1">Manage your account settings and preferences</p>
-        </div>
-
-        {/* User Details Summary Card */}
-        <div className="bg-gradient-to-r from-[#880000]/10 to-[#ff0d13]/10 border border-[#ff0d13]/20 rounded-lg p-6 sm:p-8">
-          <h2 className="text-lg sm:text-xl font-semibold text-slate-900 mb-4">Your Profile Overview</h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div>
-              <p className="text-xs sm:text-sm font-medium text-slate-600">Member Since</p>
-              <p className="text-sm sm:text-base font-semibold text-slate-900 mt-1">
-                {currentUser?.createdAt ? new Date(currentUser.createdAt).toLocaleDateString("en-US", { year: "numeric", month: "long", day: "numeric" }) : "N/A"}
-              </p>
-            </div>
-            <div>
-              <p className="text-xs sm:text-sm font-medium text-slate-600">Account Status</p>
-              <p className="text-sm sm:text-base font-semibold text-green-600 mt-1">Active</p>
-            </div>
-          </div>
         </div>
 
         {/* Personal Information */}
@@ -424,56 +393,6 @@ export default function ClientSettingsPage() {
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Notifications Section */}
-        <div className="bg-white border border-slate-200 rounded-lg p-6 sm:p-8 transition-all duration-200 hover:shadow-lg hover:border-primary/50">
-          <div className="flex items-start sm:items-center gap-3 mb-6">
-            <div className="w-10 h-10 flex-shrink-0 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-              <Bell className="w-5 h-5 text-white" />
-            </div>
-            <div className="min-w-0">
-              <h2 className="text-lg sm:text-xl font-semibold text-slate-900">Recent Notifications</h2>
-              <p className="text-sm text-slate-600">Your latest updates and alerts</p>
-            </div>
-          </div>
-
-          {notificationsLoading ? (
-            <div className="space-y-3">
-              <Skeleton className="h-16 w-full" />
-              <Skeleton className="h-16 w-full" />
-            </div>
-          ) : notifications.length > 0 ? (
-            <div className="space-y-3 max-h-96 overflow-y-auto">
-              {notifications.slice(0, 5).map((notif) => (
-                <div key={notif.id} className="p-3 border border-slate-100 rounded-lg hover:bg-slate-50 transition-colors">
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1 min-w-0">
-                      <h3 className="font-semibold text-sm text-slate-900">{notif.title}</h3>
-                      <p className="text-sm text-slate-600 mt-1 line-clamp-2">{notif.message}</p>
-                      <p className="text-xs text-slate-400 mt-2">
-                        {new Date(notif.createdAt).toLocaleDateString("en-US", { 
-                          year: "numeric", 
-                          month: "short", 
-                          day: "numeric" 
-                        })}
-                      </p>
-                    </div>
-                    {notif.read ? (
-                      <Badge variant="secondary" className="flex-shrink-0">Read</Badge>
-                    ) : (
-                      <Badge className="flex-shrink-0 bg-[#ff0d13]">New</Badge>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-8">
-              <Bell className="w-12 h-12 text-slate-300 mx-auto mb-3" />
-              <p className="text-sm text-slate-600">No notifications yet</p>
-            </div>
-          )}
         </div>
       </div>
     </ClientShell>
