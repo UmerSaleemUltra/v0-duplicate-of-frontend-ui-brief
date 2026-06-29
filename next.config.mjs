@@ -28,32 +28,63 @@ const nextConfig = {
   },
   turbopack: {
     root: ".",
+    resolveAlias: {
+      fs: { type: "empty" },
+      path: { type: "empty" },
+      crypto: { type: "empty" },
+      net: { type: "empty" },
+      tls: { type: "empty" },
+      dns: { type: "empty" },
+      "child_process": { type: "empty" },
+      "timers/promises": { type: "empty" },
+      "util/types": { type: "empty" },
+      "fs/promises": { type: "empty" },
+    },
+    rules: {
+      "*.node": {
+        loaders: ["ignore-loader"],
+      },
+    },
   },
   webpack: (config, { isServer }) => {
+    // Apply fallbacks for all built-in Node.js modules
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+      crypto: false,
+      net: false,
+      tls: false,
+      dns: false,
+      "child_process": false,
+      "timers/promises": false,
+      "util/types": false,
+      "fs/promises": false,
+    }
+
     if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-        path: false,
-        crypto: false,
-        net: false,
-        tls: false,
-        dns: false,
-        "child_process": false,
-        "timers/promises": false,
-        "util/types": false,
-        "fs/promises": false,
-      }
+      // Mark server-only packages as external on client
+      const serverOnlyPackages = [
+        "mongodb",
+        "mongodb-client-encryption",
+        "kerberos",
+        "snappy",
+        "socks",
+        "node-fetch",
+        "fetch-blob",
+      ]
       
-      // Prevent mongodb and related modules from being bundled on client
       config.externals = [
         ...(config.externals || []),
         /^mongodb/,
         /^kerberos/,
         /^snappy/,
         /^socks/,
+        /^node-fetch/,
+        /^fetch-blob/,
       ]
     }
+    
     return config
   },
   headers: async () => {

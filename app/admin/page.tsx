@@ -325,6 +325,8 @@ export default function AdminDashboard() {
     void verifyAndLoadDashboard()
   }, [router, toast])
 
+  const memoizedToast = toast
+
   if (isAuthenticating || (isLoadingData && !dataLoaded)) {
     return (
       <div className="space-y-4 md:space-y-6 p-4 md:p-6 lg:p-8 animate-pulse">
