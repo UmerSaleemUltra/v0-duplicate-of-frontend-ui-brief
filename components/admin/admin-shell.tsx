@@ -34,35 +34,61 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [userInitials, setUserInitials] = useState("AU")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [authError, setAuthError] = useState<string | null>(null)
   const { isDark, toggle: toggleDark } = useDarkMode()
 
   useEffect(() => {
-    const loadUserData = async () => {
-      const currentUser = authService.getCurrentUser()
+    const verifyAdminAccess = async () => {
+      try {
+        const token = authService.getToken()
+        if (!token) {
+          router.push("/login")
+          return
+        }
 
-      if (!currentUser || currentUser.role !== "admin") {
-        router.push("/auth")
-        return
-      }
+        // Verify auth with server-side validation
+        const response = await fetch("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        })
 
-      setIsAuthenticated(true)
-      if (currentUser) {
+        if (!response.ok) {
+          router.push("/login")
+          return
+        }
+
+        const data = await response.json()
+        const currentUser = data.user
+
+        if (!currentUser || currentUser.role !== "admin") {
+          setAuthError("Unauthorized: Admin access required")
+          router.push("/client/dashboard")
+          return
+        }
+
+        setIsAuthenticated(true)
         setUserName(currentUser.name || "Admin User")
         setUserEmail(currentUser.email || "admin@buzzfiling.com")
 
         const initials =
           currentUser.name
             ?.split(" ")
-            .map((n) => n[0])
+            .map((n: string) => n[0])
             .join("")
             .toUpperCase()
             .slice(0, 2) || "AU"
         setUserInitials(initials)
+      } catch (error) {
+        console.error("[v0] Admin auth verification failed:", error)
+        setAuthError("Failed to verify admin access")
+        router.push("/login")
+      } finally {
+        setIsLoading(false)
       }
-      setIsLoading(false)
     }
 
-    loadUserData()
+    verifyAdminAccess()
   }, [router])
 
   const handleLogout = () => {
@@ -83,8 +109,15 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
     )
   }
 
-  if (!isAuthenticated) {
-    return null
+  if (authError || !isAuthenticated) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 font-medium">{authError || "Unauthorized access"}</p>
+          <p className="text-gray-500 mt-2">Redirecting to login...</p>
+        </div>
+      </div>
+    )
   }
 
   return (

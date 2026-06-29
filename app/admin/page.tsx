@@ -74,80 +74,69 @@ export default function AdminDashboard() {
   const [abandonedDrawerOpen, setAbandonedDrawerOpen] = useState(false)
 
   useEffect(() => {
-    const checkAuth = async () => {
-      if (!authService.isAuthenticated()) {
-        router.push("/login")
-        return
-      }
-
-      const user = authService.getCurrentUser()
-      if (!user || user.role !== "admin") {
-        router.push("/client/dashboard")
-        return
-      }
-
-      setIsAuthenticating(false)
-    }
-
-    checkAuth()
-  }, [router])
-
-  useEffect(() => {
-    if (isAuthenticating) return
-
-    const loadData = async () => {
-      const startTime = Date.now()
-
-      if (!dataLoaded) {
-        setIsLoadingData(true)
-      }
-
+    const verifyAndLoadDashboard = async () => {
       try {
-        console.log(" Admin Dashboard: Starting data load...")
         const token = authService.getToken()
         if (!token) {
-          console.log(" Admin Dashboard: No token found")
+          router.push("/login")
           return
         }
 
-        const timestamp = Date.now()
-        const [usersResponse, companiesResponse] = await Promise.all([
-          ApiClient.users.getAll(token),
-          fetch(`/api/companies?_t=${timestamp}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Cache-Control": "no-cache, no-store, must-revalidate",
-            },
-          }).then((res) => res.json()),
-        ])
-
-        const allUsers = usersResponse.data || []
-        const allCompanies = companiesResponse.data || companiesResponse || []
-
-        console.log(" Admin Dashboard: Fetched data", {
-          usersCount: allUsers.length,
-          companiesCount: allCompanies.length,
+        // Verify admin access with server
+        const response = await fetch("/api/auth/me", {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
         })
 
-        const allOrders = allCompanies.flatMap((company: any) => {
-          const companyOrders = company.orders || []
-          console.log(` Company ${company.name}: ${companyOrders.length} orders`)
+        if (!response.ok) {
+          router.push("/login")
+          return
+        }
 
-          return companyOrders.map((order: any) => ({
-            ...order,
-            companyId: company.id,
-            companyName: company.name,
-            state: company.state,
-            userId: company.userId,
-            packageType: company.packageType
-              ? `${company.packageType} Package`
-              : order.type === "Addon Purchase"
-                ? "Add-on Only"
-                : "N/A",
-          }))
-        })
+        const data = await response.json()
+        const user = data.user
 
-        console.log(" Admin Dashboard: Total orders extracted:", allOrders.length)
+        if (!user || user.role !== "admin") {
+          router.push("/client/dashboard")
+          return
+        }
+
+        setIsAuthenticating(false)
+        setIsLoadingData(true)
+
+        // Load dashboard data
+        try {
+          const timestamp = Date.now()
+          const [usersResponse, companiesResponse] = await Promise.all([
+            ApiClient.users.getAll(token),
+            fetch(`/api/companies?_t=${timestamp}`, {
+              headers: {
+                Authorization: `Bearer ${token}`,
+                "Cache-Control": "no-cache, no-store, must-revalidate",
+              },
+            }).then((res) => res.json()),
+          ])
+
+          const allUsers = usersResponse.data || []
+          const allCompanies = companiesResponse.data || companiesResponse || []
+
+          const allOrders = allCompanies.flatMap((company: any) => {
+            const companyOrders = company.orders || []
+
+            return companyOrders.map((order: any) => ({
+              ...order,
+              companyId: company.id,
+              companyName: company.name,
+              state: company.state,
+              userId: company.userId,
+              packageType: company.packageType
+                ? `${company.packageType} Package`
+                : order.type === "Addon Purchase"
+                  ? "Add-on Only"
+                  : "N/A",
+            }))
+          })
 
         const sortedOrders = allOrders
           .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
@@ -161,7 +150,6 @@ export default function AdminDashboard() {
 
         setAllOrders(sortedOrders)
         setOrders(sortedOrders.slice(0, 5))
-        console.log(" Admin Dashboard: Recent orders set:", sortedOrders.length)
 
         const now = new Date()
         const startOfYear = new Date(now.getFullYear(), 0, 1)
@@ -174,7 +162,6 @@ export default function AdminDashboard() {
           })
           .reduce((sum: number, order: any) => {
             const orderAmount = order.pricing?.total || order.amount || order.total || 0
-            console.log(` Order ${order.id}: amount=${orderAmount}`)
             return sum + orderAmount
           }, 0)
 
@@ -187,12 +174,6 @@ export default function AdminDashboard() {
             const orderAmount = order.pricing?.total || order.amount || order.total || 0
             return sum + orderAmount
           }, 0)
-
-        console.log(" Admin Dashboard: Revenue calculated", {
-          yearRevenue,
-          currentMonthRevenue,
-          totalOrders: allOrders.length,
-        })
 
         const currentMonthName = now.toLocaleDateString("en-US", { month: "short", year: "numeric" })
         const monthlyRevenueData = [
@@ -324,23 +305,13 @@ export default function AdminDashboard() {
             }
           }
         } catch (e) {
-          // silent fail
+          // Abandoned checkouts fetch is optional
         }
-
-        console.log(" Admin Dashboard: State breakdown set:", breakdown.length)
 
         setDataLoaded(true)
-
-        const loadTime = Date.now() - startTime
-        console.log(` Admin Dashboard: Data loaded in ${loadTime}ms`)
-
-        if (loadTime < 100) {
-          setIsLoadingData(false)
-        } else {
-          setTimeout(() => setIsLoadingData(false), 300)
-        }
+        setIsLoadingData(false)
       } catch (error) {
-        console.error(" Admin Dashboard: Error loading data", error)
+        console.error("[v0] Dashboard data loading failed:", error)
         if (error instanceof Error && error.message.includes("Unauthorized")) {
           authService.logout()
           router.push("/login")
@@ -351,8 +322,8 @@ export default function AdminDashboard() {
       }
     }
 
-    loadData()
-  }, [isAuthenticating, router, dataLoaded, selectedYear])
+    void loadData()
+  }, [router])
 
   if (isAuthenticating || (isLoadingData && !dataLoaded)) {
     return (
