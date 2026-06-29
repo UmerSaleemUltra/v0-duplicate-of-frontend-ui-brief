@@ -29,6 +29,33 @@ const nextConfig = {
   turbopack: {
     root: ".",
   },
+  webpack: (config, { isServer }) => {
+    if (!isServer) {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        fs: false,
+        path: false,
+        crypto: false,
+        net: false,
+        tls: false,
+        dns: false,
+        "child_process": false,
+        "timers/promises": false,
+        "util/types": false,
+        "fs/promises": false,
+      }
+      
+      // Prevent mongodb and related modules from being bundled on client
+      config.externals = [
+        ...(config.externals || []),
+        /^mongodb/,
+        /^kerberos/,
+        /^snappy/,
+        /^socks/,
+      ]
+    }
+    return config
+  },
   headers: async () => {
     return [
       {

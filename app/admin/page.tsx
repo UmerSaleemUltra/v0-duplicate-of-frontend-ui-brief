@@ -322,8 +322,8 @@ export default function AdminDashboard() {
       }
     }
 
-    void loadData()
-  }, [router])
+    void verifyAndLoadDashboard()
+  }, [router, toast])
 
   if (isAuthenticating || (isLoadingData && !dataLoaded)) {
     return (
