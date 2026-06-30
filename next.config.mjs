@@ -1,3 +1,5 @@
+import webpack from 'webpack'
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   typescript: {
@@ -29,21 +31,16 @@ const nextConfig = {
   turbopack: {
     root: ".",
     resolveAlias: {
-      fs: { type: "empty" },
-      path: { type: "empty" },
-      crypto: { type: "empty" },
-      net: { type: "empty" },
-      tls: { type: "empty" },
-      dns: { type: "empty" },
-      "child_process": { type: "empty" },
-      "timers/promises": { type: "empty" },
-      "util/types": { type: "empty" },
-      "fs/promises": { type: "empty" },
-    },
-    rules: {
-      "*.node": {
-        loaders: ["ignore-loader"],
-      },
+      fs: false,
+      path: false,
+      crypto: false,
+      net: false,
+      tls: false,
+      dns: false,
+      "child_process": false,
+      "timers/promises": false,
+      "util/types": false,
+      "fs/promises": false,
     },
   },
   webpack: (config, { isServer }) => {
@@ -63,26 +60,39 @@ const nextConfig = {
     }
 
     if (!isServer) {
-      // Mark server-only packages as external on client
-      const serverOnlyPackages = [
-        "mongodb",
-        "mongodb-client-encryption",
-        "kerberos",
-        "snappy",
-        "socks",
-        "node-fetch",
-        "fetch-blob",
-      ]
+      // Create externals array
+      const existingExternals = Array.isArray(config.externals) ? config.externals : config.externals ? [config.externals] : []
       
-      config.externals = [
-        ...(config.externals || []),
+      // Server-only packages and patterns
+      const serverOnlyPatterns = [
         /^mongodb/,
         /^kerberos/,
         /^snappy/,
         /^socks/,
         /^node-fetch/,
         /^fetch-blob/,
+        /^@mongodb/,
+        /^mongodb-client-encryption/,
       ]
+      
+      config.externals = [
+        ...existingExternals,
+        ...serverOnlyPatterns,
+        (context, request, callback) => {
+          if (serverOnlyPatterns.some(pattern => pattern.test(request))) {
+            return callback(null, `commonjs ${request}`)
+          }
+          callback()
+        },
+      ]
+
+      // Add IgnorePlugin to prevent server modules from being bundled
+      config.plugins.push(
+        new webpack.IgnorePlugin({
+          resourceRegExp: /^(mongodb|kerberos|snappy|socks|node-fetch|fetch-blob|@mongodb|mongodb-client-encryption)/,
+          contextRegExp: /./,
+        })
+      )
     }
     
     return config

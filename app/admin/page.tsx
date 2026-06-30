@@ -322,10 +322,8 @@ export default function AdminDashboard() {
       }
     }
 
-    void verifyAndLoadDashboard()
+    verifyAndLoadDashboard()
   }, [router, toast])
-
-  const memoizedToast = toast
 
   if (isAuthenticating || (isLoadingData && !dataLoaded)) {
     return (
