@@ -316,14 +316,18 @@ export default function AdminDashboard() {
           authService.logout()
           router.push("/login")
         } else {
-          toast.error("Error loading dashboard data")
+          try {
+            toast.error("Error loading dashboard data")
+          } catch (toastError) {
+            console.error("[v0] Toast error:", toastError)
+          }
         }
         setIsLoadingData(false)
       }
     }
 
     verifyAndLoadDashboard()
-  }, [router, toast])
+  }, [router])
 
   if (isAuthenticating || (isLoadingData && !dataLoaded)) {
     return (

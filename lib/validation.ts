@@ -1,7 +1,7 @@
-import { ObjectId } from "mongodb"
-
+// Simple ObjectId validation without MongoDB import to avoid client bundling
 export function isValidObjectId(id: string): boolean {
-  return ObjectId.isValid(id) && /^[a-f\d]{24}$/i.test(id)
+  // MongoDB ObjectId is a 24-character hex string
+  return /^[a-f\d]{24}$/i.test(id) && id.length === 24
 }
 
 export function validateObjectId(id: string, fieldName: string = "ID"): void {
