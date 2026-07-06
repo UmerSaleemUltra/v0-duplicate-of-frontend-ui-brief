@@ -58,7 +58,7 @@
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
     "events": "latest",
-    "framer-motion": "12.23.26",
+    "framer-motion": "11.5.12",
     "gcp-metadata": "latest",
     "global": "4.4.0",
     "html2canvas": "1.4.1",
