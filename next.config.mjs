@@ -30,18 +30,6 @@ const nextConfig = {
   },
   turbopack: {
     root: ".",
-    resolveAlias: {
-      fs: false,
-      path: false,
-      crypto: false,
-      net: false,
-      tls: false,
-      dns: false,
-      "child_process": false,
-      "timers/promises": false,
-      "util/types": false,
-      "fs/promises": false,
-    },
   },
   webpack: (config, { isServer }) => {
     // Apply fallbacks for all built-in Node.js modules
