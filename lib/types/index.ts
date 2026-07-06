@@ -94,6 +94,7 @@ export interface Company {
     orderSuccessfullyProcessed: boolean
     registeredAgentAssigned: boolean
     businessMailingAddressIssued: boolean
+    companyApplicationApplied: boolean
     companyFormationCompleted: boolean
     einApplicationSubmitted: boolean
     einObtained: boolean
