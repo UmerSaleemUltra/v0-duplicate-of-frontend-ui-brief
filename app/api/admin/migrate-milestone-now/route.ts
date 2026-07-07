@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { connectToDatabase } from '@/lib/db'
+import { getDatabase } from '@/lib/db'
 
 /**
  * One-time migration endpoint
@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const db = await connectToDatabase()
+    const db = getDatabase()
     const companiesCollection = db.collection('companies')
 
     // Bulk update all companies that don't have this milestone yet
