@@ -694,7 +694,6 @@ export default function OrdersPage() {
               <DropdownMenuItem onClick={() => handleDateRangeSelect("current-month", "This Month")}>This Month</DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDateRangeSelect("last-month", "Last Month")}>Last Month</DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDateRangeSelect("last-3-months", "Last 3 Months")}>Last 3 Months</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDateRangeSelect("all-time", "All Time")}>All Time</DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDateRangeSelect("custom", "Custom Range")}>Custom Range</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
