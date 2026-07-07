@@ -292,6 +292,7 @@ export default function ClientDashboard() {
     company.milestones?.orderSuccessfullyProcessed,
     company.milestones?.registeredAgentAssigned,
     company.milestones?.businessMailingAddressIssued,
+    company.milestones?.companyApplicationApplied,
     company.milestones?.companyFormationCompleted,
     company.milestones?.einApplicationSubmitted,
     company.milestones?.einObtained,
@@ -300,7 +301,7 @@ export default function ClientDashboard() {
     const customMilestoneValues = Object.values(company.milestones?.custom || {}).map((m: any) => m.completed)
 
     const allDefaultMilestonesComplete =
-      defaultMilestones.length === 6 &&
+      defaultMilestones.length === 7 &&
       defaultMilestones.every((m) => m === true) &&
       defaultMilestones.filter((m) => m === undefined || m === null).length === 0
 
@@ -417,6 +418,7 @@ export default function ClientDashboard() {
     orderSuccessfullyProcessed: true,
     registeredAgentAssigned: true,
     businessMailingAddressIssued: true,
+    companyApplicationApplied: false,
     companyFormationCompleted: false,
     einApplicationSubmitted: false,
     einObtained: false,
@@ -455,18 +457,24 @@ export default function ClientDashboard() {
     },
     {
       id: 4,
+      title: "Company Application Applied",
+      completed: milestones.companyApplicationApplied,
+      icon: FileCheck,
+    },
+    {
+      id: 5,
       title: "Company Formation Completed",
       completed: milestones.companyFormationCompleted,
       icon: FileCheck,
     },
     {
-      id: 5,
+      id: 6,
       title: "EIN Application Submitted",
       completed: milestones.einApplicationSubmitted,
       icon: HashIcon,
     },
     {
-      id: 6,
+      id: 7,
       title: "EIN Obtained Successfully",
       completed: milestones.einObtained,
       icon: CheckCircle2,

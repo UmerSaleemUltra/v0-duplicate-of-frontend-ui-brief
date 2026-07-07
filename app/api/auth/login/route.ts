@@ -97,23 +97,18 @@ export async function POST(request: NextRequest) {
 
     const isFirstLogin = !user.lastLoginAt
 
-    // Update lastLoginAt with proper error handling
-    try {
-      await usersCollection.updateOne(
-        { _id: user._id },
-        {
-          $set: {
-            lastLoginAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
+    // Fire-and-forget: update lastLoginAt without blocking the response
+    usersCollection.updateOne(
+      { _id: user._id },
+      {
+        $set: {
+          lastLoginAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
         },
-      )
-    } catch (updateError) {
-      console.error("[v0] Failed to update lastLoginAt:", updateError)
-      // Log but don't fail the login
-    }
+      },
+    ).catch(() => { /* Non-fatal */ })
 
-    // Send login email asynchronously with proper error tracking
+    // Fire-and-forget: send login email without blocking the response
     ;(async () => {
       try {
         const loginDateTime = new Date()
@@ -152,8 +147,7 @@ export async function POST(request: NextRequest) {
           }
         }
       } catch (emailError) {
-        console.error("[v0] Failed to send login email:", emailError)
-        // Log error for monitoring but don't block login
+        // Email failure is non-fatal, logged silently
       }
     })()
 

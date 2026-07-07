@@ -49,17 +49,6 @@ export async function verifyAuth(request: Request | NextRequest): Promise<{
     const secret = new TextEncoder().encode(JWT_SECRET)
     const { payload } = await jwtVerify(token, secret)
 
-    // Check token expiration if present
-    if (payload.exp) {
-      const expirationTime = (payload.exp as number) * 1000
-      if (Date.now() > expirationTime) {
-        return {
-          authenticated: false,
-          error: "Token has expired",
-        }
-      }
-    }
-
     const user: AuthUser = {
       id: payload.userId as string,
       email: payload.email as string,

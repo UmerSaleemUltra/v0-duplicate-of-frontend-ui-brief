@@ -61,6 +61,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           orderSuccessfullyProcessed: false,
           registeredAgentAssigned: false,
           businessMailingAddressIssued: false,
+          companyApplicationApplied: false,
           companyFormationCompleted: false,
           einApplicationSubmitted: false,
           einObtained: false,
@@ -195,6 +196,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           title: "Mailing Address Assigned",
           message: `Your company "${company.name}" now has an official mailing address. Check your dashboard for details.`,
           emailTemplate: "businessAddressAssigned",
+        },
+        companyApplicationApplied: {
+          title: "Company Application Applied",
+          message: `Your company application for "${company.name}" has been submitted to the state. We'll update you when we receive confirmation.`,
+          emailTemplate: "companyApplicationApplied",
         },
         companyFormationCompleted: {
           title: "Company Formation Complete",

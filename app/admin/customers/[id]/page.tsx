@@ -15,7 +15,6 @@ import { useAuthGuard } from "@/lib/use-auth-guard"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
 import ApiClient from "@/lib/api-client"
-import { isValidObjectId } from "@/lib/validation"
 
 export default function CustomerDetailPage() {
   const params = useParams()
@@ -23,16 +22,6 @@ export default function CustomerDetailPage() {
 
   const { isAuthenticated, isLoading } = useAuthGuard("admin")
   const router = useRouter()
-
-  // Validate customer ID format
-  if (customerId && !isValidObjectId(customerId)) {
-    return (
-      <div className="p-4">
-        <p className="text-red-600">Invalid customer ID format</p>
-      </div>
-    )
-  }
-
   const [customer, setCustomer] = useState<any>(null)
   const [companies, setCompanies] = useState<any[]>([])
   const [orders, setOrders] = useState<any[]>([])
@@ -57,6 +46,22 @@ export default function CustomerDetailPage() {
     }
   }, [customerId, isLoading, isAuthenticated])
 
+  useEffect(() => {
+    if (customer) {
+      console.log(" Customer loaded:", customer.name)
+      console.log(" Companies:", companies)
+      companies.forEach((company, index) => {
+        console.log(` Company ${index + 1}:`, {
+          name: company.name,
+          ein: company.ein,
+          itin: company.itin,
+          businessId: company.businessId,
+          hasItin: !!company.itin,
+        })
+      })
+    }
+  }, [customer, companies])
+
   const loadCustomerData = async () => {
     try {
       const token = authService.getToken()
@@ -65,11 +70,14 @@ export default function CustomerDetailPage() {
         return
       }
 
+      console.log(" Loading customer data for ID:", customerId)
+
       const userResponse = await fetch(`/api/users/${customerId}`, {
         headers: { Authorization: `Bearer ${token}` },
       })
 
       if (!userResponse.ok) {
+        console.error(" Failed to fetch customer:", userResponse.status)
         toast({
           title: "Error",
           description: "Failed to load customer data",
@@ -83,6 +91,7 @@ export default function CustomerDetailPage() {
       const user = userResult.data || userResult
 
       if (!user) {
+        console.error(" User not found in response")
         toast({
           title: "Error",
           description: "Customer not found",
