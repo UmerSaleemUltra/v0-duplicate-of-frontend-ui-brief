@@ -81,6 +81,7 @@ export default function DocumentsPage() {
   const [users, setUsers] = useState<any[]>([])
   const [loading, setLoading] = useState(true)
   const [currentPage, setCurrentPage] = useState(1)
+  const [totalDocumentsCount, setTotalDocumentsCount] = useState(0)
   const ITEMS_PER_PAGE = 8
 
   useEffect(() => {
@@ -132,7 +133,7 @@ export default function DocumentsPage() {
       
       // Store the total count from API response for accurate display
       if (documentsResponse.total !== undefined) {
-        sessionStorage.setItem('totalDocumentsCount', String(documentsResponse.total))
+        setTotalDocumentsCount(documentsResponse.total)
       }
     } catch (error) {
       toast({
@@ -366,10 +367,7 @@ export default function DocumentsPage() {
     }
   }
 
-  const totalDocuments = 
-    typeof window !== 'undefined' && sessionStorage.getItem('totalDocumentsCount')
-      ? parseInt(sessionStorage.getItem('totalDocumentsCount') || '0', 10)
-      : documents.length
+  const totalDocuments = totalDocumentsCount > 0 ? totalDocumentsCount : documents.length
   const completedDocuments = documents.filter((d) => d.status === "ready").length
 
   const filteredDocuments = documents.filter((doc) => {
