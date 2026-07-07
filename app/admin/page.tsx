@@ -323,7 +323,6 @@ export default function AdminDashboard() {
         }
         setIsLoadingData(false)
       }
-    }
   }, [router])
 
   useEffect(() => {
