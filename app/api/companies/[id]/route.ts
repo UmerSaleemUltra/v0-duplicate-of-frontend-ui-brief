@@ -61,6 +61,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           orderSuccessfullyProcessed: false,
           registeredAgentAssigned: false,
           businessMailingAddressIssued: false,
+          companyApplicationApplied: false,
           companyFormationCompleted: false,
           einApplicationSubmitted: false,
           einObtained: false,

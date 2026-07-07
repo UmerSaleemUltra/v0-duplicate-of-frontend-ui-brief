@@ -58,7 +58,7 @@
     "date-fns": "4.1.0",
     "embla-carousel-react": "8.5.1",
     "events": "latest",
-    "framer-motion": "^12.42.2",
+    "framer-motion": "12.23.26",
     "gcp-metadata": "latest",
     "global": "4.4.0",
     "html2canvas": "1.4.1",
@@ -90,7 +90,6 @@
     "tailwindcss-animate": "^1.0.7",
     "use": "3.1.1",
     "vaul": "^0.9.9",
-    "webpack": "5.108.3",
     "zod": "3.25.76"
   },
   "devDependencies": {

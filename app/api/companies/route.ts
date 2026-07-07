@@ -294,6 +294,7 @@ export async function POST(req: NextRequest) {
         orderSuccessfullyProcessed: false,
         registeredAgentAssigned: false,
         businessMailingAddressIssued: false,
+        companyApplicationApplied: false,
         companyFormationCompleted: false,
         einApplicationSubmitted: false,
         einObtained: false,
