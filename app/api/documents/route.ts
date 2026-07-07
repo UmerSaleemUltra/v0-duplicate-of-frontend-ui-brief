@@ -34,10 +34,12 @@ export async function GET(req: NextRequest) {
       query.companyId = companyId
     }
 
-    const documents = await db.collection("documents").find(query).sort({ createdAt: -1 }).limit(100).toArray()
+    const documents = await db.collection("documents").find(query).sort({ createdAt: -1 }).toArray()
+    const totalCount = await db.collection("documents").countDocuments(query)
 
     const result = {
       success: true,
+      total: totalCount,
       data: documents.map((doc) => ({
         id: doc._id.toString(),
         userId: doc.userId,
