@@ -175,6 +175,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
             orderSuccessfullyProcessed: companyDoc.milestones?.orderSuccessfullyProcessed || false,
             registeredAgentAssigned: companyDoc.milestones?.registeredAgentAssigned || false,
             businessMailingAddressIssued: companyDoc.milestones?.businessMailingAddressIssued || false,
+            companyApplicationApplied: companyDoc.milestones?.companyApplicationApplied || false,
             companyFormationCompleted: companyDoc.milestones?.companyFormationCompleted || false,
             einApplicationSubmitted: companyDoc.milestones?.einApplicationSubmitted || false,
             einObtained: companyDoc.milestones?.einObtained || false,

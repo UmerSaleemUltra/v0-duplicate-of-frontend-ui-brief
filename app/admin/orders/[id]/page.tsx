@@ -263,6 +263,7 @@ export default function OrderDetailPage() {
     orderSuccessfullyProcessed: false,
     registeredAgentAssigned: false,
     businessMailingAddressIssued: false,
+    companyApplicationApplied: false,
     companyFormationCompleted: false,
     einApplicationSubmitted: false,
     einObtained: false,
