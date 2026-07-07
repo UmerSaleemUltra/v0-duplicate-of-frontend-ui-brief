@@ -112,11 +112,8 @@ export default function OrdersPage() {
   const [statusFilter, setStatusFilter] = useState("all")
   const [stateFilter, setStateFilter] = useState("all")
   const [packageFilter, setPackageFilter] = useState("all")
-  const [paymentMethodFilter, setPaymentMethodFilter] = useState("all")
   const [dateFilter, setDateFilter] = useState("all-time")
   const [dateRangeLabel, setDateRangeLabel] = useState("All Time")
-  const [customDateFrom, setCustomDateFrom] = useState("")
-  const [customDateTo, setCustomDateTo] = useState("")
   const [minAmount, setMinAmount] = useState("")
   const [maxAmount, setMaxAmount] = useState("")
   const [showAdvancedFilters, setShowAdvancedFilters] = useState(false)
@@ -282,14 +279,6 @@ export default function OrdersPage() {
         const orderDate = new Date(order.createdAt)
         return orderDate >= threeMonthsAgo
       })
-    } else if (dateFilter === "custom" && customDateFrom && customDateTo) {
-      const fromDate = new Date(customDateFrom)
-      const toDate = new Date(customDateTo)
-      toDate.setHours(23, 59, 59, 999)
-      filtered = filtered.filter((order) => {
-        const orderDate = new Date(order.createdAt)
-        return orderDate >= fromDate && orderDate <= toDate
-      })
     }
     // "all-time" doesn't filter by date
 
@@ -323,14 +312,6 @@ export default function OrdersPage() {
       })
     }
 
-    // Payment method filtering
-    if (paymentMethodFilter !== "all") {
-      filtered = filtered.filter((order) => {
-        const method = (order.paymentMethod || order.paymentInfo?.method || "").toLowerCase()
-        return method.includes(paymentMethodFilter.toLowerCase())
-      })
-    }
-
     // Amount range filtering
     if (minAmount !== "") {
       const min = parseFloat(minAmount)
@@ -351,7 +332,7 @@ export default function OrdersPage() {
       filtered.reduce((acc, order) => acc + (order.pricing?.total || order.amount || order.total || 0), 0),
     )
     setTotalOrders(filtered.length)
-  }, [searchQuery, statusFilter, stateFilter, packageFilter, paymentMethodFilter, dateFilter, customDateFrom, customDateTo, minAmount, maxAmount, orders])
+  }, [searchQuery, statusFilter, stateFilter, packageFilter, dateFilter, minAmount, maxAmount, orders])
 
   useEffect(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE
@@ -377,11 +358,8 @@ export default function OrdersPage() {
     setStatusFilter("all")
     setStateFilter("all")
     setPackageFilter("all")
-    setPaymentMethodFilter("all")
     setDateFilter("all-time")
     setDateRangeLabel("All Time")
-    setCustomDateFrom("")
-    setCustomDateTo("")
     setMinAmount("")
     setMaxAmount("")
   }
@@ -390,7 +368,6 @@ export default function OrdersPage() {
     statusFilter !== "all",
     stateFilter !== "all",
     packageFilter !== "all",
-    paymentMethodFilter !== "all",
     dateFilter !== "all-time",
     minAmount !== "",
     maxAmount !== "",
@@ -694,7 +671,6 @@ export default function OrdersPage() {
               <DropdownMenuItem onClick={() => handleDateRangeSelect("current-month", "This Month")}>This Month</DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDateRangeSelect("last-month", "Last Month")}>Last Month</DropdownMenuItem>
               <DropdownMenuItem onClick={() => handleDateRangeSelect("last-3-months", "Last 3 Months")}>Last 3 Months</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => handleDateRangeSelect("custom", "Custom Range")}>Custom Range</DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>
           {(activeFilterCount > 0 || searchQuery) && (
@@ -743,24 +719,6 @@ export default function OrdersPage() {
                 </Select>
               </div>
 
-              {/* Payment Method */}
-              <div className="space-y-1.5">
-                <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
-                  <CreditCard className="h-3 w-3" /> Payment
-                </label>
-                <Select value={paymentMethodFilter} onValueChange={setPaymentMethodFilter}>
-                  <SelectTrigger className="h-9 text-xs rounded-xl border-slate-200">
-                    <SelectValue placeholder="All Methods" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">All Methods</SelectItem>
-                    <SelectItem value="stripe">Stripe</SelectItem>
-                    <SelectItem value="bank_transfer">Bank Transfer</SelectItem>
-                    <SelectItem value="whatsapp">WhatsApp</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
               {/* Amount Range */}
               <div className="space-y-1.5">
                 <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
@@ -786,29 +744,7 @@ export default function OrdersPage() {
               </div>
             </div>
 
-            {/* Custom date range */}
-            {dateFilter === "custom" && (
-              <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-slate-100">
-                <label className="text-xs font-medium text-slate-500 flex items-center gap-1">
-                  <Calendar className="h-3 w-3" /> Date Range:
-                </label>
-                <div className="flex items-center gap-2">
-                  <Input
-                    type="date"
-                    value={customDateFrom}
-                    onChange={(e) => setCustomDateFrom(e.target.value)}
-                    className="h-9 text-xs rounded-xl border-slate-200 w-36"
-                  />
-                  <span className="text-xs text-slate-400">to</span>
-                  <Input
-                    type="date"
-                    value={customDateTo}
-                    onChange={(e) => setCustomDateTo(e.target.value)}
-                    className="h-9 text-xs rounded-xl border-slate-200 w-36"
-                  />
-                </div>
-              </div>
-            )}
+
           </div>
         )}
       </div>

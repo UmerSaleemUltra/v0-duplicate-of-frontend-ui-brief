@@ -129,6 +129,11 @@ export default function DocumentsPage() {
       setCompanies(companiesData)
       setUsers(usersData)
       setDocuments(docsData)
+      
+      // Store the total count from API response for accurate display
+      if (documentsResponse.total !== undefined) {
+        sessionStorage.setItem('totalDocumentsCount', String(documentsResponse.total))
+      }
     } catch (error) {
       toast({
         title: "Error",
@@ -361,7 +366,10 @@ export default function DocumentsPage() {
     }
   }
 
-  const totalDocuments = documents.length
+  const totalDocuments = 
+    typeof window !== 'undefined' && sessionStorage.getItem('totalDocumentsCount')
+      ? parseInt(sessionStorage.getItem('totalDocumentsCount') || '0', 10)
+      : documents.length
   const completedDocuments = documents.filter((d) => d.status === "ready").length
 
   const filteredDocuments = documents.filter((doc) => {
