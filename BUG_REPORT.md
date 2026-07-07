@@ -7,9 +7,9 @@
 **Issue:** Version mismatch between `framer-motion@12.23.26` and `motion-dom@12.42.0`
 
 **Error:**
-```
+\`\`\`
 Export activeAnimations doesn't exist in target module motion-dom
-```
+\`\`\`
 
 **Root Cause:** Framer Motion is trying to import `activeAnimations` from motion-dom, but that export doesn't exist in version 12.42.0. The versions are incompatible.
 
@@ -29,15 +29,15 @@ Export activeAnimations doesn't exist in target module motion-dom
 **Issue:** Unsafe `JSON.parse()` without try-catch blocks
 
 **Code:**
-```typescript
+\`\`\`typescript
 const data = JSON.parse(event.data)  // Line 124
 const errorData = JSON.parse(errorText)  // Line 289
-```
+\`\`\`
 
 **Problem:** If the JSON is malformed, the app will throw an unhandled exception, crashing the component.
 
 **Fix:** Wrap in try-catch:
-```typescript
+\`\`\`typescript
 try {
   const data = JSON.parse(event.data)
   // ...
@@ -45,7 +45,7 @@ try {
   console.error("Invalid JSON data:", error)
   // Handle error gracefully
 }
-```
+\`\`\`
 
 ---
 
@@ -56,9 +56,9 @@ try {
 **Issue:** Production API URL hardcoded
 
 **Code:**
-```typescript
+\`\`\`typescript
 const API_BASE_URL = "https://www.buzzfiling.com"
-```
+\`\`\`
 
 **Problem:** 
 - Development environment won't work (dev domain won't point to production API)
@@ -66,11 +66,11 @@ const API_BASE_URL = "https://www.buzzfiling.com"
 - API calls fail in non-production environments
 
 **Fix:**
-```typescript
+\`\`\`typescript
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
   (typeof window !== 'undefined' && window.location.origin) || 
   "/api"
-```
+\`\`\`
 
 ---
 
@@ -81,7 +81,7 @@ const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL ||
 **Issue:** Unhandled Promise rejection in email sending
 
 **Code:**
-```typescript
+\`\`\`typescript
 sendEmail({...})
   .then((result) => {
     console.log(" Welcome email result:", result)
@@ -89,12 +89,12 @@ sendEmail({...})
   .catch((error) => {
     console.error(" Welcome email failed:", error)
   })
-```
+\`\`\`
 
 **Problem:** If `sendEmail` throws before `.then()` is attached, it won't be caught. Also, silent failures mean users don't know if signup worked.
 
 **Fix:**
-```typescript
+\`\`\`typescript
 (async () => {
   try {
     const result = await sendEmail({...})
@@ -103,7 +103,7 @@ sendEmail({...})
     // Log to error tracking service
   }
 })()
-```
+\`\`\`
 
 ---
 
@@ -114,9 +114,9 @@ sendEmail({...})
 **Issue:** Non-blocking cleanup can cause race conditions
 
 **Code:**
-```typescript
+\`\`\`typescript
 tokensCollection.deleteMany({...}).catch(console.error)
-```
+\`\`\`
 
 **Problem:** 
 - Token cleanup runs asynchronously without awaiting
@@ -124,13 +124,13 @@ tokensCollection.deleteMany({...}).catch(console.error)
 - Old tokens might not be cleaned up properly
 
 **Fix:**
-```typescript
+\`\`\`typescript
 try {
   await tokensCollection.deleteMany({...})
 } catch (error) {
   console.error("Failed to cleanup checkout tokens:", error)
 }
-```
+\`\`\`
 
 ---
 
@@ -146,13 +146,13 @@ try {
 - Could allow NoSQL injection if sanitization is bypassed
 
 **Fix:**
-```typescript
+\`\`\`typescript
 import { ObjectId, isValidObjectId } from "mongodb"
 
 if (!isValidObjectId(id)) {
   return apiError("Invalid ID format", 400)
 }
-```
+\`\`\`
 
 ---
 
@@ -168,7 +168,7 @@ if (!isValidObjectId(id)) {
 - Users can set weak passwords
 
 **Fix:** Implement OWASP password guidelines:
-```typescript
+\`\`\`typescript
 export function validatePassword(password: string) {
   const minLength = 12
   const hasUppercase = /[A-Z]/.test(password)
@@ -184,7 +184,7 @@ export function validatePassword(password: string) {
   }
   return { valid: true }
 }
-```
+\`\`\`
 
 ---
 
@@ -200,13 +200,13 @@ export function validatePassword(password: string) {
 - No explicit CORS policy defined
 
 **Fix:** Add to API responses:
-```typescript
+\`\`\`typescript
 const headers = {
   "Access-Control-Allow-Origin": process.env.NEXT_PUBLIC_FRONTEND_URL || "*",
   "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type, Authorization",
 }
-```
+\`\`\`
 
 ---
 
@@ -217,9 +217,9 @@ const headers = {
 **Issue:** Simple regex replacement is not sufficient for security
 
 **Code:**
-```typescript
+\`\`\`typescript
 return input.replace(/[${}]/g, '')
-```
+\`\`\`
 
 **Problem:**
 - Only removes `$`, `{`, `}` - but NoSQL injection uses many other patterns
@@ -227,7 +227,7 @@ return input.replace(/[${}]/g, '')
 - MongoDB operators can use different formats like `$where`, `$ne`, etc.
 
 **Fix:** Use MongoDB's built-in validation:
-```typescript
+\`\`\`typescript
 export function sanitizeInput(input: any): any {
   // Use parameterized queries instead of string concatenation
   // MongoDB automatically handles escaping when using query parameters
@@ -239,7 +239,7 @@ export function sanitizeInput(input: any): any {
   }
   // Always use parameterized queries in actual database calls
 }
-```
+\`\`\`
 
 ---
 
@@ -250,10 +250,10 @@ export function sanitizeInput(input: any): any {
 **Issue:** Excessive `console.log()` calls in production code
 
 **Example:**
-```typescript
+\`\`\`typescript
 console.log(" Attempting to send welcome email to:", email)
 console.log(" Welcome email result:", result)
-```
+\`\`\`
 
 **Problem:**
 - Leaks information in browser console
@@ -261,11 +261,11 @@ console.log(" Welcome email result:", result)
 - Makes debugging harder
 
 **Fix:** Use proper logging service or environment check:
-```typescript
+\`\`\`typescript
 if (process.env.NODE_ENV === 'development') {
   console.log("Debug info:", data)
 }
-```
+\`\`\`
 
 ---
 
@@ -276,12 +276,12 @@ if (process.env.NODE_ENV === 'development') {
 **Issue:** Using `any` type throughout the codebase
 
 **Code:**
-```typescript
+\`\`\`typescript
 create: async (data: any) => {
   const response = await api.post<T>(`/${endpoint}`, data)
   return response
 }
-```
+\`\`\`
 
 **Problem:**
 - No compile-time type checking
@@ -289,12 +289,12 @@ create: async (data: any) => {
 - Makes refactoring risky
 
 **Fix:** Use proper generic types:
-```typescript
+\`\`\`typescript
 create: async <D extends Omit<T, "id" | "createdAt">>(data: D) => {
   const response = await api.post<T>(`/${endpoint}`, data)
   return response
 }
-```
+\`\`\`
 
 ---
 
@@ -310,7 +310,7 @@ create: async <D extends Omit<T, "id" | "createdAt">>(data: D) => {
 - Difficult debugging
 
 **Fix:** Add startup validation:
-```typescript
+\`\`\`typescript
 // At app startup
 const requiredEnvVars = ['MONGODB_URI', 'JWT_SECRET', 'NEXT_PUBLIC_API_URL']
 requiredEnvVars.forEach(envVar => {
@@ -318,7 +318,7 @@ requiredEnvVars.forEach(envVar => {
     throw new Error(`Missing required environment variable: ${envVar}`)
   }
 })
-```
+\`\`\`
 
 ---
 

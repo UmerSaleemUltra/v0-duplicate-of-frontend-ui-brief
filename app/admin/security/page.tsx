@@ -26,6 +26,7 @@ import {
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
+import { MigrationMilestoneCard } from "@/components/admin/migration-milestone-card"
 
 const MAX_REASON_LEN = 48
 const MAX_TYPE_LEN = 20
@@ -692,6 +693,12 @@ function SecurityDashboardContent() {
         )}
       </div>
       </TooltipProvider>
+
+      {/* Data Migration Section */}
+      <div className="space-y-4">
+        <SectionHeading title="Data Migrations" description="One-time operations to update system data" />
+        <MigrationMilestoneCard />
+      </div>
     </div>
   )
 }
