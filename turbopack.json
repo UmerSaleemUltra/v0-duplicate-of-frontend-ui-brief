@@ -1,0 +1,11 @@
+{
+  "exclude": [
+    "node_modules/mongodb",
+    "node_modules/mongodb-client-encryption",
+    "node_modules/kerberos",
+    "node_modules/snappy",
+    "node_modules/socks",
+    "node_modules/node-fetch",
+    "node_modules/fetch-blob"
+  ]
+}
