@@ -309,18 +309,15 @@ export default function AdminDashboard() {
 
         setDataLoaded(true)
         setIsLoadingData(false)
-
+        } catch (error) {
+          console.error("[v0] Dashboard data loading failed:", error)
+          setIsLoadingData(false)
+        }
     } catch (error) {
-      console.error("[v0] Dashboard data loading failed:", error)
+      console.error("[v0] Outer error in dashboard verification:", error)
       if (error instanceof Error && error.message.includes("Unauthorized")) {
         authService.logout()
         router.push("/login")
-      } else {
-        try {
-          toast.error("Error loading dashboard data")
-        } catch (toastError) {
-          console.error("[v0] Toast error:", toastError)
-        }
       }
       setIsLoadingData(false)
     }
