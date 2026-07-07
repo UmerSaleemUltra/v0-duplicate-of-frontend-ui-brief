@@ -74,38 +74,38 @@ export default function AdminDashboard() {
   const [abandonedDrawerOpen, setAbandonedDrawerOpen] = useState(false)
 
   const verifyAndLoadDashboard = useCallback(async () => {
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        router.push("/login")
+        return
+      }
+
+      // Verify admin access with server
+      const response = await fetch("/api/auth/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (!response.ok) {
+        router.push("/login")
+        return
+      }
+
+      const data = await response.json()
+      const user = data.user
+
+      if (!user || user.role !== "admin") {
+        router.push("/client/dashboard")
+        return
+      }
+
+      setIsAuthenticating(false)
+      setIsLoadingData(true)
+
+      // Load dashboard data
       try {
-        const token = authService.getToken()
-        if (!token) {
-          router.push("/login")
-          return
-        }
-
-        // Verify admin access with server
-        const response = await fetch("/api/auth/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        })
-
-        if (!response.ok) {
-          router.push("/login")
-          return
-        }
-
-        const data = await response.json()
-        const user = data.user
-
-        if (!user || user.role !== "admin") {
-          router.push("/client/dashboard")
-          return
-        }
-
-        setIsAuthenticating(false)
-        setIsLoadingData(true)
-
-        // Load dashboard data
-        try {
           const timestamp = Date.now()
           const [usersResponse, companiesResponse] = await Promise.all([
             ApiClient.users.getAll(token),
@@ -307,18 +307,19 @@ export default function AdminDashboard() {
           // Abandoned checkouts fetch is optional
         }
 
-        setDataLoaded(true)
+      setDataLoaded(true)
+      setIsLoadingData(false)
+      } catch (error) {
+        console.error("[v0] Dashboard data loading failed:", error)
         setIsLoadingData(false)
-        } catch (error) {
-          console.error("[v0] Dashboard data loading failed:", error)
-          setIsLoadingData(false)
-        }
+      }
     } catch (error) {
-      console.error("[v0] Outer error in dashboard verification:", error)
+      console.error("[v0] Authentication/verification failed:", error)
       if (error instanceof Error && error.message.includes("Unauthorized")) {
         authService.logout()
         router.push("/login")
       }
+      setIsAuthenticating(false)
       setIsLoadingData(false)
     }
   }, [router])
