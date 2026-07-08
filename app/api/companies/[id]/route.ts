@@ -263,12 +263,15 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           }
         } else if (oldMilestones[key] && !newMilestones[key]) {
           console.log(" Milestone uncompleted:", key, "-", config.title)
+          // Only delete notifications if explicitly toggled off (not during initialization)
+          // This prevents accidental deletion of milestone notifications
           try {
             await db.collection("notifications").deleteMany({
               userId: company.userId,
               type: "milestone",
               "metadata.companyId": company._id.toString(),
               "metadata.milestoneName": key,
+              "metadata.milestoneTitle": config.title,
             })
           } catch (deleteError) {
             console.log(" Error deleting milestone notification:", deleteError)
