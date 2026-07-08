@@ -75,7 +75,7 @@ export function FormationProgressCard({
     { icon: <Package className="w-3.5 h-3.5" />, label: "Order Processed", done: milestones.orderSuccessfullyProcessed },
     { icon: <UserCheck className="w-3.5 h-3.5" />, label: "Registered Agent Assigned", done: milestones.registeredAgentAssigned },
     { icon: <Home className="w-3.5 h-3.5" />, label: "Business Address Issued", done: milestones.businessMailingAddressIssued },
-    { icon: <FileCheck className="w-3.5 h-3.5" />, label: "Company Application Applied", done: milestones.companyApplicationApplied },
+    { icon: <FileCheck className="w-3.5 h-3.5" />, label: "Company Application Submitted", done: milestones.companyApplicationApplied },
     { icon: <FileCheck className="w-3.5 h-3.5" />, label: "Company Formation Completed", done: milestones.companyFormationCompleted },
     { icon: <FileText className="w-3.5 h-3.5" />, label: "EIN Application Submitted", done: milestones.einApplicationSubmitted },
     { icon: <Hash className="w-3.5 h-3.5" />, label: "EIN Obtained", done: milestones.einObtained },

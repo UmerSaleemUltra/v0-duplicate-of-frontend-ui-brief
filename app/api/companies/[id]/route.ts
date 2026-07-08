@@ -198,7 +198,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           emailTemplate: "businessAddressAssigned",
         },
         companyApplicationApplied: {
-          title: "Company Application Applied",
+          title: "Company Application Submitted",
           message: `Your company application for "${company.name}" has been submitted to the state. We'll update you when we receive confirmation.`,
           emailTemplate: "companyApplicationApplied",
         },

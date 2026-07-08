@@ -457,7 +457,7 @@ export default function ClientDashboard() {
     },
     {
       id: 4,
-      title: "Company Application Applied",
+      title: "Company Application Submitted",
       completed: milestones.companyApplicationApplied,
       icon: FileCheck,
     },
