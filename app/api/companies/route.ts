@@ -245,6 +245,7 @@ export async function POST(req: NextRequest) {
               total: orderData.total || 0,
             },
             promoCode: orderData.promoCode || null,
+            referralSource: orderData.referralSource || null,
             selectedAddons: orderData.selectedAddons || purchasedAddons || [],
             paymentInfo: {
               method: orderData.paymentMethod || "stripe",
