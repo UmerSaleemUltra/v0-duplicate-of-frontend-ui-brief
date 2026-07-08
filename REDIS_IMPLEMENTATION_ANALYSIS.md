@@ -30,7 +30,7 @@
 - `getStats()` - Get cache utilization stats
 
 **Example Usage:**
-```typescript
+\`\`\`typescript
 import { advancedCache } from '@/lib/load-balancer'
 
 // Cache data for 1 hour with tag 'orders'
@@ -44,7 +44,7 @@ const data = await advancedCache.get('orders:2026')
 
 // Invalidate all order-related cache
 await advancedCache.invalidateByTag('orders')
-```
+\`\`\`
 
 ---
 
@@ -74,7 +74,7 @@ await advancedCache.invalidateByTag('orders')
 - Priority 0: Lowest
 
 **Example Usage:**
-```typescript
+\`\`\`typescript
 import { queueManager } from '@/lib/load-balancer'
 
 // Enqueue a request
@@ -94,7 +94,7 @@ const stats = await queueManager.getStats()
 const request = await queueManager.dequeue(2)
 // ... process request ...
 await queueManager.markComplete(request.id, waitTime)
-```
+\`\`\`
 
 ---
 
@@ -119,14 +119,14 @@ await queueManager.markComplete(request.id, waitTime)
 ## 📡 API Endpoints for Redis Management
 
 ### 1. **Cache Management** (`/api/lb/cache`)
-```
+\`\`\`
 GET    /api/lb/cache           → Get cache stats
 DELETE /api/lb/cache           → Clear all cache
 POST   /api/lb/cache           → Invalidate by tag
-```
+\`\`\`
 
 **Response Example:**
-```json
+\`\`\`json
 {
   "timestamp": "2026-07-08T12:34:56Z",
   "cache": {
@@ -137,16 +137,16 @@ POST   /api/lb/cache           → Invalidate by tag
     "tagCount": 8
   }
 }
-```
+\`\`\`
 
 ### 2. **Queue Management** (`/api/lb/queue`)
-```
+\`\`\`
 GET  /api/lb/queue/status     → Get queue statistics
 POST /api/lb/queue/process    → Dequeue and process next request
-```
+\`\`\`
 
 **Response Example:**
-```json
+\`\`\`json
 {
   "timestamp": "2026-07-08T12:34:56Z",
   "queue": {
@@ -157,7 +157,7 @@ POST /api/lb/queue/process    → Dequeue and process next request
     "avgWaitTime": 1523
   }
 }
-```
+\`\`\`
 
 ### 3. **Metrics Dashboard** (`/api/lb/metrics`)
 **Purpose:** Display cache and queue performance metrics
@@ -166,10 +166,10 @@ POST /api/lb/queue/process    → Dequeue and process next request
 
 ## 🔧 Environment Variables Required
 
-```env
+\`\`\`env
 UPSTASH_REDIS_REST_URL=https://[region].upstash.io
 UPSTASH_REDIS_REST_TOKEN=your-auth-token
-```
+\`\`\`
 
 **These are needed for Redis to function. Without them, the system falls back to local memory cache.**
 
