@@ -43,7 +43,6 @@ export async function GET(req: NextRequest) {
         paymentMethod: order.paymentMethod,
         items: order.items,
         purchasedAddons: order.purchasedAddons,
-        referralSource: order.referralSource || null,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
       })),

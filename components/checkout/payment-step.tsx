@@ -305,12 +305,12 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           subtotal: packageWithStateFee + addonsTotal,
           total: totalAmount,
           promoCode: data.promoCode || null,
+          referralSource: data.referralSource || null,
           selectedAddons: data.addons || [],
           paymentMethod: paymentMethod,
           paymentStatus: "pending",
           whatsappPhone: whatsappPhone ? (whatsappPhone.startsWith("+") ? whatsappPhone : `+${whatsappPhone}`) : null,
           receiptUrl: receiptUrl || null,
-          referralSource: data.referralSource || null,
           transactionId: `${paymentMethod.toUpperCase()}-${Date.now()}`,
           passportDocuments: updatedMembers
             .filter((m: any) => m.passportUrl)

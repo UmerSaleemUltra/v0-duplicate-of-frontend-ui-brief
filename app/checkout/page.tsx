@@ -78,6 +78,9 @@ export type CheckoutData = {
   promoCode?: {
     code: string
     discountType: "percentage" | "fixed"
+  }
+  // Referral Source
+  referralSource?: string | null
     discountValue: number
     discountAmount: number
   } | null

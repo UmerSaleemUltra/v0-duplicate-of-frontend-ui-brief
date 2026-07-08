@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useRef } from "react"
-import { Receipt, Calendar, Phone, ExternalLink, Pencil, Check, X, Upload, Loader2, Tag, Info } from "lucide-react"
+import { Receipt, Calendar, Phone, ExternalLink, Pencil, Check, X, Upload, Loader2, Tag, Share2 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { useToast } from "@/hooks/use-toast"
 
@@ -109,20 +109,6 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
 
   const whatsappPhone = order?.whatsappPhone || order?.paymentInfo?.whatsappPhone || ""
   const receiptUrl = order?.receiptUrl || order?.paymentInfo?.receiptUrl
-
-  // Map referral source to display value
-  const getReferralSourceDisplay = (source: string | null) => {
-    if (!source) return "Not Provided"
-    const sourceMap: Record<string, string> = {
-      google: "Google Search",
-      friend: "Friend or Referral",
-      social: "Social Media",
-      youtube: "YouTube",
-      chatgpt: "ChatGPT / AI Assistant",
-      other: "Other",
-    }
-    return sourceMap[source] || source
-  }
 
   // Compute the correct ISO date string for the input
   const orderDateIso = order?.createdAt
@@ -318,15 +304,17 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
           </div>
         )}
 
-        {/* Where did you hear about us? */}
+        {/* Where Did You Hear About Us */}
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">
           <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
-              <Info className="w-4 h-4 text-blue-600" />
+            <div className="w-8 h-8 rounded-lg bg-blue-100 flex items-center justify-center">
+              <Share2 className="w-4 h-4 text-blue-600" />
             </div>
             <div className="flex-1">
               <p className="text-xs font-medium text-blue-600 mb-0.5">Where did you hear about us?</p>
-              <p className="text-sm text-blue-900 font-medium">{getReferralSourceDisplay(referralSource)}</p>
+              <p className="text-sm font-semibold text-blue-900">
+                {referralSource || "Not Provided"}
+              </p>
             </div>
           </div>
         </div>
