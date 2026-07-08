@@ -31,15 +31,17 @@ interface RevenueChartCarouselProps {
   description?: string
 }
 
-export function RevenueChartCarousel({ orders, title = "Revenue Trend", description = "2-Year Revenue Analysis" }: RevenueChartCarouselProps) {
+export function RevenueChartCarousel({ orders, title = "Revenue Trend", description = "2026 Revenue Analysis" }: RevenueChartCarouselProps) {
   const [viewType, setViewType] = useState<"month" | "day">("month")
   const [chartType, setChartType] = useState<"line" | "area" | "bar">("line")
   const SYSTEM_LAUNCH_YEAR = 2026
   const SYSTEM_LAUNCH_MONTH = 0 // January (0-indexed)
+  const CURRENT_YEAR = 2026 // Lock to 2026 only
 
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date()
-    return now
+    // Lock month to current year (2026)
+    return new Date(CURRENT_YEAR, now.getMonth(), 1)
   })
 
   // Cache parsed orders to avoid repeated date parsing
@@ -123,22 +125,21 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
     }
   }, [viewType, currentMonth, parsedOrders])
 
-  // Memoize navigation function to prevent unnecessary re-renders
+  // Memoize navigation function to prevent year changes - only allow month navigation within 2026
   const navigateMonth = useCallback((direction: "prev" | "next") => {
     setCurrentMonth((prev) => {
       const newDate = new Date(prev)
       if (direction === "prev") {
         newDate.setMonth(newDate.getMonth() - 1)
-        // Prevent navigation before system launch date
-        if (newDate.getFullYear() < SYSTEM_LAUNCH_YEAR || 
-            (newDate.getFullYear() === SYSTEM_LAUNCH_YEAR && newDate.getMonth() < SYSTEM_LAUNCH_MONTH)) {
+        // Prevent navigation before January 2026
+        if (newDate.getMonth() < SYSTEM_LAUNCH_MONTH) {
           return prev
         }
       } else {
         newDate.setMonth(newDate.getMonth() + 1)
-        // Prevent navigation beyond current month/year
+        // Prevent navigation beyond current month or beyond 2026
         const now = new Date()
-        if (newDate > now) {
+        if (newDate.getMonth() > now.getMonth() || newDate.getFullYear() > CURRENT_YEAR) {
           return prev
         }
       }
@@ -148,17 +149,12 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
 
   // Check if navigation buttons should be disabled
   const canNavigatePrev = useMemo(() => {
-    const testDate = new Date(currentMonth)
-    testDate.setMonth(testDate.getMonth() - 1)
-    return !(testDate.getFullYear() < SYSTEM_LAUNCH_YEAR || 
-             (testDate.getFullYear() === SYSTEM_LAUNCH_YEAR && testDate.getMonth() < SYSTEM_LAUNCH_MONTH))
+    return currentMonth.getMonth() > SYSTEM_LAUNCH_MONTH
   }, [currentMonth])
 
   const canNavigateNext = useMemo(() => {
-    const testDate = new Date(currentMonth)
-    testDate.setMonth(testDate.getMonth() + 1)
     const now = new Date()
-    return testDate <= now
+    return currentMonth.getMonth() < now.getMonth()
   }, [currentMonth])
 
   const monthDisplay = useMemo(
@@ -203,7 +199,7 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                24 Mo
+                12 Mo
               </Button>
               <Button
                 onClick={() => setViewType("day")}
