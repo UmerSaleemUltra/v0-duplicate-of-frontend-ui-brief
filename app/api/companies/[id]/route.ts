@@ -223,49 +223,44 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         if (!oldMilestones[key] && newMilestones[key]) {
           console.log(" Milestone completed:", key, "-", config.title)
           
-          // Skip notification for companyApplicationApplied milestone
-          if (key === "companyApplicationApplied") {
-            console.log(" Skipping notification for companyApplicationApplied milestone")
-          } else {
+          try {
+            await db.collection("notifications").insertOne({
+              userId: company.userId,
+              type: "milestone",
+              title: config.title,
+              message: config.message,
+              read: false,
+              actionUrl: "/client/dashboard",
+              metadata: {
+                companyId: company._id.toString(),
+                companyName: company.name,
+                milestoneName: key,
+                milestoneTitle: config.title,
+              },
+              createdAt: new Date().toISOString(),
+            })
+
+            broadcastUpdate("notifications", "created", { userId: company.userId })
+
             try {
-              await db.collection("notifications").insertOne({
-                userId: company.userId,
-                type: "milestone",
-                title: config.title,
-                message: config.message,
-                read: false,
-                actionUrl: "/client/dashboard",
-                metadata: {
-                  companyId: company._id.toString(),
-                  companyName: company.name,
-                  milestoneName: key,
-                  milestoneTitle: config.title,
-                },
-                createdAt: new Date().toISOString(),
-              })
+              const { sendEmail, emailTemplates } = await import("@/config/email")
+              const user = await db
+                .collection("users")
+                .findOne({ _id: new ObjectId(company.userId) }, { projection: { name: 1, email: 1 } })
 
-              broadcastUpdate("notifications", "created", { userId: company.userId })
-
-              try {
-                const { sendEmail, emailTemplates } = await import("@/config/email")
-                const user = await db
-                  .collection("users")
-                  .findOne({ _id: new ObjectId(company.userId) }, { projection: { name: 1, email: 1 } })
-
-                if (user) {
-                  const emailTemplateFunc = (emailTemplates as any)[config.emailTemplate]
-                  if (emailTemplateFunc) {
-                    const milestoneEmail = emailTemplateFunc(user.name, company.name)
-                    await sendEmail({ to: user.email, subject: milestoneEmail.subject, html: milestoneEmail.html })
-                    console.log(" Sent milestone email:", config.emailTemplate)
-                  }
+              if (user) {
+                const emailTemplateFunc = (emailTemplates as any)[config.emailTemplate]
+                if (emailTemplateFunc) {
+                  const milestoneEmail = emailTemplateFunc(user.name, company.name)
+                  await sendEmail({ to: user.email, subject: milestoneEmail.subject, html: milestoneEmail.html })
+                  console.log(" Sent milestone email:", config.emailTemplate)
                 }
-              } catch (emailError) {
-                console.log(" Error sending milestone email (non-critical):", emailError)
               }
-            } catch (notifError) {
-              console.log(" Error creating milestone notification:", notifError)
+            } catch (emailError) {
+              console.log(" Error sending milestone email (non-critical):", emailError)
             }
+          } catch (notifError) {
+            console.log(" Error creating milestone notification:", notifError)
           }
         } else if (oldMilestones[key] && !newMilestones[key]) {
           console.log(" Milestone uncompleted:", key, "-", config.title)
