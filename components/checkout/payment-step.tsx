@@ -310,6 +310,7 @@ function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
           paymentStatus: "pending",
           whatsappPhone: whatsappPhone ? (whatsappPhone.startsWith("+") ? whatsappPhone : `+${whatsappPhone}`) : null,
           receiptUrl: receiptUrl || null,
+          referralSource: data.referralSource || null,
           transactionId: `${paymentMethod.toUpperCase()}-${Date.now()}`,
           passportDocuments: updatedMembers
             .filter((m: any) => m.passportUrl)

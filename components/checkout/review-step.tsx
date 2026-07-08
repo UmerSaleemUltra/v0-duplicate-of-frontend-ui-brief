@@ -1,6 +1,6 @@
 "use client"
 import { useState, useEffect } from "react"
-import { ArrowRight, ArrowLeft, Building2, Users, MapPin, Globe, FileText, Shield, Edit2, User, X, Tag, Loader2, Check } from "lucide-react"
+import { ArrowRight, ArrowLeft, Building2, Users, MapPin, Globe, FileText, Shield, Edit2, User, X, Tag, Loader2, Check, HelpCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import type { CheckoutData } from "@/app/checkout/page"
@@ -8,6 +8,7 @@ import { getPassport, arrayBufferToFile, type PassportData } from "@/lib/local-s
 import { useToast } from "@/hooks/use-toast"
 import { STATE_FEES } from "@/lib/constants"
 import { packagePricing } from "@/lib/pricing"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 type ReviewStepProps = {
   formData?: CheckoutData
@@ -38,6 +39,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
     discountValue: number
     discountAmount: number
   } | null>(formData?.promoCode || null)
+  const [referralSource, setReferralSource] = useState<string>(formData?.referralSource || "")
 
   useEffect(() => {
     const loadPassports = async () => {
@@ -210,7 +212,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
         })
       }
 
-      // Update checkout data with pricing and addons
+      // Update checkout data with pricing, addons and referral source
       if (updateData) {
         updateData({
           addons: addons,
@@ -219,6 +221,7 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
           stateFilingFee: stateFilingFee,
           totalAmount: total,
           promoCode: appliedPromo,
+          referralSource: referralSource as any || null,
         })
       }
 
@@ -671,6 +674,32 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
               <p className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">${total}</p>
             </div>
           </div>
+        </div>
+      </div>
+
+      {/* Where did you hear about us? */}
+      <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6">
+        <div className="space-y-4">
+          <div className="flex items-center gap-2">
+            <HelpCircle className="w-5 h-5 text-slate-600" />
+            <label className="text-base font-semibold text-slate-900">Where did you hear about us?</label>
+            <span className="text-xs text-slate-500">(Optional)</span>
+          </div>
+          
+          <Select value={referralSource} onValueChange={setReferralSource}>
+            <SelectTrigger className="w-full h-11 text-base">
+              <SelectValue placeholder="Select an option..." />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="">Not provided</SelectItem>
+              <SelectItem value="google">Google Search</SelectItem>
+              <SelectItem value="friend">Friend or Referral</SelectItem>
+              <SelectItem value="social">Social Media</SelectItem>
+              <SelectItem value="youtube">YouTube</SelectItem>
+              <SelectItem value="chatgpt">ChatGPT / AI Assistant</SelectItem>
+              <SelectItem value="other">Other</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 

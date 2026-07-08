@@ -81,6 +81,8 @@ export type CheckoutData = {
     discountValue: number
     discountAmount: number
   } | null
+  // Referral Source
+  referralSource?: "google" | "friend" | "social" | "youtube" | "chatgpt" | "other" | null
 }
 
 const STEPS = ["Account", "State & Package", "Business Info", "Owner Info", "Review", "Payment"]
@@ -138,6 +140,7 @@ export default function CheckoutPage() {
     stateFilingFee: undefined,
     addonsTotal: undefined,
     promoCode: null,
+    referralSource: null,
   })
 
   useEffect(() => {
@@ -239,6 +242,7 @@ export default function CheckoutPage() {
           packagePrice: savedData.packagePrice,
           stateFilingFee: savedData.stateFilingFee,
           addonsTotal: savedData.addonsTotal,
+          referralSource: savedData.referralSource || null,
         })
       } else {
         setData((prev) => ({
@@ -309,6 +313,7 @@ export default function CheckoutPage() {
           packagePrice: savedData.packagePrice,
           stateFilingFee: savedData.stateFilingFee,
           addonsTotal: savedData.addonsTotal,
+          referralSource: savedData.referralSource || null,
         })
       }
     }

@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
         paymentMethod: order.paymentMethod,
         items: order.items,
         purchasedAddons: order.purchasedAddons,
+        referralSource: order.referralSource || null,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
       })),
@@ -86,6 +87,7 @@ export async function POST(req: NextRequest) {
       receiptUrl,
       members,
       promoCode,
+      referralSource,
     } = body
 
     if (!companyId || !companyName || !type || !amount) {
@@ -116,6 +118,7 @@ export async function POST(req: NextRequest) {
       stateFilingFee,
       addonsTotal,
       promoCode: promoCode || null,
+      referralSource: referralSource || null,
       paymentStatus: "pending",
       paymentMethod: paymentMethod || "stripe",
       paymentInfo: {
