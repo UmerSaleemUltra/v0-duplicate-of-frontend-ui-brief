@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server"
-import { db } from "@/lib/db"
-import { verifyAdminAuth } from "@/lib/api-middleware"
+import { getDatabase } from "@/lib/db"
+import { requireAdmin } from "@/lib/api-middleware"
 
 /**
  * Bulk migrate milestone for existing companies WITHOUT sending notifications
@@ -9,14 +9,8 @@ import { verifyAdminAuth } from "@/lib/api-middleware"
  * Body: { milestoneName: string }
  */
 
-export async function POST(request: NextRequest) {
+const handler = async (request: NextRequest) => {
   try {
-    // Verify admin authentication
-    const adminAuth = await verifyAdminAuth(request)
-    if (!adminAuth.isValid) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-    }
-
     const { milestoneName } = await request.json()
 
     if (!milestoneName) {
@@ -29,6 +23,9 @@ export async function POST(request: NextRequest) {
     console.log(
       `[Bulk Migration] Starting bulk update for milestone: ${milestoneName}`
     )
+
+    // Get database connection
+    const db = await getDatabase()
 
     // Update all companies to complete this milestone without creating notifications
     const result = await db.collection("companies").updateMany(
@@ -63,3 +60,5 @@ export async function POST(request: NextRequest) {
     )
   }
 }
+
+export const POST = requireAdmin(handler)

@@ -3,7 +3,6 @@
 import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/hooks/use-toast"
 import { AlertCircle, CheckCircle, Loader } from "lucide-react"
 
@@ -80,27 +79,27 @@ export function BulkMilestoneMigration({
       </CardHeader>
       <CardContent className="space-y-4">
         {description && (
-          <Alert>
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{description}</AlertDescription>
-          </Alert>
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-3 flex gap-3 items-start">
+            <AlertCircle className="h-4 w-4 text-blue-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-blue-800">{description}</p>
+          </div>
         )}
 
         {error && (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertDescription>{error}</AlertDescription>
-          </Alert>
+          <div className="rounded-lg border border-red-200 bg-red-50 p-3 flex gap-3 items-start">
+            <AlertCircle className="h-4 w-4 text-red-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-red-800">{error}</p>
+          </div>
         )}
 
         {result && (
-          <Alert className="bg-green-50 border-green-200">
-            <CheckCircle className="h-4 w-4 text-green-600" />
-            <AlertDescription className="text-green-800">
+          <div className="rounded-lg border border-green-200 bg-green-50 p-3 flex gap-3 items-start">
+            <CheckCircle className="h-4 w-4 text-green-600 mt-0.5 flex-shrink-0" />
+            <p className="text-sm text-green-800">
               ✓ Successfully updated {result.modifiedCount} companies on{" "}
               {new Date(result.timestamp).toLocaleString()}
-            </AlertDescription>
-          </Alert>
+            </p>
+          </div>
         )}
 
         <div className="flex gap-2">
