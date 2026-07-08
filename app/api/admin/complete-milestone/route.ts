@@ -18,7 +18,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      message: `Completed "Company Application Applied" milestone for all companies`,
+      message: `Completed "Company Application Submitted" milestone for all companies`,
       stats: {
         matched: result.matchedCount,
         modified: result.modifiedCount,
