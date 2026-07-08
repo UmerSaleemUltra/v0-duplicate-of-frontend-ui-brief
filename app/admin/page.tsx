@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { RevenueChartCarousel } from "@/components/admin/revenue-chart-carousel"
+import { BulkMilestoneMigration } from "@/components/admin/bulk-milestone-migration"
 import {
   DollarSign,
   ShoppingCart,
@@ -1257,6 +1258,15 @@ export default function AdminDashboard() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Bulk Milestone Migration Section */}
+      <div className="mt-8">
+        <BulkMilestoneMigration
+          milestoneName="companyApplicationApplied"
+          milestoneTitle="Company Application Applied"
+          description="Bulk complete the 'Company Application Applied' milestone for all existing companies. This is a one-time migration that will not send any notifications."
+        />
+      </div>
 
       {/* All Orders Modal */}
       <Dialog open={ordersDrawerOpen} onOpenChange={setOrdersDrawerOpen}>

@@ -222,53 +222,62 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       for (const [key, config] of Object.entries(milestoneMap)) {
         if (!oldMilestones[key] && newMilestones[key]) {
           console.log(" Milestone completed:", key, "-", config.title)
-          try {
-            await db.collection("notifications").insertOne({
-              userId: company.userId,
-              type: "milestone",
-              title: config.title,
-              message: config.message,
-              read: false,
-              actionUrl: "/client/dashboard",
-              metadata: {
-                companyId: company._id.toString(),
-                companyName: company.name,
-                milestoneName: key,
-                milestoneTitle: config.title,
-              },
-              createdAt: new Date().toISOString(),
-            })
-
-            broadcastUpdate("notifications", "created", { userId: company.userId })
-
+          
+          // Skip notification for companyApplicationApplied milestone
+          if (key === "companyApplicationApplied") {
+            console.log(" Skipping notification for companyApplicationApplied milestone")
+          } else {
             try {
-              const { sendEmail, emailTemplates } = await import("@/config/email")
-              const user = await db
-                .collection("users")
-                .findOne({ _id: new ObjectId(company.userId) }, { projection: { name: 1, email: 1 } })
+              await db.collection("notifications").insertOne({
+                userId: company.userId,
+                type: "milestone",
+                title: config.title,
+                message: config.message,
+                read: false,
+                actionUrl: "/client/dashboard",
+                metadata: {
+                  companyId: company._id.toString(),
+                  companyName: company.name,
+                  milestoneName: key,
+                  milestoneTitle: config.title,
+                },
+                createdAt: new Date().toISOString(),
+              })
 
-              if (user) {
-                const emailTemplateFunc = (emailTemplates as any)[config.emailTemplate]
-                if (emailTemplateFunc) {
-                  const milestoneEmail = emailTemplateFunc(user.name, company.name)
-                  await sendEmail({ to: user.email, subject: milestoneEmail.subject, html: milestoneEmail.html })
-                  console.log(" Sent milestone email:", config.emailTemplate)
+              broadcastUpdate("notifications", "created", { userId: company.userId })
+
+              try {
+                const { sendEmail, emailTemplates } = await import("@/config/email")
+                const user = await db
+                  .collection("users")
+                  .findOne({ _id: new ObjectId(company.userId) }, { projection: { name: 1, email: 1 } })
+
+                if (user) {
+                  const emailTemplateFunc = (emailTemplates as any)[config.emailTemplate]
+                  if (emailTemplateFunc) {
+                    const milestoneEmail = emailTemplateFunc(user.name, company.name)
+                    await sendEmail({ to: user.email, subject: milestoneEmail.subject, html: milestoneEmail.html })
+                    console.log(" Sent milestone email:", config.emailTemplate)
+                  }
                 }
+              } catch (emailError) {
+                console.log(" Error sending milestone email (non-critical):", emailError)
               }
-            } catch (emailError) {
-              console.log(" Error sending milestone email (non-critical):", emailError)
+            } catch (notifError) {
+              console.log(" Error creating milestone notification:", notifError)
             }
-          } catch (notifError) {
-            console.log(" Error creating milestone notification:", notifError)
           }
         } else if (oldMilestones[key] && !newMilestones[key]) {
           console.log(" Milestone uncompleted:", key, "-", config.title)
+          // Only delete notifications if explicitly toggled off (not during initialization)
+          // This prevents accidental deletion of milestone notifications
           try {
             await db.collection("notifications").deleteMany({
               userId: company.userId,
               type: "milestone",
               "metadata.companyId": company._id.toString(),
               "metadata.milestoneName": key,
+              "metadata.milestoneTitle": config.title,
             })
           } catch (deleteError) {
             console.log(" Error deleting milestone notification:", deleteError)
