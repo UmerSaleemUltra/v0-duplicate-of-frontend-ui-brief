@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useCallback } from "react"
-import { ChevronLeft, ChevronRight, TrendingUp, Calendar, BarChart3, LineChart as LineChartIcon } from "lucide-react"
+import { TrendingUp, Calendar, BarChart3, LineChart as LineChartIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -31,12 +31,17 @@ interface RevenueChartCarouselProps {
   description?: string
 }
 
-export function RevenueChartCarousel({ orders, title = "Revenue Trend", description = "2-Year Revenue Analysis" }: RevenueChartCarouselProps) {
+export function RevenueChartCarousel({ orders, title = "Revenue Trend", description = "2026 Revenue Analysis" }: RevenueChartCarouselProps) {
   const [viewType, setViewType] = useState<"month" | "day">("month")
   const [chartType, setChartType] = useState<"line" | "area" | "bar">("line")
+  const SYSTEM_LAUNCH_YEAR = 2026
+  const SYSTEM_LAUNCH_MONTH = 0 // January (0-indexed)
+  const CURRENT_YEAR = 2026 // Lock to 2026 only
+
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date()
-    return now
+    // Lock month to current year (2026)
+    return new Date(CURRENT_YEAR, now.getMonth(), 1)
   })
 
   // Cache parsed orders to avoid repeated date parsing
@@ -51,12 +56,14 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
   // Generate chart data based on view type with optimized performance
   const chartData = useMemo(() => {
     if (viewType === "month") {
-      // 24 months of data (2 years) - optimized for performance
+      // Show only 12 months from system launch onwards (or up to current month if in 2026)
       const data: RevenueData[] = []
-      const baseDate = new Date()
-      baseDate.setFullYear(baseDate.getFullYear() - 2)
-      baseDate.setDate(1)
+      const baseDate = new Date(SYSTEM_LAUNCH_YEAR, SYSTEM_LAUNCH_MONTH, 1)
       baseDate.setHours(0, 0, 0, 0)
+
+      // Calculate how many months to display (max 12 from launch, or until now)
+      const now = new Date()
+      const monthsToDisplay = Math.min(12, Math.floor((now.getFullYear() - SYSTEM_LAUNCH_YEAR) * 12 + (now.getMonth() - SYSTEM_LAUNCH_MONTH) + 1))
 
       // Create month lookup map for O(1) access instead of O(n) filtering
       const monthMap = new Map<string, { revenue: number; orders: number }>()
@@ -72,7 +79,7 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
         monthMap.set(key, existing)
       }
 
-      for (let i = 0; i < 24; i++) {
+      for (let i = 0; i < monthsToDisplay; i++) {
         const monthDate = new Date(baseDate)
         monthDate.setMonth(monthDate.getMonth() + i)
 
@@ -118,14 +125,23 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
     }
   }, [viewType, currentMonth, parsedOrders])
 
-  // Memoize navigation function to prevent unnecessary re-renders
+  // Memoize navigation function for daily view only
   const navigateMonth = useCallback((direction: "prev" | "next") => {
     setCurrentMonth((prev) => {
       const newDate = new Date(prev)
       if (direction === "prev") {
         newDate.setMonth(newDate.getMonth() - 1)
+        // Prevent navigation before January 2026
+        if (newDate.getMonth() < SYSTEM_LAUNCH_MONTH) {
+          return prev
+        }
       } else {
         newDate.setMonth(newDate.getMonth() + 1)
+        // Prevent navigation beyond current month or beyond 2026
+        const now = new Date()
+        if (newDate.getMonth() > now.getMonth() || newDate.getFullYear() > CURRENT_YEAR) {
+          return prev
+        }
       }
       return newDate
     })
@@ -153,7 +169,10 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
               <div className="p-2 bg-red-500 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
-              <CardTitle className="text-2xl font-bold text-white">{title}</CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-2xl font-bold text-white">{title}</CardTitle>
+                <span className="text-xl font-bold text-white">2026</span>
+              </div>
             </div>
             <p className="text-sm text-slate-300">{description}</p>
           </div>
@@ -173,7 +192,7 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
                 }`}
               >
                 <Calendar className="w-3.5 h-3.5 mr-1.5" />
-                24 Mo
+                12 Mo
               </Button>
               <Button
                 onClick={() => setViewType("day")}
@@ -235,26 +254,10 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
           </div>
         </div>
 
-        {/* Date Navigation - Only show in daily view */}
+        {/* Month Display - Only show in daily view */}
         {viewType === "day" && (
-          <div className="flex items-center justify-center gap-4 pt-2 border-t border-slate-700">
-            <Button
-              onClick={() => navigateMonth("prev")}
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <h3 className="text-sm font-semibold text-white min-w-fit">{monthDisplay}</h3>
-            <Button
-              onClick={() => navigateMonth("next")}
-              variant="ghost"
-              size="sm"
-              className="h-8 w-8 p-0 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+          <div className="flex items-center justify-center pt-2 border-t border-slate-700">
+            <h3 className="text-sm font-semibold text-white">{monthDisplay}</h3>
           </div>
         )}
       </CardHeader>

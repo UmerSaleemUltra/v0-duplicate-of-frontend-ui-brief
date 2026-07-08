@@ -273,6 +273,8 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
           status: orderDoc.paymentStatus,
           date: orderDoc.paymentDate || orderDoc.createdAt,
         },
+        promoCode: orderDoc.promoCode || null,
+        referralSource: orderDoc.referralSource || null,
         createdAt: orderDoc.createdAt,
         updatedAt: orderDoc.updatedAt,
         company,
