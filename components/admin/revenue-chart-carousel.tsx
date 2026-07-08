@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useMemo, useCallback } from "react"
-import { ChevronLeft, ChevronRight, TrendingUp, Calendar, BarChart3, LineChart as LineChartIcon } from "lucide-react"
+import { TrendingUp, Calendar, BarChart3, LineChart as LineChartIcon } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
@@ -125,7 +125,7 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
     }
   }, [viewType, currentMonth, parsedOrders])
 
-  // Memoize navigation function to prevent year changes - only allow month navigation within 2026
+  // Memoize navigation function for daily view only
   const navigateMonth = useCallback((direction: "prev" | "next") => {
     setCurrentMonth((prev) => {
       const newDate = new Date(prev)
@@ -146,16 +146,6 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
       return newDate
     })
   }, [])
-
-  // Check if navigation buttons should be disabled
-  const canNavigatePrev = useMemo(() => {
-    return currentMonth.getMonth() > SYSTEM_LAUNCH_MONTH
-  }, [currentMonth])
-
-  const canNavigateNext = useMemo(() => {
-    const now = new Date()
-    return currentMonth.getMonth() < now.getMonth()
-  }, [currentMonth])
 
   const monthDisplay = useMemo(
     () => currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
@@ -179,7 +169,10 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
               <div className="p-2 bg-red-500 rounded-lg">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
-              <CardTitle className="text-2xl font-bold text-white">{title}</CardTitle>
+              <div className="flex items-center gap-2">
+                <CardTitle className="text-2xl font-bold text-white">{title}</CardTitle>
+                <span className="text-xl font-bold text-white">2026</span>
+              </div>
             </div>
             <p className="text-sm text-slate-300">{description}</p>
           </div>
@@ -261,36 +254,10 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
           </div>
         </div>
 
-        {/* Date Navigation - Only show in daily view */}
+        {/* Month Display - Only show in daily view */}
         {viewType === "day" && (
-          <div className="flex items-center justify-center gap-4 pt-2 border-t border-slate-700">
-            <Button
-              onClick={() => navigateMonth("prev")}
-              disabled={!canNavigatePrev}
-              variant="ghost"
-              size="sm"
-              className={`h-8 w-8 p-0 transition-all ${
-                canNavigatePrev
-                  ? "hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
-                  : "text-slate-600 cursor-not-allowed opacity-50"
-              }`}
-            >
-              <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <h3 className="text-sm font-semibold text-white min-w-fit">{monthDisplay}</h3>
-            <Button
-              onClick={() => navigateMonth("next")}
-              disabled={!canNavigateNext}
-              variant="ghost"
-              size="sm"
-              className={`h-8 w-8 p-0 transition-all ${
-                canNavigateNext
-                  ? "hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
-                  : "text-slate-600 cursor-not-allowed opacity-50"
-              }`}
-            >
-              <ChevronRight className="w-4 h-4" />
-            </Button>
+          <div className="flex items-center justify-center pt-2 border-t border-slate-700">
+            <h3 className="text-sm font-semibold text-white">{monthDisplay}</h3>
           </div>
         )}
       </CardHeader>
