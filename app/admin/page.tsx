@@ -17,8 +17,6 @@ import {
   CheckCircle2,
   AlertCircle,
   Calendar,
-  ChevronLeft,
-  ChevronRight,
   MapPin,
   LayoutList,
   ShoppingBag,
@@ -48,7 +46,7 @@ export default function AdminDashboard() {
   })
   const [stateBreakdown, setStateBreakdown] = useState<any[]>([])
   const [monthlyData, setMonthlyData] = useState<any[]>([])
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear())
+  const [selectedYear] = useState(2026) // Locked to 2026
   const [chartData, setChartData] = useState<any[]>([])
   const [statesDrawerOpen, setStatesDrawerOpen] = useState(false)
   const [ordersDrawerOpen, setOrdersDrawerOpen] = useState(false)
@@ -584,26 +582,7 @@ export default function AdminDashboard() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 md:gap-0 mb-6 md:mb-8">
           <div>
             <h2 className="text-xl md:text-2xl font-bold text-slate-900">12-Month Revenue</h2>
-            <p className="text-xs md:text-sm text-slate-700 mt-1">Revenue analysis for {selectedYear}</p>
-          </div>
-          <div className="flex items-center gap-2 justify-start md:justify-end">
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={() => setSelectedYear(prev => prev - 1)}
-              className="rounded-full border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 h-8 w-8 md:h-10 md:w-10"
-            >
-              <ChevronLeft className="h-3 md:h-4 w-3 md:w-4" />
-            </Button>
-            <span className="text-base md:text-lg font-semibold text-slate-900 px-3 md:px-4 py-1 md:py-2 bg-white/60 rounded-full min-w-16 md:min-w-20 text-center">{selectedYear}</span>
-            <Button 
-              variant="outline" 
-              size="icon" 
-              onClick={() => setSelectedYear(prev => prev + 1)}
-              className="rounded-full border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 h-8 w-8 md:h-10 md:w-10"
-            >
-              <ChevronRight className="h-3 md:h-4 w-3 md:w-4" />
-            </Button>
+            <p className="text-xs md:text-sm text-slate-700 mt-1">Revenue analysis for 2026</p>
           </div>
         </div>
 
