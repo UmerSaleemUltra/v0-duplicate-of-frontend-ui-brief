@@ -30,7 +30,7 @@ Display critical business metrics:
 
 Display breakdown by company structure:
 
-```
+\`\`\`
 ├─ Limited Liability Company (LLC)
 │  └─ Count: 1,245
 │  └─ Compliance: 98%
@@ -54,7 +54,7 @@ Display breakdown by company structure:
 └─ Other (NGO, Foreign, etc.)
    └─ Count: 234
    └─ Compliance: 92%
-```
+\`\`\`
 
 **Features:**
 - Click on any type to drill down
@@ -67,7 +67,7 @@ Display breakdown by company structure:
 
 Show performance by Pakistani province:
 
-```
+\`\`\`
 PROVINCE              COMPANIES    SECP %    FBR %    AVG REVENUE
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 Punjab                4,200        98%       96%      PKR 850M
@@ -77,7 +77,7 @@ Balochistan           245          72%       68%      PKR 42M
 Gilgit-Baltistan      120          88%       85%      PKR 18M
 Islamabad             890          99%       98%      PKR 420M
 AJK                   165          80%       77%      PKR 22M
-```
+\`\`\`
 
 **Interactive Features:**
 - Click on province to see detailed list
@@ -90,13 +90,13 @@ AJK                   165          80%       77%      PKR 22M
 
 Track compliance deadlines:
 
-```
+\`\`\`
 SECP Annual Renewal         [████████░░░░░░░░░░]  32 Days Remaining
 FBR Tax Certificate         [███████░░░░░░░░░░░░]  45 Days Remaining
 Labor Registration          [██████████████░░░░░]  8 Days Remaining
 Factory Registration        [█████░░░░░░░░░░░░░░]  67 Days Remaining
 Local Tax (Municipal)       [███████████░░░░░░░░]  21 Days Remaining
-```
+\`\`\`
 
 **Warnings:**
 - Red: 0-7 days
@@ -109,14 +109,14 @@ Local Tax (Municipal)       [███████████░░░░░░
 
 For each business type, show average document completion:
 
-```
+\`\`\`
                     DOCS NEEDED    AVG COMPLETE    % COMPLETE    PENDING COUNT
 LLC                      12           10.2            85%          1,245 docs
 CEC                      15           13.5            90%           892 docs
 PLC                       18           17.8            98%           156 docs
 Sole Proprietor           5            3.2             64%           3,421 docs
 Partnership               8            6.5             81%            567 docs
-```
+\`\`\`
 
 ---
 
@@ -124,7 +124,7 @@ Partnership               8            6.5             81%            567 docs
 
 Track Pakistani payment methods:
 
-```
+\`\`\`
 METHOD              TRANSACTIONS    SUCCESS %    AVG AMOUNT (PKR)
 ─────────────────────────────────────────────────────────────
 JazzCash                  4,521        96.2%        28,500
@@ -132,7 +132,7 @@ EasyPaisa                 3,245        94.8%        32,100
 UBL Omni                  2,156        98.5%        45,200
 Bank Transfer             1,890        99.1%        125,000
 Credit Card               834          97.3%        78,500
-```
+\`\`\`
 
 ---
 
@@ -140,7 +140,7 @@ Credit Card               834          97.3%        78,500
 
 Critical issues needing attention:
 
-```
+\`\`\`
 🔴 HIGH PRIORITY
 ├─ 23 companies with expired SECP certificates
 ├─ 15 FBR registrations marked for verification
@@ -154,13 +154,13 @@ Critical issues needing attention:
 🟢 LOW PRIORITY
 ├─ 145 companies eligible for upgrade
 └─ 89 anniversary date notifications sent
-```
+\`\`\`
 
 ---
 
 ### 8. **Revenue Analytics**
 
-```
+\`\`\`
 METRIC                          VALUE       vs LAST MONTH
 ─────────────────────────────────────────────────────────
 Total Revenue (PKR)             42.5M       +12.3%
@@ -168,7 +168,7 @@ Average Revenue per Company     8,500       +2.1%
 New Registrations               234         +18.5%
 Renewal Rate                    92%         +3.2%
 Addon Sales                     156         +25.6%
-```
+\`\`\`
 
 ---
 
@@ -178,7 +178,7 @@ Addon Sales                     156         +25.6%
 
 Large, clear status indicator:
 
-```
+\`\`\`
 ┌─────────────────────────────────────────┐
 │                                         │
 │   My Company Status: ACTIVE ✓           │
@@ -192,7 +192,7 @@ Large, clear status indicator:
 │   Last Document Updated: 5 days ago     │
 │                                         │
 └─────────────────────────────────────────┘
-```
+\`\`\`
 
 ---
 
@@ -200,7 +200,7 @@ Large, clear status indicator:
 
 Show all required documents with status:
 
-```
+\`\`\`
 REQUIRED DOCUMENTS FOR LLC
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -221,13 +221,13 @@ Essential Documents:
 Action Required:
 → Upload SECP Annual Return
 → Renew FBR Tax Certificate
-```
+\`\`\`
 
 ---
 
 ### 3. **Upcoming Deadlines**
 
-```
+\`\`\`
 YOUR UPCOMING DEADLINES
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -241,7 +241,7 @@ YOUR UPCOMING DEADLINES
 
 🟢 UPCOMING (30+ days)
 └─ Municipal Tax Certificate: August 30, 2024 (76 days)
-```
+\`\`\`
 
 ---
 
@@ -249,7 +249,7 @@ YOUR UPCOMING DEADLINES
 
 Organized by type and status:
 
-```
+\`\`\`
 SECP DOCUMENTS
 ├─ Certificate of Incorporation (2022)    [View] [Download]
 ├─ Annual Return FY 2023                  [Edit] [Resubmit]
@@ -267,7 +267,7 @@ LABOR DOCUMENTS
 LOCAL COMPLIANCE
 ├─ Municipal Tax Certificate              [View] [Renew]
 ├─ Utility Bills (Office Address)         [Upload] [View]
-```
+\`\`\`
 
 ---
 
@@ -275,14 +275,14 @@ LOCAL COMPLIANCE
 
 Track all transactions:
 
-```
+\`\`\`
 DATE            SERVICE/FILING              METHOD          AMOUNT (PKR)    STATUS
 ─────────────────────────────────────────────────────────────────────────────────────
 June 15, 2024   SECP Renewal Fee           JazzCash        15,000          ✓ Paid
 June 10, 2024   FBR Tax Registration       EasyPaisa       8,500           ✓ Paid
 June 5, 2024    Addon: Tax Advisory        Bank Transfer   25,000          ✓ Paid
 May 20, 2024    SECP Amendment Filing      JazzCash        12,000          ✓ Paid
-```
+\`\`\`
 
 ---
 
@@ -290,7 +290,7 @@ May 20, 2024    SECP Amendment Filing      JazzCash        12,000          ✓ P
 
 Quick reference card:
 
-```
+\`\`\`
 ┌──────────────────────────┐
 │   COMPANY INFORMATION    │
 ├──────────────────────────┤
@@ -305,7 +305,7 @@ Quick reference card:
 │ [Edit Company Info]      │
 │ [Download Certificate]   │
 └──────────────────────────┘
-```
+\`\`\`
 
 ---
 
@@ -313,7 +313,7 @@ Quick reference card:
 
 Contextual help based on business type:
 
-```
+\`\`\`
 HELPFUL RESOURCES FOR LLC
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -333,13 +333,13 @@ HELPFUL RESOURCES FOR LLC
 ├─ Update Company Details
 ├─ Add Shareholder
 └─ File Amendment
-```
+\`\`\`
 
 ---
 
 ### 8. **Notifications Center**
 
-```
+\`\`\`
 NOTIFICATIONS
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
@@ -354,7 +354,7 @@ NOTIFICATIONS
 
 ℹ Jun 10 - New compliance feature: Automated reminder system
    [Learn More] [Dismiss]
-```
+\`\`\`
 
 ---
 

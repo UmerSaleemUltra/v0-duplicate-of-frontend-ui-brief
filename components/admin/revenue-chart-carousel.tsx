@@ -34,6 +34,9 @@ interface RevenueChartCarouselProps {
 export function RevenueChartCarousel({ orders, title = "Revenue Trend", description = "2-Year Revenue Analysis" }: RevenueChartCarouselProps) {
   const [viewType, setViewType] = useState<"month" | "day">("month")
   const [chartType, setChartType] = useState<"line" | "area" | "bar">("line")
+  const SYSTEM_LAUNCH_YEAR = 2026
+  const SYSTEM_LAUNCH_MONTH = 0 // January (0-indexed)
+
   const [currentMonth, setCurrentMonth] = useState(() => {
     const now = new Date()
     return now
@@ -51,12 +54,14 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
   // Generate chart data based on view type with optimized performance
   const chartData = useMemo(() => {
     if (viewType === "month") {
-      // 24 months of data (2 years) - optimized for performance
+      // Show only 12 months from system launch onwards (or up to current month if in 2026)
       const data: RevenueData[] = []
-      const baseDate = new Date()
-      baseDate.setFullYear(baseDate.getFullYear() - 2)
-      baseDate.setDate(1)
+      const baseDate = new Date(SYSTEM_LAUNCH_YEAR, SYSTEM_LAUNCH_MONTH, 1)
       baseDate.setHours(0, 0, 0, 0)
+
+      // Calculate how many months to display (max 12 from launch, or until now)
+      const now = new Date()
+      const monthsToDisplay = Math.min(12, Math.floor((now.getFullYear() - SYSTEM_LAUNCH_YEAR) * 12 + (now.getMonth() - SYSTEM_LAUNCH_MONTH) + 1))
 
       // Create month lookup map for O(1) access instead of O(n) filtering
       const monthMap = new Map<string, { revenue: number; orders: number }>()
@@ -72,7 +77,7 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
         monthMap.set(key, existing)
       }
 
-      for (let i = 0; i < 24; i++) {
+      for (let i = 0; i < monthsToDisplay; i++) {
         const monthDate = new Date(baseDate)
         monthDate.setMonth(monthDate.getMonth() + i)
 
@@ -124,12 +129,37 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
       const newDate = new Date(prev)
       if (direction === "prev") {
         newDate.setMonth(newDate.getMonth() - 1)
+        // Prevent navigation before system launch date
+        if (newDate.getFullYear() < SYSTEM_LAUNCH_YEAR || 
+            (newDate.getFullYear() === SYSTEM_LAUNCH_YEAR && newDate.getMonth() < SYSTEM_LAUNCH_MONTH)) {
+          return prev
+        }
       } else {
         newDate.setMonth(newDate.getMonth() + 1)
+        // Prevent navigation beyond current month/year
+        const now = new Date()
+        if (newDate > now) {
+          return prev
+        }
       }
       return newDate
     })
   }, [])
+
+  // Check if navigation buttons should be disabled
+  const canNavigatePrev = useMemo(() => {
+    const testDate = new Date(currentMonth)
+    testDate.setMonth(testDate.getMonth() - 1)
+    return !(testDate.getFullYear() < SYSTEM_LAUNCH_YEAR || 
+             (testDate.getFullYear() === SYSTEM_LAUNCH_YEAR && testDate.getMonth() < SYSTEM_LAUNCH_MONTH))
+  }, [currentMonth])
+
+  const canNavigateNext = useMemo(() => {
+    const testDate = new Date(currentMonth)
+    testDate.setMonth(testDate.getMonth() + 1)
+    const now = new Date()
+    return testDate <= now
+  }, [currentMonth])
 
   const monthDisplay = useMemo(
     () => currentMonth.toLocaleDateString("en-US", { month: "long", year: "numeric" }),
@@ -240,18 +270,28 @@ export function RevenueChartCarousel({ orders, title = "Revenue Trend", descript
           <div className="flex items-center justify-center gap-4 pt-2 border-t border-slate-700">
             <Button
               onClick={() => navigateMonth("prev")}
+              disabled={!canNavigatePrev}
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
+              className={`h-8 w-8 p-0 transition-all ${
+                canNavigatePrev
+                  ? "hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                  : "text-slate-600 cursor-not-allowed opacity-50"
+              }`}
             >
               <ChevronLeft className="w-4 h-4" />
             </Button>
             <h3 className="text-sm font-semibold text-white min-w-fit">{monthDisplay}</h3>
             <Button
               onClick={() => navigateMonth("next")}
+              disabled={!canNavigateNext}
               variant="ghost"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-slate-700 text-slate-300 hover:text-white transition-all"
+              className={`h-8 w-8 p-0 transition-all ${
+                canNavigateNext
+                  ? "hover:bg-slate-700 text-slate-300 hover:text-white cursor-pointer"
+                  : "text-slate-600 cursor-not-allowed opacity-50"
+              }`}
             >
               <ChevronRight className="w-4 h-4" />
             </Button>
