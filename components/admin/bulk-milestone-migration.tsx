@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { useToast } from "@/hooks/use-toast"
 import { AlertCircle, CheckCircle, Loader } from "lucide-react"
+import { authService } from "@/lib/auth"
 
 interface BulkMigrationProps {
   milestoneName: string
@@ -36,13 +37,23 @@ export function BulkMilestoneMigration({
     setResult(null)
 
     try {
+      const token = authService.getToken()
+      console.log("[v0] Token retrieved:", !!token)
+      if (!token) {
+        throw new Error("Authentication token not found. Please log in again.")
+      }
+
+      console.log("[v0] Sending migration request with token")
       const response = await fetch("/api/admin/bulk-milestone-migrate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({ milestoneName }),
       })
+
+      console.log("[v0] Response status:", response.status)
 
       if (!response.ok) {
         const errorData = await response.json()
