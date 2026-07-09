@@ -7,7 +7,6 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { RevenueChartCarousel } from "@/components/admin/revenue-chart-carousel"
-import { ReferralSourcesModal } from "@/components/admin/referral-sources-modal"
 import {
   DollarSign,
   ShoppingCart,
@@ -72,7 +71,6 @@ export default function AdminDashboard() {
     stepBreakdown: {}
   })
   const [abandonedDrawerOpen, setAbandonedDrawerOpen] = useState(false)
-  const [referralModalOpen, setReferralModalOpen] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -821,25 +819,14 @@ export default function AdminDashboard() {
 
       {/* Referral Sources Section */}
       <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-lg">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 mb-4 md:mb-6">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/10">
-                <Share2 className="h-4 w-4 text-purple-600" />
-              </div>
-              <h3 className="text-lg md:text-xl font-bold text-slate-900">Where Customers Found Us</h3>
-            </div>
-            <p className="text-xs md:text-sm text-slate-700 mt-1 ml-9">Referral sources from {allOrders.length} orders</p>
+        <div className="flex items-center gap-2 mb-4 md:mb-6">
+          <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/10">
+            <Share2 className="h-4 w-4 text-purple-600" />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setReferralModalOpen(true)}
-            className="self-start md:self-auto border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg"
-          >
-            <Share2 className="h-3.5 w-3.5 mr-1.5" />
-            View Analytics
-          </Button>
+          <div>
+            <h3 className="text-lg md:text-xl font-bold text-slate-900">Where Customers Found Us</h3>
+            <p className="text-xs md:text-sm text-slate-700 mt-1">Referral sources from {allOrders.length} orders</p>
+          </div>
         </div>
 
         {allOrders.length === 0 ? (
@@ -1407,13 +1394,6 @@ export default function AdminDashboard() {
           </div>
         </DialogContent>
       </Dialog>
-
-      {/* Referral Sources Modal */}
-      <ReferralSourcesModal
-        open={referralModalOpen}
-        onOpenChange={setReferralModalOpen}
-        orders={allOrders}
-      />
     </div>
   )
 }
