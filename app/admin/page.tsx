@@ -25,6 +25,7 @@ import {
   RefreshCw,
   TrendingDown,
   Eye,
+  Share2,
 } from "lucide-react"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
@@ -814,6 +815,93 @@ export default function AdminDashboard() {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Referral Sources Section */}
+      <div className="backdrop-blur-md bg-white/50 border border-white/40 rounded-lg md:rounded-2xl p-4 md:p-6 shadow-lg">
+        <div className="flex items-center gap-2 mb-4 md:mb-6">
+          <div className="p-1.5 rounded-lg bg-gradient-to-br from-purple-500/20 to-blue-500/10">
+            <Share2 className="h-4 w-4 text-purple-600" />
+          </div>
+          <div>
+            <h3 className="text-lg md:text-xl font-bold text-slate-900">Where Customers Found Us</h3>
+            <p className="text-xs md:text-sm text-slate-700 mt-1">Referral sources from {allOrders.length} orders</p>
+          </div>
+        </div>
+
+        {allOrders.length === 0 ? (
+          <div className="text-center py-8">
+            <div className="inline-flex items-center justify-center w-12 h-12 rounded-full bg-slate-100 mb-3">
+              <Share2 className="h-5 w-5 text-slate-400" />
+            </div>
+            <p className="text-sm text-slate-500">No referral data available</p>
+          </div>
+        ) : (
+          (() => {
+            const referralData: Record<string, { count: number; revenue: number }> = {}
+            allOrders.forEach((order: any) => {
+              const source = order.referralSource || "Direct"
+              if (!referralData[source]) {
+                referralData[source] = { count: 0, revenue: 0 }
+              }
+              referralData[source].count += 1
+              referralData[source].revenue += order.pricing?.total || order.amount || order.total || 0
+            })
+
+            const topReferrals = Object.entries(referralData)
+              .map(([source, data]) => ({
+                name: source,
+                ...data,
+              }))
+              .sort((a, b) => b.count - a.count)
+              .slice(0, 5)
+
+            const maxCount = topReferrals[0]?.count || 1
+
+            return (
+              <div className="space-y-3">
+                {topReferrals.map((referral, index) => {
+                  const barWidth = (referral.count / maxCount) * 100
+                  const colors = [
+                    { bg: "bg-gradient-to-r from-purple-500 to-blue-500", badge: "bg-purple-100 text-purple-700" },
+                    { bg: "bg-gradient-to-r from-blue-500 to-cyan-500", badge: "bg-blue-100 text-blue-700" },
+                    { bg: "bg-gradient-to-r from-pink-500 to-rose-500", badge: "bg-pink-100 text-pink-700" },
+                    { bg: "bg-gradient-to-r from-amber-500 to-orange-500", badge: "bg-amber-100 text-amber-700" },
+                    { bg: "bg-gradient-to-r from-green-500 to-emerald-500", badge: "bg-green-100 text-green-700" },
+                  ]
+                  const color = colors[index] || colors[0]
+
+                  return (
+                    <div key={referral.name} className="p-3 md:p-4 rounded-lg md:rounded-xl backdrop-blur-sm bg-white/60 border border-white/40 hover:bg-white/80 transition-all">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-3 flex-1 min-w-0">
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold whitespace-nowrap flex-shrink-0 ${color.badge}`}>
+                            #{index + 1}
+                          </span>
+                          <span className="font-semibold text-slate-900 text-sm md:text-base truncate">
+                            {referral.name}
+                          </span>
+                        </div>
+                        <div className="flex items-center gap-3 flex-shrink-0 ml-2">
+                          <div className="text-right">
+                            <p className="text-xs font-bold text-slate-700">{referral.count} orders</p>
+                            <p className="text-xs text-slate-500">${(referral.revenue / 1000).toFixed(1)}K</p>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="w-full bg-white/40 rounded-full h-2">
+                        <div
+                          className={`${color.bg} h-2 rounded-full transition-all duration-500`}
+                          style={{ width: `${barWidth}%` }}
+                        />
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          })()
+        )}
       </div>
 
       {/* Top Cities Section */}
