@@ -155,7 +155,7 @@
 
 ## Real-time Event Flow Architecture
 
-```
+\`\`\`
 User Action (API Call)
     ↓
 API Route Handler (e.g., /api/orders/route.ts)
@@ -171,32 +171,32 @@ Connected Clients (via SSE stream)
 Client-side EventSource listener
     ↓
 UI Update (via React state/hooks)
-```
+\`\`\`
 
 ---
 
 ## Broadcast Patterns Used
 
 ### Pattern 1: Resource + Action
-```typescript
+\`\`\`typescript
 // Example: broadcastUpdate('orders', 'create', orderData)
 // Event: orders:create
 // Listened by: /api/realtime/sse subscribes to orders:*
-```
+\`\`\`
 
 ### Pattern 2: Wildcard Subscription
-```typescript
+\`\`\`typescript
 // SSE route subscribes to all events:
 broadcaster.subscribe(`${resource}:*`, (eventData) => {
   // Broadcasts to all connected clients
 })
-```
+\`\`\`
 
 ### Pattern 3: User-Scoped Events
-```typescript
+\`\`\`typescript
 // Some events are user-specific:
 // Only broadcast to authenticated user's SSE connections
-```
+\`\`\`
 
 ---
 
@@ -208,12 +208,12 @@ broadcaster.subscribe(`${resource}:*`, (eventData) => {
 - `/lib/load-balancer/advanced-cache.ts` - Advanced caching logic
 
 ### Cache Invalidation
-```typescript
+\`\`\`typescript
 // When broadcast occurs:
 broadcastUpdate('orders', 'create', data)
 // Auto-invalidates cached stats
 // Next fetch recalculates
-```
+\`\`\`
 
 ---
 
@@ -263,7 +263,7 @@ broadcastUpdate('orders', 'create', data)
 ## Usage Example
 
 **API Creates Order and Broadcasts**:
-```typescript
+\`\`\`typescript
 // POST /api/orders
 broadcastUpdate('orders', 'create', {
   id: newOrder._id,
@@ -271,10 +271,10 @@ broadcastUpdate('orders', 'create', {
   amount: newOrder.amount,
   // ... order data
 })
-```
+\`\`\`
 
 **Client Listens in Real-time**:
-```typescript
+\`\`\`typescript
 // /app/admin/orders/page.tsx or /app/client/dashboard/page.tsx
 const eventSource = new EventSource('/api/realtime/sse')
 eventSource.addEventListener('orders:create', (e) => {
@@ -282,7 +282,7 @@ eventSource.addEventListener('orders:create', (e) => {
   const order = JSON.parse(e.data.data)
   // Refresh list or update state
 })
-```
+\`\`\`
 
 ---
 
