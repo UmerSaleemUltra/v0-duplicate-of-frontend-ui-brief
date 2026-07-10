@@ -23,6 +23,18 @@ class RealtimeBroadcaster extends EventEmitter {
     this.on(event, callback)
     return () => this.off(event, callback)
   }
+
+  subscribeToResource(resource: string, callback: (data: any) => void) {
+    const createdUnsub = this.subscribe(`${resource}:created`, callback)
+    const updatedUnsub = this.subscribe(`${resource}:updated`, callback)
+    const deletedUnsub = this.subscribe(`${resource}:deleted`, callback)
+    
+    return () => {
+      createdUnsub()
+      updatedUnsub()
+      deletedUnsub()
+    }
+  }
 }
 
 export const broadcaster = RealtimeBroadcaster.getInstance()

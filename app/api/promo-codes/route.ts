@@ -5,6 +5,12 @@ import { apiResponse, apiError } from "@/lib/api-middleware"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { ObjectId } from "mongodb"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
+import {
+  getCachedPromoCodes,
+  invalidatePromoCodeCache,
+  invalidateAllPromoCache,
+  setPromoCodeCache,
+} from "@/lib/cache/promo-cache"
 
 // Promo code schema:
 // {
@@ -27,7 +33,7 @@ import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 //   createdBy: string (admin userId)
 // }
 
-// GET - List all promo codes (admin only)
+// GET - List all promo codes (admin only) - with caching and realtime support
 export async function GET(request: NextRequest) {
   try {
     const authHeader = request.headers.get("authorization")
@@ -42,11 +48,15 @@ export async function GET(request: NextRequest) {
     }
 
     const db = await getDatabase()
-    const promoCodes = await db
-      .collection("promo_codes")
-      .find({})
-      .sort({ createdAt: -1 })
-      .toArray()
+    
+    // Use cached version if available
+    const promoCodes = await getCachedPromoCodes(async () => {
+      return await db
+        .collection("promo_codes")
+        .find({})
+        .sort({ createdAt: -1 })
+        .toArray()
+    })
 
     return addSecurityHeaders(apiResponse(promoCodes))
   } catch (error: any) {
@@ -133,7 +143,12 @@ export async function POST(request: NextRequest) {
 
     const createdPromoCode = { ...promoCode, _id: result.insertedId }
     
-    // Broadcast realtime update
+    // Cache the new code
+    await setPromoCodeCache(result.insertedId.toString(), createdPromoCode)
+    // Invalidate list cache
+    await invalidateAllPromoCache()
+    
+    // Broadcast realtime update to all admins
     broadcastUpdate("promo-codes", "created", createdPromoCode)
 
     return addSecurityHeaders(
@@ -196,7 +211,12 @@ export async function PATCH(request: NextRequest) {
       return addSecurityHeaders(apiError("Promo code not found", 404))
     }
 
-    // Broadcast realtime update
+    // Update cache
+    await setPromoCodeCache(id, result)
+    // Invalidate list cache
+    await invalidateAllPromoCache()
+
+    // Broadcast realtime update to all admins
     broadcastUpdate("promo-codes", "updated", result)
 
     return addSecurityHeaders(apiResponse(result, "Promo code updated successfully"))
@@ -234,7 +254,12 @@ export async function DELETE(request: NextRequest) {
       return addSecurityHeaders(apiError("Promo code not found", 404))
     }
 
-    // Broadcast realtime update
+    // Invalidate cache
+    await invalidatePromoCodeCache(id)
+    // Invalidate list cache
+    await invalidateAllPromoCache()
+
+    // Broadcast realtime update to all admins
     broadcastUpdate("promo-codes", "deleted", { _id: id })
 
     return addSecurityHeaders(apiResponse(null, "Promo code deleted successfully"))
