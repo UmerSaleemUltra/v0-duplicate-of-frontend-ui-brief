@@ -13,17 +13,18 @@ export async function GET(req: NextRequest) {
       const data = `data: ${JSON.stringify({ type: "connected", timestamp: new Date().toISOString() })}\n\n`
       controller.enqueue(encoder.encode(data))
 
-      // Listen for all realtime events
-      const events = ["orders", "companies", "documents", "mail", "notifications", "users", "passports", "addons", "promo-codes"]
+      // Listen for all realtime events with proper resource subscription
+      const resources = ["orders", "companies", "documents", "mail", "notifications", "users", "passports", "addons", "promo-codes"]
       const unsubscribers: Array<() => void> = []
 
-      events.forEach((resource) => {
-        const unsubscribe = broadcaster.subscribe(`${resource}:*`, (eventData) => {
+      resources.forEach((resource) => {
+        // Subscribe to all actions (created, updated, deleted) for this resource
+        const unsubscribe = broadcaster.subscribeToResource(resource, (eventData) => {
           const message = `data: ${JSON.stringify(eventData)}\n\n`
           try {
             controller.enqueue(encoder.encode(message))
           } catch (error) {
-            // Client disconnected
+            // Client disconnected, will be cleaned up
           }
         })
         unsubscribers.push(unsubscribe)

@@ -47,6 +47,7 @@ import {
 } from "lucide-react"
 import { authService } from "@/lib/auth"
 import { toast } from "react-toastify"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 type PromoCode = {
   _id: string
@@ -92,6 +93,8 @@ export default function PromoCodesPage() {
   const [formData, setFormData] = useState(emptyPromoCode)
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isLive, setIsLive] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 10
 
   // Realtime SSE connection
   useEffect(() => {
@@ -144,6 +147,7 @@ export default function PromoCodesPage() {
     switch (action) {
       case "created":
         setPromoCodes((prev) => [data, ...prev])
+        setCurrentPage(1)
         toast.info(`New promo code "${data.code}" created`)
         break
       case "updated":
@@ -154,6 +158,7 @@ export default function PromoCodesPage() {
         break
       case "deleted":
         setPromoCodes((prev) => prev.filter((code) => code._id !== data._id))
+        setCurrentPage(1)
         toast.info("Promo code deleted")
         break
     }
@@ -333,6 +338,12 @@ export default function PromoCodesPage() {
   // Stats
   const activeCount = promoCodes.filter(c => c.isActive && (!c.validUntil || new Date(c.validUntil) > new Date())).length
   const totalUsed = promoCodes.reduce((sum, c) => sum + c.usedCount, 0)
+  
+  // Pagination
+  const totalPages = Math.ceil(promoCodes.length / itemsPerPage)
+  const startIndex = (currentPage - 1) * itemsPerPage
+  const endIndex = startIndex + itemsPerPage
+  const paginatedCodes = promoCodes.slice(startIndex, endIndex)
 
   return (
     <div className="space-y-6">
@@ -440,7 +451,7 @@ export default function PromoCodesPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {promoCodes.map((code) => (
+                  {paginatedCodes.map((code) => (
                     <TableRow key={code._id} className="hover:bg-slate-50/50">
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -538,6 +549,50 @@ export default function PromoCodesPage() {
             </div>
           )}
         </CardContent>
+        {promoCodes.length > 0 && (
+          <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 gap-4">
+            <p className="text-xs text-slate-400 whitespace-nowrap shrink-0">
+              {startIndex + 1}–{Math.min(endIndex, promoCodes.length)} of {promoCodes.length}
+            </p>
+            <div className="overflow-x-auto flex-1">
+              <div className="flex items-center gap-1 min-w-max">
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} 
+                  disabled={currentPage === 1} 
+                  className="h-8 px-3 text-xs shrink-0"
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                </Button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <Button 
+                    key={page} 
+                    variant="ghost" 
+                    size="sm" 
+                    onClick={() => setCurrentPage(page)}
+                    className={`h-8 w-8 p-0 text-xs shrink-0 ${
+                      currentPage === page 
+                        ? "bg-slate-900 text-white hover:bg-slate-800" 
+                        : "text-slate-600"
+                    }`}
+                  >
+                    {page}
+                  </Button>
+                ))}
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} 
+                  disabled={currentPage === totalPages} 
+                  className="h-8 px-3 text-xs shrink-0"
+                >
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
       </Card>
 
       {/* Add/Edit Dialog */}

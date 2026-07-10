@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server"
 import { getDatabase } from "@/config/database"
 import { apiResponse, apiError } from "@/lib/api-middleware"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
+import { getCachedPromoCode } from "@/lib/cache/promo-cache"
 
 // POST - Validate promo code (public endpoint for checkout)
 export async function POST(request: NextRequest) {
@@ -16,7 +17,17 @@ export async function POST(request: NextRequest) {
     const db = await getDatabase()
     const normalizedCode = code.toUpperCase().trim()
 
-    const promoCode = await db.collection("promo_codes").findOne({ code: normalizedCode })
+    // Try to get from cache, otherwise fetch from database
+    let promoCode = null
+    
+    // First check cache by searching through all cached codes (simple approach)
+    // For production, consider indexing by code in cache as well
+    const cachedCode = await getCachedPromoCode(normalizedCode, async () => {
+      const doc = await db.collection("promo_codes").findOne({ code: normalizedCode })
+      return doc
+    })
+    
+    promoCode = cachedCode
 
     if (!promoCode) {
       return addSecurityHeaders(apiError("Invalid promo code", 404))
