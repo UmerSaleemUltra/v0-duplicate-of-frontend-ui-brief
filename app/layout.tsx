@@ -16,12 +16,12 @@ export const metadata = {
   metadataBase: new URL("https://www.buzzfiling.com"),
 
   title: {
-    default: "US LLC & Corporation Formation for Pakistani Entrepreneurs | Buzz Filing",
+    default: "Buzz Filing | Top LLC Formation Company in Karachi, Pakistan | Best US Company Registration Services",
     template: "%s | Buzz Filing",
   },
 
   description:
-    "Buzz Filing helps Pakistani entrepreneurs register US LLCs and corporations with comprehensive support including EIN application, registered agent, business address, and compliance guidance.",
+    "Buzz Filing is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Best company registration services, ITIN & EIN assistance, registered agent, US business address, and compliance support for Pakistani and international entrepreneurs.",
 
   keywords: [
     "US LLC formation",
