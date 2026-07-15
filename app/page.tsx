@@ -19,62 +19,19 @@ const ContactSection = dynamic(() => import("@/components/sections/contact"))
 const Footer = dynamic(() => import("@/components/sections/footer"))
 
 export const metadata: Metadata = {
-  title: "Buzz Filing | Top LLC Formation Company in Karachi, Pakistan | US Business Registration",
+  title: "US LLC Formation in Pakistan | EIN, ITIN & Business Setup | Buzz Filing",
   description:
-    "Buzz Filing is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Get your US business registered with EIN, ITIN, registered agent, and full compliance support. Trusted by 700+ Pakistani entrepreneurs.",
+    "Professional US LLC and C-Corp formation services for Pakistani entrepreneurs. Complete support with EIN application, ITIN assistance, registered agent, business address, and compliance guidance.",
   keywords: [
-    "LLC registration in Karachi",
-    "LLC formation Karachi",
-    "company registration Karachi",
-    "business registration Karachi",
-    "register LLC in Karachi",
-    "how to register LLC in Pakistan",
-    "LLC registration Pakistan",
-    "US LLC registration from Pakistan",
-    "US LLC formation from Karachi",
-    "form US LLC from Karachi",
-    "LLC service providers in Karachi",
-    "LLC consultants in Karachi",
-    "best LLC service in Karachi",
-    "affordable LLC registration Karachi",
-    "cheap LLC registration Pakistan",
-    "LLC registration cost Karachi",
-    "LLC formation fees Pakistan",
-    "US company registration Karachi",
-    "US business setup from Pakistan",
-    "start US business from Karachi",
-    "online LLC registration Pakistan",
-    "remote LLC formation Karachi",
-    "Buzz Filing",
-    "Buzz Filing services",
-    "Buzz Filing Pakistan",
-    "Top LLC formation companies in Karachi",
-    "Best company registration services in Pakistan",
-    "Best ITIN & US LLC service providers in Karachi",
-    "LLC registration Karachi Pakistan",
-    "US business formation Pakistan",
-    "EIN application service Karachi",
-    "Pakistani entrepreneurs US LLC",
     "US LLC formation Pakistan",
-    "company registration Karachi",
-    "ITIN service Pakistan",
-    "registered agent service",
-    "business formation consultant Karachi",
-    "US C-Corp registration Pakistan",
-    "BOI filing service",
-    "compliance services Pakistan",
-    "virtual mailroom service",
-    "US business bank account setup",
-    "EIN for LLC Pakistan",
-    "EIN application Karachi",
+    "LLC registration Pakistan",
+    "US company registration Pakistan",
+    "EIN application service",
     "ITIN application Pakistan",
-    "Amazon seller LLC Pakistan",
-    "Shopify LLC registration Karachi",
-    "freelancer LLC Pakistan",
-    "e-commerce LLC Pakistan",
-    "digital business LLC Karachi",
-    "Karachi business registration",
-    "Pakistan US company formation",
+    "registered agent service",
+    "US business setup",
+    "business formation consultant",
+    "Buzz Filing",
   ],
   authors: [{ name: "Buzz Filing Team" }],
   creator: "Buzz Filing",
@@ -93,15 +50,15 @@ export const metadata: Metadata = {
     locale: "en_US",
     url: "https://www.buzzfiling.com",
     siteName: "Buzz Filing",
-    title: "Buzz Filing | Top LLC Formation Company in Karachi, Pakistan",
+    title: "US LLC Formation in Pakistan | EIN & Business Setup | Buzz Filing",
     description:
-      "Pakistan's #1 US LLC and C-Corp formation service. Get your US business registered with EIN, ITIN, and full compliance support. Trusted by 700+ entrepreneurs.",
+      "Form a US LLC or C-Corp from Pakistan with professional support. EIN application, ITIN assistance, registered agent, business address, and compliance guidance.",
     images: [
       {
         url: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
         width: 1200,
         height: 630,
-        alt: "Buzz Filing - US LLC Formation Services",
+        alt: "Buzz Filing - US Business Formation Services",
       },
     ],
   },
@@ -109,8 +66,8 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@buzzfiling",
     creator: "@buzzfiling",
-    title: "Buzz Filing | Top LLC Formation Company in Karachi",
-    description: "Pakistan's #1 US LLC formation service. 700+ satisfied clients.",
+    title: "US LLC & C-Corp Formation from Pakistan | Buzz Filing",
+    description: "Professional US business formation with EIN, ITIN, registered agent, and compliance support.",
     images: ["https://www.buzzfiling.com/images/buzz-filing-logo.png"],
   },
   robots: {
@@ -127,90 +84,214 @@ export const metadata: Metadata = {
   verification: {
     google: "_j7SOmcEbiEhWO3bwy53HWXQMwmad7jhs7rQKM5oPd4",
   },
-  other: {
-    "structured-data": JSON.stringify([
-      {
-        "@context": "https://schema.org",
-        "@type": "ProfessionalService",
-        "@id": "https://www.buzzfiling.com/#organization",
-        name: "Buzz Filing",
-        alternateName: "Buzz Filing",
-        legalName: "Buzz Filing US Business Formation Services",
-        url: "https://www.buzzfiling.com",
-        logo: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
-        image: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
-        description:
-          "Buzz Filing is Pakistan's leading US LLC and C-Corp formation service provider, helping Pakistani entrepreneurs register their US businesses with complete EIN, ITIN, and compliance support.",
-        aggregateRating: {
-          "@type": "AggregateRating",
-          ratingValue: "4.9",
-          reviewCount: "650",
-          ratingCount: "700",
-          bestRating: "5",
-          worstRating: "1",
-        },
-        address: {
-          "@type": "PostalAddress",
-          addressLocality: "Karachi",
-          addressRegion: "Sindh",
-          addressCountry: "Pakistan",
-        },
-        areaServed: {
-          "@type": "Country",
-          name: "Pakistan",
-        },
-        availableLanguage: ["English", "Urdu"],
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "BreadcrumbList",
-        itemListElement: [
-          {
-            "@type": "ListItem",
-            position: 1,
-            name: "Home",
-            item: "https://www.buzzfiling.com",
-          },
-          {
-            "@type": "ListItem",
-            position: 2,
-            name: "Services",
-            item: "https://www.buzzfiling.com/#services",
-          },
-          {
-            "@type": "ListItem",
-            position: 3,
-            name: "Pricing",
-            item: "https://www.buzzfiling.com/#pricing",
-          },
-        ],
-      },
-      {
-        "@context": "https://schema.org",
-        "@type": "WebSite",
-        "@id": "https://www.buzzfiling.com/#website",
-        url: "https://www.buzzfiling.com",
-        name: "Buzz Filing",
-        description: "Pakistan's #1 US LLC and C-Corp formation service provider",
-        publisher: {
-          "@id": "https://www.buzzfiling.com/#organization",
-        },
-        potentialAction: {
-          "@type": "SearchAction",
-          target: {
-            "@type": "EntryPoint",
-            urlTemplate: "https://www.buzzfiling.com/search?q={search_term_string}",
-          },
-          "query-input": "required name=search_term_string",
-        },
-      },
-    ]),
-  },
+
 }
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-white">
+      {/* Organization Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ProfessionalService",
+            "@id": "https://www.buzzfiling.com/#organization",
+            name: "Buzz Filing",
+            alternateName: "Buzz Filing",
+            url: "https://www.buzzfiling.com",
+            logo: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
+            image: "https://www.buzzfiling.com/images/buzz-filing-logo.png",
+            description:
+              "Professional US LLC and C-Corp formation services for Pakistani entrepreneurs. Complete support with EIN application, ITIN assistance, registered agent, business address, and compliance guidance.",
+            address: {
+              "@type": "PostalAddress",
+              addressLocality: "Karachi",
+              addressRegion: "Sindh",
+              addressCountry: "Pakistan",
+            },
+            areaServed: [
+              { "@type": "Country", name: "United States" },
+              { "@type": "Country", name: "Pakistan" },
+            ],
+            availableLanguage: ["en", "ur"],
+            knowsAbout: [
+              "US LLC Formation",
+              "US C-Corporation Formation",
+              "EIN Application",
+              "ITIN Application",
+              "Registered Agent Services",
+              "Business Address Services",
+              "Compliance Support",
+            ],
+            serviceType: [
+              "US LLC Formation",
+              "US C-Corp Formation",
+              "EIN Application",
+              "ITIN Assistance",
+              "Registered Agent Service",
+              "Business Address Service",
+              "Compliance Support",
+            ],
+          }),
+        }}
+      />
+
+      {/* WebSite Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "WebSite",
+            "@id": "https://www.buzzfiling.com/#website",
+            url: "https://www.buzzfiling.com",
+            name: "Buzz Filing",
+            description:
+              "Professional US business formation services for international entrepreneurs.",
+            publisher: {
+              "@id": "https://www.buzzfiling.com/#organization",
+            },
+            potentialAction: {
+              "@type": "SearchAction",
+              target: {
+                "@type": "EntryPoint",
+                urlTemplate: "https://www.buzzfiling.com/search?q={search_term_string}",
+              },
+              "query-input": "required name=search_term_string",
+            },
+          }),
+        }}
+      />
+
+      {/* Breadcrumb Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "BreadcrumbList",
+            itemListElement: [
+              {
+                "@type": "ListItem",
+                position: 1,
+                name: "Home",
+                item: "https://www.buzzfiling.com",
+              },
+            ],
+          }),
+        }}
+      />
+
+      {/* Service Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "ItemList",
+            itemListElement: [
+              {
+                "@type": "Service",
+                name: "US LLC Formation",
+                description: "Complete US LLC formation with legal documentation and state registration.",
+                provider: { "@id": "https://www.buzzfiling.com/#organization" },
+              },
+              {
+                "@type": "Service",
+                name: "US C-Corp Formation",
+                description: "Professional US C-Corporation formation and registration services.",
+                provider: { "@id": "https://www.buzzfiling.com/#organization" },
+              },
+              {
+                "@type": "Service",
+                name: "EIN Application",
+                description: "Expert assistance with Employee Identification Number application and processing.",
+                provider: { "@id": "https://www.buzzfiling.com/#organization" },
+              },
+              {
+                "@type": "Service",
+                name: "ITIN Assistance",
+                description: "ITIN application support for non-US residents through IRS-recognized channels.",
+                provider: { "@id": "https://www.buzzfiling.com/#organization" },
+              },
+              {
+                "@type": "Service",
+                name: "Registered Agent Service",
+                description: "Professional registered agent service for legal document receipt and compliance.",
+                provider: { "@id": "https://www.buzzfiling.com/#organization" },
+              },
+              {
+                "@type": "Service",
+                name: "Business Address Service",
+                description: "Unique US business address accepted by major online marketplaces and banks.",
+                provider: { "@id": "https://www.buzzfiling.com/#organization" },
+              },
+              {
+                "@type": "Service",
+                name: "Compliance Support",
+                description: "Annual reporting, tax filing support, and ongoing compliance guidance.",
+                provider: { "@id": "https://www.buzzfiling.com/#organization" },
+              },
+            ],
+          }),
+        }}
+      />
+
+      {/* FAQ Schema */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "FAQPage",
+            mainEntity: [
+              {
+                "@type": "Question",
+                name: "Can a non-US resident form an LLC in the United States?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. Non-US residents can legally form and fully own a U.S. LLC without visiting the United States. We assist international founders throughout the entire formation process.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Which state is best for LLC formation for foreigners?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "There is no single best state. Wyoming, New Mexico, Texas, Florida, and Montana are commonly chosen based on business activity.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Can a non resident apply for an ITIN?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "Yes. Buzz Filing assists non-residents with ITIN applications through an IRS-authorized Certified Acceptance Agent to support U.S. tax compliance.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "How long does it take to form a U.S. LLC?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "State approval usually takes 2 to 7 business days, depending on the state. EIN issuance typically takes 7 to 15 business days and may take longer during peak IRS processing periods.",
+                },
+              },
+              {
+                "@type": "Question",
+                name: "Why is a registered agent required for my U.S. company?",
+                acceptedAnswer: {
+                  "@type": "Answer",
+                  text: "A registered agent is legally required to receive official state notices, legal documents, and compliance correspondence on behalf of your company and ensures you do not miss critical communications.",
+                },
+              },
+            ],
+          }),
+        }}
+      />
+
       <Navbar />
       <HeroSection />
       <Brands />
