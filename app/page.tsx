@@ -21,7 +21,7 @@ const Footer = dynamic(() => import("@/components/sections/footer"))
 export const metadata: Metadata = {
   title: "Buzz Filing | Top LLC Formation Company in Karachi, Pakistan | US Business Registration",
   description:
-    "Buzz Filing is Pakistan's #1 US LLC and C-Corp formation service provider in Karachi. Get your US business registered with EIN, ITIN, registered agent, and full compliance support. Trusted by 700+ Pakistani entrepreneurs.",
+    "Professional US LLC and C-Corp formation for Pakistani entrepreneurs. Complete support with EIN application, ITIN assistance, registered agent, business address, and ongoing compliance guidance.",
   keywords: [
     "LLC registration in Karachi",
     "LLC formation Karachi",
