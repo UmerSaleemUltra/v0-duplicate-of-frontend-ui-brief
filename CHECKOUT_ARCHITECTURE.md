@@ -6,7 +6,7 @@ This checkout system uses 5 core APIs for a streamlined LLC formation process. P
 
 ### Quick Architecture
 
-```
+\`\`\`
 ┌──────────────────────────────────────────┐
 │          SIMPLIFIED CHECKOUT FLOW        │
 ├──────────────────────────────────────────┤
@@ -26,7 +26,7 @@ This checkout system uses 5 core APIs for a streamlined LLC formation process. P
 │ 4. POST /api/abandoned-checkouts         │
 │ 5. POST /api/payment-receipt/upload      │
 └──────────────────────────────────────────┘
-```
+\`\`\`
 
 ---
 
@@ -37,20 +37,20 @@ This checkout system uses 5 core APIs for a streamlined LLC formation process. P
 Generates a secure checkout session token using email.
 
 **Request:**
-```json
+\`\`\`json
 {
   "email": "user@example.com"
 }
-```
+\`\`\`
 
 **Response:**
-```json
+\`\`\`json
 {
   "token": "eyJhbGc...",
   "expiresIn": 3600,
   "checkoutId": "checkout_123"
 }
-```
+\`\`\`
 
 **Usage:** Called at checkout start to initialize the session and store token in localStorage.
 
@@ -61,23 +61,23 @@ Generates a secure checkout session token using email.
 Creates user account with email, password, name, and phone.
 
 **Request:**
-```json
+\`\`\`json
 {
   "fullName": "John Doe",
   "email": "john@example.com",
   "password": "SecurePass123",
   "phone": "+923001234567"
 }
-```
+\`\`\`
 
 **Response:**
-```json
+\`\`\`json
 {
   "userId": "user_123",
   "email": "john@example.com",
   "authToken": "auth_token_here"
 }
-```
+\`\`\`
 
 **Usage:** Called after account step to create user and get auth token for future requests.
 
@@ -88,7 +88,7 @@ Creates user account with email, password, name, and phone.
 Creates LLC order with all checkout data. **Starter package only—$249 USD fixed.**
 
 **Request:**
-```json
+\`\`\`json
 {
   "token": "checkout_token",
   "account": {
@@ -128,16 +128,16 @@ Creates LLC order with all checkout data. **Starter package only—$249 USD fixe
     "receiptFileName": "receipt.pdf"
   }
 }
-```
+\`\`\`
 
 **Response:**
-```json
+\`\`\`json
 {
   "orderId": "order_456",
   "status": "pending",
   "createdAt": "2024-01-15T10:30:00Z"
 }
-```
+\`\`\`
 
 **Usage:** Main order creation endpoint. Called on final submission with all collected data.
 
@@ -148,7 +148,7 @@ Creates LLC order with all checkout data. **Starter package only—$249 USD fixe
 Tracks checkout progress for cart recovery if user leaves.
 
 **Request:**
-```json
+\`\`\`json
 {
   "email": "user@example.com",
   "step": 2,
@@ -158,15 +158,15 @@ Tracks checkout progress for cart recovery if user leaves.
     "business": {}
   }
 }
-```
+\`\`\`
 
 **Response:**
-```json
+\`\`\`json
 {
   "checkoutId": "checkout_789",
   "savedAt": "2024-01-15T10:30:00Z"
 }
-```
+\`\`\`
 
 **Usage:** Call after each step to save progress. Enables users to resume from where they left off.
 
@@ -177,19 +177,19 @@ Tracks checkout progress for cart recovery if user leaves.
 Uploads payment receipt files for proof of payment.
 
 **Request:** (multipart/form-data)
-```
+\`\`\`
 file: <binary_file>
 email: "user@example.com"
 orderNumber: "order_456"
-```
+\`\`\`
 
 **Response:**
-```json
+\`\`\`json
 {
   "fileUrl": "https://storage.example.com/receipts/receipt_123.pdf",
   "fileName": "receipt_123.pdf"
 }
-```
+\`\`\`
 
 **Usage:** Called when user selects "Already Paid" and uploads receipt as proof.
 
@@ -201,7 +201,7 @@ orderNumber: "order_456"
 
 Stores non-sensitive form data for session recovery:
 
-```javascript
+\`\`\`javascript
 {
   "checkoutSession": {
     "account": { fullName, email, phone, countryDial, terms },
@@ -211,16 +211,16 @@ Stores non-sensitive form data for session recovery:
     "payment": { method, whatsapp, receiptFileName }
   }
 }
-```
+\`\`\`
 
 ### IndexedDB (File Storage)
 
 Temporary file storage for documents before API submission:
 
-```javascript
+\`\`\`javascript
 // Database: "checkoutDB"
 // Object stores: "files", "receipts"
-```
+\`\`\`
 
 ---
 
@@ -253,7 +253,7 @@ Temporary file storage for documents before API submission:
 
 ## Quick Start Example
 
-```typescript
+\`\`\`typescript
 // 1. Generate token
 const tokenData = await fetch('/api/checkout/token', {
   method: 'POST',
@@ -283,6 +283,6 @@ const orderData = await fetch('/api/companies', {
 
 // 4. Success
 console.log('Order created:', orderData.orderId);
-```
+\`\`\`
 
 This simplified system is perfect for converting prospects quickly with minimal friction and maximum clarity.
