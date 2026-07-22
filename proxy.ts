@@ -23,6 +23,7 @@ export async function proxy(request: NextRequest) {
       const allowedOrigins = [
         "https://buzzfiling.com",
         "https://www.buzzfiling.com",
+        "https://buzzfiling-form.vercel.app",
         "http://localhost:3000",
         "http://localhost:3001",
       ]
@@ -50,6 +51,7 @@ export async function proxy(request: NextRequest) {
       const allowedOrigins = [
         "https://buzzfiling.com",
         "https://www.buzzfiling.com",
+        "https://buzzfiling-form.vercel.app",
         "http://localhost:3000",
         "http://localhost:3001",
       ]
@@ -120,6 +122,7 @@ export async function proxy(request: NextRequest) {
       const allowedOrigins = [
         "https://buzzfiling.com",
         "https://www.buzzfiling.com",
+        "https://buzzfiling-form.vercel.app",
         "http://localhost:3000",
         "http://localhost:3001",
       ]
@@ -160,6 +163,7 @@ export async function proxy(request: NextRequest) {
     const allowedOrigins = [
       "https://buzzfiling.com",
       "https://www.buzzfiling.com",
+      "https://buzzfiling-form.vercel.app",
       "http://localhost:3000",
       "http://localhost:3001",
     ]
