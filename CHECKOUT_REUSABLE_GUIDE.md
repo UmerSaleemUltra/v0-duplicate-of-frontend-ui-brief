@@ -8,7 +8,7 @@ This guide shows how to create **multiple checkout variants** (simplified, modal
 
 ## Architecture Pattern
 
-```
+\`\`\`
 Shared Layer
 ├── API Client (checkoutAPI)
 ├── Storage Layer (localStorage + IndexedDB)
@@ -19,7 +19,7 @@ Checkout Variants
 ├── Simplified 3-Step Checkout
 ├── Add-on Purchase Modal
 └── Quick Checkout Widget
-```
+\`\`\`
 
 ---
 
@@ -34,7 +34,7 @@ Checkout Variants
 
 **Implementation:**
 
-```typescript
+\`\`\`typescript
 // app/checkout/simplified/page.tsx
 'use client';
 
@@ -231,7 +231,7 @@ function PaymentStepSimplified() {
     </div>
   );
 }
-```
+\`\`\`
 
 ---
 
@@ -241,7 +241,7 @@ function PaymentStepSimplified() {
 
 **Implementation:**
 
-```typescript
+\`\`\`typescript
 // components/checkout/addons-modal.tsx
 'use client';
 
@@ -394,7 +394,7 @@ export function CheckoutWithAddons() {
     </>
   );
 }
-```
+\`\`\`
 
 ---
 
@@ -404,7 +404,7 @@ export function CheckoutWithAddons() {
 
 **Implementation:**
 
-```typescript
+\`\`\`typescript
 // components/checkout/quick-checkout-widget.tsx
 'use client';
 
@@ -491,7 +491,7 @@ export function QuickCheckoutWidget() {
     </div>
   );
 }
-```
+\`\`\`
 
 ---
 
@@ -501,7 +501,7 @@ export function QuickCheckoutWidget() {
 
 **Implementation:**
 
-```typescript
+\`\`\`typescript
 // app/checkout/multi-product/page.tsx
 'use client';
 
@@ -587,7 +587,7 @@ export default function MultiProductCheckout() {
 
   return null;
 }
-```
+\`\`\`
 
 ---
 
@@ -595,7 +595,7 @@ export default function MultiProductCheckout() {
 
 ### **Reusable Payment Component**
 
-```typescript
+\`\`\`typescript
 // components/checkout/shared-payment-component.tsx
 interface SharedPaymentProps {
   amount: number;
@@ -637,11 +637,11 @@ export async function processPayment({
     onError(error as Error);
   }
 }
-```
+\`\`\`
 
 ### **Reusable Promo Code Component**
 
-```typescript
+\`\`\`typescript
 // components/checkout/shared-promo-code.tsx
 interface SharedPromoProps {
   amount: number;
@@ -689,13 +689,13 @@ export function SharedPromoCodeInput({ amount, onApply }: SharedPromoProps) {
     </div>
   );
 }
-```
+\`\`\`
 
 ---
 
 ## Data Flow Diagram
 
-```
+\`\`\`
 ┌─────────────────────────────────────────────────────────────┐
 │                     All Checkout Variants                   │
 ├─────────────────────────────────────────────────────────────┤
@@ -723,7 +723,7 @@ export function SharedPromoCodeInput({ amount, onApply }: SharedPromoProps) {
          │          6 Core APIs                    │
          │  (All variants use same endpoints)      │
          └─────────────────────────────────────────┘
-```
+\`\`\`
 
 ---
 
@@ -731,7 +731,7 @@ export function SharedPromoCodeInput({ amount, onApply }: SharedPromoProps) {
 
 Users can be seamlessly transferred between checkout types:
 
-```typescript
+\`\`\`typescript
 // Redirect to simplified checkout
 function redirectToSimplified(email: string) {
   // Save session
@@ -746,7 +746,7 @@ function redirectToFull(email: string) {
   localStorage.setItem('userEmail', email);
   window.location.href = `/checkout?email=${email}`;
 }
-```
+\`\`\`
 
 ---
 
