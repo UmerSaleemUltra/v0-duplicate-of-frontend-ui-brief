@@ -107,6 +107,33 @@ export async function ensureIndexes(): Promise<void> {
         { code: 1 },
         { background: true, unique: true, name: "idx_promo_codes_code" }
       ),
+      // Sessions: per-user + expiration cleanup
+      db.collection("sessions").createIndex(
+        { userId: 1, createdAt: -1 },
+        { background: true, name: "idx_sessions_user_date" }
+      ),
+      db.collection("sessions").createIndex(
+        { expiresAt: 1 },
+        { background: true, expireAfterSeconds: 0, name: "idx_sessions_expiration" }
+      ),
+      // Token logs: audit trail
+      db.collection("token_logs").createIndex(
+        { userId: 1, timestamp: -1 },
+        { background: true, name: "idx_token_logs_user_date" }
+      ),
+      db.collection("token_logs").createIndex(
+        { ipAddress: 1, timestamp: -1 },
+        { background: true, name: "idx_token_logs_ip_date" }
+      ),
+      // Device logs: track suspicious activity
+      db.collection("device_logs").createIndex(
+        { userId: 1, timestamp: -1 },
+        { background: true, name: "idx_device_logs_user_date" }
+      ),
+      db.collection("device_logs").createIndex(
+        { ipAddress: 1, deviceFingerprint: 1 },
+        { background: true, name: "idx_device_logs_ip_device" }
+      ),
     ])
   } catch {
     // Non-fatal — indexes may already exist or Atlas free tier limits apply
