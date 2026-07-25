@@ -1,15 +1,12 @@
 import type { NextRequest } from "next/server"
 import { getDatabase } from "@/config/database"
-import { comparePassword } from "@/config/jwt"
+import { comparePassword, generateToken } from "@/config/jwt"
 import { apiResponse, apiError } from "@/lib/api-middleware"
 import { sendEmail, emailTemplates } from "@/config/email"
 import { validateEmail } from "@/lib/validation"
 import { loginRateLimit, clearLoginAttempts } from "@/lib/middleware/advanced-rate-limit"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { securityGuard } from "@/lib/middleware/security-guard"
-import { createSecureSession, logTokenActivity } from "@/lib/secure-token-service"
-import { getClientIpAddress } from "@/lib/device-fingerprint"
-import { getGeoLocation, formatGeoLocation } from "@/lib/geolocation"
 
 export async function POST(request: NextRequest) {
   const securityResponse = await securityGuard(request)
@@ -83,31 +80,11 @@ export async function POST(request: NextRequest) {
 
     clearLoginAttempts(email)
 
-    // Get device info from request
-    const clientIpAddress = getClientIpAddress(request)
-    const userAgent = request.headers.get("user-agent") || ""
-    const deviceFingerprint = request.headers.get("X-Device-Fingerprint") || ""
-
-    // Get geolocation
-    let country = "Unknown"
-    let city = "Unknown"
-    try {
-      const geo = await getGeoLocation(clientIpAddress)
-      country = geo.country
-      city = geo.city
-    } catch (geoError) {
-      // Non-fatal - geolocation service may be unavailable
-      console.warn("[v0] Geolocation lookup failed:", geoError)
-    }
-
-    // Create secure session with device/IP binding
-    let tokenData
-    try {
-      tokenData = await createSecureSession(userId, user.email, user.role, deviceFingerprint, clientIpAddress, country, city, userAgent)
-    } catch (sessionError) {
-      console.error("[v0] Failed to create secure session:", sessionError)
-      return apiError("Failed to create secure session. Please try again.", 500)
-    }
+    const token = generateToken({
+      userId: userId,
+      email: user.email,
+      role: user.role,
+    })
 
     const userResponse = {
       id: userId,
@@ -127,8 +104,6 @@ export async function POST(request: NextRequest) {
         $set: {
           lastLoginAt: new Date().toISOString(),
           updatedAt: new Date().toISOString(),
-          lastLoginIp: clientIpAddress,
-          lastLoginDevice: deviceFingerprint,
         },
       },
     ).catch(() => { /* Non-fatal */ })
@@ -176,33 +151,12 @@ export async function POST(request: NextRequest) {
       }
     })()
 
-    // Add tokens to httpOnly cookies
-    const response = addSecurityHeaders(
+    return addSecurityHeaders(
       apiResponse({
         user: userResponse,
-        sessionId: tokenData.sessionId,
-        loginLocation: `${city}, ${country}`,
+        token,
       }),
     )
-
-    // Set httpOnly cookies with tokens
-    response.cookies.set("accessToken", tokenData.accessToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 15 * 60, // 15 minutes
-      path: "/",
-    })
-
-    response.cookies.set("refreshToken", tokenData.refreshToken, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      maxAge: 7 * 24 * 60 * 60, // 7 days
-      path: "/",
-    })
-
-    return response
   } catch (error) {
     return addSecurityHeaders(apiError("We couldn't log you in at this time. Please try again.", 500))
   }
