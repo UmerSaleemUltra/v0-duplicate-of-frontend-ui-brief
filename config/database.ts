@@ -107,6 +107,21 @@ export async function ensureIndexes(): Promise<void> {
         { code: 1 },
         { background: true, unique: true, name: "idx_promo_codes_code" }
       ),
+      // Abandoned checkouts: email + sessionId deduplication (compound index)
+      db.collection("abandoned_checkouts").createIndex(
+        { email: 1, sessionId: 1 },
+        { background: true, name: "idx_abandoned_checkouts_email_session" }
+      ),
+      // Abandoned checkouts: email-based removal lookup
+      db.collection("abandoned_checkouts").createIndex(
+        { email: 1 },
+        { background: true, name: "idx_abandoned_checkouts_email" }
+      ),
+      // Abandoned checkouts: auto-expiration after 90 days
+      db.collection("abandoned_checkouts").createIndex(
+        { createdAt: 1 },
+        { background: true, expireAfterSeconds: 7776000, name: "idx_abandoned_checkouts_ttl" }
+      ),
     ])
   } catch {
     // Non-fatal — indexes may already exist or Atlas free tier limits apply
