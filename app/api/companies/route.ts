@@ -5,6 +5,7 @@ import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 import { ObjectId } from "mongodb"
 import { sendEmail, emailTemplates } from "@/config/email"
+import { removeAbandonedCheckout } from "@/lib/abandoned-checkout-service"
 
 export async function GET(req: NextRequest) {
   try {
@@ -321,6 +322,17 @@ export async function POST(req: NextRequest) {
     console.log(" POST /api/companies - Company created successfully:", companyId, "for user:", decoded.userId)
 
     broadcastUpdate("companies", "created", createdCompany)
+
+    // Auto-remove abandoned checkout after order completion
+    // This prevents the user from appearing in abandoned checkouts list
+    if (body.email) {
+      try {
+        await removeAbandonedCheckout(db, body.email)
+      } catch (removeError) {
+        console.warn("[v0] Failed to remove abandoned checkout for email:", body.email, removeError)
+        // Non-fatal — order is created, abandoned checkout removal should not fail the request
+      }
+    }
 
     try {
       await db.collection("passports").updateMany(

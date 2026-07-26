@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
+import { deduplicateAbandonedCheckout } from "@/lib/abandoned-checkout-service"
 
 export async function GET(request: NextRequest) {
   try {
@@ -86,7 +87,7 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// Track abandoned checkout
+// Track abandoned checkout with deduplication
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -110,36 +111,24 @@ export async function POST(request: NextRequest) {
 
     const { db } = await connectDB()
 
-    const now = new Date()
-    const checkoutData = {
-      sessionId,
-      email: email || null,
-      name: name || null,
-      phone: phone || null,
-      lastStep: lastStep || 0,
-      state: state || null,
-      packageType: packageType || null,
-      businessName: businessName || null,
-      estimatedTotal: estimatedTotal || 0,
-      packagePrice: packagePrice || 0,
-      addons: addons || [],
-      recovered: false,
-      updatedAt: now
-    }
-
-    // Upsert - update if exists, create if not
-    await db.collection("abandoned_checkouts").updateOne(
-      { sessionId },
-      { 
-        $set: checkoutData,
-        $setOnInsert: { createdAt: now }
-      },
-      { upsert: true }
-    )
+    // Use service function for deduplication
+    // If email+sessionId exists, it will update the existing record
+    // Otherwise, it creates a new one
+    await deduplicateAbandonedCheckout(db, sessionId, email, {
+      name,
+      phone,
+      lastStep,
+      state,
+      packageType,
+      businessName,
+      estimatedTotal,
+      packagePrice,
+      addons
+    })
 
     return NextResponse.json({ success: true })
   } catch (error) {
-    console.error("Error tracking abandoned checkout:", error)
+    console.error("[v0] Error tracking abandoned checkout:", error)
     return NextResponse.json({ error: "Internal server error" }, { status: 500 })
   }
 }
