@@ -258,10 +258,6 @@ orderConfirmation: (
 
                 ${promoHtml}
 
-                <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                  <strong>Total Amount:</strong> ${totalAmount}
-                </li>
-
                 <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
                   <strong>Order ID:</strong> ${orderId}
                 </li>
