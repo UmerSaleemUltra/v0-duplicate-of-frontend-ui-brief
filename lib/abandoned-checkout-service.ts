@@ -41,10 +41,12 @@ export async function deduplicateAbandonedCheckout(
   }
 ): Promise<void> {
   const now = new Date()
+  // Normalize email to lowercase for consistency
+  const normalizedEmail = email ? email.trim().toLowerCase() : null
 
   const checkoutData = {
     sessionId,
-    email: email || null,
+    email: normalizedEmail,
     name: data.name || null,
     phone: data.phone || null,
     lastStep: data.lastStep ?? 0,
@@ -60,7 +62,7 @@ export async function deduplicateAbandonedCheckout(
 
   // Upsert by email + sessionId combination
   await db.collection("abandoned_checkouts").updateOne(
-    { email, sessionId },
+    { email: normalizedEmail, sessionId },
     {
       $set: checkoutData,
       $setOnInsert: { createdAt: now },
@@ -68,7 +70,7 @@ export async function deduplicateAbandonedCheckout(
     { upsert: true }
   )
 
-  console.log("[v0] Abandoned checkout deduplicated:", { email, sessionId })
+  console.log("[v0] Abandoned checkout deduplicated:", { email: normalizedEmail, sessionId })
 }
 
 /**
@@ -79,7 +81,10 @@ export async function getAbandonedCheckoutByEmail(
   db: Db,
   email: string
 ): Promise<AbandonedCheckout | null> {
-  const checkout = await db.collection("abandoned_checkouts").findOne({ email })
+  const normalizedEmail = email.trim().toLowerCase()
+  const checkout = await db.collection("abandoned_checkouts").findOne({
+    email: { $regex: `^${normalizedEmail}$`, $options: "i" }
+  })
   return (checkout as AbandonedCheckout) || null
 }
 
@@ -107,17 +112,35 @@ export async function checkIfUserHasCompletedOrder(db: Db, email: string): Promi
  * Also broadcasts removal event for real-time UI updates.
  */
 export async function removeAbandonedCheckout(db: Db, email: string): Promise<void> {
-  const result = await db.collection("abandoned_checkouts").deleteOne({ email })
+  const normalizedEmail = email.trim().toLowerCase()
+  console.log("[v0] Attempting to remove abandoned checkout for email:", normalizedEmail)
+  
+  // Use case-insensitive regex for email matching
+  const result = await db.collection("abandoned_checkouts").deleteOne({
+    email: { $regex: `^${normalizedEmail}$`, $options: "i" }
+  })
+
+  console.log("[v0] Removal result:", { email: normalizedEmail, deletedCount: result.deletedCount })
 
   if (result.deletedCount > 0) {
-    console.log("[v0] Abandoned checkout removed for email:", email)
+    console.log("[v0] Abandoned checkout removed for email:", normalizedEmail)
 
     // Broadcast real-time event
     try {
-      broadcastUpdate("abandoned_checkouts", "removed", { email })
+      broadcastUpdate("abandoned_checkouts", "removed", { email: normalizedEmail })
     } catch (broadcastError) {
       console.warn("[v0] Failed to broadcast abandoned checkout removal:", broadcastError)
       // Non-fatal — broadcast failure should not block the main flow
+    }
+  } else {
+    console.warn("[v0] No abandoned checkout found to remove for email:", normalizedEmail)
+    
+    // Debug: try to find if record exists with any casing
+    const existing = await db.collection("abandoned_checkouts").findOne({
+      email: { $regex: `^${normalizedEmail}$`, $options: "i" }
+    })
+    if (existing) {
+      console.log("[v0] Record exists but delete failed. Record:", existing)
     }
   }
 }

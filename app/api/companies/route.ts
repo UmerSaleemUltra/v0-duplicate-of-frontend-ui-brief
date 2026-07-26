@@ -326,12 +326,16 @@ export async function POST(req: NextRequest) {
     // Auto-remove abandoned checkout after order completion
     // This prevents the user from appearing in abandoned checkouts list
     if (body.email) {
+      console.log("[v0] Starting abandoned checkout removal for email:", body.email)
       try {
         await removeAbandonedCheckout(db, body.email)
+        console.log("[v0] Abandoned checkout removal completed for email:", body.email)
       } catch (removeError) {
-        console.warn("[v0] Failed to remove abandoned checkout for email:", body.email, removeError)
+        console.error("[v0] Failed to remove abandoned checkout for email:", body.email, removeError)
         // Non-fatal — order is created, abandoned checkout removal should not fail the request
       }
+    } else {
+      console.warn("[v0] No email provided in company creation, skipping abandoned checkout removal")
     }
 
     try {
