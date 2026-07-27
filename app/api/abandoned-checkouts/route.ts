@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
-import { deduplicateAbandonedCheckout } from "@/lib/abandoned-checkout-service"
+import { deduplicateAbandonedCheckout, checkIfUserHasCompletedOrder } from "@/lib/abandoned-checkout-service"
 
 export async function GET(request: NextRequest) {
   try {
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const thirtyDaysAgo = new Date()
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
 
-    const abandonedCheckouts = await db
+    const allAbandoned = await db
       .collection("abandoned_checkouts")
       .find({
         createdAt: { $gte: thirtyDaysAgo },
@@ -32,6 +32,27 @@ export async function GET(request: NextRequest) {
       .sort({ updatedAt: -1 })
       .limit(100)
       .toArray()
+
+    // Filter out abandoned checkouts for users who now have completed orders
+    const abandonedCheckouts = []
+    for (const checkout of allAbandoned) {
+      if (checkout.email) {
+        const hasOrder = await checkIfUserHasCompletedOrder(db, checkout.email)
+        if (!hasOrder) {
+          // User doesn't have order yet, include in abandoned list
+          abandonedCheckouts.push(checkout)
+        } else {
+          // User now has completed order, remove from abandoned checkouts in background
+          console.log("[v0] Found user with completed order in abandoned list:", checkout.email)
+          db.collection("abandoned_checkouts").deleteOne({ _id: checkout._id }).catch(err => {
+            console.warn("[v0] Failed to clean up abandoned checkout:", err)
+          })
+        }
+      } else {
+        // No email, include in list
+        abandonedCheckouts.push(checkout)
+      }
+    }
 
     // Calculate stats
     const totalAbandoned = abandonedCheckouts.length
@@ -110,6 +131,19 @@ export async function POST(request: NextRequest) {
     }
 
     const { db } = await connectDB()
+
+    // Check if customer already has a completed order
+    // If yes, don't save to abandoned checkouts (they're a customer, not abandoned)
+    if (email) {
+      const hasOrder = await checkIfUserHasCompletedOrder(db, email)
+      if (hasOrder) {
+        console.log("[v0] User already has completed order, skipping abandoned checkout:", email)
+        return NextResponse.json({ 
+          success: true, 
+          message: "User already has completed order" 
+        })
+      }
+    }
 
     // Use service function for deduplication
     // If email+sessionId exists, it will update the existing record
