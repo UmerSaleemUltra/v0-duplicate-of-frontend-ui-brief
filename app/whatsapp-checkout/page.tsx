@@ -44,7 +44,7 @@ import {
   saveAbandonedCheckout,
   uploadReceipt,
 } from "@/lib/checkout-api";
-const buzzFilingLogo = { url: "/logo.png" };
+const buzzFilingLogo = { url: "/images/buzz-filing-logo-white.png" };
 
 
 type Member = {
@@ -453,7 +453,7 @@ export default function Page() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-secondary/40 via-background to-background">
       {/* Header */}
-      <header className="relative overflow-hidden bg-gradient-to-br from-primary via-primary to-[oklch(0.395_0.16_26)] text-primary-foreground">
+      <header className="relative overflow-hidden bg-gradient-to-br from-[#8B1A1A] via-[#A52A2A] to-[#6B0000] text-white">
         {/* Grid lines pattern */}
         <div
           className="absolute inset-0 opacity-[0.08]"
@@ -480,13 +480,13 @@ export default function Page() {
           />
 
           <div className="mt-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary-foreground backdrop-blur">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Place Your Order
             </span>
-            <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight sm:text-5xl">
+            <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
               Launch your US company in minutes
             </h1>
-            <p className="mt-3 max-w-2xl text-base text-primary-foreground/85 sm:text-lg">
+            <p className="mt-3 max-w-2xl text-base text-white/85 sm:text-lg">
               Simple, guided checkout. Your progress is auto-saved.
             </p>
           </div>
@@ -507,7 +507,7 @@ export default function Page() {
         ) : (
           <div>
             {apiError && (
-              <div className="mb-6 rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-destructive">
+              <div className="mb-6 rounded-lg border border-primary/50 bg-primary/10 p-4 text-primary">
                 <p className="font-medium">Error during checkout:</p>
                 <p className="text-sm mt-1">{apiError}</p>
               </div>
@@ -710,14 +710,14 @@ export default function Page() {
 
               {/* 4. Members */}
               <Section id="4" title="Member Information" subtitle="Add all members or owners of the business. At least one must be designated as the Responsible Party.">
-                {errors.members && <p className="text-sm text-destructive">{errors.members}</p>}
+                {errors.members && <p className="text-sm text-primary">{errors.members}</p>}
                 <div className="space-y-5">
                   {members.map((m, i) => (
                     <div key={m.id} className="rounded-xl p-0 sm:p-1">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-bold text-foreground">Member {i + 1}</h3>
                         {members.length > 1 && (
-                          <button type="button" onClick={() => removeMember(m.id)} className="inline-flex items-center gap-1 text-sm text-destructive hover:underline">
+                          <button type="button" onClick={() => removeMember(m.id)} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
                             <Trash2 className="h-4 w-4" /> Remove
                           </button>
                         )}
@@ -821,107 +821,22 @@ export default function Page() {
                               <button type="button" onClick={async () => {
                                 if (m.idFileKey) await deleteFile(m.idFileKey);
                                 updateMember(m.id, { idFileName: "", idFileKey: undefined });
-                              }} className="shrink-0 text-slate-400 hover:text-destructive cursor-pointer" aria-label="Remove file">
+                              }} className="shrink-0 text-slate-400 hover:text-primary cursor-pointer" aria-label="Remove file">
                                 <Trash2 className="h-4 w-4" />
                               </button>
                             </div>
                           ) : (
                             <label className={`${fileUploadCls} cursor-pointer`}>
-                              <Upload className="h-4 w-4 shrink-0 text-slate-400" />
-                              <span className="shrink-0 text-sm font-semibold text-slate-900 whitespace-nowrap">Choose file</span>
-                              <span className="min-w-0 flex-1 truncate text-sm text-slate-400">No file chosen</span>
-                              <input type="file" className="hidden" accept="image/*,.pdf" onChange={async (e) => {
-                                const f = e.target.files?.[0];
-                                if (!f) return;
-                                const key = makeMemberFileKey(m.id);
-                                await saveFile(key, f);
-                                updateMember(m.id, { idFileName: f.name, idFileKey: key });
-                              }} />
-                            </label>
-                          )}
-                        </Field>
-                      </div>
-                    </div>
-                  ))}
-
-                  <button type="button" onClick={() => setMembers((arr) => [...arr, newMember()])} className="flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border bg-card py-4 font-semibold text-foreground transition hover:border-primary hover:text-primary">
-                    <Plus className="h-5 w-5" /> Add Another Member
-                  </button>
-                </div>
-              </Section>
-
-
-
-
-              {/* 6. Payment */}
-              <Section id="6" title="Complete Payment" subtitle="Choose a payment option below to continue your business setup.">
-                <Label>Select Payment Method</Label>
-                <div className="mt-2 grid gap-3">
-                  <PaymentOption selected={paymentMethod === "already"} onClick={() => setPaymentMethod("already")} icon={<Check className="h-5 w-5" />} title="I've Already Paid" desc="I have already made a payment or arranged payment with the team." />
-                  <PaymentOption selected={paymentMethod === "make"} onClick={() => setPaymentMethod("make")} icon={<Building2 className="h-5 w-5" />} title="Pay Now" desc="View payment details, complete your payment, and upload your receipt." />
-                </div>
-
-
-                <div className="mt-6 rounded-xl border border-border p-4 sm:p-5">
-                  <div className="flex items-start gap-3">
-                    <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
-                      <MessageSquare className="h-5 w-5" />
-                    </span>
-                    <div className="min-w-0 flex-1">
-                      <h3 className="font-bold text-foreground">Contact Information</h3>
-                      <p className="text-sm text-muted-foreground break-words">Please provide your WhatsApp number to confirm your order</p>
-                    </div>
-                  </div>
-                  <div className="mt-4">
-                    <Field label="Phone Number (WhatsApp)" error={errors.whatsapp}>
-                      <input className={inputCls} placeholder="+92 300 1234567" value={whatsapp} onChange={(e) => setWhatsapp(e.target.value)} />
-                      <Hint>We'll contact you on WhatsApp to process your order</Hint>
-                    </Field>
-                  </div>
-                </div>
-
-                {paymentMethod === "make" && (
-                  <div className="mt-6 space-y-5">
-                    <div className="rounded-xl border border-border p-4 sm:p-5">
-                      <div className="flex items-start gap-3">
-                        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">
-                          <Lock className="h-5 w-5" />
-                        </span>
-                        <div className="min-w-0 flex-1">
-                          <h3 className="font-bold text-foreground">Bank Account Details</h3>
-                          <p className="text-sm text-muted-foreground break-words">Please use these details to complete your payment</p>
-                        </div>
-                      </div>
-                      <div className="mt-4 divide-y divide-border rounded-lg bg-secondary/40">
-                        <BankRow label="Bank Name" value="United Bank Limited (UBL)" />
-                        <BankRow label="Account Title" value="BUZZ FILING" />
-                        <BankRow label="Account Number" value="1176314943776" />
-                        <BankRow label="IBAN" value="PK22UNIL0109000314943776" />
-                      </div>
-                      <div className="mt-4 rounded-lg bg-accent p-4 text-sm">
-                        <span className="font-bold text-primary">Important: </span>
-                        <span className="text-foreground">After making the payment, please upload a screenshot with transaction details. This helps us process your order faster.</span>
-                      </div>
-                    </div>
-
-                    <Field label="Upload Payment Receipt" error={errors.receipt}>
-                      {receiptFileName ? (
-                        <div className={fileUploadCls}>
-                          <Check className="h-4 w-4 shrink-0 text-emerald-600" />
-                          <span className="min-w-0 flex-1 truncate text-sm text-slate-900">{truncateFileName(receiptFileName)}</span>
-                          <label className="shrink-0 cursor-pointer text-xs font-semibold text-primary hover:underline">
-                            Replace
-                            <input type="file" className="hidden" accept="image/png,image/jpeg,image/webp" onChange={async (e) => {
-                              const f = e.target.files?.[0];
-                              if (!f) return;
-                              await saveFile(RECEIPT_FILE_KEY, f);
-                              setReceiptFileName(f.name);
-                            }} />
-                          </label>
-                          <button type="button" onClick={async () => {
-                            await deleteFile(RECEIPT_FILE_KEY);
-                            setReceiptFileName("");
-                          }} className="shrink-0 text-slate-400 hover:text-destructive cursor-pointer" aria-label="Remove file">
+                              <input
+                                type="file"
+                                onChange={async (e) => {
+                                  const file = e.currentTarget.files?.[0];
+                                  if (file && m.idFileKey === undefined) {
+                                    const key = makeMemberFileKey(m.id);
+                                    await saveFile(key, file);
+                                    updateMember(m.id, { idFileName: file.name, idFileKey: key });
+                                  }
+                                }} className="shrink-0 text-slate-400 hover:text-primary cursor-pointer" aria-label="Remove file">
                             <Trash2 className="h-4 w-4" />
                           </button>
                         </div>
@@ -968,7 +883,7 @@ export default function Page() {
                       </span>
                       <span className="text-sm font-medium text-foreground">Yes I agree</span>
                     </label>
-                    {errors.terms && <p className="mt-1 text-xs text-destructive">{errors.terms}</p>}
+                    {errors.terms && <p className="mt-1 text-xs text-primary">{errors.terms}</p>}
                   </div>
                 </div>
               </div>
@@ -999,13 +914,13 @@ export default function Page() {
 /* ===== Helpers ===== */
 
 const inputCls =
-  "flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 hover:border-slate-300";
+  "flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B1A1A]/20 focus:border-[#8B1A1A] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 hover:border-slate-300";
 
 const textareaCls =
-  "block w-full min-h-[120px] rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 leading-relaxed transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] hover:border-slate-300 resize-y";
+  "block w-full min-h-[120px] rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 leading-relaxed transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B1A1A]/20 focus:border-[#8B1A1A] hover:border-slate-300 resize-y";
 
 const selectTriggerCls =
-  "flex h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors shadow-none hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] data-[placeholder]:text-slate-400 cursor-pointer";
+  "flex h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors shadow-none hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#8B1A1A]/20 focus:border-[#8B1A1A] data-[placeholder]:text-slate-400 cursor-pointer";
 
 const fileUploadCls =
   "flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 min-h-11 transition-colors hover:border-slate-300";
@@ -1052,7 +967,7 @@ function Field({ label, error, children }: { label: React.ReactNode; error?: str
     <div data-error={error ? "true" : undefined}>
       <Label>{label}</Label>
       <div className="mt-1.5">{children}</div>
-      {error && <p className="mt-1 text-xs text-destructive">{error}</p>}
+      {error && <p className="mt-1 text-xs text-primary">{error}</p>}
     </div>
   );
 }
