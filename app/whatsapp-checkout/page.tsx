@@ -840,7 +840,7 @@ export default function Page() {
                               <Upload className="h-4 w-4" /> Choose File
                             </label>
                           )}
-                        </div>
+                        </Field>
                       </Section>
 
                       <Section title="Payment">
