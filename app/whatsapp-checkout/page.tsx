@@ -496,7 +496,7 @@ export default function Page() {
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
         {submitted ? (
           <div className="rounded-2xl border border-border bg-card p-10 text-center shadow-sm">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-accent text-primary">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary/15 text-primary">
               <Check className="h-7 w-7" />
             </div>
             <h1 className="mt-5 text-3xl font-bold text-foreground">Thank you!</h1>
@@ -738,7 +738,7 @@ export default function Page() {
                             );
                           }}
                         />
-                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-primary peer-checked:border-primary peer-focus-visible:ring-2 peer-focus-visible:ring-[#ff0d13]/20">
+                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-primary peer-checked:border-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/30">
                           {m.responsible && <Check className="h-3.5 w-3.5 text-primary-foreground" />}
                         </span>
                         <span className="min-w-0">
@@ -868,7 +868,7 @@ export default function Page() {
                     </p>
                     <label className="mt-3 inline-flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" className="peer sr-only" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
-                      <span className="grid h-5 w-5 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-primary peer-checked:border-primary peer-focus-visible:ring-2 peer-focus-visible:ring-[#ff0d13]/20">
+                      <span className="grid h-5 w-5 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-primary peer-checked:border-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/30">
                         {terms && <Check className="h-3.5 w-3.5 text-primary-foreground" />}
                       </span>
                       <span className="text-sm font-medium text-foreground">Yes I agree</span>
@@ -991,7 +991,7 @@ function SelectWrap({ children }: { children: React.ReactNode }) {
 
 function EntityOption({ selected, onClick, title, badges, features, bestFor }: { selected: boolean; onClick: () => void; title: string; badges: { label: string; solid?: boolean }[]; features: string[]; bestFor: string }) {
   return (
-    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition sm:p-5 ${selected ? "border-primary bg-accent/40" : "border-border bg-card hover:border-primary/40"}`}>
+    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer sm:p-5 ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
       <div className="flex items-start gap-3">
         <span className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-primary" : "border-border"}`}>
           {selected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
@@ -1018,7 +1018,7 @@ function EntityOption({ selected, onClick, title, badges, features, bestFor }: {
 
 function PaymentOption({ selected, onClick, icon, title, desc }: { selected: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition ${selected ? "border-primary bg-accent/40" : "border-border bg-card hover:border-primary/40"}`}>
+    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">{icon}</span>
         <div className="min-w-0 flex-1">
