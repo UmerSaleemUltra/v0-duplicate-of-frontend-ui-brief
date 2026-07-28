@@ -836,21 +836,53 @@ export default function Page() {
                                     await saveFile(key, file);
                                     updateMember(m.id, { idFileName: file.name, idFileKey: key });
                                   }
-                                }} className="shrink-0 text-slate-400 hover:text-primary cursor-pointer" aria-label="Remove file">
-                            <Trash2 className="h-4 w-4" />
-                          </button>
+                                }} />
+                              <Upload className="h-4 w-4" /> Choose File
+                            </label>
+                          )}
                         </div>
-                      ) : (
-                        <label className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 font-semibold text-primary-foreground cursor-pointer transition hover:opacity-90">
-                          <Upload className="h-4 w-4" /> Choose File
-                          <input type="file" className="hidden" accept="image/png,image/jpeg,image/webp" onChange={async (e) => {
-                            const f = e.target.files?.[0];
-                            if (!f) return;
-                            await saveFile(RECEIPT_FILE_KEY, f);
-                            setReceiptFileName(f.name);
-                          }} />
-                        </label>
-                      )}
+                      </Section>
+
+                      <Section title="Payment">
+                        <Field label="Payment Method">
+                          <Select value={paymentMethod} onValueChange={setPaymentMethod}>
+                            <SelectTrigger className={selectTriggerCls}>
+                              <SelectValue placeholder="Select payment method" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectGroup>
+                                <SelectLabel>Payment Options</SelectLabel>
+                                <SelectItem value="whatsapp">WhatsApp Pay</SelectItem>
+                                <SelectItem value="card">Credit/Debit Card</SelectItem>
+                                <SelectItem value="bank">Bank Transfer</SelectItem>
+                              </SelectGroup>
+                            </SelectContent>
+                          </Select>
+                        </Field>
+                      </Section>
+
+                      <Section title="Receipt">
+                        <Field label="Upload Receipt">
+                          {receiptFileName ? (
+                            <div className="inline-flex h-11 items-center gap-2 rounded-lg bg-slate-100 px-5 text-sm">
+                              <FileCheck className="h-4 w-4 text-primary" /> {receiptFileName}
+                              <button type="button" onClick={() => {
+                                setReceiptFileName("");
+                              }} className="shrink-0 text-slate-400 hover:text-primary cursor-pointer" aria-label="Remove file">
+                                <Trash2 className="h-4 w-4" />
+                              </button>
+                            </div>
+                          ) : (
+                            <label className="inline-flex h-11 items-center gap-2 rounded-lg bg-primary px-5 font-semibold text-primary-foreground cursor-pointer transition hover:opacity-90">
+                              <Upload className="h-4 w-4" /> Choose File
+                              <input type="file" className="hidden" accept="image/png,image/jpeg,image/webp" onChange={async (e) => {
+                                const f = e.target.files?.[0];
+                                if (!f) return;
+                                await saveFile(RECEIPT_FILE_KEY, f);
+                                setReceiptFileName(f.name);
+                              }} />
+                            </label>
+                          )}
                       <Hint>Supported formats: PNG, JPG, WEBP (max 5MB)</Hint>
                     </Field>
                   </div>
