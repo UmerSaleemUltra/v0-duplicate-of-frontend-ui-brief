@@ -451,7 +451,7 @@ export default function Page() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-secondary/40 via-background to-background">
+    <div className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-background">
       {/* Header */}
       <header className="relative overflow-hidden bg-gradient-to-br from-[#8B1A1A] via-[#A52A2A] to-[#6B0000] text-white">
         {/* Grid lines pattern */}
@@ -723,7 +723,7 @@ export default function Page() {
                         )}
                       </div>
 
-                      <label className="mt-4 flex items-start gap-3 rounded-lg bg-secondary/50 p-4 cursor-pointer">
+                      <label className="mt-4 flex items-start gap-3 rounded-lg bg-primary/8 p-4 cursor-pointer">
                         <input
                           type="checkbox"
                           className="peer sr-only"
@@ -847,7 +847,7 @@ export default function Page() {
                 </div>
               </Section>
 
-              <div data-error={errors.terms ? "true" : undefined} className="rounded-xl border border-border bg-secondary/40 p-4">
+              <div data-error={errors.terms ? "true" : undefined} className="rounded-xl border border-primary/20 bg-primary/8 p-4">
                 <div className="flex items-start gap-3">
                   <Shield className="mt-0.5 h-5 w-5 text-primary" />
                   <div className="min-w-0 flex-1">
@@ -1000,7 +1000,7 @@ function EntityOption({ selected, onClick, title, badges, features, bestFor }: {
           <h3 className="text-lg font-bold text-foreground">{title}</h3>
           <div className="mt-1.5 flex flex-wrap gap-2">
             {badges.map((b) => (
-              <span key={b.label} className={`rounded-md px-2 py-0.5 text-xs font-bold ${b.solid ? "bg-primary text-primary-foreground" : "bg-secondary text-foreground"}`}>{b.label}</span>
+              <span key={b.label} className={`rounded-md px-2 py-0.5 text-xs font-bold ${b.solid ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"}`}>{b.label}</span>
             ))}
           </div>
           <ul className="mt-3 space-y-1.5 text-sm text-foreground">
