@@ -521,7 +521,7 @@ export default function Page() {
       </aside>
 
       {/* Right content */}
-      <div className="flex-1 min-w-0 bg-[#f5f5f5]">
+      <div className="flex-1 min-w-0 bg-background">
         {/* Mobile top bar */}
         <div
           className="flex md:hidden items-center justify-between px-4 py-3"
@@ -917,21 +917,17 @@ export default function Page() {
               </div>
 
               {/* Submit */}
-              <div className="flex items-center justify-between pt-2 pb-4">
-                <button
-                  type="button"
-                  onClick={() => window.history.back()}
-                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 cursor-pointer"
-                >
-                  ← Back
-                </button>
-                <button
-                  type="submit"
-                  disabled={submitting}
-                  className="inline-flex items-center gap-2 rounded-xl bg-[#ff0d13] px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#cc0000] disabled:opacity-60 cursor-pointer"
-                >
-                  {submitting ? "Submitting…" : <>Complete Formation →</>}
-                </button>
+              <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8">
+                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+                  <button type="submit" disabled={submitting} className="group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
+                    {submitting ? "Submitting…" : <>Complete Formation <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span></>}
+                  </button>
+                </div>
+                <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
+                  <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> 256-bit SSL Secure</span>
+                  <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> 100% Satisfaction Guarantee</span>
+                  <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Trusted by 10k+ Businesses</span>
+                </div>
               </div>
             </form>
           </div>
@@ -974,9 +970,9 @@ function truncateFileName(name: string, keep = 5) {
 
 function Section({ id, title, subtitle, children }: { id: string; title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section id={`section-${id}`} className="rounded-2xl border border-slate-200 bg-white px-6 py-7 shadow-sm scroll-mt-6">
-      <h2 className="text-xl font-bold text-slate-900 sm:text-2xl leading-tight">{title}</h2>
-      {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
+    <section id={`section-${id}`} className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8 scroll-mt-6">
+      <h2 className="text-xl font-bold text-foreground sm:text-2xl leading-tight">{title}</h2>
+      {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
       <div className="mt-6 space-y-5">{children}</div>
     </section>
   );
