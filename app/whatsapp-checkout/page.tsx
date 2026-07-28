@@ -496,7 +496,7 @@ export default function Page() {
       <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
         {submitted ? (
           <div className="rounded-2xl border border-border bg-card p-10 text-center shadow-sm">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-primary/15 text-primary">
+            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#ff0d13]/15 text-[#ff0d13]">
               <Check className="h-7 w-7" />
             </div>
             <h1 className="mt-5 text-3xl font-bold text-foreground">Thank you!</h1>
@@ -507,14 +507,14 @@ export default function Page() {
         ) : (
           <div>
             {apiError && (
-              <div className="mb-6 rounded-lg border border-primary/50 bg-primary/10 p-4 text-primary">
+              <div className="mb-6 rounded-lg border border-[#ff0d13]/50 bg-[#ff0d13]/10 p-4 text-[#ff0d13]">
                 <p className="font-medium">Error during checkout:</p>
                 <p className="text-sm mt-1">{apiError}</p>
               </div>
             )}
             
             {submitting && (
-              <div className="mb-6 rounded-lg border border-primary/20 bg-primary/5 p-6">
+              <div className="mb-6 rounded-lg border border-[#ff0d13]/20 bg-[#ff0d13]/5 p-6">
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <p className="font-medium text-foreground">Processing your order...</p>
@@ -723,7 +723,7 @@ export default function Page() {
                         )}
                       </div>
 
-                      <label className="mt-4 flex items-start gap-3 rounded-lg bg-primary/8 p-4 cursor-pointer">
+                      <label className="mt-4 flex items-start gap-3 rounded-lg bg-[#ff0d13]/8 p-4 cursor-pointer">
                         <input
                           type="checkbox"
                           className="peer sr-only"
@@ -738,7 +738,7 @@ export default function Page() {
                             );
                           }}
                         />
-                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-primary peer-checked:border-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/30">
+                        <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-[#ff0d13] peer-checked:border-[#ff0d13] peer-focus-visible:ring-2 peer-focus-visible:ring-[#ff0d13]/30">
                           {m.responsible && <Check className="h-3.5 w-3.5 text-primary-foreground" />}
                         </span>
                         <span className="min-w-0">
@@ -847,7 +847,7 @@ export default function Page() {
                 </div>
               </Section>
 
-              <div data-error={errors.terms ? "true" : undefined} className="rounded-xl border border-primary/20 bg-primary/8 p-4">
+              <div data-error={errors.terms ? "true" : undefined} className="rounded-xl border border-[#ff0d13]/20 bg-[#ff0d13]/8 p-4">
                 <div className="flex items-start gap-3">
                   <Shield className="mt-0.5 h-5 w-5 text-primary" />
                   <div className="min-w-0 flex-1">
@@ -868,7 +868,7 @@ export default function Page() {
                     </p>
                     <label className="mt-3 inline-flex items-center gap-2 cursor-pointer">
                       <input type="checkbox" className="peer sr-only" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
-                      <span className="grid h-5 w-5 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-primary peer-checked:border-primary peer-focus-visible:ring-2 peer-focus-visible:ring-primary/30">
+                      <span className="grid h-5 w-5 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-[#ff0d13] peer-checked:border-[#ff0d13] peer-focus-visible:ring-2 peer-focus-visible:ring-[#ff0d13]/30">
                         {terms && <Check className="h-3.5 w-3.5 text-primary-foreground" />}
                       </span>
                       <span className="text-sm font-medium text-foreground">Yes I agree</span>
@@ -904,13 +904,13 @@ export default function Page() {
 /* ===== Helpers ===== */
 
 const inputCls =
-  "flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B1A1A]/20 focus:border-[#8B1A1A] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 hover:border-slate-300";
+  "flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 hover:border-slate-300";
 
 const textareaCls =
-  "block w-full min-h-[120px] rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 leading-relaxed transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#8B1A1A]/20 focus:border-[#8B1A1A] hover:border-slate-300 resize-y";
+  "block w-full min-h-[120px] rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 leading-relaxed transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] hover:border-slate-300 resize-y";
 
 const selectTriggerCls =
-  "flex h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors shadow-none hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#8B1A1A]/20 focus:border-[#8B1A1A] data-[placeholder]:text-slate-400 cursor-pointer";
+  "flex h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors shadow-none hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] data-[placeholder]:text-slate-400 cursor-pointer";
 
 const fileUploadCls =
   "flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 min-h-11 transition-colors hover:border-slate-300";
@@ -991,7 +991,7 @@ function SelectWrap({ children }: { children: React.ReactNode }) {
 
 function EntityOption({ selected, onClick, title, badges, features, bestFor }: { selected: boolean; onClick: () => void; title: string; badges: { label: string; solid?: boolean }[]; features: string[]; bestFor: string }) {
   return (
-    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer sm:p-5 ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
+    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer sm:p-5 ${selected ? "border-[#ff0d13] bg-[#ff0d13]/10" : "border-border bg-card hover:border-[#ff0d13]/40"}`}>
       <div className="flex items-start gap-3">
         <span className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-primary" : "border-border"}`}>
           {selected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
@@ -1000,7 +1000,7 @@ function EntityOption({ selected, onClick, title, badges, features, bestFor }: {
           <h3 className="text-lg font-bold text-foreground">{title}</h3>
           <div className="mt-1.5 flex flex-wrap gap-2">
             {badges.map((b) => (
-              <span key={b.label} className={`rounded-md px-2 py-0.5 text-xs font-bold ${b.solid ? "bg-primary text-primary-foreground" : "bg-primary/15 text-primary"}`}>{b.label}</span>
+              <span key={b.label} className={`rounded-md px-2 py-0.5 text-xs font-bold ${b.solid ? "bg-[#ff0d13] text-white" : "bg-[#ff0d13]/15 text-[#ff0d13]"}`}>{b.label}</span>
             ))}
           </div>
           <ul className="mt-3 space-y-1.5 text-sm text-foreground">
@@ -1018,7 +1018,7 @@ function EntityOption({ selected, onClick, title, badges, features, bestFor }: {
 
 function PaymentOption({ selected, onClick, icon, title, desc }: { selected: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer ${selected ? "border-primary bg-primary/10" : "border-border bg-card hover:border-primary/40"}`}>
+    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer ${selected ? "border-[#ff0d13] bg-[#ff0d13]/10" : "border-border bg-card hover:border-[#ff0d13]/40"}`}>
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">{icon}</span>
         <div className="min-w-0 flex-1">
