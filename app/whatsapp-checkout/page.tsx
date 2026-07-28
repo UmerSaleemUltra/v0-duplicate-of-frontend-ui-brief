@@ -13,7 +13,6 @@ import {
   MessageSquare,
   Plus,
   Shield,
-  Sparkles,
   Trash2,
   Upload,
   User,
@@ -450,68 +449,107 @@ export default function Page() {
 
 
 
+  const SIDEBAR_STEPS = [
+    { num: 1, label: "Account", sub: "Create Your Account" },
+    { num: 2, label: "State & Package", sub: "Choose Your State & Package" },
+    { num: 3, label: "Business Info", sub: "Peace of Mind From Formation to Filing" },
+    { num: 4, label: "Owner Info", sub: "Who's Behind the Business?" },
+    { num: 5, label: "Review", sub: "Review Your Order" },
+  ];
+
+  // Determine active sidebar step based on form scroll position / validation state
+  const activeSidebarStep = (() => {
+    if (submitted) return 5;
+    if (!fullName && !email) return 1;
+    if (!formationState || !entityType) return 2;
+    if (!businessName) return 3;
+    if (members.length === 0 || !members[0].fullLegalName) return 4;
+    return 5;
+  })();
+
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-background">
-      {/* Header */}
-      <header className="relative overflow-hidden bg-gradient-to-br from-[#8B1A1A] via-[#A52A2A] to-[#6B0000] text-white">
-        {/* Grid lines pattern */}
-        <div
-          className="absolute inset-0 opacity-[0.08]"
-          style={{
-            backgroundImage: `linear-gradient(oklch(1 0 0) 1px, transparent 1px), linear-gradient(90deg, oklch(1 0 0) 1px, transparent 1px)`,
-            backgroundSize: '40px 40px',
-          }}
-        />
-        {/* Glowing orbs */}
-        <div className="absolute -top-24 -right-24 h-80 w-80 rounded-full bg-[radial-gradient(circle,oklch(1_0_0/0.25),transparent_70%)] blur-2xl" />
-        <div className="absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-[radial-gradient(circle,oklch(0_0_0/0.35),transparent_70%)] blur-2xl" />
-        {/* Diagonal shine */}
-        <div
-          className="absolute inset-0 opacity-[0.07]"
-          style={{
-            backgroundImage: `repeating-linear-gradient(45deg, oklch(1 0 0) 0px, oklch(1 0 0) 1px, transparent 1px, transparent 14px)`,
-          }}
-        />
-        <div className="relative mx-auto max-w-6xl px-4 pb-6 pt-4 sm:px-8 sm:pb-10 sm:pt-6">
+    <div className="flex min-h-screen">
+      {/* Left Sidebar */}
+      <aside
+        className="sticky top-0 h-screen w-[280px] shrink-0 hidden md:flex flex-col"
+        style={{ background: "linear-gradient(160deg, #cc0000 0%, #ff0d13 40%, #a00000 100%)" }}
+      >
+        {/* Logo */}
+        <div className="px-7 pt-8 pb-6">
           <img
             src={buzzFilingLogo.url}
             alt="Buzz Filing"
-            className="-ml-2 sm:-ml-3 h-16 w-auto sm:h-20 md:h-24 drop-shadow-md"
+            className="h-10 w-auto"
           />
-
-          <div className="mt-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white backdrop-blur">
-              <Sparkles className="h-3.5 w-3.5" /> Place Your Order
-            </span>
-            <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
-              Launch your US company in minutes
-            </h1>
-            <p className="mt-3 max-w-2xl text-base text-white/85 sm:text-lg">
-              Simple, guided checkout. Your progress is auto-saved.
-            </p>
-          </div>
         </div>
-      </header>
 
-      <div className="mx-auto max-w-6xl px-4 py-6 sm:px-8 sm:py-10">
-        {submitted ? (
-          <div className="rounded-2xl border border-border bg-card p-10 text-center shadow-sm">
-            <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#ff0d13]/15 text-[#ff0d13]">
-              <Check className="h-7 w-7" />
-            </div>
-            <h1 className="mt-5 text-3xl font-bold text-foreground">Thank you!</h1>
-            <p className="mt-2 text-muted-foreground">
-              Your submission has been received successfully. Redirecting to your dashboard in {countdown} seconds...
-            </p>
-          </div>
-        ) : (
-          <div>
-            {apiError && (
-              <div className="mb-6 rounded-lg border border-[#ff0d13]/50 bg-[#ff0d13]/10 p-4 text-[#ff0d13]">
-                <p className="font-medium">Error during checkout:</p>
-                <p className="text-sm mt-1">{apiError}</p>
+        {/* Steps */}
+        <nav className="flex-1 px-5 space-y-1">
+          {SIDEBAR_STEPS.map((step) => {
+            const isActive = step.num === activeSidebarStep;
+            const isDone = step.num < activeSidebarStep;
+            return (
+              <div key={step.num} className={`flex items-start gap-3 rounded-xl px-3 py-3 transition-colors ${isActive ? "bg-white/15" : ""}`}>
+                <span className={`mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-full border-2 text-sm font-bold transition-colors ${
+                  isActive
+                    ? "border-white bg-white text-[#cc0000]"
+                    : isDone
+                    ? "border-white/60 bg-white/20 text-white"
+                    : "border-white/30 bg-transparent text-white/50"
+                }`}>
+                  {isDone ? <Check className="h-4 w-4" /> : step.num}
+                </span>
+                <div className="min-w-0">
+                  <p className={`text-sm font-semibold leading-tight ${isActive ? "text-white" : isDone ? "text-white/80" : "text-white/50"}`}>
+                    {step.label}
+                  </p>
+                  <p className={`mt-0.5 text-xs leading-snug ${isActive ? "text-white/80" : "text-white/40"}`}>
+                    {step.sub}
+                  </p>
+                </div>
               </div>
-            )}
+            );
+          })}
+        </nav>
+
+        {/* Bottom trust badges */}
+        <div className="px-7 pb-8 pt-4 space-y-2">
+          <p className="flex items-center gap-2 text-xs text-white/70"><Lock className="h-3.5 w-3.5" /> 256-bit SSL Secure</p>
+          <p className="flex items-center gap-2 text-xs text-white/70"><Shield className="h-3.5 w-3.5" /> 100% Satisfaction Guarantee</p>
+          <p className="flex items-center gap-2 text-xs text-white/70"><Check className="h-3.5 w-3.5" /> Trusted by 10k+ Businesses</p>
+        </div>
+      </aside>
+
+      {/* Right content */}
+      <div className="flex-1 min-w-0 bg-[#f5f5f5]">
+        {/* Mobile top bar */}
+        <div
+          className="flex md:hidden items-center justify-between px-4 py-3"
+          style={{ background: "linear-gradient(90deg, #cc0000 0%, #ff0d13 100%)" }}
+        >
+          <img src={buzzFilingLogo.url} alt="Buzz Filing" className="h-8 w-auto" />
+          <span className="text-xs font-semibold text-white/80">Step {activeSidebarStep} of {SIDEBAR_STEPS.length}</span>
+        </div>
+
+        <div className="mx-auto max-w-3xl px-4 py-8 sm:px-8">
+          {submitted ? (
+            <div className="rounded-2xl border border-border bg-white p-10 text-center shadow-sm">
+              <div className="mx-auto grid h-14 w-14 place-items-center rounded-full bg-[#ff0d13]/15 text-[#ff0d13]">
+                <Check className="h-7 w-7" />
+              </div>
+              <h1 className="mt-5 text-3xl font-bold text-foreground">Thank you!</h1>
+              <p className="mt-2 text-muted-foreground">
+                Your submission has been received successfully. Redirecting to your dashboard in {countdown} seconds...
+              </p>
+            </div>
+          ) : (
+            <div>
+              {apiError && (
+                <div className="mb-6 rounded-lg border border-[#ff0d13]/50 bg-[#ff0d13]/10 p-4 text-[#ff0d13]">
+                  <p className="font-medium">Error during checkout:</p>
+                  <p className="text-sm mt-1">{apiError}</p>
+                </div>
+              )}
             
             {submitting && (
               <div className="mb-6 rounded-lg border border-[#ff0d13]/20 bg-[#ff0d13]/5 p-6">
@@ -879,24 +917,27 @@ export default function Page() {
               </div>
 
               {/* Submit */}
-              <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8">
-                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-                  <button type="submit" disabled={submitting} className="group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
-                    {submitting ? "Submitting…" : <>Complete Formation <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span></>}
-                  </button>
-                </div>
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> 256-bit SSL Secure</span>
-                  <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> 100% Satisfaction Guarantee</span>
-                  <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Trusted by 10k+ Businesses</span>
-                </div>
+              <div className="flex items-center justify-between pt-2 pb-4">
+                <button
+                  type="button"
+                  onClick={() => window.history.back()}
+                  className="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-6 py-3 text-sm font-semibold text-slate-700 transition hover:bg-slate-50 cursor-pointer"
+                >
+                  ← Back
+                </button>
+                <button
+                  type="submit"
+                  disabled={submitting}
+                  className="inline-flex items-center gap-2 rounded-xl bg-[#ff0d13] px-8 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#cc0000] disabled:opacity-60 cursor-pointer"
+                >
+                  {submitting ? "Submitting…" : <>Complete Formation →</>}
+                </button>
               </div>
             </form>
           </div>
           )}
         </div>
-
-
+      </div>
     </div>
   );
 }
@@ -933,16 +974,9 @@ function truncateFileName(name: string, keep = 5) {
 
 function Section({ id, title, subtitle, children }: { id: string; title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section id={`section-${id}`} className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8 scroll-mt-6">
-      <div className="flex items-start gap-4">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-primary text-base font-extrabold text-primary-foreground shadow-glow">
-          {id}
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-bold text-foreground sm:text-2xl leading-tight">{title}</h2>
-          {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
-        </div>
-      </div>
+    <section id={`section-${id}`} className="rounded-2xl border border-slate-200 bg-white px-6 py-7 shadow-sm scroll-mt-6">
+      <h2 className="text-xl font-bold text-slate-900 sm:text-2xl leading-tight">{title}</h2>
+      {subtitle && <p className="mt-1 text-sm text-slate-500">{subtitle}</p>}
       <div className="mt-6 space-y-5">{children}</div>
     </section>
   );
