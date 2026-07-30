@@ -21,6 +21,8 @@ import {
 
 import { cn } from "@/lib/utils";
 import { COUNTRY_DIAL_CODES } from "@/lib/country-dial-codes";
+import { PhoneInput } from "@/components/checkout/phone-input";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -126,9 +128,7 @@ function newMember(responsible = false): Member {
 export default function Page() {
   // Account
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [countryDial, setCountryDial] = useState("+92");
-  const [countryOpen, setCountryOpen] = useState(false);
+  const [phoneValue, setPhoneValue] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -174,8 +174,7 @@ export default function Page() {
     if (saved) {
       if (saved.account) {
         if (saved.account.fullName !== undefined) setFullName(saved.account.fullName);
-        if (saved.account.phone !== undefined) setPhone(saved.account.phone);
-        if (saved.account.countryDial) setCountryDial(saved.account.countryDial);
+        if (saved.account.phone !== undefined) setPhoneValue(saved.account.phone);
         if (saved.account.email !== undefined) setEmail(saved.account.email);
         if (saved.account.terms !== undefined) setTerms(saved.account.terms);
       }
@@ -232,7 +231,7 @@ export default function Page() {
       idFileKey: m.idFileKey,
     }));
     saveCheckoutData({
-      account: { fullName, phone, countryDial, email, terms },
+      account: { fullName, phone: phoneValue, email, terms },
       formation: { state: formationState, entityType, pkg },
       business: { businessName, website, category, description },
       members: storedMembers,
@@ -242,8 +241,7 @@ export default function Page() {
     hydrated,
     submitted,
     fullName,
-    phone,
-    countryDial,
+    phoneValue,
     email,
     terms,
     formationState,
@@ -272,7 +270,7 @@ export default function Page() {
     return () => clearInterval(timer);
   }, [submitted, countdown]);
 
-  const selectedCountry = useMemo(() => COUNTRY_DIAL_CODES.find((c) => c.dial === countryDial) || COUNTRY_DIAL_CODES.find((c) => c.code === "PK")!, [countryDial]);
+
 
   const priceUSD = pkg === "Starter" ? 249 : 349;
   const pricePKR = useMemo(() => (priceUSD * PKR_RATE).toLocaleString("en-US"), [priceUSD]);
@@ -286,22 +284,10 @@ export default function Page() {
   const validate = () => {
     const e: Record<string, string> = {};
     if (!fullName.trim()) e.fullName = "Full name is required";
-    if (!countryDial) {
-      e.phone = "Please select a country";
-    } else {
-      const country = COUNTRY_DIAL_CODES.find((c) => c.dial === countryDial);
-      if (!country || !/^\+\d{1,4}$/.test(country.dial)) {
-        e.phone = "Invalid country dial code";
-      } else if (!phone.trim()) {
-        e.phone = "Phone number is required";
-      } else {
-        const digits = phone.replace(/\D/g, "");
-        if (!/^[\d\s\-()]+$/.test(phone.trim())) {
-          e.phone = "Phone number can only contain digits, spaces, - and ()";
-        } else if (digits.length < 6 || digits.length > 15) {
-          e.phone = "Enter a valid phone number (6-15 digits)";
-        }
-      }
+    if (!phoneValue) {
+      e.phone = "Phone number is required";
+    } else if (!isValidPhoneNumber(phoneValue)) {
+      e.phone = "Enter a valid phone number";
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) e.email = "Valid email is required";
     if (password.length < 8) e.password = "Password must be at least 8 characters";
@@ -362,18 +348,18 @@ export default function Page() {
       
       // Save abandoned checkout progress after step 1
       await saveAbandonedCheckout(email, 1, {
-        account: { fullName, phone, email, countryDial },
+        account: { fullName, phone: phoneValue, email },
       }, tokenData.token);
       
       // Step 2: Sign up user
       setCurrentStep(2);
       console.log("[v0] Step 2: Creating user account...");
-      const signupData = await signupUser(fullName, email, password, phone);
+      const signupData = await signupUser(fullName, email, password, phoneValue);
       setUserId(signupData.userId);
       
       // Save abandoned checkout progress after step 2
       await saveAbandonedCheckout(email, 2, {
-        account: { fullName, phone, email, countryDial },
+        account: { fullName, phone: phoneValue, email },
         formation: { state: formationState, entityType, pkg },
       }, tokenData.token);
       
@@ -399,7 +385,7 @@ export default function Page() {
         account: {
           fullName,
           email,
-          phone: `${countryDial}${phone}`,
+          phone: phoneValue,
         },
         formation: {
           state: formationState,
@@ -416,7 +402,7 @@ export default function Page() {
         members: preparedMembers,
         payment: {
           method: paymentMethod,
-          whatsapp: `${countryDial}${whatsapp || phone}`,
+          whatsapp: whatsapp || phoneValue,
           receiptFileName,
         },
       });
@@ -563,59 +549,14 @@ export default function Page() {
                   </Field>
 
                   <Field label="Phone Number" error={errors.phone}>
-                    <div className="flex h-11 w-full items-center rounded-lg border border-slate-200 bg-white pl-2 pr-1 transition-colors hover:border-slate-300 focus-within:border-[#ff0d13] focus-within:ring-2 focus-within:ring-[#ff0d13]/20">
-                      <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            aria-label="Select country code"
-                            className="flex h-8 items-center gap-1 rounded-md px-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none cursor-pointer"
-                          >
-                            <span className="text-lg leading-none">{countryCodeToFlag(selectedCountry.code)}</span>
-                            <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[min(calc(100vw-1rem),22rem)] p-0" align="start" collisionPadding={8}>
-                          <Command>
-                            <CommandList>
-                              <CommandEmpty>No country found.</CommandEmpty>
-                              <CommandGroup>
-                                {COUNTRY_DIAL_CODES.map((c) => (
-                                  <CommandItem
-                                    key={c.code}
-                                    value={`${c.name} ${c.dial}`}
-                                    onSelect={() => {
-                                      setCountryDial(c.dial);
-                                      setCountryOpen(false);
-                                    }}
-                                    className="cursor-pointer"
-                                  >
-                                    <span className="mr-2 text-base">{countryCodeToFlag(c.code)}</span>
-                                    <span className="truncate">{c.name}</span>
-                                    <span className="ml-auto shrink-0 pl-3 text-xs text-slate-500">
-                                      {c.dial}
-                                    </span>
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <span className="pl-2 pr-2 text-sm font-medium text-slate-700 select-none">{selectedCountry.dial}</span>
-                      <input
-                        type="tel"
-                        inputMode="tel"
-                        autoComplete="tel-national"
-                        maxLength={20}
-                        className="h-full flex-1 border-0 bg-transparent px-1 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0"
-                        placeholder="300 1234567"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/[^\d\s\-()]/g, ""))}
-                      />
-
-                    </div>
-                    <p className="mt-1.5 text-xs text-slate-500">We'll use this to contact you about your order</p>
+                    <PhoneInput
+                      defaultCountry="PK"
+                      value={phoneValue}
+                      onChange={(val) => setPhoneValue(val ?? "")}
+                      placeholder="300 1234567"
+                      className="h-11"
+                    />
+                    <p className="mt-1.5 text-xs text-slate-500">We&apos;ll use this to contact you about your order</p>
                   </Field>
 
 
@@ -915,12 +856,7 @@ const selectTriggerCls =
 const fileUploadCls =
   "flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 min-h-11 transition-colors hover:border-slate-300";
 
-function countryCodeToFlag(code: string) {
-  if (!code || code.length !== 2) return "🏳️";
-  const A = 0x1f1e6;
-  const chars = code.toUpperCase().split("").map((c) => A + (c.charCodeAt(0) - 65));
-  return String.fromCodePoint(...chars);
-}
+
 
 function truncateFileName(name: string, keep = 5) {
   const dot = name.lastIndexOf(".");
