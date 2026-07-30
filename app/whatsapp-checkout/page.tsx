@@ -29,19 +29,7 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  getCheckoutData,
-  saveCheckoutData,
-  clearCheckoutData,
-  type StoredMember,
-} from "@/lib/checkout-storage";
-import {
-  saveFile,
-  deleteFile,
-  clearAllFiles,
-  makeMemberFileKey,
-  RECEIPT_FILE_KEY,
-} from "@/lib/checkout-files";
+
 import {
   generateCheckoutToken,
   signupUser,
@@ -63,7 +51,6 @@ type Member = {
   zip: string;
   ssn: string;
   idFileName: string;
-  idFileKey?: string;
 };
 
 const STATES = [
@@ -161,7 +148,6 @@ export default function Page() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(10);
-  const [hydrated, setHydrated] = useState(false);
   
   // API state
   const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
@@ -171,94 +157,7 @@ export default function Page() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [steps, setSteps] = useState<string[]>([]);
 
-  // Hydrate from localStorage on mount
-  useEffect(() => {
-    const saved = getCheckoutData();
-    if (saved) {
-      if (saved.account) {
-        if (saved.account.fullName !== undefined) setFullName(saved.account.fullName);
-        if (saved.account.phone !== undefined) setPhoneValue(saved.account.phone);
-        if (saved.account.email !== undefined) setEmail(saved.account.email);
-        if (saved.account.terms !== undefined) setTerms(saved.account.terms);
-      }
-      if (saved.formation) {
-        if (saved.formation.state) setFormationState(saved.formation.state);
-        if (saved.formation.entityType) setEntityType(saved.formation.entityType);
-        if (saved.formation.pkg) setPkg(saved.formation.pkg);
-      }
-      if (saved.business) {
-        if (saved.business.businessName !== undefined) setBusinessName(saved.business.businessName);
-        if (saved.business.website !== undefined) setWebsite(saved.business.website);
-        if (saved.business.category !== undefined) setCategory(saved.business.category);
-        if (saved.business.description !== undefined) setDescription(saved.business.description);
-      }
-      if (saved.members && saved.members.length > 0) {
-        setMembers(
-          saved.members.map((m) => ({
-            id: m.id,
-            responsible: m.responsible,
-            fullLegalName: m.fullLegalName || "",
-            homeAddress: m.homeAddress || "",
-            city: m.city || "",
-            stateProvince: m.stateProvince || "",
-            country: m.country || "",
-            zip: m.zip || "",
-            ssn: "",
-            idFileName: m.idFileName || "",
-            idFileKey: m.idFileKey,
-          })),
-        );
-      }
-      if (saved.payment) {
-        if (saved.payment.method) setPaymentMethod(saved.payment.method);
-        if (saved.payment.whatsapp !== undefined) setWhatsapp(saved.payment.whatsapp);
-        if (saved.payment.receiptFileName !== undefined) setReceiptFileName(saved.payment.receiptFileName);
-      }
-    }
-    setHydrated(true);
-  }, []);
 
-  // Persist form state to localStorage (no secrets)
-  useEffect(() => {
-    if (!hydrated || submitted) return;
-    const storedMembers: StoredMember[] = members.map((m) => ({
-      id: m.id,
-      responsible: m.responsible,
-      fullLegalName: m.fullLegalName,
-      homeAddress: m.homeAddress,
-      city: m.city,
-      stateProvince: m.stateProvince,
-      country: m.country,
-      zip: m.zip,
-      idFileName: m.idFileName,
-      idFileKey: m.idFileKey,
-    }));
-    saveCheckoutData({
-      account: { fullName, phone: phoneValue, email, terms },
-      formation: { state: formationState, entityType, pkg },
-      business: { businessName, website, category, description },
-      members: storedMembers,
-      payment: { method: paymentMethod, whatsapp, receiptFileName },
-    });
-  }, [
-    hydrated,
-    submitted,
-    fullName,
-    phoneValue,
-    email,
-    terms,
-    formationState,
-    entityType,
-    pkg,
-    businessName,
-    website,
-    category,
-    description,
-    members,
-    paymentMethod,
-    whatsapp,
-    receiptFileName,
-  ]);
 
 
   useEffect(() => {
@@ -422,8 +321,6 @@ export default function Page() {
       
       // Step 5: Complete
       setCurrentStep(5);
-      clearCheckoutData();
-      await clearAllFiles();
       setSubmitting(false);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -756,12 +653,10 @@ export default function Page() {
                                 type="file"
                                 accept="image/*,.pdf"
                                 className="pl-10 h-11 cursor-pointer file:text-sm file:font-medium"
-                                onChange={async (e) => {
+                                onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (!file) return;
-                                  const key = makeMemberFileKey(m.id);
-                                  await saveFile(key, file);
-                                  updateMember(m.id, { idFileName: file.name, idFileKey: key });
+                                  updateMember(m.id, { idFileName: file.name });
                                 }}
                               />
                             </div>
@@ -771,9 +666,8 @@ export default function Page() {
                                 <span className="min-w-0 flex-1 truncate text-sm font-medium text-emerald-700">{truncateFileName(m.idFileName)}</span>
                                 <button
                                   type="button"
-                                  onClick={async () => {
-                                    if (m.idFileKey) await deleteFile(m.idFileKey);
-                                    updateMember(m.id, { idFileName: "", idFileKey: undefined });
+                                  onClick={() => {
+                                    updateMember(m.id, { idFileName: "" });
                                     const input = document.getElementById(`passport-${m.id}`) as HTMLInputElement;
                                     if (input) input.value = "";
                                   }}
