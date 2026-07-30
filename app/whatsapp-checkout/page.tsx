@@ -13,6 +13,7 @@ import {
   MessageSquare,
   Plus,
   Shield,
+  ShieldCheck,
   Sparkles,
   Trash2,
   Upload,
