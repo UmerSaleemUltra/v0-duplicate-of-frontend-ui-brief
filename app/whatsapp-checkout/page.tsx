@@ -827,17 +827,10 @@ export default function Page() {
               </div>
 
               {/* Submit */}
-              <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8">
-                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-                  <button type="submit" disabled={submitting} className="group inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
-                    {submitting ? "Submitting…" : <>Complete Formation <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span></>}
-                  </button>
-                </div>
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> 256-bit SSL Secure</span>
-                  <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> 100% Satisfaction Guarantee</span>
-                  <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Trusted by 10k+ Businesses</span>
-                </div>
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+                <button type="submit" disabled={submitting} className="group inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
+                  {submitting ? "Submitting…" : <>Complete Formation <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span></>}
+                </button>
               </div>
             </form>
           </div>
