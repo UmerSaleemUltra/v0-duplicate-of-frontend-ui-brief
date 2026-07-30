@@ -627,7 +627,7 @@ export default function Page() {
 
                   <Field label="Password" error={errors.password}>
                     <InputWrap icon={<Lock className="h-4 w-4" />} right={
-                      <button type="button" onClick={() => setShowPassword((v) => !v)} className="text-muted-foreground hover:text-foreground">
+                      <button type="button" onClick={() => setShowPassword((v) => !v)} className="cursor-pointer text-muted-foreground hover:text-foreground">
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     }>
@@ -717,7 +717,7 @@ export default function Page() {
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-bold text-foreground">Member {i + 1}</h3>
                         {members.length > 1 && (
-                          <button type="button" onClick={() => removeMember(m.id)} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                          <button type="button" onClick={() => removeMember(m.id)} className="inline-flex cursor-pointer items-center gap-1 text-sm text-primary hover:underline">
                             <Trash2 className="h-4 w-4" /> Remove
                           </button>
                         )}
@@ -785,7 +785,7 @@ export default function Page() {
                               <button
                                 type="button"
                                 onClick={() => setVisibleSsn((v) => ({ ...v, [m.id]: !v[m.id] }))}
-                                className="text-muted-foreground hover:text-foreground"
+                                className="cursor-pointer text-muted-foreground hover:text-foreground"
                                 aria-label={visibleSsn[m.id] ? "Hide SSN/ITIN" : "Show SSN/ITIN"}
                               >
                                 {visibleSsn[m.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -821,7 +821,7 @@ export default function Page() {
                               <button type="button" onClick={async () => {
                                 if (m.idFileKey) await deleteFile(m.idFileKey);
                                 updateMember(m.id, { idFileName: "", idFileKey: undefined });
-                              }} className="shrink-0 text-slate-400 hover:text-primary cursor-pointer" aria-label="Remove file">
+                              }} className="shrink-0 cursor-pointer text-slate-400 hover:text-primary" aria-label="Remove file">
                                 <Trash2 className="h-4 w-4" />
                               </button>
                             </div>
@@ -881,7 +881,7 @@ export default function Page() {
               {/* Submit */}
               <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8">
                 <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-                  <button type="submit" disabled={submitting} className="group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
+                  <button type="submit" disabled={submitting} className="group inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
                     {submitting ? "Submitting…" : <>Complete Formation <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span></>}
                   </button>
                 </div>
