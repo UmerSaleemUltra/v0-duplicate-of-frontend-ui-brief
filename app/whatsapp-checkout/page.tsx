@@ -480,7 +480,7 @@ export default function Page() {
           />
 
           <div className="mt-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white backdrop-blur">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Place Your Order
             </span>
             <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
