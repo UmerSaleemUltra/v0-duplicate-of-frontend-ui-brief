@@ -848,10 +848,10 @@ const inputCls =
   "flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 hover:border-slate-300";
 
 const textareaCls =
-  "block w-full min-h-[120px] rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 leading-relaxed transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] hover:border-slate-300 resize-y";
+  "w-full min-h-[100px] max-h-[250px] border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg resize-y overflow-y-auto text-sm focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] px-4 py-2.5";
 
 const selectTriggerCls =
-  "flex h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors shadow-none hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] data-[placeholder]:text-slate-400 cursor-pointer";
+  "h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full shadow-none cursor-pointer overflow-hidden";
 
 const fileUploadCls =
   "flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 min-h-11 transition-colors hover:border-slate-300";
@@ -869,49 +869,44 @@ function truncateFileName(name: string, keep = 5) {
 
 function Section({ id, title, subtitle, children }: { id: string; title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section id={`section-${id}`} className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8 scroll-mt-6">
-      <div className="flex items-start gap-4">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-primary text-base font-extrabold text-primary-foreground shadow-glow">
-          {id}
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-bold text-foreground sm:text-2xl leading-tight">{title}</h2>
-          {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
-        </div>
+    <section id={`section-${id}`} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 scroll-mt-6">
+      <div className="space-y-2 mb-6">
+        <h2 className="text-2xl font-bold text-slate-950 break-words">{title}</h2>
+        {subtitle && <p className="text-sm text-slate-600 leading-relaxed">{subtitle}</p>}
       </div>
-      <div className="mt-6 space-y-5">{children}</div>
+      <div className="space-y-5">{children}</div>
     </section>
   );
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-sm font-medium tracking-tight text-foreground">{children}</label>;
+  return <label className="block text-sm font-medium text-slate-900">{children}</label>;
 }
 
 function Field({ label, error, children }: { label: React.ReactNode; error?: string; children: React.ReactNode }) {
   return (
-    <div data-error={error ? "true" : undefined}>
+    <div className="space-y-1.5" data-error={error ? "true" : undefined}>
       <Label>{label}</Label>
-      <div className="mt-1.5">{children}</div>
-      {error && <p className="mt-1 text-xs text-primary">{error}</p>}
+      <div>{children}</div>
+      {error && <p className="text-xs text-red-600 break-words">{error}</p>}
     </div>
   );
 }
 
 function Hint({ children }: { children: React.ReactNode }) {
-  return <p className="mt-1.5 text-xs text-muted-foreground">{children}</p>;
+  return <p className="text-xs text-slate-500 break-words">{children}</p>;
 }
 
 function InputWrap({ icon, right, children }: { icon?: React.ReactNode; right?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden">
       <div className={`${icon ? "[&>*]:pl-10" : ""} ${right ? "[&>*]:pr-10" : ""}`.trim()}>{children}</div>
       {icon && (
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400">
           {icon}
         </span>
       )}
-      {right && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">{right}</span>}
+      {right && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600">{right}</span>}
     </div>
   );
 }
