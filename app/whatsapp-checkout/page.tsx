@@ -13,30 +13,23 @@ import {
   MessageSquare,
   Plus,
   Shield,
+  ShieldCheck,
   Sparkles,
   Trash2,
   Upload,
+  X,
   User,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { COUNTRY_DIAL_CODES } from "@/lib/country-dial-codes";
+import { PhoneInput } from "@/components/checkout/phone-input";
+import { Input } from "@/components/ui/input";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  getCheckoutData,
-  saveCheckoutData,
-  clearCheckoutData,
-  type StoredMember,
-} from "@/lib/checkout-storage";
-import {
-  saveFile,
-  deleteFile,
-  clearAllFiles,
-  makeMemberFileKey,
-  RECEIPT_FILE_KEY,
-} from "@/lib/checkout-files";
+
 import {
   generateCheckoutToken,
   signupUser,
@@ -58,7 +51,6 @@ type Member = {
   zip: string;
   ssn: string;
   idFileName: string;
-  idFileKey?: string;
 };
 
 const STATES = [
@@ -126,9 +118,7 @@ function newMember(responsible = false): Member {
 export default function Page() {
   // Account
   const [fullName, setFullName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [countryDial, setCountryDial] = useState("+92");
-  const [countryOpen, setCountryOpen] = useState(false);
+  const [phoneValue, setPhoneValue] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -158,7 +148,6 @@ export default function Page() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(10);
-  const [hydrated, setHydrated] = useState(false);
   
   // API state
   const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
@@ -168,96 +157,7 @@ export default function Page() {
   const [currentStep, setCurrentStep] = useState<number>(0);
   const [steps, setSteps] = useState<string[]>([]);
 
-  // Hydrate from localStorage on mount
-  useEffect(() => {
-    const saved = getCheckoutData();
-    if (saved) {
-      if (saved.account) {
-        if (saved.account.fullName !== undefined) setFullName(saved.account.fullName);
-        if (saved.account.phone !== undefined) setPhone(saved.account.phone);
-        if (saved.account.countryDial) setCountryDial(saved.account.countryDial);
-        if (saved.account.email !== undefined) setEmail(saved.account.email);
-        if (saved.account.terms !== undefined) setTerms(saved.account.terms);
-      }
-      if (saved.formation) {
-        if (saved.formation.state) setFormationState(saved.formation.state);
-        if (saved.formation.entityType) setEntityType(saved.formation.entityType);
-        if (saved.formation.pkg) setPkg(saved.formation.pkg);
-      }
-      if (saved.business) {
-        if (saved.business.businessName !== undefined) setBusinessName(saved.business.businessName);
-        if (saved.business.website !== undefined) setWebsite(saved.business.website);
-        if (saved.business.category !== undefined) setCategory(saved.business.category);
-        if (saved.business.description !== undefined) setDescription(saved.business.description);
-      }
-      if (saved.members && saved.members.length > 0) {
-        setMembers(
-          saved.members.map((m) => ({
-            id: m.id,
-            responsible: m.responsible,
-            fullLegalName: m.fullLegalName || "",
-            homeAddress: m.homeAddress || "",
-            city: m.city || "",
-            stateProvince: m.stateProvince || "",
-            country: m.country || "",
-            zip: m.zip || "",
-            ssn: "",
-            idFileName: m.idFileName || "",
-            idFileKey: m.idFileKey,
-          })),
-        );
-      }
-      if (saved.payment) {
-        if (saved.payment.method) setPaymentMethod(saved.payment.method);
-        if (saved.payment.whatsapp !== undefined) setWhatsapp(saved.payment.whatsapp);
-        if (saved.payment.receiptFileName !== undefined) setReceiptFileName(saved.payment.receiptFileName);
-      }
-    }
-    setHydrated(true);
-  }, []);
 
-  // Persist form state to localStorage (no secrets)
-  useEffect(() => {
-    if (!hydrated || submitted) return;
-    const storedMembers: StoredMember[] = members.map((m) => ({
-      id: m.id,
-      responsible: m.responsible,
-      fullLegalName: m.fullLegalName,
-      homeAddress: m.homeAddress,
-      city: m.city,
-      stateProvince: m.stateProvince,
-      country: m.country,
-      zip: m.zip,
-      idFileName: m.idFileName,
-      idFileKey: m.idFileKey,
-    }));
-    saveCheckoutData({
-      account: { fullName, phone, countryDial, email, terms },
-      formation: { state: formationState, entityType, pkg },
-      business: { businessName, website, category, description },
-      members: storedMembers,
-      payment: { method: paymentMethod, whatsapp, receiptFileName },
-    });
-  }, [
-    hydrated,
-    submitted,
-    fullName,
-    phone,
-    countryDial,
-    email,
-    terms,
-    formationState,
-    entityType,
-    pkg,
-    businessName,
-    website,
-    category,
-    description,
-    members,
-    paymentMethod,
-    whatsapp,
-    receiptFileName,
-  ]);
 
 
   useEffect(() => {
@@ -272,7 +172,7 @@ export default function Page() {
     return () => clearInterval(timer);
   }, [submitted, countdown]);
 
-  const selectedCountry = useMemo(() => COUNTRY_DIAL_CODES.find((c) => c.dial === countryDial) || COUNTRY_DIAL_CODES.find((c) => c.code === "PK")!, [countryDial]);
+
 
   const priceUSD = pkg === "Starter" ? 249 : 349;
   const pricePKR = useMemo(() => (priceUSD * PKR_RATE).toLocaleString("en-US"), [priceUSD]);
@@ -286,22 +186,10 @@ export default function Page() {
   const validate = () => {
     const e: Record<string, string> = {};
     if (!fullName.trim()) e.fullName = "Full name is required";
-    if (!countryDial) {
-      e.phone = "Please select a country";
-    } else {
-      const country = COUNTRY_DIAL_CODES.find((c) => c.dial === countryDial);
-      if (!country || !/^\+\d{1,4}$/.test(country.dial)) {
-        e.phone = "Invalid country dial code";
-      } else if (!phone.trim()) {
-        e.phone = "Phone number is required";
-      } else {
-        const digits = phone.replace(/\D/g, "");
-        if (!/^[\d\s\-()]+$/.test(phone.trim())) {
-          e.phone = "Phone number can only contain digits, spaces, - and ()";
-        } else if (digits.length < 6 || digits.length > 15) {
-          e.phone = "Enter a valid phone number (6-15 digits)";
-        }
-      }
+    if (!phoneValue) {
+      e.phone = "Phone number is required";
+    } else if (!isValidPhoneNumber(phoneValue)) {
+      e.phone = "Enter a valid phone number";
     }
     if (!/^\S+@\S+\.\S+$/.test(email)) e.email = "Valid email is required";
     if (password.length < 8) e.password = "Password must be at least 8 characters";
@@ -362,18 +250,18 @@ export default function Page() {
       
       // Save abandoned checkout progress after step 1
       await saveAbandonedCheckout(email, 1, {
-        account: { fullName, phone, email, countryDial },
+        account: { fullName, phone: phoneValue, email },
       }, tokenData.token);
       
       // Step 2: Sign up user
       setCurrentStep(2);
       console.log("[v0] Step 2: Creating user account...");
-      const signupData = await signupUser(fullName, email, password, phone);
+      const signupData = await signupUser(fullName, email, password, phoneValue);
       setUserId(signupData.userId);
       
       // Save abandoned checkout progress after step 2
       await saveAbandonedCheckout(email, 2, {
-        account: { fullName, phone, email, countryDial },
+        account: { fullName, phone: phoneValue, email },
         formation: { state: formationState, entityType, pkg },
       }, tokenData.token);
       
@@ -399,7 +287,7 @@ export default function Page() {
         account: {
           fullName,
           email,
-          phone: `${countryDial}${phone}`,
+          phone: phoneValue,
         },
         formation: {
           state: formationState,
@@ -416,7 +304,7 @@ export default function Page() {
         members: preparedMembers,
         payment: {
           method: paymentMethod,
-          whatsapp: `${countryDial}${whatsapp || phone}`,
+          whatsapp: whatsapp || phoneValue,
           receiptFileName,
         },
       });
@@ -433,8 +321,6 @@ export default function Page() {
       
       // Step 5: Complete
       setCurrentStep(5);
-      clearCheckoutData();
-      await clearAllFiles();
       setSubmitting(false);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -480,7 +366,7 @@ export default function Page() {
           />
 
           <div className="mt-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white/15 px-3 py-1 text-xs font-bold uppercase tracking-wide text-white backdrop-blur">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Place Your Order
             </span>
             <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
@@ -563,59 +449,14 @@ export default function Page() {
                   </Field>
 
                   <Field label="Phone Number" error={errors.phone}>
-                    <div className="flex h-11 w-full items-center rounded-lg border border-slate-200 bg-white pl-2 pr-1 transition-colors hover:border-slate-300 focus-within:border-[#ff0d13] focus-within:ring-2 focus-within:ring-[#ff0d13]/20">
-                      <Popover open={countryOpen} onOpenChange={setCountryOpen}>
-                        <PopoverTrigger asChild>
-                          <button
-                            type="button"
-                            aria-label="Select country code"
-                            className="flex h-8 items-center gap-1 rounded-md px-2 text-sm font-medium text-slate-700 hover:bg-slate-50 focus:outline-none cursor-pointer"
-                          >
-                            <span className="text-lg leading-none">{countryCodeToFlag(selectedCountry.code)}</span>
-                            <ChevronDown className="h-3.5 w-3.5 opacity-60" />
-                          </button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-[min(calc(100vw-1rem),22rem)] p-0" align="start" collisionPadding={8}>
-                          <Command>
-                            <CommandList>
-                              <CommandEmpty>No country found.</CommandEmpty>
-                              <CommandGroup>
-                                {COUNTRY_DIAL_CODES.map((c) => (
-                                  <CommandItem
-                                    key={c.code}
-                                    value={`${c.name} ${c.dial}`}
-                                    onSelect={() => {
-                                      setCountryDial(c.dial);
-                                      setCountryOpen(false);
-                                    }}
-                                    className="cursor-pointer"
-                                  >
-                                    <span className="mr-2 text-base">{countryCodeToFlag(c.code)}</span>
-                                    <span className="truncate">{c.name}</span>
-                                    <span className="ml-auto shrink-0 pl-3 text-xs text-slate-500">
-                                      {c.dial}
-                                    </span>
-                                  </CommandItem>
-                                ))}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                      <span className="pl-2 pr-2 text-sm font-medium text-slate-700 select-none">{selectedCountry.dial}</span>
-                      <input
-                        type="tel"
-                        inputMode="tel"
-                        autoComplete="tel-national"
-                        maxLength={20}
-                        className="h-full flex-1 border-0 bg-transparent px-1 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-0"
-                        placeholder="300 1234567"
-                        value={phone}
-                        onChange={(e) => setPhone(e.target.value.replace(/[^\d\s\-()]/g, ""))}
-                      />
-
-                    </div>
-                    <p className="mt-1.5 text-xs text-slate-500">We'll use this to contact you about your order</p>
+                    <PhoneInput
+                      defaultCountry="PK"
+                      value={phoneValue}
+                      onChange={(val) => setPhoneValue(val ?? "")}
+                      placeholder="300 1234567"
+                      className="h-11"
+                    />
+                    <p className="mt-1.5 text-xs text-slate-500">We&apos;ll use this to contact you about your order</p>
                   </Field>
 
 
@@ -627,7 +468,7 @@ export default function Page() {
 
                   <Field label="Password" error={errors.password}>
                     <InputWrap icon={<Lock className="h-4 w-4" />} right={
-                      <button type="button" onClick={() => setShowPassword((v) => !v)} className="text-muted-foreground hover:text-foreground">
+                      <button type="button" onClick={() => setShowPassword((v) => !v)} className="cursor-pointer text-muted-foreground hover:text-foreground">
                         {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                       </button>
                     }>
@@ -717,7 +558,7 @@ export default function Page() {
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-bold text-foreground">Member {i + 1}</h3>
                         {members.length > 1 && (
-                          <button type="button" onClick={() => removeMember(m.id)} className="inline-flex items-center gap-1 text-sm text-primary hover:underline">
+                          <button type="button" onClick={() => removeMember(m.id)} className="inline-flex cursor-pointer items-center gap-1 text-sm text-primary hover:underline">
                             <Trash2 className="h-4 w-4" /> Remove
                           </button>
                         )}
@@ -785,7 +626,7 @@ export default function Page() {
                               <button
                                 type="button"
                                 onClick={() => setVisibleSsn((v) => ({ ...v, [m.id]: !v[m.id] }))}
-                                className="text-muted-foreground hover:text-foreground"
+                                className="cursor-pointer text-muted-foreground hover:text-foreground"
                                 aria-label={visibleSsn[m.id] ? "Hide SSN/ITIN" : "Show SSN/ITIN"}
                               >
                                 {visibleSsn[m.id] ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
@@ -803,43 +644,41 @@ export default function Page() {
                           <p className="mt-1 text-xs text-emerald-600 flex items-center gap-1"><Check className="h-3 w-3" /> Your information is encrypted &amp; secure.</p>
                         </Field>
 
-                        <Field label={<>Passport / National ID Card <span className="text-primary">*</span></>} error={errors[`m_${i}_id`]}>
-                          {m.idFileName ? (
-                            <div className={fileUploadCls}>
-                              <Check className="h-4 w-4 shrink-0 text-emerald-600" />
-                              <span className="min-w-0 flex-1 truncate text-sm text-slate-900">{truncateFileName(m.idFileName)}</span>
-                              <label className="shrink-0 cursor-pointer text-xs font-semibold text-primary hover:underline">
-                                Replace
-                                <input type="file" className="hidden" accept="image/*,.pdf" onChange={async (e) => {
-                                  const f = e.target.files?.[0];
-                                  if (!f) return;
-                                  const key = makeMemberFileKey(m.id);
-                                  await saveFile(key, f);
-                                  updateMember(m.id, { idFileName: f.name, idFileKey: key });
-                                }} />
-                              </label>
-                              <button type="button" onClick={async () => {
-                                if (m.idFileKey) await deleteFile(m.idFileKey);
-                                updateMember(m.id, { idFileName: "", idFileKey: undefined });
-                              }} className="shrink-0 text-slate-400 hover:text-primary cursor-pointer" aria-label="Remove file">
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <label className={`${fileUploadCls} cursor-pointer`}>
-                              <input
+                        <Field label={<>Passport / National ID Card <span className="text-red-600">*</span></>} error={errors[`m_${i}_id`]}>
+                          <div className="space-y-2">
+                            <div className="relative">
+                              <Upload className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                              <Input
+                                id={`passport-${m.id}`}
                                 type="file"
-                                onChange={async (e) => {
-                                  const file = e.currentTarget.files?.[0];
-                                  if (file && m.idFileKey === undefined) {
-                                    const key = makeMemberFileKey(m.id);
-                                    await saveFile(key, file);
-                                    updateMember(m.id, { idFileName: file.name, idFileKey: key });
-                                  }
-                                }} />
-                              <Upload className="h-4 w-4" /> Choose File
-                            </label>
-                          )}
+                                accept="image/*,.pdf"
+                                className="pl-10 h-11 cursor-pointer file:text-sm file:font-medium"
+                                onChange={(e) => {
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  updateMember(m.id, { idFileName: file.name });
+                                }}
+                              />
+                            </div>
+                            {m.idFileName && (
+                              <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+                                <Check className="h-4 w-4 shrink-0 text-emerald-600" />
+                                <span className="min-w-0 flex-1 truncate text-sm font-medium text-emerald-700">{truncateFileName(m.idFileName)}</span>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    updateMember(m.id, { idFileName: "" });
+                                    const input = document.getElementById(`passport-${m.id}`) as HTMLInputElement;
+                                    if (input) input.value = "";
+                                  }}
+                                  className="shrink-0 cursor-pointer text-red-500 hover:text-red-700"
+                                  aria-label="Remove file"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </Field>
                       </div>
                     </div>
@@ -847,49 +686,45 @@ export default function Page() {
                 </div>
               </Section>
 
-              <div data-error={errors.terms ? "true" : undefined} className="rounded-xl border border-[#ff0d13]/20 bg-[#ff0d13]/8 p-4">
-                <div className="flex items-start gap-3">
-                  <Shield className="mt-0.5 h-5 w-5 text-primary" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-foreground">
-                      Agreement & Authorization <span className="text-primary">*</span>
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      I have read and agree to the{" "}
-                      <a
-                        href="https://www.buzzfiling.com/terms"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
-                      >
-                        Terms &amp; Conditions
-                      </a>{" "}
-                      and authorize Buzz Filing to proceed with my order.
-                    </p>
-                    <label className="mt-3 inline-flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="peer sr-only" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
-                      <span className="grid h-5 w-5 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-[#ff0d13] peer-checked:border-[#ff0d13] peer-focus-visible:ring-2 peer-focus-visible:ring-[#ff0d13]/30">
-                        {terms && <Check className="h-3.5 w-3.5 text-primary-foreground" />}
-                      </span>
-                      <span className="text-sm font-medium text-foreground">Yes I agree</span>
-                    </label>
-                    {errors.terms && <p className="mt-1 text-xs text-primary">{errors.terms}</p>}
-                  </div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                <div className="flex items-start gap-3 mb-4">
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#ff0d13]" />
+                  <h2 className="text-xl font-bold text-slate-900 sm:text-2xl leading-tight">
+                    Agreement &amp; Authorization <span className="text-[#ff0d13]">*</span>
+                  </h2>
                 </div>
+                <p className="text-sm text-slate-600 leading-relaxed mb-1">
+                  To ensure a smooth experience, please review our terms and conditions here:{" "}
+                  <a
+                    href="https://www.buzzfiling.com/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-[#ff0d13] underline underline-offset-2 hover:text-[#cc0000]"
+                  >
+                    Buzz Filing Terms &amp; Conditions
+                  </a>
+                  . By proceeding, you acknowledge and accept these terms.
+                </p>
+                <label className="mt-4 inline-flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="peer sr-only"
+                    checked={terms}
+                    onChange={(e) => setTerms(e.target.checked)}
+                  />
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded border-2 border-slate-300 bg-white transition-colors peer-checked:bg-[#ff0d13] peer-checked:border-[#ff0d13] peer-focus-visible:ring-2 peer-focus-visible:ring-[#ff0d13]/30 cursor-pointer">
+                    {terms && <Check className="h-3 w-3 text-white" />}
+                  </span>
+                  <span className="text-sm font-medium text-slate-900">Yes I agree</span>
+                </label>
+                {errors.terms && <p className="mt-2 text-xs text-red-600">{errors.terms}</p>}
               </div>
 
               {/* Submit */}
-              <div className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8">
-                <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-                  <button type="submit" disabled={submitting} className="group inline-flex flex-1 items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
-                    {submitting ? "Submitting…" : <>Complete Formation <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span></>}
-                  </button>
-                </div>
-                <div className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-xs text-muted-foreground">
-                  <span className="inline-flex items-center gap-1.5"><Lock className="h-3.5 w-3.5" /> 256-bit SSL Secure</span>
-                  <span className="inline-flex items-center gap-1.5"><Shield className="h-3.5 w-3.5" /> 100% Satisfaction Guarantee</span>
-                  <span className="inline-flex items-center gap-1.5"><Check className="h-3.5 w-3.5" /> Trusted by 10k+ Businesses</span>
-                </div>
+              <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
+                <button type="submit" disabled={submitting} className="group inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
+                  {submitting ? "Submitting…" : <>Complete Formation <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span></>}
+                </button>
               </div>
             </form>
           </div>
@@ -907,20 +742,14 @@ const inputCls =
   "flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 hover:border-slate-300";
 
 const textareaCls =
-  "block w-full min-h-[120px] rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 leading-relaxed transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] hover:border-slate-300 resize-y";
+  "w-full min-h-[100px] max-h-[250px] border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg resize-y overflow-y-auto text-sm focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] px-4 py-2.5 hover:border-slate-300 transition-colors";
 
 const selectTriggerCls =
-  "flex h-11 w-full items-center justify-between rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors shadow-none hover:border-slate-300 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] data-[placeholder]:text-slate-400 cursor-pointer";
+  "h-11 border border-slate-200 bg-white text-slate-900 rounded-lg w-full shadow-none cursor-pointer overflow-hidden hover:border-slate-300 transition-colors";
 
-const fileUploadCls =
-  "flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 min-h-11 transition-colors hover:border-slate-300";
 
-function countryCodeToFlag(code: string) {
-  if (!code || code.length !== 2) return "🏳️";
-  const A = 0x1f1e6;
-  const chars = code.toUpperCase().split("").map((c) => A + (c.charCodeAt(0) - 65));
-  return String.fromCodePoint(...chars);
-}
+
+
 
 function truncateFileName(name: string, keep = 5) {
   const dot = name.lastIndexOf(".");
@@ -933,49 +762,44 @@ function truncateFileName(name: string, keep = 5) {
 
 function Section({ id, title, subtitle, children }: { id: string; title: string; subtitle?: string; children: React.ReactNode }) {
   return (
-    <section id={`section-${id}`} className="rounded-2xl border border-border bg-card p-4 shadow-sm sm:p-8 scroll-mt-6">
-      <div className="flex items-start gap-4">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-gradient-primary text-base font-extrabold text-primary-foreground shadow-glow">
-          {id}
-        </span>
-        <div className="min-w-0 flex-1">
-          <h2 className="text-xl font-bold text-foreground sm:text-2xl leading-tight">{title}</h2>
-          {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
-        </div>
+    <section id={`section-${id}`} className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8 scroll-mt-6">
+      <div className="space-y-2 mb-6">
+        <h2 className="text-2xl font-bold text-slate-950 break-words">{title}</h2>
+        {subtitle && <p className="text-sm text-slate-600 leading-relaxed">{subtitle}</p>}
       </div>
-      <div className="mt-6 space-y-5">{children}</div>
+      <div className="space-y-5">{children}</div>
     </section>
   );
 }
 
 function Label({ children }: { children: React.ReactNode }) {
-  return <label className="block text-sm font-medium tracking-tight text-foreground">{children}</label>;
+  return <label className="block text-sm font-medium text-slate-900">{children}</label>;
 }
 
 function Field({ label, error, children }: { label: React.ReactNode; error?: string; children: React.ReactNode }) {
   return (
-    <div data-error={error ? "true" : undefined}>
+    <div className="space-y-1.5" data-error={error ? "true" : undefined}>
       <Label>{label}</Label>
-      <div className="mt-1.5">{children}</div>
-      {error && <p className="mt-1 text-xs text-primary">{error}</p>}
+      <div>{children}</div>
+      {error && <p className="text-xs text-red-600 break-words">{error}</p>}
     </div>
   );
 }
 
 function Hint({ children }: { children: React.ReactNode }) {
-  return <p className="mt-1.5 text-xs text-muted-foreground">{children}</p>;
+  return <p className="text-xs text-slate-500 break-words">{children}</p>;
 }
 
 function InputWrap({ icon, right, children }: { icon?: React.ReactNode; right?: React.ReactNode; children: React.ReactNode }) {
   return (
-    <div className="relative">
+    <div className="relative overflow-hidden">
       <div className={`${icon ? "[&>*]:pl-10" : ""} ${right ? "[&>*]:pr-10" : ""}`.trim()}>{children}</div>
       {icon && (
-        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">
+        <span className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400">
           {icon}
         </span>
       )}
-      {right && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500">{right}</span>}
+      {right && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-600">{right}</span>}
     </div>
   );
 }
@@ -991,24 +815,36 @@ function SelectWrap({ children }: { children: React.ReactNode }) {
 
 function EntityOption({ selected, onClick, title, badges, features, bestFor }: { selected: boolean; onClick: () => void; title: string; badges: { label: string; solid?: boolean }[]; features: string[]; bestFor: string }) {
   return (
-    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer sm:p-5 ${selected ? "border-[#ff0d13] bg-[#ff0d13]/10" : "border-border bg-card hover:border-[#ff0d13]/40"}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full text-left rounded-xl border-2 p-4 transition-all cursor-pointer sm:p-5 ${
+        selected
+          ? "border-[#ff0d13] bg-[#ff0d13]/5"
+          : "border-slate-200 bg-white hover:border-[#ff0d13]/50"
+      }`}
+    >
       <div className="flex items-start gap-3">
-        <span className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-primary" : "border-border"}`}>
-          {selected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
+        <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors ${
+          selected ? "border-[#ff0d13] bg-[#ff0d13]" : "border-slate-300 bg-white"
+        }`}>
+          {selected && <span className="h-2 w-2 rounded-full bg-white" />}
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="text-lg font-bold text-foreground">{title}</h3>
-          <div className="mt-1.5 flex flex-wrap gap-2">
+          <h3 className="text-base font-bold text-slate-900">{title}</h3>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
             {badges.map((b) => (
-              <span key={b.label} className={`rounded-md px-2 py-0.5 text-xs font-bold ${b.solid ? "bg-[#ff0d13] text-white" : "bg-[#ff0d13]/15 text-[#ff0d13]"}`}>{b.label}</span>
+              <span key={b.label} className={`rounded-md px-2 py-0.5 text-xs font-bold ${b.solid ? "bg-[#ff0d13] text-white" : "bg-[#ff0d13]/12 text-[#ff0d13]"}`}>{b.label}</span>
             ))}
           </div>
-          <ul className="mt-3 space-y-1.5 text-sm text-foreground">
-            {features.map((f) => (
-              <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {f}</li>
-            ))}
-          </ul>
-          <p className="mt-3 text-sm text-muted-foreground"><span className="font-bold text-foreground">Best for: </span>{bestFor}</p>
+          {features.length > 0 && (
+            <ul className="mt-2.5 space-y-1 text-sm text-slate-700">
+              {features.map((f) => (
+                <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-[#ff0d13] shrink-0" /> {f}</li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-2 text-sm text-slate-500"><span className="font-semibold text-slate-700">Best for: </span>{bestFor}</p>
         </div>
       </div>
     </button>
@@ -1043,38 +879,64 @@ function BankRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function countryFlag(code: string) {
+  if (!code || code.length !== 2) return "🏳";
+  const A = 0x1f1e6;
+  return String.fromCodePoint(...code.toUpperCase().split("").map((c) => A + c.charCodeAt(0) - 65));
+}
+
 function MemberCountrySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
+  const selected = COUNTRY_DIAL_CODES.find((c) => c.name === value);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={`${selectTriggerCls} flex items-center justify-between text-left cursor-pointer`}
+          className={`${selectTriggerCls} flex items-center justify-between px-3 text-left`}
         >
-          <span className={value ? "text-foreground" : "text-muted-foreground/60"}>
-            {value || "Select country"}
+          <span className="flex items-center gap-2 min-w-0 truncate">
+            {selected ? (
+              <>
+                <span className="text-base leading-none shrink-0">{countryFlag(selected.code)}</span>
+                <span className="text-sm text-slate-900 truncate">{selected.name}</span>
+              </>
+            ) : (
+              <span className="text-sm text-slate-400">Select country</span>
+            )}
           </span>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 ml-2" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-[min(calc(100vw-1rem),20rem)] p-0" align="start" collisionPadding={8}>
+      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-[min(calc(100vw-1rem),22rem)] p-0" align="start" collisionPadding={8}>
         <Command>
-          
-          <CommandList>
+          <div className="flex items-center border-b border-slate-200 px-3">
+            <input
+              autoFocus
+              placeholder="Search country..."
+              className="w-full py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-transparent outline-none"
+              onChange={(e) => {
+                const cmd = e.currentTarget.closest("[cmdk-root]") as HTMLElement | null;
+                cmd?.dispatchEvent(new CustomEvent("cmdk-input-change", { detail: e.target.value, bubbles: true }));
+              }}
+            />
+          </div>
+          <CommandList className="max-h-60">
             <CommandEmpty>No country found.</CommandEmpty>
             <CommandGroup>
-              {COUNTRIES.map((c) => (
+              {COUNTRY_DIAL_CODES.map((c) => (
                 <CommandItem
-                  key={c}
-                  value={c}
+                  key={c.code}
+                  value={c.name}
                   onSelect={() => {
-                    onChange(c);
+                    onChange(c.name);
                     setOpen(false);
                   }}
+                  className="cursor-pointer flex items-center gap-2.5 px-3 py-2"
                 >
-                  <Check className={cn("mr-2 h-4 w-4", value === c ? "opacity-100" : "opacity-0")} />
-                  {c}
+                  <span className="text-base leading-none shrink-0">{countryFlag(c.code)}</span>
+                  <span className="flex-1 text-sm text-slate-900 truncate">{c.name}</span>
+                  {value === c.name && <Check className="h-4 w-4 text-[#ff0d13] shrink-0" />}
                 </CommandItem>
               ))}
             </CommandGroup>

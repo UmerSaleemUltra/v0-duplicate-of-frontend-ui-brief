@@ -3,9 +3,12 @@ import { getDatabase } from "@/config/database"
 import { generateOTP } from "@/config/jwt"
 import { sendEmail, emailTemplates } from "@/config/email"
 import { apiResponse, apiError } from "@/lib/api-middleware"
-import { rateLimit } from "@/lib/middleware/rate-limit"
+import { rateLimit, burstRateLimit } from "@/lib/middleware/rate-limit"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { securityGuard } from "@/lib/middleware/security-guard"
+
+// Burst limiter: max 5 requests per 1 second — blocks the device on breach
+const forgotPasswordBurstLimit = burstRateLimit({ windowMs: 1000, maxRequests: 5 })
 
 // Rate limiter: 5 requests per 15 minutes
 const forgotPasswordRateLimit = rateLimit({ windowMs: 900000, maxRequests: 5 })
@@ -20,7 +23,13 @@ export async function POST(request: NextRequest) {
     return securityResponse
   }
 
-  // Rate limiter
+  // Burst limiter: block device if 5+ requests hit within 1 second
+  const burstResponse = await forgotPasswordBurstLimit(request)
+  if (burstResponse) {
+    return addSecurityHeaders(burstResponse)
+  }
+
+  // Rate limiter: 5 requests per 15 minutes
   const rateLimitResponse = await forgotPasswordRateLimit(request)
   if (rateLimitResponse) {
     return addSecurityHeaders(rateLimitResponse)
