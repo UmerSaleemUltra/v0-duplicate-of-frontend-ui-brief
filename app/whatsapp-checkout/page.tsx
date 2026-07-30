@@ -16,12 +16,14 @@ import {
   Sparkles,
   Trash2,
   Upload,
+  X,
   User,
 } from "lucide-react";
 
 import { cn } from "@/lib/utils";
 import { COUNTRY_DIAL_CODES } from "@/lib/country-dial-codes";
 import { PhoneInput } from "@/components/checkout/phone-input";
+import { Input } from "@/components/ui/input";
 import { isValidPhoneNumber } from "react-phone-number-input";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
@@ -744,43 +746,44 @@ export default function Page() {
                           <p className="mt-1 text-xs text-emerald-600 flex items-center gap-1"><Check className="h-3 w-3" /> Your information is encrypted &amp; secure.</p>
                         </Field>
 
-                        <Field label={<>Passport / National ID Card <span className="text-primary">*</span></>} error={errors[`m_${i}_id`]}>
-                          {m.idFileName ? (
-                            <div className={fileUploadCls}>
-                              <Check className="h-4 w-4 shrink-0 text-emerald-600" />
-                              <span className="min-w-0 flex-1 truncate text-sm text-slate-900">{truncateFileName(m.idFileName)}</span>
-                              <label className="shrink-0 cursor-pointer text-xs font-semibold text-primary hover:underline">
-                                Replace
-                                <input type="file" className="hidden" accept="image/*,.pdf" onChange={async (e) => {
-                                  const f = e.target.files?.[0];
-                                  if (!f) return;
-                                  const key = makeMemberFileKey(m.id);
-                                  await saveFile(key, f);
-                                  updateMember(m.id, { idFileName: f.name, idFileKey: key });
-                                }} />
-                              </label>
-                              <button type="button" onClick={async () => {
-                                if (m.idFileKey) await deleteFile(m.idFileKey);
-                                updateMember(m.id, { idFileName: "", idFileKey: undefined });
-                              }} className="shrink-0 cursor-pointer text-slate-400 hover:text-primary" aria-label="Remove file">
-                                <Trash2 className="h-4 w-4" />
-                              </button>
-                            </div>
-                          ) : (
-                            <label className={`${fileUploadCls} cursor-pointer`}>
-                              <input
+                        <Field label={<>Passport / National ID Card <span className="text-red-600">*</span></>} error={errors[`m_${i}_id`]}>
+                          <div className="space-y-2">
+                            <div className="relative">
+                              <Upload className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                              <Input
+                                id={`passport-${m.id}`}
                                 type="file"
+                                accept="image/*,.pdf"
+                                className="pl-10 h-11 cursor-pointer file:text-sm file:font-medium"
                                 onChange={async (e) => {
-                                  const file = e.currentTarget.files?.[0];
-                                  if (file && m.idFileKey === undefined) {
-                                    const key = makeMemberFileKey(m.id);
-                                    await saveFile(key, file);
-                                    updateMember(m.id, { idFileName: file.name, idFileKey: key });
-                                  }
-                                }} />
-                              <Upload className="h-4 w-4" /> Choose File
-                            </label>
-                          )}
+                                  const file = e.target.files?.[0];
+                                  if (!file) return;
+                                  const key = makeMemberFileKey(m.id);
+                                  await saveFile(key, file);
+                                  updateMember(m.id, { idFileName: file.name, idFileKey: key });
+                                }}
+                              />
+                            </div>
+                            {m.idFileName && (
+                              <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+                                <Check className="h-4 w-4 shrink-0 text-emerald-600" />
+                                <span className="min-w-0 flex-1 truncate text-sm font-medium text-emerald-700">{truncateFileName(m.idFileName)}</span>
+                                <button
+                                  type="button"
+                                  onClick={async () => {
+                                    if (m.idFileKey) await deleteFile(m.idFileKey);
+                                    updateMember(m.id, { idFileName: "", idFileKey: undefined });
+                                    const input = document.getElementById(`passport-${m.id}`) as HTMLInputElement;
+                                    if (input) input.value = "";
+                                  }}
+                                  className="shrink-0 cursor-pointer text-red-500 hover:text-red-700"
+                                  aria-label="Remove file"
+                                >
+                                  <X className="h-4 w-4" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
                         </Field>
                       </div>
                     </div>
@@ -853,8 +856,7 @@ const textareaCls =
 const selectTriggerCls =
   "h-11 border border-slate-200 bg-white text-slate-900 rounded-lg w-full shadow-none cursor-pointer overflow-hidden hover:border-slate-300 transition-colors";
 
-const fileUploadCls =
-  "flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 min-h-11 transition-colors hover:border-slate-300";
+
 
 
 
