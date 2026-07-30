@@ -848,10 +848,10 @@ const inputCls =
   "flex h-11 w-full rounded-lg border border-slate-200 bg-white px-4 py-2.5 text-sm text-slate-900 transition-colors placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] disabled:cursor-not-allowed disabled:opacity-50 disabled:bg-slate-50 hover:border-slate-300";
 
 const textareaCls =
-  "w-full min-h-[100px] max-h-[250px] border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg resize-y overflow-y-auto text-sm focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] px-4 py-2.5";
+  "w-full min-h-[100px] max-h-[250px] border border-slate-200 bg-white text-slate-900 placeholder:text-slate-400 rounded-lg resize-y overflow-y-auto text-sm focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/20 focus:border-[#ff0d13] px-4 py-2.5 hover:border-slate-300 transition-colors";
 
 const selectTriggerCls =
-  "h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full shadow-none cursor-pointer overflow-hidden";
+  "h-11 border border-slate-200 bg-white text-slate-900 rounded-lg w-full shadow-none cursor-pointer overflow-hidden hover:border-slate-300 transition-colors";
 
 const fileUploadCls =
   "flex min-w-0 items-center gap-3 rounded-lg border border-slate-200 bg-white px-4 py-2.5 min-h-11 transition-colors hover:border-slate-300";
@@ -974,38 +974,64 @@ function BankRow({ label, value }: { label: string; value: string }) {
   );
 }
 
+function countryFlag(code: string) {
+  if (!code || code.length !== 2) return "🏳";
+  const A = 0x1f1e6;
+  return String.fromCodePoint(...code.toUpperCase().split("").map((c) => A + c.charCodeAt(0) - 65));
+}
+
 function MemberCountrySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
+  const selected = COUNTRY_DIAL_CODES.find((c) => c.name === value);
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
           type="button"
-          className={`${selectTriggerCls} flex items-center justify-between text-left cursor-pointer`}
+          className={`${selectTriggerCls} flex items-center justify-between px-3 text-left`}
         >
-          <span className={value ? "text-foreground" : "text-muted-foreground/60"}>
-            {value || "Select country"}
+          <span className="flex items-center gap-2 min-w-0 truncate">
+            {selected ? (
+              <>
+                <span className="text-base leading-none shrink-0">{countryFlag(selected.code)}</span>
+                <span className="text-sm text-slate-900 truncate">{selected.name}</span>
+              </>
+            ) : (
+              <span className="text-sm text-slate-400">Select country</span>
+            )}
           </span>
-          <ChevronDown className="h-4 w-4 text-muted-foreground" />
+          <ChevronDown className="h-4 w-4 shrink-0 text-slate-400 ml-2" />
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-[min(calc(100vw-1rem),20rem)] p-0" align="start" collisionPadding={8}>
+      <PopoverContent className="w-(--radix-popover-trigger-width) min-w-[min(calc(100vw-1rem),22rem)] p-0" align="start" collisionPadding={8}>
         <Command>
-          
-          <CommandList>
+          <div className="flex items-center border-b border-slate-200 px-3">
+            <input
+              autoFocus
+              placeholder="Search country..."
+              className="w-full py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-transparent outline-none"
+              onChange={(e) => {
+                const cmd = e.currentTarget.closest("[cmdk-root]") as HTMLElement | null;
+                cmd?.dispatchEvent(new CustomEvent("cmdk-input-change", { detail: e.target.value, bubbles: true }));
+              }}
+            />
+          </div>
+          <CommandList className="max-h-60">
             <CommandEmpty>No country found.</CommandEmpty>
             <CommandGroup>
-              {COUNTRIES.map((c) => (
+              {COUNTRY_DIAL_CODES.map((c) => (
                 <CommandItem
-                  key={c}
-                  value={c}
+                  key={c.code}
+                  value={c.name}
                   onSelect={() => {
-                    onChange(c);
+                    onChange(c.name);
                     setOpen(false);
                   }}
+                  className="cursor-pointer flex items-center gap-2.5 px-3 py-2"
                 >
-                  <Check className={cn("mr-2 h-4 w-4", value === c ? "opacity-100" : "opacity-0")} />
-                  {c}
+                  <span className="text-base leading-none shrink-0">{countryFlag(c.code)}</span>
+                  <span className="flex-1 text-sm text-slate-900 truncate">{c.name}</span>
+                  {value === c.name && <Check className="h-4 w-4 text-[#ff0d13] shrink-0" />}
                 </CommandItem>
               ))}
             </CommandGroup>
