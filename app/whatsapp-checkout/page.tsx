@@ -791,35 +791,38 @@ export default function Page() {
                 </div>
               </Section>
 
-              <div data-error={errors.terms ? "true" : undefined} className="rounded-xl border border-[#ff0d13]/20 bg-[#ff0d13]/8 p-4">
-                <div className="flex items-start gap-3">
-                  <Shield className="mt-0.5 h-5 w-5 text-primary" />
-                  <div className="min-w-0 flex-1">
-                    <p className="font-semibold text-foreground">
-                      Agreement & Authorization <span className="text-primary">*</span>
-                    </p>
-                    <p className="mt-1 text-sm text-muted-foreground">
-                      I have read and agree to the{" "}
-                      <a
-                        href="https://www.buzzfiling.com/terms"
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
-                      >
-                        Terms &amp; Conditions
-                      </a>{" "}
-                      and authorize Buzz Filing to proceed with my order.
-                    </p>
-                    <label className="mt-3 inline-flex items-center gap-2 cursor-pointer">
-                      <input type="checkbox" className="peer sr-only" checked={terms} onChange={(e) => setTerms(e.target.checked)} />
-                      <span className="grid h-5 w-5 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-[#ff0d13] peer-checked:border-[#ff0d13] peer-focus-visible:ring-2 peer-focus-visible:ring-[#ff0d13]/30">
-                        {terms && <Check className="h-3.5 w-3.5 text-primary-foreground" />}
-                      </span>
-                      <span className="text-sm font-medium text-foreground">Yes I agree</span>
-                    </label>
-                    {errors.terms && <p className="mt-1 text-xs text-primary">{errors.terms}</p>}
-                  </div>
+              <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+                <div className="flex items-start gap-3 mb-4">
+                  <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#ff0d13]" />
+                  <h2 className="text-xl font-bold text-slate-900 sm:text-2xl leading-tight">
+                    Agreement &amp; Authorization <span className="text-[#ff0d13]">*</span>
+                  </h2>
                 </div>
+                <p className="text-sm text-slate-600 leading-relaxed mb-1">
+                  To ensure a smooth experience, please review our terms and conditions here:{" "}
+                  <a
+                    href="https://www.buzzfiling.com/terms"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="font-semibold text-[#ff0d13] underline underline-offset-2 hover:text-[#cc0000]"
+                  >
+                    Buzz Filing Terms &amp; Conditions
+                  </a>
+                  . By proceeding, you acknowledge and accept these terms.
+                </p>
+                <label className="mt-4 inline-flex items-center gap-2.5 cursor-pointer select-none">
+                  <input
+                    type="checkbox"
+                    className="peer sr-only"
+                    checked={terms}
+                    onChange={(e) => setTerms(e.target.checked)}
+                  />
+                  <span className="grid h-5 w-5 shrink-0 place-items-center rounded border-2 border-slate-300 bg-white transition-colors peer-checked:bg-[#ff0d13] peer-checked:border-[#ff0d13] peer-focus-visible:ring-2 peer-focus-visible:ring-[#ff0d13]/30 cursor-pointer">
+                    {terms && <Check className="h-3 w-3 text-white" />}
+                  </span>
+                  <span className="text-sm font-medium text-slate-900">Yes I agree</span>
+                </label>
+                {errors.terms && <p className="mt-2 text-xs text-red-600">{errors.terms}</p>}
               </div>
 
               {/* Submit */}
@@ -924,24 +927,36 @@ function SelectWrap({ children }: { children: React.ReactNode }) {
 
 function EntityOption({ selected, onClick, title, badges, features, bestFor }: { selected: boolean; onClick: () => void; title: string; badges: { label: string; solid?: boolean }[]; features: string[]; bestFor: string }) {
   return (
-    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer sm:p-5 ${selected ? "border-[#ff0d13] bg-[#ff0d13]/10" : "border-border bg-card hover:border-[#ff0d13]/40"}`}>
+    <button
+      type="button"
+      onClick={onClick}
+      className={`w-full text-left rounded-xl border-2 p-4 transition-all cursor-pointer sm:p-5 ${
+        selected
+          ? "border-[#ff0d13] bg-[#ff0d13]/5"
+          : "border-slate-200 bg-white hover:border-[#ff0d13]/50"
+      }`}
+    >
       <div className="flex items-start gap-3">
-        <span className={`mt-1 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-primary" : "border-border"}`}>
-          {selected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
+        <span className={`mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors ${
+          selected ? "border-[#ff0d13] bg-[#ff0d13]" : "border-slate-300 bg-white"
+        }`}>
+          {selected && <span className="h-2 w-2 rounded-full bg-white" />}
         </span>
         <div className="min-w-0 flex-1">
-          <h3 className="text-lg font-bold text-foreground">{title}</h3>
-          <div className="mt-1.5 flex flex-wrap gap-2">
+          <h3 className="text-base font-bold text-slate-900">{title}</h3>
+          <div className="mt-1.5 flex flex-wrap gap-1.5">
             {badges.map((b) => (
-              <span key={b.label} className={`rounded-md px-2 py-0.5 text-xs font-bold ${b.solid ? "bg-[#ff0d13] text-white" : "bg-[#ff0d13]/15 text-[#ff0d13]"}`}>{b.label}</span>
+              <span key={b.label} className={`rounded-md px-2 py-0.5 text-xs font-bold ${b.solid ? "bg-[#ff0d13] text-white" : "bg-[#ff0d13]/12 text-[#ff0d13]"}`}>{b.label}</span>
             ))}
           </div>
-          <ul className="mt-3 space-y-1.5 text-sm text-foreground">
-            {features.map((f) => (
-              <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-primary" /> {f}</li>
-            ))}
-          </ul>
-          <p className="mt-3 text-sm text-muted-foreground"><span className="font-bold text-foreground">Best for: </span>{bestFor}</p>
+          {features.length > 0 && (
+            <ul className="mt-2.5 space-y-1 text-sm text-slate-700">
+              {features.map((f) => (
+                <li key={f} className="flex items-center gap-2"><Check className="h-4 w-4 text-[#ff0d13] shrink-0" /> {f}</li>
+              ))}
+            </ul>
+          )}
+          <p className="mt-2 text-sm text-slate-500"><span className="font-semibold text-slate-700">Best for: </span>{bestFor}</p>
         </div>
       </div>
     </button>
