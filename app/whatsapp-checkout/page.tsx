@@ -32,6 +32,16 @@ import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrig
 import { authService } from "@/lib/auth";
 import { packagePricing } from "@/lib/pricing";
 import { STATE_FEES } from "@/lib/constants";
+import {
+  getCheckoutData,
+  saveCheckoutData,
+  clearCheckoutData,
+  initCheckoutData,
+  getSavedStep,
+  saveCheckoutStep,
+  clearCompletedOrderData,
+  type CheckoutData,
+} from "@/lib/checkout-storage";
 const buzzFilingLogo = { url: "/images/buzz-filing-logo-white.png" };
 
 
@@ -145,6 +155,7 @@ export default function Page() {
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(10);
+  const [hydrated, setHydrated] = useState(false);
   
   // API state
   const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
@@ -156,6 +167,126 @@ export default function Page() {
 
 
 
+
+  // ── Hydrate from localStorage on mount ─────────────────────────────────────
+  useEffect(() => {
+    console.log("[v0] WA checkout: initialising localStorage...");
+    initCheckoutData();
+    const saved = getCheckoutData();
+    console.log("[v0] WA checkout: loaded saved data →", saved);
+
+    if (!saved) {
+      console.log("[v0] WA checkout: no saved data found, starting fresh");
+      setHydrated(true);
+      return;
+    }
+
+    try {
+      if (saved.account?.name)    setFullName(saved.account.name);
+      if (saved.account?.phone)   setPhoneValue(saved.account.phone);
+      if (saved.account?.email)   setEmail(saved.account.email);
+      if (saved.state?.state)     setFormationState(saved.state.state);
+      if (saved.state?.entityType) {
+        // stored as "llc"/"s-corp" — normalise to "LLC"/"C-Corp"
+        const et = saved.state.entityType.toUpperCase() as "LLC" | "C-Corp";
+        setEntityType(et === "LLC" ? "LLC" : "C-Corp");
+      }
+      if (saved.state?.packageType) {
+        const pt = saved.state.packageType;
+        setPkg(pt === "advanced" ? "Advance" : "Starter");
+      }
+      if (saved.businessInfo?.businessName)        setBusinessName(saved.businessInfo.businessName);
+      if (saved.businessInfo?.businessCategory)    setCategory(saved.businessInfo.businessCategory);
+      if (saved.businessInfo?.businessDescription) setDescription(saved.businessInfo.businessDescription);
+      if ((saved as any).website)                  setWebsite((saved as any).website);
+      if (saved.payment?.method) {
+        const m = saved.payment.method as "already" | "make";
+        if (m === "already" || m === "make") setPaymentMethod(m);
+      }
+      if ((saved as any).whatsapp) setWhatsapp((saved as any).whatsapp);
+
+      // Members
+      const savedMembers = Array.isArray(saved.members) ? saved.members : [];
+      if (savedMembers.length > 0) {
+        setMembers(
+          savedMembers.map((m: any) => ({
+            id: m.id || Math.random().toString(36).slice(2),
+            responsible: m.responsible ?? false,
+            fullLegalName: m.fullLegalName || m.name || "",
+            homeAddress: m.homeAddress || m.address || "",
+            city: m.city || "",
+            stateProvince: m.stateProvince || m.state || "",
+            country: m.country || "",
+            zip: m.zip || "",
+            ssn: "",            // never persist SSN
+            idFileName: m.idFileName || "",
+            idFile: null,       // File objects can't be stored
+          }))
+        );
+      }
+      console.log("[v0] WA checkout: hydration complete");
+    } catch (err) {
+      console.error("[v0] WA checkout: hydration error →", err);
+    }
+
+    setHydrated(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Persist form state to localStorage on every change ─────────────────────
+  useEffect(() => {
+    if (!hydrated || submitted) return;
+
+    const payload: Partial<CheckoutData> & { website?: string; whatsapp?: string } = {
+      account: {
+        name: fullName,
+        phone: phoneValue,
+        email: email,
+      },
+      state: {
+        state: formationState,
+        entityType: entityType.toLowerCase() as "llc" | "s-corp",
+        packageType: (pkg === "Advance" ? "advanced" : "starter") as "starter" | "advanced",
+      },
+      businessInfo: {
+        businessName,
+        businessCategory: category,
+        businessDescription: description,
+      },
+      website,
+      whatsapp,
+      payment: {
+        method: paymentMethod,
+        status: "pending",
+      },
+      members: members.map((m) => ({
+        id: m.id,
+        responsible: m.responsible,
+        fullLegalName: m.fullLegalName,
+        homeAddress: m.homeAddress,
+        city: m.city,
+        stateProvince: m.stateProvince,
+        country: m.country,
+        zip: m.zip,
+        // ssn intentionally omitted
+        idFileName: m.idFileName,
+      })),
+      status: "draft",
+    };
+
+    try {
+      saveCheckoutData(payload as Partial<CheckoutData>);
+      console.log("[v0] WA checkout: persisted to localStorage →", payload);
+    } catch (err) {
+      console.error("[v0] WA checkout: persist error →", err);
+    }
+  }, [
+    hydrated, submitted,
+    fullName, phoneValue, email,
+    formationState, entityType, pkg,
+    businessName, website, category, description,
+    members, paymentMethod, whatsapp,
+  ]);
 
   useEffect(() => {
     if (!submitted) return;
@@ -237,9 +368,12 @@ export default function Page() {
       "Completing checkout",
     ]);
 
+    console.log("[v0] WA checkout: submit started", { email, fullName, formationState, entityType, pkg, memberCount: members.length });
+
     try {
       // ── Step 1: Checkout token ────────────────────────────────────────────
       setCurrentStep(1);
+      console.log("[v0] Step 1: requesting checkout token for email →", email);
       const tokenResponse = await fetch("/api/checkout/token", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -252,9 +386,11 @@ export default function Page() {
       const { data: tokenData } = await tokenResponse.json();
       const checkoutTokenValue = tokenData.checkoutToken;
       setCheckoutToken(checkoutTokenValue);
+      console.log("[v0] Step 1: checkout token received →", checkoutTokenValue);
 
       // ── Step 2: Signup / Login ────────────────────────────────────────────
       setCurrentStep(2);
+      console.log("[v0] Step 2: checking existing auth session...");
       let currentToken: string | null = null;
       let resolvedUserId: string | null = null;
 
@@ -271,6 +407,7 @@ export default function Page() {
             if (serverUserId) {
               currentToken = existingToken;
               resolvedUserId = serverUserId;
+              console.log("[v0] Step 2: reusing existing session for userId →", serverUserId);
             }
           }
         } catch {
@@ -279,6 +416,7 @@ export default function Page() {
       }
 
       if (!resolvedUserId || !currentToken) {
+        console.log("[v0] Step 2: no existing session, attempting signup →", email);
         const signupResponse = await fetch("/api/auth/signup", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -299,6 +437,7 @@ export default function Page() {
             signupData.error?.includes("already registered")
           ) {
             // Email exists — try login
+            console.log("[v0] Step 2: email already exists, falling back to login →", email);
             const loginResponse = await fetch("/api/auth/login", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -315,6 +454,7 @@ export default function Page() {
               localStorage.setItem("user_data", JSON.stringify(loginData.data.user));
               localStorage.setItem("user_id", loginData.data.user.id);
             }
+            console.log("[v0] Step 2: login success, userId →", resolvedUserId);
           } else {
             throw new Error(signupData.error || "Account creation failed");
           }
@@ -326,6 +466,7 @@ export default function Page() {
             localStorage.setItem("user_data", JSON.stringify(signupData.data.user));
             localStorage.setItem("user_id", signupData.data.user.id);
           }
+          console.log("[v0] Step 2: signup success, userId →", resolvedUserId);
         }
       }
 
@@ -337,9 +478,14 @@ export default function Page() {
 
       // ── Step 3: Upload passport per member ───────────────────────────────
       setCurrentStep(3);
+      console.log("[v0] Step 3: uploading passports for", members.length, "member(s)");
       const updatedMembers = await Promise.all(
         members.map(async (m) => {
-          if (!m.idFile) return { ...m, passportUrl: null, passportKey: null };
+          if (!m.idFile) {
+            console.log("[v0] Step 3: member", m.fullLegalName, "- no idFile, skipping upload");
+            return { ...m, passportUrl: null, passportKey: null };
+          }
+          console.log("[v0] Step 3: uploading passport for member →", m.fullLegalName, "file →", m.idFile.name);
           const fd = new FormData();
           fd.append("file", m.idFile);
           fd.append("memberId", m.id);
@@ -354,6 +500,7 @@ export default function Page() {
             throw new Error(err.error || `Passport upload failed for ${m.fullLegalName}`);
           }
           const { data: passportData } = await uploadRes.json();
+          console.log("[v0] Step 3: passport uploaded for", m.fullLegalName, "→", passportData);
           return {
             ...m,
             passportUrl: passportData.fileUrl ?? passportData.url ?? null,
@@ -364,7 +511,9 @@ export default function Page() {
 
       // Upload receipt if "make payment" method
       let receiptUrl: string | null = null;
+      console.log("[v0] Step 3: paymentMethod →", paymentMethod, "receiptFile →", receiptFile?.name ?? "none");
       if (paymentMethod === "make" && receiptFile) {
+        console.log("[v0] Step 3: uploading receipt →", receiptFile.name);
         const rfd = new FormData();
         rfd.append("file", receiptFile);
         rfd.append("userId", resolvedUserId);
@@ -379,10 +528,12 @@ export default function Page() {
         }
         const { data: rData } = await receiptRes.json();
         receiptUrl = rData.fileUrl ?? rData.url ?? null;
+        console.log("[v0] Step 3: receipt uploaded, url →", receiptUrl);
       }
 
       // ── Step 4: Create company with embedded order ────────────────────────
       setCurrentStep(4);
+      console.log("[v0] Step 4: building company payload", { businessName, entityType, formationState, pkg });
       // Normalize pkg → pricing key ("Starter"→"starter", "Advance"→"advanced")
       const packageKey = pkg === "Advance" ? "advanced" : "starter";
       const packagePrice = packagePricing[packageKey] ?? packagePricing.starter;
@@ -458,21 +609,31 @@ export default function Page() {
         body: JSON.stringify(companyPayload),
       });
       const companyData = await companyResponse.json();
+      console.log("[v0] Step 4: company API response →", companyData);
       if (!companyResponse.ok) {
         throw new Error(companyData.error || "Failed to create company");
       }
-      setOrderId(companyData.data?.id ?? null);
+      const createdCompanyId = companyData.data?.id ?? null;
+      setOrderId(createdCompanyId);
+      console.log("[v0] Step 4: company created, id →", createdCompanyId);
+
+      // Persist orderId to localStorage
+      saveCheckoutData({ orderId: createdCompanyId, status: "completed" } as Partial<CheckoutData>);
 
       // ── Step 5: Complete ──────────────────────────────────────────────────
       setCurrentStep(5);
+      console.log("[v0] Step 5: checkout complete, clearing draft data from localStorage");
+      clearCompletedOrderData();
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("checkout-completed"));
       }
       setSubmitting(false);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      console.log("[v0] WA checkout: submission complete!");
     } catch (error) {
       const message = error instanceof Error ? error.message : "An error occurred during checkout";
+      console.error("[v0] WA checkout: submission error →", message, error);
       setApiError(message);
       setSubmitting(false);
       setCurrentStep(0);
