@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Building2,
   Check,
@@ -29,14 +29,19 @@ import { isValidPhoneNumber } from "react-phone-number-input";
 import { Popover, PopoverTrigger, PopoverContent } from "@/components/ui/popover";
 import { Command, CommandList, CommandEmpty, CommandGroup, CommandItem } from "@/components/ui/command";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
-
+import { authService } from "@/lib/auth";
+import { packagePricing } from "@/lib/pricing";
+import { STATE_FEES } from "@/lib/constants";
 import {
-  generateCheckoutToken,
-  signupUser,
-  createOrder,
-  saveAbandonedCheckout,
-  uploadReceipt,
-} from "@/lib/checkout-api";
+  getCheckoutData,
+  saveCheckoutData,
+  clearCheckoutData,
+  initCheckoutData,
+  getSavedStep,
+  saveCheckoutStep,
+  clearCompletedOrderData,
+  type CheckoutData,
+} from "@/lib/checkout-storage";
 const buzzFilingLogo = { url: "/images/buzz-filing-logo-white.png" };
 
 
@@ -51,6 +56,7 @@ type Member = {
   zip: string;
   ssn: string;
   idFileName: string;
+  idFile?: File | null;
 };
 
 const STATES = [
@@ -98,7 +104,7 @@ const CATEGORIES = [
 
 const COUNTRIES = COUNTRY_DIAL_CODES.map((c) => c.name);
 
-const PKR_RATE = 285;
+
 
 function newMember(responsible = false): Member {
   return {
@@ -142,12 +148,14 @@ export default function Page() {
   const [paymentMethod, setPaymentMethod] = useState<"already" | "make">("already");
   const [whatsapp, setWhatsapp] = useState("");
   const [receiptFileName, setReceiptFileName] = useState("");
+  const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [visibleSsn, setVisibleSsn] = useState<Record<string, boolean>>({});
 
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [countdown, setCountdown] = useState(10);
+  const [hydrated, setHydrated] = useState(false);
   
   // API state
   const [checkoutToken, setCheckoutToken] = useState<string | null>(null);
@@ -159,6 +167,126 @@ export default function Page() {
 
 
 
+
+  // ── Hydrate from localStorage on mount ─────────────────────────────────────
+  useEffect(() => {
+    console.log("[v0] WA checkout: initialising localStorage...");
+    initCheckoutData();
+    const saved = getCheckoutData();
+    console.log("[v0] WA checkout: loaded saved data →", saved);
+
+    if (!saved) {
+      console.log("[v0] WA checkout: no saved data found, starting fresh");
+      setHydrated(true);
+      return;
+    }
+
+    try {
+      if (saved.account?.name)    setFullName(saved.account.name);
+      if (saved.account?.phone)   setPhoneValue(saved.account.phone);
+      if (saved.account?.email)   setEmail(saved.account.email);
+      if (saved.state?.state)     setFormationState(saved.state.state);
+      if (saved.state?.entityType) {
+        // stored as "llc"/"s-corp" — normalise to "LLC"/"C-Corp"
+        const et = saved.state.entityType.toUpperCase() as "LLC" | "C-Corp";
+        setEntityType(et === "LLC" ? "LLC" : "C-Corp");
+      }
+      if (saved.state?.packageType) {
+        const pt = saved.state.packageType;
+        setPkg(pt === "advanced" ? "Advance" : "Starter");
+      }
+      if (saved.businessInfo?.businessName)        setBusinessName(saved.businessInfo.businessName);
+      if (saved.businessInfo?.businessCategory)    setCategory(saved.businessInfo.businessCategory);
+      if (saved.businessInfo?.businessDescription) setDescription(saved.businessInfo.businessDescription);
+      if ((saved as any).website)                  setWebsite((saved as any).website);
+      if (saved.payment?.method) {
+        const m = saved.payment.method as "already" | "make";
+        if (m === "already" || m === "make") setPaymentMethod(m);
+      }
+      if ((saved as any).whatsapp) setWhatsapp((saved as any).whatsapp);
+
+      // Members
+      const savedMembers = Array.isArray(saved.members) ? saved.members : [];
+      if (savedMembers.length > 0) {
+        setMembers(
+          savedMembers.map((m: any) => ({
+            id: m.id || Math.random().toString(36).slice(2),
+            responsible: m.responsible ?? false,
+            fullLegalName: m.fullLegalName || m.name || "",
+            homeAddress: m.homeAddress || m.address || "",
+            city: m.city || "",
+            stateProvince: m.stateProvince || m.state || "",
+            country: m.country || "",
+            zip: m.zip || "",
+            ssn: "",            // never persist SSN
+            idFileName: m.idFileName || "",
+            idFile: null,       // File objects can't be stored
+          }))
+        );
+      }
+      console.log("[v0] WA checkout: hydration complete");
+    } catch (err) {
+      console.error("[v0] WA checkout: hydration error →", err);
+    }
+
+    setHydrated(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // ── Persist form state to localStorage on every change ─────────────────────
+  useEffect(() => {
+    if (!hydrated || submitted) return;
+
+    const payload: Partial<CheckoutData> & { website?: string; whatsapp?: string } = {
+      account: {
+        name: fullName,
+        phone: phoneValue,
+        email: email,
+      },
+      state: {
+        state: formationState,
+        entityType: entityType.toLowerCase() as "llc" | "s-corp",
+        packageType: (pkg === "Advance" ? "advanced" : "starter") as "starter" | "advanced",
+      },
+      businessInfo: {
+        businessName,
+        businessCategory: category,
+        businessDescription: description,
+      },
+      website,
+      whatsapp,
+      payment: {
+        method: paymentMethod,
+        status: "pending",
+      },
+      members: members.map((m) => ({
+        id: m.id,
+        responsible: m.responsible,
+        fullLegalName: m.fullLegalName,
+        homeAddress: m.homeAddress,
+        city: m.city,
+        stateProvince: m.stateProvince,
+        country: m.country,
+        zip: m.zip,
+        // ssn intentionally omitted
+        idFileName: m.idFileName,
+      })),
+      status: "draft",
+    };
+
+    try {
+      saveCheckoutData(payload as Partial<CheckoutData>);
+      console.log("[v0] WA checkout: persisted to localStorage →", payload);
+    } catch (err) {
+      console.error("[v0] WA checkout: persist error →", err);
+    }
+  }, [
+    hydrated, submitted,
+    fullName, phoneValue, email,
+    formationState, entityType, pkg,
+    businessName, website, category, description,
+    members, paymentMethod, whatsapp,
+  ]);
 
   useEffect(() => {
     if (!submitted) return;
@@ -174,8 +302,7 @@ export default function Page() {
 
 
 
-  const priceUSD = pkg === "Starter" ? 249 : 349;
-  const pricePKR = useMemo(() => (priceUSD * PKR_RATE).toLocaleString("en-US"), [priceUSD]);
+
 
   const updateMember = (id: string, patch: Partial<Member>) => {
     setMembers((arr) => arr.map((m) => (m.id === id ? { ...m, ...patch } : m)));
@@ -229,104 +356,284 @@ export default function Page() {
       first?.scrollIntoView({ behavior: "smooth", block: "center" });
       return;
     }
-    
+
     setSubmitting(true);
     setApiError(null);
     setCurrentStep(0);
     setSteps([
-      'Initializing session',
-      'Creating account',
-      'Processing order',
-      'Saving progress',
-      'Completing checkout'
+      "Initializing session",
+      "Creating account",
+      "Uploading documents",
+      "Creating company & order",
+      "Completing checkout",
     ]);
-    
+
+    console.log("[v0] WA checkout: submit started", { email, fullName, formationState, entityType, pkg, memberCount: members.length });
+
     try {
-      // Step 1: Generate checkout token
+      // ── Step 1: Checkout token ────────────────────────────────────────────
       setCurrentStep(1);
-      console.log("[v0] Step 1: Generating checkout token...");
-      const tokenData = await generateCheckoutToken(email);
-      setCheckoutToken(tokenData.token);
-      
-      // Save abandoned checkout progress after step 1
-      await saveAbandonedCheckout(email, 1, {
-        account: { fullName, phone: phoneValue, email },
-      }, tokenData.token);
-      
-      // Step 2: Sign up user
-      setCurrentStep(2);
-      console.log("[v0] Step 2: Creating user account...");
-      const signupData = await signupUser(fullName, email, password, phoneValue);
-      setUserId(signupData.userId);
-      
-      // Save abandoned checkout progress after step 2
-      await saveAbandonedCheckout(email, 2, {
-        account: { fullName, phone: phoneValue, email },
-        formation: { state: formationState, entityType, pkg },
-      }, tokenData.token);
-      
-      // Prepare member data
-      const preparedMembers = members.map((m) => ({
-        id: m.id,
-        responsible: m.responsible,
-        fullLegalName: m.fullLegalName,
-        homeAddress: m.homeAddress,
-        city: m.city,
-        stateProvince: m.stateProvince,
-        country: m.country,
-        zip: m.zip,
-        ssn: m.ssn,
-        idFileName: m.idFileName,
-      }));
-      
-      // Step 3: Create order with all data
-      setCurrentStep(3);
-      console.log("[v0] Step 3: Creating order...");
-      const orderData = await createOrder({
-        token: tokenData.token,
-        account: {
-          fullName,
-          email,
-          phone: phoneValue,
-        },
-        formation: {
-          state: formationState,
-          entity: entityType,
-          package: pkg,
-          priceUSD,
-        },
-        business: {
-          businessName,
-          website,
-          category,
-          description,
-        },
-        members: preparedMembers,
-        payment: {
-          method: paymentMethod,
-          whatsapp: whatsapp || phoneValue,
-          receiptFileName,
-        },
+      console.log("[v0] Step 1: requesting checkout token for email →", email);
+      const tokenResponse = await fetch("/api/checkout/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
       });
-      setOrderId(orderData.orderId);
-      
-      console.log("[v0] Order created successfully:", orderData.orderId);
-      
-      // Step 4: Save progress
+      if (!tokenResponse.ok) {
+        const err = await tokenResponse.json();
+        throw new Error(err.error || "Failed to initialize checkout session");
+      }
+      const { data: tokenData } = await tokenResponse.json();
+      const checkoutTokenValue = tokenData.checkoutToken;
+      setCheckoutToken(checkoutTokenValue);
+      console.log("[v0] Step 1: checkout token received →", checkoutTokenValue);
+
+      // ── Step 2: Signup / Login ────────────────────────────────────────────
+      setCurrentStep(2);
+      console.log("[v0] Step 2: checking existing auth session...");
+      let currentToken: string | null = null;
+      let resolvedUserId: string | null = null;
+
+      // Check if user is already logged in
+      const existingToken = authService.getToken();
+      if (existingToken) {
+        try {
+          const meRes = await fetch("/api/auth/me", {
+            headers: { Authorization: `Bearer ${existingToken}` },
+          });
+          if (meRes.ok) {
+            const meData = await meRes.json();
+            const serverUserId = meData?.data?.id || meData?.id;
+            if (serverUserId) {
+              currentToken = existingToken;
+              resolvedUserId = serverUserId;
+              console.log("[v0] Step 2: reusing existing session for userId →", serverUserId);
+            }
+          }
+        } catch {
+          // ignore — fall through to signup
+        }
+      }
+
+      if (!resolvedUserId || !currentToken) {
+        console.log("[v0] Step 2: no existing session, attempting signup →", email);
+        const signupResponse = await fetch("/api/auth/signup", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            email,
+            password,
+            name: fullName,
+            phone: phoneValue,
+            role: "client",
+            checkoutToken: checkoutTokenValue,
+          }),
+        });
+        const signupData = await signupResponse.json();
+
+        if (!signupResponse.ok) {
+          if (
+            signupData.error?.includes("already exists") ||
+            signupData.error?.includes("already registered")
+          ) {
+            // Email exists — try login
+            console.log("[v0] Step 2: email already exists, falling back to login →", email);
+            const loginResponse = await fetch("/api/auth/login", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ email, password }),
+            });
+            const loginData = await loginResponse.json();
+            if (!loginResponse.ok) {
+              throw new Error(loginData.error || "Login failed. Check your password and try again.");
+            }
+            currentToken = loginData.data.token;
+            resolvedUserId = loginData.data.user.id;
+            authService.setAuth(currentToken!, loginData.data.user);
+            if (typeof window !== "undefined") {
+              localStorage.setItem("user_data", JSON.stringify(loginData.data.user));
+              localStorage.setItem("user_id", loginData.data.user.id);
+            }
+            console.log("[v0] Step 2: login success, userId →", resolvedUserId);
+          } else {
+            throw new Error(signupData.error || "Account creation failed");
+          }
+        } else {
+          currentToken = signupData.data.token;
+          resolvedUserId = signupData.data.user.id;
+          authService.setAuth(currentToken!, signupData.data.user);
+          if (typeof window !== "undefined") {
+            localStorage.setItem("user_data", JSON.stringify(signupData.data.user));
+            localStorage.setItem("user_id", signupData.data.user.id);
+          }
+          console.log("[v0] Step 2: signup success, userId →", resolvedUserId);
+        }
+      }
+
+      setUserId(resolvedUserId);
+
+      if (!resolvedUserId || !currentToken) {
+        throw new Error("Authentication failed — userId or token missing.");
+      }
+
+      // ── Step 3: Upload passport per member ───────────────────────────────
+      setCurrentStep(3);
+      console.log("[v0] Step 3: uploading passports for", members.length, "member(s)");
+      const updatedMembers = await Promise.all(
+        members.map(async (m) => {
+          if (!m.idFile) {
+            console.log("[v0] Step 3: member", m.fullLegalName, "- no idFile, skipping upload");
+            return { ...m, passportUrl: null, passportKey: null };
+          }
+          console.log("[v0] Step 3: uploading passport for member →", m.fullLegalName, "file →", m.idFile.name);
+          const fd = new FormData();
+          fd.append("file", m.idFile);
+          fd.append("memberId", m.id);
+          fd.append("userId", resolvedUserId!);
+          const uploadRes = await fetch("/api/passports/upload", {
+            method: "POST",
+            headers: { Authorization: `Bearer ${currentToken}` },
+            body: fd,
+          });
+          if (!uploadRes.ok) {
+            const err = await uploadRes.json();
+            throw new Error(err.error || `Passport upload failed for ${m.fullLegalName}`);
+          }
+          const { data: passportData } = await uploadRes.json();
+          console.log("[v0] Step 3: passport uploaded for", m.fullLegalName, "→", passportData);
+          return {
+            ...m,
+            passportUrl: passportData.fileUrl ?? passportData.url ?? null,
+            passportKey: passportData.fileKey ?? passportData.key ?? m.idFileName,
+          };
+        })
+      );
+
+      // Upload receipt if "make payment" method
+      let receiptUrl: string | null = null;
+      console.log("[v0] Step 3: paymentMethod →", paymentMethod, "receiptFile →", receiptFile?.name ?? "none");
+      if (paymentMethod === "make" && receiptFile) {
+        console.log("[v0] Step 3: uploading receipt →", receiptFile.name);
+        const rfd = new FormData();
+        rfd.append("file", receiptFile);
+        rfd.append("userId", resolvedUserId);
+        const receiptRes = await fetch("/api/payment-receipt/upload", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${currentToken}` },
+          body: rfd,
+        });
+        if (!receiptRes.ok) {
+          const err = await receiptRes.json();
+          throw new Error(err.error || "Receipt upload failed");
+        }
+        const { data: rData } = await receiptRes.json();
+        receiptUrl = rData.fileUrl ?? rData.url ?? null;
+        console.log("[v0] Step 3: receipt uploaded, url →", receiptUrl);
+      }
+
+      // ── Step 4: Create company with embedded order ────────────────────────
       setCurrentStep(4);
-      await saveAbandonedCheckout(email, 5, {
-        orderId: orderData.orderId,
-        status: 'completed',
-      }, tokenData.token);
-      
-      // Step 5: Complete
+      console.log("[v0] Step 4: building company payload", { businessName, entityType, formationState, pkg });
+      // Normalize pkg → pricing key ("Starter"→"starter", "Advance"→"advanced")
+      const packageKey = pkg === "Advance" ? "advanced" : "starter";
+      const packagePrice = packagePricing[packageKey] ?? packagePricing.starter;
+      const stateFilingFee = STATE_FEES[formationState] ?? 0;
+      const totalAmount = packagePrice + stateFilingFee;
+      const transactionId = `WHATSAPP-${Date.now()}`;
+
+      const companyPayload = {
+        name: businessName,
+        type: entityType,
+        state: formationState,
+        address: { street: "", city: "", state: formationState, zip: "" },
+        businessCategory: category,
+        businessDescription: description,
+        businessWebsite: website,
+        packageType: packageKey,
+        members: updatedMembers.map((m) => ({
+          id: m.id,
+          responsible: m.responsible,
+          fullLegalName: m.fullLegalName,
+          homeAddress: m.homeAddress,
+          city: m.city,
+          stateProvince: m.stateProvince,
+          country: m.country,
+          zip: m.zip,
+          ssn: m.ssn,
+          passportUrl: (m as any).passportUrl ?? null,
+          passportKey: (m as any).passportKey ?? null,
+        })),
+        status: "active",
+        transactionReference: transactionId,
+        purchasedAddons: [],
+        userId: resolvedUserId,
+        orderData: {
+          orderType: `${entityType} Formation`,
+          packageType: packageKey as "starter" | "advanced",
+          state: formationState,
+          status: "pending",
+          packagePrice,
+          stateFilingFee,
+          addonsTotal: 0,
+          subtotal: totalAmount,
+          total: totalAmount,
+          promoCode: null,
+          referralSource: "whatsapp",
+          selectedAddons: [],
+          paymentMethod,
+          paymentStatus: "pending",
+          whatsappPhone: whatsapp || phoneValue,
+          receiptUrl,
+          transactionId,
+          passportDocuments: updatedMembers
+            .filter((m) => (m as any).passportUrl)
+            .map((m) => ({
+              id: Date.now().toString(),
+              memberId: m.id,
+              memberName: m.fullLegalName,
+              fileName: (m as any).passportKey ?? m.idFileName,
+              fileUrl: (m as any).passportUrl,
+              fileType: "application/pdf",
+              fileSize: 0,
+              uploadedAt: new Date().toISOString(),
+            })),
+        },
+      };
+
+      const companyResponse = await fetch("/api/companies", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${currentToken}`,
+        },
+        body: JSON.stringify(companyPayload),
+      });
+      const companyData = await companyResponse.json();
+      console.log("[v0] Step 4: company API response →", companyData);
+      if (!companyResponse.ok) {
+        throw new Error(companyData.error || "Failed to create company");
+      }
+      const createdCompanyId = companyData.data?.id ?? null;
+      setOrderId(createdCompanyId);
+      console.log("[v0] Step 4: company created, id →", createdCompanyId);
+
+      // Persist orderId to localStorage
+      saveCheckoutData({ orderId: createdCompanyId, status: "completed" } as Partial<CheckoutData>);
+
+      // ── Step 5: Complete ──────────────────────────────────────────────────
       setCurrentStep(5);
+      console.log("[v0] Step 5: checkout complete, clearing draft data from localStorage");
+      clearCompletedOrderData();
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new Event("checkout-completed"));
+      }
       setSubmitting(false);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
+      console.log("[v0] WA checkout: submission complete!");
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'An error occurred during checkout';
-      console.error("[v0] Checkout error:", message);
+      const message = error instanceof Error ? error.message : "An error occurred during checkout";
+      console.error("[v0] WA checkout: submission error →", message, error);
       setApiError(message);
       setSubmitting(false);
       setCurrentStep(0);
@@ -656,7 +963,7 @@ export default function Page() {
                                 onChange={(e) => {
                                   const file = e.target.files?.[0];
                                   if (!file) return;
-                                  updateMember(m.id, { idFileName: file.name });
+                                  updateMember(m.id, { idFileName: file.name, idFile: file });
                                 }}
                               />
                             </div>
@@ -667,7 +974,7 @@ export default function Page() {
                                 <button
                                   type="button"
                                   onClick={() => {
-                                    updateMember(m.id, { idFileName: "" });
+                                    updateMember(m.id, { idFileName: "", idFile: null });
                                     const input = document.getElementById(`passport-${m.id}`) as HTMLInputElement;
                                     if (input) input.value = "";
                                   }}
@@ -686,6 +993,96 @@ export default function Page() {
                 </div>
               </Section>
 
+              {/* 5. Payment */}
+              <Section id="5" title="Payment Details" subtitle="Choose how you have paid or will pay for your order.">
+                <div className="grid gap-3 sm:grid-cols-2">
+                  {(["already", "make"] as const).map((method) => (
+                    <button
+                      key={method}
+                      type="button"
+                      onClick={() => setPaymentMethod(method)}
+                      className={`w-full rounded-xl border-2 p-4 text-left transition-all cursor-pointer ${
+                        paymentMethod === method
+                          ? "border-[#ff0d13] bg-[#ff0d13]/5"
+                          : "border-slate-200 bg-white hover:border-[#ff0d13]/50"
+                      }`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-colors ${
+                          paymentMethod === method ? "border-[#ff0d13] bg-[#ff0d13]" : "border-slate-300 bg-white"
+                        }`}>
+                          {paymentMethod === method && <span className="h-2 w-2 rounded-full bg-white" />}
+                        </span>
+                        <div>
+                          <p className="font-semibold text-slate-900 text-sm">
+                            {method === "already" ? "I already paid" : "I will make payment"}
+                          </p>
+                          <p className="text-xs text-slate-500 mt-0.5">
+                            {method === "already"
+                              ? "Upload your payment receipt below"
+                              : "Pay via bank transfer / WhatsApp"}
+                          </p>
+                        </div>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+
+                <Field label="WhatsApp Number" error={errors.whatsapp}>
+                  <InputWrap icon={<MessageSquare className="h-4 w-4" />}>
+                    <input
+                      type="tel"
+                      className={inputCls}
+                      placeholder="+1 234 567 8900"
+                      value={whatsapp}
+                      onChange={(e) => setWhatsapp(e.target.value)}
+                    />
+                  </InputWrap>
+                  <Hint>We&apos;ll send your order updates to this WhatsApp number</Hint>
+                </Field>
+
+                <Field label={<>Payment Receipt {paymentMethod === "make" && <span className="text-red-600">*</span>}</>} error={errors.receipt}>
+                  <div className="space-y-2">
+                    <div className="relative">
+                      <Upload className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+                      <Input
+                        id="receipt-upload"
+                        type="file"
+                        accept="image/*,.pdf"
+                        className="pl-10 h-11 cursor-pointer file:text-sm file:font-medium"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (!file) return;
+                          setReceiptFileName(file.name);
+                          setReceiptFile(file);
+                        }}
+                      />
+                    </div>
+                    {receiptFileName && (
+                      <div className="flex items-center gap-2 rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2">
+                        <Check className="h-4 w-4 shrink-0 text-emerald-600" />
+                        <span className="min-w-0 flex-1 truncate text-sm font-medium text-emerald-700">{truncateFileName(receiptFileName)}</span>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReceiptFileName("");
+                            setReceiptFile(null);
+                            const input = document.getElementById("receipt-upload") as HTMLInputElement;
+                            if (input) input.value = "";
+                          }}
+                          className="shrink-0 cursor-pointer text-red-500 hover:text-red-700"
+                          aria-label="Remove receipt"
+                        >
+                          <X className="h-4 w-4" />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <Hint>Upload your bank transfer or payment screenshot (image or PDF)</Hint>
+                </Field>
+              </Section>
+
+              {/* Agreement */}
               <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
                 <div className="flex items-start gap-3 mb-4">
                   <ShieldCheck className="mt-0.5 h-5 w-5 shrink-0 text-[#ff0d13]" />
@@ -756,7 +1153,7 @@ function truncateFileName(name: string, keep = 5) {
   const base = dot > 0 ? name.slice(0, dot) : name;
   const ext = dot > 0 ? name.slice(dot) : "";
   if (base.length <= keep) return name;
-  return `${base.slice(0, keep)}…${ext}`;
+  return `${base.slice(0, keep)}���${ext}`;
 }
 
 
