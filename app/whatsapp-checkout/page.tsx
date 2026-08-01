@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Building2,
   Check,
@@ -94,7 +94,7 @@ const CATEGORIES = [
 
 const COUNTRIES = COUNTRY_DIAL_CODES.map((c) => c.name);
 
-const PKR_RATE = 285;
+
 
 function newMember(responsible = false): Member {
   return {
@@ -171,8 +171,7 @@ export default function Page() {
 
 
 
-  const priceUSD = packagePricing[pkg === "Advance" ? "advanced" : "starter"];
-  const pricePKR = useMemo(() => (priceUSD * PKR_RATE).toLocaleString("en-US"), [priceUSD]);
+
 
   const updateMember = (id: string, patch: Partial<Member>) => {
     setMembers((arr) => arr.map((m) => (m.id === id ? { ...m, ...patch } : m)));
@@ -993,7 +992,7 @@ function truncateFileName(name: string, keep = 5) {
   const base = dot > 0 ? name.slice(0, dot) : name;
   const ext = dot > 0 ? name.slice(dot) : "";
   if (base.length <= keep) return name;
-  return `${base.slice(0, keep)}…${ext}`;
+  return `${base.slice(0, keep)}���${ext}`;
 }
 
 
