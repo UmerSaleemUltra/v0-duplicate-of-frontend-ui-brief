@@ -695,7 +695,7 @@ export default function Page() {
           />
 
           <div className="mt-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-primary backdrop-blur">
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-bold uppercase tracking-wide text-[#ff0d13] backdrop-blur">
               <Sparkles className="h-3.5 w-3.5" /> Place Your Order
             </span>
             <h1 className="mt-4 text-3xl font-extrabold leading-tight tracking-tight text-white sm:text-5xl">
@@ -733,9 +733,9 @@ export default function Page() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <p className="font-medium text-foreground">Processing your order...</p>
-                    <div className="h-2 w-32 bg-muted rounded-full overflow-hidden">
+                      <div className="h-2 w-32 bg-slate-100 rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-primary transition-all duration-300"
+                        className="h-full bg-[#ff0d13] transition-all duration-300"
                         style={{ width: `${(currentStep / steps.length) * 100}%` }}
                       />
                     </div>
@@ -744,9 +744,9 @@ export default function Page() {
                     {steps.map((step, idx) => (
                       <div key={idx} className="flex items-center gap-3">
                         <div className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                          idx < currentStep ? 'bg-green-500 text-white' :
-                          idx === currentStep - 1 ? 'bg-primary text-white animate-pulse' :
-                          'bg-muted text-muted-foreground'
+                          idx < currentStep ? 'bg-[#ff0d13] text-white' :
+                          idx === currentStep - 1 ? 'bg-[#ff0d13] text-white animate-pulse' :
+                          'bg-slate-100 text-slate-400'
                         }`}>
                           {idx < currentStep - 1 ? '✓' : idx === currentStep - 1 ? '...' : idx + 1}
                         </div>
@@ -880,14 +880,14 @@ export default function Page() {
 
               {/* 4. Members */}
               <Section id="4" title="Member Information" subtitle="Add all members or owners of the business. At least one must be designated as the Responsible Party.">
-                {errors.members && <p className="text-sm text-primary">{errors.members}</p>}
+                {errors.members && <p className="text-sm text-[#ff0d13]">{errors.members}</p>}
                 <div className="space-y-5">
                   {members.map((m, i) => (
                     <div key={m.id} className="rounded-xl p-0 sm:p-1">
                       <div className="flex items-center justify-between">
                         <h3 className="text-lg font-bold text-foreground">Member {i + 1}</h3>
                         {members.length > 1 && (
-                          <button type="button" onClick={() => removeMember(m.id)} className="inline-flex cursor-pointer items-center gap-1 text-sm text-primary hover:underline">
+                          <button type="button" onClick={() => removeMember(m.id)} className="inline-flex cursor-pointer items-center gap-1 text-sm text-[#ff0d13] hover:underline">
                             <Trash2 className="h-4 w-4" /> Remove
                           </button>
                         )}
@@ -909,7 +909,7 @@ export default function Page() {
                           }}
                         />
                         <span className="grid h-5 w-5 shrink-0 place-items-center rounded-md border border-slate-300 bg-white cursor-pointer transition-colors peer-checked:bg-[#ff0d13] peer-checked:border-[#ff0d13] peer-focus-visible:ring-2 peer-focus-visible:ring-[#ff0d13]/30">
-                          {m.responsible && <Check className="h-3.5 w-3.5 text-primary-foreground" />}
+                          {m.responsible && <Check className="h-3.5 w-3.5 text-white" />}
                         </span>
                         <span className="min-w-0">
                           <span className="block font-semibold text-foreground">Responsible Party / Authorized Person</span>
@@ -1201,7 +1201,7 @@ export default function Page() {
 
               {/* Submit */}
               <div className="flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-end">
-                <button type="submit" disabled={submitting} className="group inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-primary px-6 py-4 text-base font-extrabold text-primary-foreground shadow-lg transition hover:bg-primary/90 disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
+                <button type="submit" disabled={submitting} className="group inline-flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-2xl bg-[#ff0d13] px-6 py-4 text-base font-extrabold text-white shadow-lg transition hover:bg-[#cc0a0f] disabled:opacity-60 sm:flex-none sm:px-10 sm:py-5">
                   {submitting ? "Submitting…" : <>Complete Formation <span aria-hidden className="transition-transform group-hover:translate-x-0.5">→</span></>}
                 </button>
               </div>
@@ -1335,13 +1335,13 @@ function PaymentOption({ selected, onClick, icon, title, desc }: { selected: boo
   return (
     <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer ${selected ? "border-[#ff0d13] bg-[#ff0d13]/5" : "border-slate-200 bg-white hover:border-[#ff0d13]/50"}`}>
       <div className="flex items-start gap-3">
-        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">{icon}</span>
+        <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-[#ff0d13] text-white">{icon}</span>
         <div className="min-w-0 flex-1">
-          <h3 className="font-bold text-foreground">{title}</h3>
-          <p className="text-sm text-muted-foreground">{desc}</p>
+          <h3 className="font-bold text-slate-900">{title}</h3>
+          <p className="text-sm text-slate-500">{desc}</p>
         </div>
-        <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-primary" : "border-border"}`}>
-          {selected && <span className="h-2.5 w-2.5 rounded-full bg-primary" />}
+        <span className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 ${selected ? "border-[#ff0d13]" : "border-slate-300"}`}>
+          {selected && <span className="h-2.5 w-2.5 rounded-full bg-[#ff0d13]" />}
         </span>
       </div>
     </button>
