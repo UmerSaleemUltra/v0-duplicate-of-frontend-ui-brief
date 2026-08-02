@@ -333,18 +333,33 @@ export default function Page() {
     });
     if (!members.some((m) => m.responsible))
       e.members = "At least one Responsible Party is required";
-    if (!whatsapp.trim()) {
-      e.whatsapp = "WhatsApp number is required";
-    } else {
-      const wDigits = whatsapp.replace(/\D/g, "");
-      if (!/^\+?[\d\s\-()]+$/.test(whatsapp.trim())) {
-        e.whatsapp = "Enter a valid WhatsApp number";
-      } else if (wDigits.length < 7 || wDigits.length > 15) {
-        e.whatsapp = "WhatsApp number must be 7-15 digits";
+    // "Already paid" → WhatsApp required, receipt optional
+    if (paymentMethod === "already") {
+      if (!whatsapp.trim()) {
+        e.whatsapp = "WhatsApp number is required";
+      } else {
+        const wDigits = whatsapp.replace(/\D/g, "");
+        if (!/^\+?[\d\s\-()]+$/.test(whatsapp.trim())) {
+          e.whatsapp = "Enter a valid WhatsApp number";
+        } else if (wDigits.length < 7 || wDigits.length > 15) {
+          e.whatsapp = "WhatsApp number must be 7-15 digits";
+        }
       }
     }
-    if (paymentMethod === "make" && !receiptFileName)
-      e.receipt = "Please upload your payment receipt";
+    // "Will make payment" → receipt required, WhatsApp optional (but validate if filled)
+    if (paymentMethod === "make") {
+      if (!receiptFileName) {
+        e.receipt = "Please upload your payment receipt";
+      }
+      if (whatsapp.trim()) {
+        const wDigits = whatsapp.replace(/\D/g, "");
+        if (!/^\+?[\d\s\-()]+$/.test(whatsapp.trim())) {
+          e.whatsapp = "Enter a valid WhatsApp number";
+        } else if (wDigits.length < 7 || wDigits.length > 15) {
+          e.whatsapp = "WhatsApp number must be 7-15 digits";
+        }
+      }
+    }
     setErrors(e);
     return Object.keys(e).length === 0;
   };
@@ -1002,6 +1017,7 @@ export default function Page() {
 
               {/* 5. Payment */}
               <Section id="5" title="Payment Details" subtitle="Choose how you have paid or will pay for your order.">
+                {/* Payment method toggle */}
                 <div className="grid gap-3 sm:grid-cols-2">
                   {(["already", "make"] as const).map((method) => (
                     <button
@@ -1026,8 +1042,8 @@ export default function Page() {
                           </p>
                           <p className="text-xs text-slate-500 mt-0.5">
                             {method === "already"
-                              ? "Upload your payment receipt below"
-                              : "Pay via bank transfer / WhatsApp"}
+                              ? "WhatsApp required, receipt optional"
+                              : "Receipt required after bank transfer"}
                           </p>
                         </div>
                       </div>
@@ -1035,7 +1051,47 @@ export default function Page() {
                   ))}
                 </div>
 
-                <Field label="WhatsApp Number" error={errors.whatsapp}>
+                {/* Bank account details — shown only for "make payment" */}
+                {paymentMethod === "make" && (
+                  <div className="rounded-xl border border-slate-200 overflow-hidden">
+                    <div className="flex items-center gap-3 px-4 py-3 bg-white border-b border-slate-200">
+                      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-[#ff0d13]">
+                        <Lock className="h-4 w-4 text-white" />
+                      </span>
+                      <div>
+                        <p className="text-sm font-bold text-slate-900">Bank Account Details</p>
+                        <p className="text-xs text-slate-500">Please use these details to complete your payment</p>
+                      </div>
+                    </div>
+                    {[
+                      { label: "Bank Name",       value: "United Bank Limited (UBL)" },
+                      { label: "Account Title",   value: "BUZZ FILING" },
+                      { label: "Account Number",  value: "1176314943776" },
+                      { label: "IBAN",            value: "PK22UNIL0109000314943776" },
+                    ].map((row, idx, arr) => (
+                      <div
+                        key={row.label}
+                        className={`flex items-center justify-between px-4 py-3 bg-white ${idx < arr.length - 1 ? "border-b border-slate-100" : ""}`}
+                      >
+                        <span className="text-sm text-slate-500">{row.label}</span>
+                        <span className="text-sm font-bold text-slate-900 text-right">{row.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* WhatsApp — required for "already paid", optional for "make payment" */}
+                <Field
+                  label={
+                    <>
+                      WhatsApp Number{" "}
+                      {paymentMethod === "already"
+                        ? <span className="text-[#ff0d13]">*</span>
+                        : <span className="text-slate-400 font-normal text-xs">(optional)</span>}
+                    </>
+                  }
+                  error={errors.whatsapp}
+                >
                   <InputWrap icon={<MessageSquare className="h-4 w-4" />}>
                     <input
                       type="tel"
@@ -1045,10 +1101,25 @@ export default function Page() {
                       onChange={(e) => setWhatsapp(e.target.value)}
                     />
                   </InputWrap>
-                  <Hint>We&apos;ll send your order updates to this WhatsApp number</Hint>
+                  <Hint>
+                    {paymentMethod === "already"
+                      ? "We'll confirm your payment via this WhatsApp number"
+                      : "Optional — we'll send updates to this number"}
+                  </Hint>
                 </Field>
 
-                <Field label={<>Payment Receipt {paymentMethod === "make" && <span className="text-red-600">*</span>}</>} error={errors.receipt}>
+                {/* Receipt — required for "make payment", optional for "already paid" */}
+                <Field
+                  label={
+                    <>
+                      Payment Receipt{" "}
+                      {paymentMethod === "make"
+                        ? <span className="text-[#ff0d13]">*</span>
+                        : <span className="text-slate-400 font-normal text-xs">(optional)</span>}
+                    </>
+                  }
+                  error={errors.receipt}
+                >
                   <div className="space-y-2">
                     <div className="relative">
                       <Upload className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
@@ -1077,7 +1148,7 @@ export default function Page() {
                             const input = document.getElementById("receipt-upload") as HTMLInputElement;
                             if (input) input.value = "";
                           }}
-                          className="shrink-0 cursor-pointer text-red-500 hover:text-red-700"
+                          className="shrink-0 cursor-pointer text-[#ff0d13] hover:text-[#cc0000]"
                           aria-label="Remove receipt"
                         >
                           <X className="h-4 w-4" />
@@ -1085,7 +1156,11 @@ export default function Page() {
                       </div>
                     )}
                   </div>
-                  <Hint>Upload your bank transfer or payment screenshot (image or PDF)</Hint>
+                  <Hint>
+                    {paymentMethod === "make"
+                      ? "Upload your bank transfer screenshot after payment (image or PDF)"
+                      : "Upload your payment receipt if you have one (image or PDF)"}
+                  </Hint>
                 </Field>
               </Section>
 
@@ -1258,7 +1333,7 @@ function EntityOption({ selected, onClick, title, badges, features, bestFor }: {
 
 function PaymentOption({ selected, onClick, icon, title, desc }: { selected: boolean; onClick: () => void; icon: React.ReactNode; title: string; desc: string }) {
   return (
-    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer ${selected ? "border-[#ff0d13] bg-[#ff0d13]/10" : "border-border bg-card hover:border-[#ff0d13]/40"}`}>
+    <button type="button" onClick={onClick} className={`text-left rounded-xl border-2 p-4 transition cursor-pointer ${selected ? "border-[#ff0d13] bg-[#ff0d13]/5" : "border-slate-200 bg-white hover:border-[#ff0d13]/50"}`}>
       <div className="flex items-start gap-3">
         <span className="grid h-10 w-10 shrink-0 place-items-center rounded-lg bg-primary text-primary-foreground">{icon}</span>
         <div className="min-w-0 flex-1">
