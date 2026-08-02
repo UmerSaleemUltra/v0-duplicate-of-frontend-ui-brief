@@ -666,9 +666,9 @@ export default function Page() {
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-primary/10 via-background to-background">
+    <div className="min-h-screen bg-white">
       {/* Header */}
-      <header className="relative overflow-hidden bg-gradient-to-br from-[#8B1A1A] via-[#A52A2A] to-[#6B0000] text-white">
+      <header className="relative overflow-hidden bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white">
         {/* Grid lines pattern */}
         <div
           className="absolute inset-0 opacity-[0.08]"
