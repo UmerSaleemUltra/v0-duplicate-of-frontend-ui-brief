@@ -552,6 +552,13 @@ export default function Page() {
         packageType: packageKey,
         members: updatedMembers.map((m) => ({
           id: m.id,
+          // Display-layer aliases (MembersCard reads these)
+          name: m.fullLegalName,
+          address: m.homeAddress,
+          state: m.stateProvince,
+          isResponsiblePerson: m.responsible,
+          responsiblePerson: m.responsible,
+          // Original fields kept for API / DB
           responsible: m.responsible,
           fullLegalName: m.fullLegalName,
           homeAddress: m.homeAddress,
