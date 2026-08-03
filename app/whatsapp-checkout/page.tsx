@@ -1013,6 +1013,15 @@ export default function Page() {
                     </div>
                   ))}
                 </div>
+
+                <button
+                  type="button"
+                  onClick={() => setMembers((arr) => [...arr, newMember(false)])}
+                  className="mt-2 flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#ff0d13]/40 bg-[#ff0d13]/5 py-3 text-sm font-semibold text-[#ff0d13] transition hover:border-[#ff0d13] hover:bg-[#ff0d13]/10"
+                >
+                  <Plus className="h-4 w-4" />
+                  Add Another Member
+                </button>
               </Section>
 
               {/* 5. Payment */}
