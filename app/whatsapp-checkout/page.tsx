@@ -1366,9 +1366,18 @@ function countryFlag(code: string) {
 
 function MemberCountrySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const selected = COUNTRY_DIAL_CODES.find((c) => c.name === value);
+
+  const filtered = query.trim()
+    ? COUNTRY_DIAL_CODES.filter((c) =>
+        c.name.toLowerCase().includes(query.toLowerCase()) ||
+        c.code.toLowerCase().includes(query.toLowerCase())
+      )
+    : COUNTRY_DIAL_CODES;
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setQuery(""); }}>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -1388,39 +1397,33 @@ function MemberCountrySelect({ value, onChange }: { value: string; onChange: (v:
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) min-w-[min(calc(100vw-1rem),22rem)] p-0" align="start" collisionPadding={8}>
-        <Command>
-          <div className="flex items-center border-b border-slate-200 px-3">
-            <input
-              autoFocus
-              placeholder="Search country..."
-              className="w-full py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-transparent outline-none"
-              onChange={(e) => {
-                const cmd = e.currentTarget.closest("[cmdk-root]") as HTMLElement | null;
-                cmd?.dispatchEvent(new CustomEvent("cmdk-input-change", { detail: e.target.value, bubbles: true }));
-              }}
-            />
-          </div>
-          <CommandList className="max-h-60">
-            <CommandEmpty>No country found.</CommandEmpty>
-            <CommandGroup>
-              {COUNTRY_DIAL_CODES.map((c) => (
-                <CommandItem
-                  key={c.code}
-                  value={c.name}
-                  onSelect={() => {
-                    onChange(c.name);
-                    setOpen(false);
-                  }}
-                  className="cursor-pointer flex items-center gap-2.5 px-3 py-2"
-                >
-                  <span className="text-base leading-none shrink-0">{countryFlag(c.code)}</span>
-                  <span className="flex-1 text-sm text-slate-900 truncate">{c.name}</span>
-                  {value === c.name && <Check className="h-4 w-4 text-[#ff0d13] shrink-0" />}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+        <div className="flex items-center border-b border-slate-200 px-3">
+          <input
+            autoFocus
+            placeholder="Search country..."
+            value={query}
+            className="w-full py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-transparent outline-none"
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="max-h-60 overflow-y-auto">
+          {filtered.length === 0 ? (
+            <p className="py-6 text-center text-sm text-slate-500">No country found.</p>
+          ) : (
+            filtered.map((c) => (
+              <button
+                key={c.code}
+                type="button"
+                onClick={() => { onChange(c.name); setOpen(false); setQuery(""); }}
+                className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left hover:bg-slate-50"
+              >
+                <span className="text-base leading-none shrink-0">{countryFlag(c.code)}</span>
+                <span className="flex-1 text-sm text-slate-900 truncate">{c.name}</span>
+                {value === c.name && <Check className="h-4 w-4 text-[#ff0d13] shrink-0" />}
+              </button>
+            ))
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
