@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Building2,
   Check,
@@ -151,6 +152,7 @@ export default function Page() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [visibleSsn, setVisibleSsn] = useState<Record<string, boolean>>({});
 
+  const { toast } = useToast();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -644,19 +646,30 @@ export default function Page() {
 
       // ── Step 5: Complete ──────────────────────────────────────────────────
       setCurrentStep(5);
-      console.log("[v0] Step 5: checkout complete, clearing draft data from localStorage");
       clearCompletedOrderData();
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("checkout-completed"));
       }
+      // Clear all uploaded file states
+      setReceiptFileName("");
+      setReceiptFile(null);
+      setMembers((prev) =>
+        prev.map((m) => ({ ...m, idFileName: "", idFile: null }))
+      );
+      const receiptInput = document.getElementById("receipt-upload") as HTMLInputElement | null;
+      if (receiptInput) receiptInput.value = "";
       setSubmitting(false);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
-      console.log("[v0] WA checkout: submission complete!");
     } catch (error) {
       const message = error instanceof Error ? error.message : "An error occurred during checkout";
       console.error("[v0] WA checkout: submission error →", message, error);
       setApiError(message);
+      toast({
+        title: "Submission failed",
+        description: message,
+        variant: "destructive",
+      });
       setSubmitting(false);
       setCurrentStep(0);
       window.scrollTo({ top: 0, behavior: "smooth" });
