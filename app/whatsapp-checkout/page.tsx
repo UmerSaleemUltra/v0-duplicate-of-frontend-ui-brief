@@ -1,5 +1,6 @@
 "use client";
 import { useEffect, useState } from "react";
+import { useToast } from "@/hooks/use-toast";
 import {
   Building2,
   Check,
@@ -151,6 +152,7 @@ export default function Page() {
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [visibleSsn, setVisibleSsn] = useState<Record<string, boolean>>({});
 
+  const { toast } = useToast();
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
@@ -524,28 +526,6 @@ export default function Page() {
         })
       );
 
-      // Upload receipt if "make payment" method
-      let receiptUrl: string | null = null;
-      console.log("[v0] Step 3: paymentMethod →", paymentMethod, "receiptFile →", receiptFile?.name ?? "none");
-      if (paymentMethod === "make" && receiptFile) {
-        console.log("[v0] Step 3: uploading receipt →", receiptFile.name);
-        const rfd = new FormData();
-        rfd.append("file", receiptFile);
-        rfd.append("userId", resolvedUserId);
-        const receiptRes = await fetch("/api/payment-receipt/upload", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${currentToken}` },
-          body: rfd,
-        });
-        if (!receiptRes.ok) {
-          const err = await receiptRes.json();
-          throw new Error(err.error || "Receipt upload failed");
-        }
-        const { data: rData } = await receiptRes.json();
-        receiptUrl = rData.fileUrl ?? rData.url ?? null;
-        console.log("[v0] Step 3: receipt uploaded, url →", receiptUrl);
-      }
-
       // ── Step 4: Create company with embedded order ────────────────────────
       setCurrentStep(4);
       console.log("[v0] Step 4: building company payload", { businessName, entityType, formationState, pkg });
@@ -605,7 +585,7 @@ export default function Page() {
           paymentMethod,
           paymentStatus: "pending",
           whatsappPhone: whatsapp || phoneValue,
-          receiptUrl,
+          receiptUrl: null,   // updated after upload below
           transactionId,
           passportDocuments: updatedMembers
             .filter((m) => (m as any).passportUrl)
@@ -639,24 +619,64 @@ export default function Page() {
       setOrderId(createdCompanyId);
       console.log("[v0] Step 4: company created, id →", createdCompanyId);
 
+      // ── Receipt upload (needs real orderId from company creation) ─────────
+      let receiptUrl: string | null = null;
+      if (receiptFile && createdCompanyId) {
+        console.log("[v0] Step 4: uploading receipt for orderId →", createdCompanyId, "file →", receiptFile.name);
+        const rfd = new FormData();
+        rfd.append("receipt", receiptFile);          // API expects "receipt" key
+        rfd.append("orderId", createdCompanyId);
+        rfd.append("userId", resolvedUserId);
+        const receiptRes = await fetch("/api/payment-receipt/upload", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${currentToken}` },
+          body: rfd,
+        });
+        if (!receiptRes.ok) {
+          const err = await receiptRes.json().catch(() => ({}));
+          console.error("[v0] Receipt upload failed →", err);
+          // Non-fatal: log but don't block order completion
+          toast({
+            title: "Receipt upload failed",
+            description: err.error || "Your order was placed but the receipt could not be uploaded.",
+            variant: "destructive",
+          });
+        } else {
+          const { data: rData } = await receiptRes.json();
+          receiptUrl = rData.url ?? rData.fileUrl ?? null;
+          console.log("[v0] Step 4: receipt uploaded, url →", receiptUrl);
+        }
+      }
+
       // Persist orderId to localStorage
       saveCheckoutData({ orderId: createdCompanyId, status: "completed" } as Partial<CheckoutData>);
 
       // ── Step 5: Complete ──────────────────────────────────────────────────
       setCurrentStep(5);
-      console.log("[v0] Step 5: checkout complete, clearing draft data from localStorage");
       clearCompletedOrderData();
       if (typeof window !== "undefined") {
         window.dispatchEvent(new Event("checkout-completed"));
       }
+      // Clear all uploaded file states
+      setReceiptFileName("");
+      setReceiptFile(null);
+      setMembers((prev) =>
+        prev.map((m) => ({ ...m, idFileName: "", idFile: null }))
+      );
+      const receiptInput = document.getElementById("receipt-upload") as HTMLInputElement | null;
+      if (receiptInput) receiptInput.value = "";
       setSubmitting(false);
       setSubmitted(true);
       window.scrollTo({ top: 0, behavior: "smooth" });
-      console.log("[v0] WA checkout: submission complete!");
     } catch (error) {
       const message = error instanceof Error ? error.message : "An error occurred during checkout";
       console.error("[v0] WA checkout: submission error →", message, error);
       setApiError(message);
+      toast({
+        title: "Submission failed",
+        description: message,
+        variant: "destructive",
+      });
       setSubmitting(false);
       setCurrentStep(0);
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -1375,9 +1395,18 @@ function countryFlag(code: string) {
 
 function MemberCountrySelect({ value, onChange }: { value: string; onChange: (v: string) => void }) {
   const [open, setOpen] = useState(false);
+  const [query, setQuery] = useState("");
   const selected = COUNTRY_DIAL_CODES.find((c) => c.name === value);
+
+  const filtered = query.trim()
+    ? COUNTRY_DIAL_CODES.filter((c) =>
+        c.name.toLowerCase().includes(query.toLowerCase()) ||
+        c.code.toLowerCase().includes(query.toLowerCase())
+      )
+    : COUNTRY_DIAL_CODES;
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(o) => { setOpen(o); if (!o) setQuery(""); }}>
       <PopoverTrigger asChild>
         <button
           type="button"
@@ -1397,39 +1426,33 @@ function MemberCountrySelect({ value, onChange }: { value: string; onChange: (v:
         </button>
       </PopoverTrigger>
       <PopoverContent className="w-(--radix-popover-trigger-width) min-w-[min(calc(100vw-1rem),22rem)] p-0" align="start" collisionPadding={8}>
-        <Command>
-          <div className="flex items-center border-b border-slate-200 px-3">
-            <input
-              autoFocus
-              placeholder="Search country..."
-              className="w-full py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-transparent outline-none"
-              onChange={(e) => {
-                const cmd = e.currentTarget.closest("[cmdk-root]") as HTMLElement | null;
-                cmd?.dispatchEvent(new CustomEvent("cmdk-input-change", { detail: e.target.value, bubbles: true }));
-              }}
-            />
-          </div>
-          <CommandList className="max-h-60">
-            <CommandEmpty>No country found.</CommandEmpty>
-            <CommandGroup>
-              {COUNTRY_DIAL_CODES.map((c) => (
-                <CommandItem
-                  key={c.code}
-                  value={c.name}
-                  onSelect={() => {
-                    onChange(c.name);
-                    setOpen(false);
-                  }}
-                  className="cursor-pointer flex items-center gap-2.5 px-3 py-2"
-                >
-                  <span className="text-base leading-none shrink-0">{countryFlag(c.code)}</span>
-                  <span className="flex-1 text-sm text-slate-900 truncate">{c.name}</span>
-                  {value === c.name && <Check className="h-4 w-4 text-[#ff0d13] shrink-0" />}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </CommandList>
-        </Command>
+        <div className="flex items-center border-b border-slate-200 px-3">
+          <input
+            autoFocus
+            placeholder="Search country..."
+            value={query}
+            className="w-full py-2.5 text-sm text-slate-900 placeholder:text-slate-400 bg-transparent outline-none"
+            onChange={(e) => setQuery(e.target.value)}
+          />
+        </div>
+        <div className="max-h-60 overflow-y-auto">
+          {filtered.length === 0 ? (
+            <p className="py-6 text-center text-sm text-slate-500">No country found.</p>
+          ) : (
+            filtered.map((c) => (
+              <button
+                key={c.code}
+                type="button"
+                onClick={() => { onChange(c.name); setOpen(false); setQuery(""); }}
+                className="flex w-full cursor-pointer items-center gap-2.5 px-3 py-2 text-left hover:bg-slate-50"
+              >
+                <span className="text-base leading-none shrink-0">{countryFlag(c.code)}</span>
+                <span className="flex-1 text-sm text-slate-900 truncate">{c.name}</span>
+                {value === c.name && <Check className="h-4 w-4 text-[#ff0d13] shrink-0" />}
+              </button>
+            ))
+          )}
+        </div>
       </PopoverContent>
     </Popover>
   );
