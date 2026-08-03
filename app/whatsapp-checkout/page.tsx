@@ -1071,10 +1071,10 @@ export default function Page() {
                     ].map((row, idx, arr) => (
                       <div
                         key={row.label}
-                        className={`flex items-center justify-between px-4 py-3 bg-white ${idx < arr.length - 1 ? "border-b border-slate-100" : ""}`}
+                        className={`flex items-start justify-between gap-3 px-4 py-3 bg-white ${idx < arr.length - 1 ? "border-b border-slate-100" : ""}`}
                       >
-                        <span className="text-sm text-slate-500">{row.label}</span>
-                        <span className="text-sm font-bold text-slate-900 text-right">{row.value}</span>
+                        <span className="shrink-0 whitespace-nowrap text-sm text-slate-500">{row.label}</span>
+                        <span className="break-all text-sm font-bold text-slate-900 text-right">{row.value}</span>
                       </div>
                     ))}
                   </div>
