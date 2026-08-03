@@ -27,24 +27,21 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: "No file provided" }, { status: 400 })
     }
 
-    if (!orderId) {
-      return NextResponse.json({ success: false, error: "Order ID is required" }, { status: 400 })
-    }
-
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
+    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp", "application/pdf"]
     if (!allowedTypes.includes(file.type)) {
       return NextResponse.json(
-        { success: false, error: "Only image files (JPEG, PNG, WEBP) are allowed" },
+        { success: false, error: "Only image files (JPEG, PNG, WEBP) or PDF are allowed" },
         { status: 400 },
       )
     }
 
-    const maxSize = 5 * 1024 * 1024
+    const maxSize = 10 * 1024 * 1024
     if (file.size > maxSize) {
-      return NextResponse.json({ success: false, error: "File size must be less than 5MB" }, { status: 400 })
+      return NextResponse.json({ success: false, error: "File size must be less than 10MB" }, { status: 400 })
     }
 
-    const pathname = `payment-receipts/${orderId}/receipt-${Date.now()}.${file.name.split(".").pop()}`
+    const folder = orderId ? `payment-receipts/${orderId}` : `payment-receipts/pending`
+    const pathname = `${folder}/receipt-${Date.now()}.${file.name.split(".").pop()}`
 
     console.log(" Uploading to blob storage:", pathname)
 
