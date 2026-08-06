@@ -23,7 +23,7 @@ export async function GET(req: NextRequest) {
     const { db } = await connectDB()
     const query = decoded.role === "admin" ? {} : { userId: decoded.userId }
 
-    const orders = await db.collection("orders").find(query).sort({ createdAt: -1 }).limit(100).toArray()
+    const orders = await db.collection("orders").find(query).sort({ createdAt: -1 }).toArray()
 
     const result = {
       success: true,
