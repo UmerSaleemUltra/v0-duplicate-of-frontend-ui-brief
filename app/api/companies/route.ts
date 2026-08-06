@@ -69,7 +69,6 @@ export async function GET(req: NextRequest) {
         createdAt: 1,
         updatedAt: 1,
       })
-      .limit(200)
       .toArray()
 
     console.log(` GET /api/companies - Found ${companies.length} companies`)
