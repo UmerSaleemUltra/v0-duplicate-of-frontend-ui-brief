@@ -540,7 +540,6 @@ export default function Page() {
         name: businessName,
         type: entityType,
         state: formationState,
-        email,
         address: { street: "", city: "", state: formationState, zip: "" },
         businessCategory: category,
         businessDescription: description,
@@ -611,23 +610,12 @@ export default function Page() {
         },
         body: JSON.stringify(companyPayload),
       });
-      let companyData: any;
-      try {
-        companyData = await companyResponse.json();
-      } catch {
-        throw new Error("Server returned an invalid response. Please try again.");
-      }
+      const companyData = await companyResponse.json();
       console.log("[v0] Step 4: company API response →", companyData);
       if (!companyResponse.ok) {
-        const errMsg = companyData?.error || companyData?.message || `Server error (${companyResponse.status})`;
-        console.error("[v0] Step 4: company creation failed →", errMsg, companyData);
-        throw new Error(errMsg);
+        throw new Error(companyData.error || "Failed to create company");
       }
-      if (!companyData?.data?.id) {
-        console.error("[v0] Step 4: unexpected response shape →", companyData);
-        throw new Error("Order was placed but no confirmation ID was returned. Please contact support.");
-      }
-      const createdCompanyId = companyData.data.id;
+      const createdCompanyId = companyData.data?.id ?? null;
       setOrderId(createdCompanyId);
       console.log("[v0] Step 4: company created, id →", createdCompanyId);
 
