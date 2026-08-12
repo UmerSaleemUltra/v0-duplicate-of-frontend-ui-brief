@@ -323,18 +323,31 @@ export async function POST(req: NextRequest) {
     broadcastUpdate("companies", "created", createdCompany)
 
     // Auto-remove abandoned checkout after order completion
-    // This prevents the user from appearing in abandoned checkouts list
-    if (body.email) {
-      console.log("[v0] Starting abandoned checkout removal for email:", body.email)
+    // This prevents the user from appearing in abandoned checkouts list.
+    // Prefer the email supplied in the request, but fall back to the
+    // authenticated user's email so cleanup never depends on the client
+    // remembering to include it in the payload.
+    let cleanupEmail: string | null = body.email || decoded.email || null
+    if (!cleanupEmail) {
       try {
-        await removeAbandonedCheckout(db, body.email)
-        console.log("[v0] Abandoned checkout removal completed for email:", body.email)
+        const authUser = await db.collection("users").findOne({ _id: new ObjectId(decoded.userId) })
+        cleanupEmail = authUser?.email || null
+      } catch (lookupError) {
+        console.error("[v0] Failed to resolve authenticated user email for abandoned checkout removal:", lookupError)
+      }
+    }
+
+    if (cleanupEmail) {
+      console.log("[v0] Starting abandoned checkout removal for email:", cleanupEmail)
+      try {
+        await removeAbandonedCheckout(db, cleanupEmail)
+        console.log("[v0] Abandoned checkout removal completed for email:", cleanupEmail)
       } catch (removeError) {
-        console.error("[v0] Failed to remove abandoned checkout for email:", body.email, removeError)
+        console.error("[v0] Failed to remove abandoned checkout for email:", cleanupEmail, removeError)
         // Non-fatal — order is created, abandoned checkout removal should not fail the request
       }
     } else {
-      console.warn("[v0] No email provided in company creation, skipping abandoned checkout removal")
+      console.warn("[v0] No email resolved for company creation, skipping abandoned checkout removal")
     }
 
     try {

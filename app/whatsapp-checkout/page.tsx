@@ -567,6 +567,7 @@ export default function Page() {
         name: businessName,
         type: entityType,
         state: formationState,
+        email,
         address: { street: "", city: "", state: formationState, zip: "" },
         businessCategory: category,
         businessDescription: description,
