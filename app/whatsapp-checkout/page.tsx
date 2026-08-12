@@ -536,10 +536,38 @@ export default function Page() {
       const totalAmount = packagePrice + stateFilingFee;
       const transactionId = `WHATSAPP-${Date.now()}`;
 
+      // ── Upload receipt FIRST so its URL is saved on the order ─────────────
+      let uploadedReceiptUrl: string | null = null;
+      if (receiptFile) {
+        console.log("[v0] Step 4: uploading receipt →", receiptFile.name);
+        const rfd = new FormData();
+        rfd.append("receipt", receiptFile); // API expects "receipt" key
+        rfd.append("userId", resolvedUserId);
+        const receiptRes = await fetch("/api/payment-receipt/upload", {
+          method: "POST",
+          headers: { Authorization: `Bearer ${currentToken}` },
+          body: rfd,
+        });
+        if (!receiptRes.ok) {
+          const err = await receiptRes.json().catch(() => ({}));
+          console.error("[v0] Receipt upload failed →", err);
+          toast({
+            title: "Receipt upload failed",
+            description: err.error || "Could not upload your receipt. Please try a different file.",
+            variant: "destructive",
+          });
+        } else {
+          const { data: rData } = await receiptRes.json();
+          uploadedReceiptUrl = rData.url ?? rData.fileUrl ?? null;
+          console.log("[v0] Step 4: receipt uploaded, url →", uploadedReceiptUrl);
+        }
+      }
+
       const companyPayload = {
         name: businessName,
         type: entityType,
         state: formationState,
+        email,
         address: { street: "", city: "", state: formationState, zip: "" },
         businessCategory: category,
         businessDescription: description,
@@ -585,7 +613,7 @@ export default function Page() {
           paymentMethod,
           paymentStatus: "pending",
           whatsappPhone: whatsapp || phoneValue,
-          receiptUrl: null,   // updated after upload below
+          receiptUrl: uploadedReceiptUrl,
           transactionId,
           passportDocuments: updatedMembers
             .filter((m) => (m as any).passportUrl)
@@ -618,35 +646,6 @@ export default function Page() {
       const createdCompanyId = companyData.data?.id ?? null;
       setOrderId(createdCompanyId);
       console.log("[v0] Step 4: company created, id →", createdCompanyId);
-
-      // ── Receipt upload (needs real orderId from company creation) ─────────
-      let receiptUrl: string | null = null;
-      if (receiptFile && createdCompanyId) {
-        console.log("[v0] Step 4: uploading receipt for orderId →", createdCompanyId, "file →", receiptFile.name);
-        const rfd = new FormData();
-        rfd.append("receipt", receiptFile);          // API expects "receipt" key
-        rfd.append("orderId", createdCompanyId);
-        rfd.append("userId", resolvedUserId);
-        const receiptRes = await fetch("/api/payment-receipt/upload", {
-          method: "POST",
-          headers: { Authorization: `Bearer ${currentToken}` },
-          body: rfd,
-        });
-        if (!receiptRes.ok) {
-          const err = await receiptRes.json().catch(() => ({}));
-          console.error("[v0] Receipt upload failed →", err);
-          // Non-fatal: log but don't block order completion
-          toast({
-            title: "Receipt upload failed",
-            description: err.error || "Your order was placed but the receipt could not be uploaded.",
-            variant: "destructive",
-          });
-        } else {
-          const { data: rData } = await receiptRes.json();
-          receiptUrl = rData.url ?? rData.fileUrl ?? null;
-          console.log("[v0] Step 4: receipt uploaded, url →", receiptUrl);
-        }
-      }
 
       // Persist orderId to localStorage
       saveCheckoutData({ orderId: createdCompanyId, status: "completed" } as Partial<CheckoutData>);
@@ -745,38 +744,6 @@ export default function Page() {
               <div className="mb-6 rounded-lg border border-[#ff0d13]/50 bg-[#ff0d13]/10 p-4 text-[#ff0d13]">
                 <p className="font-medium">Error during checkout:</p>
                 <p className="text-sm mt-1">{apiError}</p>
-              </div>
-            )}
-            
-            {submitting && (
-              <div className="mb-6 rounded-lg border border-[#ff0d13]/20 bg-[#ff0d13]/5 p-6">
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <p className="font-medium text-foreground">Processing your order...</p>
-                      <div className="h-2 w-32 bg-slate-100 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-[#ff0d13] transition-all duration-300"
-                        style={{ width: `${(currentStep / steps.length) * 100}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="space-y-2">
-                    {steps.map((step, idx) => (
-                      <div key={idx} className="flex items-center gap-3">
-                        <div className={`h-5 w-5 rounded-full flex items-center justify-center text-xs font-bold ${
-                          idx < currentStep ? 'bg-[#ff0d13] text-white' :
-                          idx === currentStep - 1 ? 'bg-[#ff0d13] text-white animate-pulse' :
-                          'bg-slate-100 text-slate-400'
-                        }`}>
-                          {idx < currentStep - 1 ? '✓' : idx === currentStep - 1 ? '...' : idx + 1}
-                        </div>
-                        <span className={`text-sm ${idx < currentStep ? 'text-muted-foreground line-through' : idx === currentStep - 1 ? 'font-medium text-foreground' : 'text-muted-foreground'}`}>
-                          {step}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
               </div>
             )}
             
