@@ -747,14 +747,29 @@ export default function Page() {
               </div>
             )}
             
+            {submitting && (
+              <div className="mb-6 overflow-hidden rounded-2xl border border-[#ff0d13]/20 bg-white shadow-[0_12px_35px_rgba(255,13,19,0.10)]" role="status" aria-live="polite">
+                <div className="h-1 w-full overflow-hidden bg-[#ff0d13]/10">
+                  <div className="h-full w-1/3 animate-[loading-slide_1.4s_ease-in-out_infinite] rounded-full bg-[#ff0d13]" />
+                </div>
+                <div className="flex items-center gap-4 px-5 py-5 sm:px-7">
+                  <div className="relative grid h-12 w-12 shrink-0 place-items-center rounded-full border-4 border-[#ff0d13]/15 bg-[#ff0d13]/5">
+                    <div className="absolute inset-[-4px] animate-spin rounded-full border-4 border-transparent border-t-[#ff0d13]" />
+                    <Sparkles className="h-5 w-5 text-[#ff0d13]" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-base font-extrabold text-slate-900">Creating your BuzzFiling order</p>
+                    <p className="mt-1 text-sm text-slate-500">We&apos;re securely saving your details. Please keep this page open<span className="inline-flex w-8 text-left"><span className="animate-pulse">...</span></span></p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2 border-t border-slate-100 px-5 py-3 text-xs font-semibold text-slate-500 sm:px-7">
+                  <span className="h-2 w-2 animate-pulse rounded-full bg-[#ff0d13]" />
+                  Secure checkout in progress
+                </div>
+              </div>
+            )}
+
             <form onSubmit={onSubmit} className="space-y-6" style={{ pointerEvents: submitting ? 'none' : 'auto', opacity: submitting ? 0.5 : 1 }}>
-
-
-
-
-
-
-
               {/* 1. Account */}
               <Section id="1" title="Create Your Account" subtitle="Set up your account to track your formation progress and manage your business.">
                 <>
