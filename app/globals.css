@@ -16,6 +16,12 @@
   }
 }
 
+@keyframes loading-slide {
+  0% { transform: translateX(-140%); }
+  50% { transform: translateX(160%); }
+  100% { transform: translateX(320%); }
+}
+
 @custom-variant dark (&:is(.dark, .dark *));
 
 :root {
