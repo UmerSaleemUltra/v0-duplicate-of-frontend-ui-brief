@@ -2,7 +2,7 @@ import { MongoClient, type Db } from "mongodb"
 
 const MONGODB_URI =
   process.env.MONGODB_URI ||
-  "export data t"
+  "mongodb+srv://Buzzfiling:2668@cluster0.ewwkzzw.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 const MONGODB_DB = process.env.MONGODB_DB || "llc_formation"
 
 // Module-level cached promise — one connection shared across all serverless invocations
