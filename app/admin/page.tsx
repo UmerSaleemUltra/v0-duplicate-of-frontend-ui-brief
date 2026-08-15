@@ -26,6 +26,8 @@ import {
   TrendingDown,
   Eye,
   Share2,
+  FileText,
+  Download,
 } from "lucide-react"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
@@ -71,6 +73,15 @@ export default function AdminDashboard() {
     stepBreakdown: {}
   })
   const [abandonedDrawerOpen, setAbandonedDrawerOpen] = useState(false)
+  const getDateInput = (date: Date) => date.toISOString().slice(0, 10)
+  const initialRangeEnd = new Date()
+  const initialRangeStart = new Date()
+  initialRangeStart.setDate(initialRangeStart.getDate() - 9)
+  const [abandonedFrom, setAbandonedFrom] = useState(getDateInput(initialRangeStart))
+  const [abandonedTo, setAbandonedTo] = useState(getDateInput(initialRangeEnd))
+  const [abandonedRange, setAbandonedRange] = useState({ from: getDateInput(initialRangeStart), to: getDateInput(initialRangeEnd) })
+  const [isExportingAbandoned, setIsExportingAbandoned] = useState(false)
+  const [isLoadingAbandoned, setIsLoadingAbandoned] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -310,7 +321,8 @@ export default function AdminDashboard() {
 
         // Fetch abandoned checkouts
         try {
-          const abandonedRes = await fetch("/api/abandoned-checkouts", {
+          setIsLoadingAbandoned(true)
+          const abandonedRes = await fetch(`/api/abandoned-checkouts?from=${abandonedRange.from}&to=${abandonedRange.to}`, {
             headers: { Authorization: `Bearer ${token}` },
           })
           if (abandonedRes.ok) {
@@ -323,7 +335,9 @@ export default function AdminDashboard() {
             }
           }
         } catch (e) {
-          // silent fail
+          toast.error("Unable to load abandoned checkouts")
+        } finally {
+          setIsLoadingAbandoned(false)
         }
 
         console.log(" Admin Dashboard: State breakdown set:", breakdown.length)
@@ -351,7 +365,50 @@ export default function AdminDashboard() {
     }
 
     loadData()
-  }, [isAuthenticating, router, dataLoaded, selectedYear])
+  }, [isAuthenticating, router, dataLoaded, selectedYear, abandonedRange])
+
+  const applyAbandonedRange = () => {
+    if (!abandonedFrom || !abandonedTo || abandonedFrom > abandonedTo) {
+      toast.error("Choose a valid date range")
+      return
+    }
+    setAbandonedRange({ from: abandonedFrom, to: abandonedTo })
+  }
+
+  const exportAbandonedPdf = async () => {
+    if (isExportingAbandoned) return
+    setIsExportingAbandoned(true)
+    try {
+      const { jsPDF } = await import("jspdf")
+      const doc = new jsPDF({ orientation: "landscape" })
+      const margin = 12
+      let y = 16
+      const line = (text: string, x = margin, size = 9) => { doc.setFontSize(size); doc.text(text, x, y); y += 5 }
+      doc.setTextColor(136, 0, 0)
+      line("BuzzFiling — Abandoned Checkout Report", margin, 16)
+      doc.setTextColor(40, 40, 40)
+      line(`Date range: ${abandonedRange.from} to ${abandonedRange.to}`)
+      line(`Total: ${abandonedStats.total}   Potential revenue: $${abandonedStats.potentialRevenue.toLocaleString()}`, margin, 10)
+      y += 4
+      const headers = ["Name / Business", "Email", "Phone", "State", "Package", "Step", "Est. Total", "Created", "Updated"]
+      const xs = [margin, 54, 100, 145, 171, 205, 235, 262, 282]
+      doc.setFillColor(136, 0, 0); doc.rect(margin, y - 4, 273, 7, "F"); doc.setTextColor(255, 255, 255)
+      headers.forEach((header, i) => doc.text(header, xs[i], y))
+      y += 8; doc.setTextColor(40, 40, 40); doc.setFontSize(7)
+      const stepNames = ["Account", "State & Package", "Business Info", "Owner Info", "Review", "Payment"]
+      abandonedCheckouts.forEach((item) => {
+        if (y > 190) { doc.addPage(); y = 16 }
+        const values = [item.name || item.businessName || "Anonymous", item.email || "—", item.phone || "—", item.state || "—", item.packageType || "—", stepNames[item.lastStep] || "Unknown", `$${Number(item.estimatedTotal || 0).toLocaleString()}`, new Date(item.createdAt).toLocaleDateString(), new Date(item.updatedAt || item.createdAt).toLocaleDateString()]
+        values.forEach((value, i) => doc.text(String(value).slice(0, i === 0 ? 24 : 20), xs[i], y))
+        y += 6
+      })
+      doc.save(`buzzfiling-abandoned-checkouts-${abandonedRange.from}-to-${abandonedRange.to}.pdf`)
+      toast.success("Abandoned checkout PDF downloaded")
+    } catch (error) {
+      console.error("[v0] Failed to export abandoned checkouts:", error)
+      toast.error("Unable to export PDF")
+    } finally { setIsExportingAbandoned(false) }
+  }
 
   if (isAuthenticating || (isLoadingData && !dataLoaded)) {
     return (
@@ -988,17 +1045,20 @@ export default function AdminDashboard() {
               </div>
               <h3 className="text-lg md:text-xl font-bold text-slate-900">Abandoned Checkouts</h3>
             </div>
-            <p className="text-xs md:text-sm text-slate-600 mt-1 ml-9">Users who started but did not complete checkout (last 30 days)</p>
+            <p className="text-xs md:text-sm text-slate-600 mt-1 ml-9">Users who started but did not complete checkout ({abandonedRange.from} to {abandonedRange.to})</p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setAbandonedDrawerOpen(true)}
-            className="self-start md:self-auto border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg"
-          >
-            <Eye className="h-3.5 w-3.5 mr-1.5" />
-            View All ({abandonedStats.total})
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <input aria-label="Abandoned checkout start date" type="date" value={abandonedFrom} onChange={(e) => setAbandonedFrom(e.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700" />
+            <span className="text-xs text-slate-400">to</span>
+            <input aria-label="Abandoned checkout end date" type="date" value={abandonedTo} onChange={(e) => setAbandonedTo(e.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700" />
+            <Button variant="secondary" size="sm" onClick={applyAbandonedRange} disabled={isLoadingAbandoned}>Apply</Button>
+            <Button variant="outline" size="sm" onClick={exportAbandonedPdf} disabled={isExportingAbandoned || isLoadingAbandoned} className="border-white/40 bg-white/30 text-slate-900 rounded-lg">
+              <Download className="h-3.5 w-3.5 mr-1.5" />{isExportingAbandoned ? "Exporting..." : "Export PDF"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setAbandonedDrawerOpen(true)} className="border-white/40 bg-white/30 text-slate-900 rounded-lg">
+              <Eye className="h-3.5 w-3.5 mr-1.5" />View All ({abandonedStats.total})
+            </Button>
+          </div>
         </div>
 
         {/* Abandoned Stats Row */}
@@ -1133,7 +1193,7 @@ export default function AdminDashboard() {
               All Abandoned Checkouts
             </DialogTitle>
             <p className="text-sm text-slate-600">
-              {abandonedStats.total} abandoned — ${abandonedStats.potentialRevenue.toLocaleString()} potential revenue lost
+              {abandonedStats.total} abandoned from {abandonedRange.from} to {abandonedRange.to} — ${abandonedStats.potentialRevenue.toLocaleString()} potential revenue lost
             </p>
           </DialogHeader>
 
@@ -1157,7 +1217,7 @@ export default function AdminDashboard() {
             {abandonedCheckouts.length === 0 ? (
               <div className="text-center py-12">
                 <ShoppingBag className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-500 text-sm">No abandoned checkouts found in the last 30 days</p>
+                <p className="text-slate-500 text-sm">No abandoned checkouts found in the selected date range</p>
               </div>
             ) : (
               abandonedCheckouts.map((item, i) => {

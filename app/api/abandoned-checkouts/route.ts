@@ -19,18 +19,28 @@ export async function GET(request: NextRequest) {
 
     const { db } = await connectDB()
     
-    // Get abandoned checkouts from the last 30 days
-    const thirtyDaysAgo = new Date()
-    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30)
+    const { searchParams } = new URL(request.url)
+    const fromParam = searchParams.get("from")
+    const toParam = searchParams.get("to")
+    const now = new Date()
+    const defaultFrom = new Date(now)
+    defaultFrom.setHours(0, 0, 0, 0)
+    defaultFrom.setDate(defaultFrom.getDate() - 9)
+    const from = fromParam ? new Date(`${fromParam}T00:00:00.000Z`) : defaultFrom
+    const to = toParam ? new Date(`${toParam}T00:00:00.000Z`) : now
+    const toExclusive = toParam ? new Date(to.getTime() + 24 * 60 * 60 * 1000) : now
+
+    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from > to) {
+      return NextResponse.json({ error: "Invalid date range" }, { status: 400 })
+    }
 
     const allAbandoned = await db
       .collection("abandoned_checkouts")
       .find({
-        createdAt: { $gte: thirtyDaysAgo },
+        createdAt: { $gte: from, $lt: toExclusive },
         recovered: { $ne: true }
       })
       .sort({ updatedAt: -1 })
-      .limit(100)
       .toArray()
 
     // Filter out abandoned checkouts for users who now have completed orders
