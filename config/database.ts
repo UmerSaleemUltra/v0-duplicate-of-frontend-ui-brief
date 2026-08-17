@@ -117,6 +117,16 @@ export async function ensureIndexes(): Promise<void> {
         { email: 1 },
         { background: true, name: "idx_abandoned_checkouts_email" }
       ),
+      // Abandoned checkouts: sessionId identity lookup for anonymous early steps
+      db.collection("abandoned_checkouts").createIndex(
+        { sessionId: 1 },
+        { background: true, name: "idx_abandoned_checkouts_session" }
+      ),
+      // Abandoned checkouts: phone identity lookup before an email is entered
+      db.collection("abandoned_checkouts").createIndex(
+        { phoneNormalized: 1 },
+        { background: true, sparse: true, name: "idx_abandoned_checkouts_phone" }
+      ),
       // Abandoned checkouts: auto-expiration after 90 days
       db.collection("abandoned_checkouts").createIndex(
         { createdAt: 1 },

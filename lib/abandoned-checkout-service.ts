@@ -7,6 +7,7 @@ export interface AbandonedCheckout {
   email: string | null
   name: string | null
   phone: string | null
+  phoneNormalized: string | null
   lastStep: number
   state: string | null
   packageType: string | null
@@ -20,9 +21,17 @@ export interface AbandonedCheckout {
 }
 
 /**
- * Deduplicates abandoned checkout by email + sessionId.
- * If record exists, updates it; otherwise creates new record.
- * This prevents duplicate entries for the same user/session.
+ * Records an abandoned checkout for a user, always updating a single document
+ * per person instead of creating a new one on every visit or step.
+ *
+ * Identity is resolved in priority order:
+ *   1. email (normalized)  — strongest, survives new browser sessions
+ *   2. phone (digits only) — fallback before an email is entered
+ *   3. sessionId           — fallback for anonymous early steps
+ *
+ * Fields are merged progressively: a later visit that fills more steps adds to
+ * the existing document, and empty/missing values never overwrite data that was
+ * already captured on an earlier visit.
  */
 export async function deduplicateAbandonedCheckout(
   db: Db,
@@ -41,36 +50,75 @@ export async function deduplicateAbandonedCheckout(
   }
 ): Promise<void> {
   const now = new Date()
-  // Normalize email to lowercase for consistency
-  const normalizedEmail = email ? email.trim().toLowerCase() : null
+  const collection = db.collection("abandoned_checkouts")
 
-  const checkoutData = {
+  // Normalize identifiers for reliable matching
+  const normalizedEmail = email ? email.trim().toLowerCase() : null
+  const normalizedPhone = data.phone ? data.phone.replace(/\D/g, "") : null
+
+  // Resolve the same user across visits/sessions, preferring the strongest id.
+  let existing = null
+  if (normalizedEmail) {
+    existing = await collection.findOne({ email: normalizedEmail })
+  }
+  if (!existing && normalizedPhone) {
+    existing = await collection.findOne({ phoneNormalized: normalizedPhone })
+  }
+  if (!existing) {
+    existing = await collection.findOne({ sessionId })
+  }
+
+  // Progressive merge: only write values that carry real information so a later
+  // step never wipes details captured earlier.
+  const setFields: Record<string, unknown> = {
     sessionId,
-    email: normalizedEmail,
-    name: data.name || null,
-    phone: data.phone || null,
-    lastStep: data.lastStep ?? 0,
-    state: data.state || null,
-    packageType: data.packageType || null,
-    businessName: data.businessName || null,
-    estimatedTotal: data.estimatedTotal || 0,
-    packagePrice: data.packagePrice || 0,
-    addons: data.addons || [],
     recovered: false,
     updatedAt: now,
   }
+  if (normalizedEmail) setFields.email = normalizedEmail
+  if (data.name) setFields.name = data.name
+  if (data.phone) {
+    setFields.phone = data.phone
+    setFields.phoneNormalized = normalizedPhone
+  }
+  if (data.state) setFields.state = data.state
+  if (data.packageType) setFields.packageType = data.packageType
+  if (data.businessName) setFields.businessName = data.businessName
+  if (data.estimatedTotal) setFields.estimatedTotal = data.estimatedTotal
+  if (data.packagePrice) setFields.packagePrice = data.packagePrice
+  if (data.addons && data.addons.length > 0) setFields.addons = data.addons
+  // Keep the furthest step the user reached rather than regressing on re-entry.
+  if (typeof data.lastStep === "number") {
+    setFields.lastStep = Math.max(existing?.lastStep ?? 0, data.lastStep)
+  }
 
-  // Upsert by email + sessionId combination
-  await db.collection("abandoned_checkouts").updateOne(
-    { email: normalizedEmail, sessionId },
-    {
-      $set: checkoutData,
-      $setOnInsert: { createdAt: now },
-    },
-    { upsert: true }
-  )
-
-  console.log("[v0] Abandoned checkout deduplicated:", { email: normalizedEmail, sessionId })
+  if (existing) {
+    await collection.updateOne({ _id: existing._id }, { $set: setFields })
+    console.log("[v0] Abandoned checkout updated existing document:", {
+      id: String(existing._id),
+      email: normalizedEmail,
+      sessionId,
+    })
+  } else {
+    await collection.insertOne({
+      sessionId,
+      email: normalizedEmail,
+      name: data.name || null,
+      phone: data.phone || null,
+      phoneNormalized: normalizedPhone,
+      lastStep: data.lastStep ?? 0,
+      state: data.state || null,
+      packageType: data.packageType || null,
+      businessName: data.businessName || null,
+      estimatedTotal: data.estimatedTotal || 0,
+      packagePrice: data.packagePrice || 0,
+      addons: data.addons || [],
+      recovered: false,
+      createdAt: now,
+      updatedAt: now,
+    })
+    console.log("[v0] Abandoned checkout created new document:", { email: normalizedEmail, sessionId })
+  }
 }
 
 /**
@@ -85,7 +133,7 @@ export async function getAbandonedCheckoutByEmail(
   const checkout = await db.collection("abandoned_checkouts").findOne({
     email: { $regex: `^${normalizedEmail}$`, $options: "i" }
   })
-  return (checkout as AbandonedCheckout) || null
+  return (checkout as unknown as AbandonedCheckout) || null
 }
 
 /**
