@@ -113,35 +113,23 @@ export default function AdminDashboard() {
       }
 
       try {
-        console.log(" Admin Dashboard: Starting data load...")
         const token = authService.getToken()
-        if (!token) {
-          console.log(" Admin Dashboard: No token found")
-          return
-        }
+        if (!token) return
 
-        const timestamp = Date.now()
-        const [usersResponse, companiesResponse] = await Promise.all([
+        const [usersResponse, companiesResponse]: [any, any] = await Promise.all([
           ApiClient.users.getAll(token),
-          fetch(`/api/companies?_t=${timestamp}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Cache-Control": "no-cache, no-store, must-revalidate",
-            },
+          fetch("/api/companies", {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
           }).then((res) => res.json()),
         ])
 
         const allUsers = usersResponse.data || []
         const allCompanies = companiesResponse.data || companiesResponse || []
 
-        console.log(" Admin Dashboard: Fetched data", {
-          usersCount: allUsers.length,
-          companiesCount: allCompanies.length,
-        })
-
+        const usersById = new Map<string, any>(allUsers.map((user: any) => [user.id, user] as [string, any]))
         const allOrders = allCompanies.flatMap((company: any) => {
           const companyOrders = company.orders || []
-          console.log(` Company ${company.name}: ${companyOrders.length} orders`)
 
           return companyOrders.map((order: any) => ({
             ...order,
@@ -157,17 +145,12 @@ export default function AdminDashboard() {
           }))
         })
 
-        console.log(" Admin Dashboard: Total orders extracted:", allOrders.length)
-
         const sortedOrders = allOrders
           .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .map((order: any) => {
-            const user = allUsers.find((u: any) => u.id === order.userId)
-            return {
-              ...order,
-              userName: user?.name || "Unknown Customer",
-            }
-          })
+          .map((order: any) => ({
+            ...order,
+            userName: usersById.get(order.userId)?.name || "Unknown Customer",
+          }))
 
         setAllOrders(sortedOrders)
         setOrders(sortedOrders.slice(0, 5))
@@ -184,7 +167,6 @@ export default function AdminDashboard() {
           })
           .reduce((sum: number, order: any) => {
             const orderAmount = order.pricing?.total || order.amount || order.total || 0
-            console.log(` Order ${order.id}: amount=${orderAmount}`)
             return sum + orderAmount
           }, 0)
 
@@ -319,13 +301,15 @@ export default function AdminDashboard() {
         })
         setHeatmapData(heatmap)
 
-        // Fetch abandoned checkouts
-        try {
+        // Keep the dashboard interactive while the secondary abandoned-checkout section loads.
+        void (async () => {
           setIsLoadingAbandoned(true)
-          const abandonedRes = await fetch(`/api/abandoned-checkouts?from=${abandonedRange.from}&to=${abandonedRange.to}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          })
-          if (abandonedRes.ok) {
+          try {
+            const abandonedRes = await fetch(`/api/abandoned-checkouts?from=${abandonedRange.from}&to=${abandonedRange.to}`, {
+              headers: { Authorization: `Bearer ${token}` },
+              cache: "no-store",
+            })
+            if (!abandonedRes.ok) throw new Error("Abandoned checkout request failed")
             const abandonedJson = await abandonedRes.json()
             if (abandonedJson.success) {
               setAbandonedCheckouts(abandonedJson.data || [])
@@ -333,25 +317,15 @@ export default function AdminDashboard() {
                 total: 0, last24h: 0, last7Days: 0, potentialRevenue: 0, stepBreakdown: {}
               })
             }
+          } catch {
+            toast.error("Unable to load abandoned checkouts")
+          } finally {
+            setIsLoadingAbandoned(false)
           }
-        } catch (e) {
-          toast.error("Unable to load abandoned checkouts")
-        } finally {
-          setIsLoadingAbandoned(false)
-        }
-
-        console.log(" Admin Dashboard: State breakdown set:", breakdown.length)
+        })()
 
         setDataLoaded(true)
-
-        const loadTime = Date.now() - startTime
-        console.log(` Admin Dashboard: Data loaded in ${loadTime}ms`)
-
-        if (loadTime < 100) {
-          setIsLoadingData(false)
-        } else {
-          setTimeout(() => setIsLoadingData(false), 300)
-        }
+        setIsLoadingData(false)
       } catch (error) {
         console.error(" Admin Dashboard: Error loading data", error)
         if (error instanceof Error && error.message.includes("Unauthorized")) {
