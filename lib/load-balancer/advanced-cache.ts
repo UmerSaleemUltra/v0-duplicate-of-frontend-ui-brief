@@ -35,24 +35,20 @@ class AdvancedCache {
     this.initRedis()
   }
 
-  private async initRedis() {
+  private initRedis() {
     if (this.initialized) return
 
-    if (
-      this.config.useRedis &&
-      process.env.UPSTASH_REDIS_REST_URL &&
-      process.env.UPSTASH_REDIS_REST_TOKEN
-    ) {
+    const url = process.env.KV_REST_API_URL || process.env.UPSTASH_REDIS_REST_URL
+    const token = process.env.KV_REST_API_TOKEN || process.env.UPSTASH_REDIS_REST_TOKEN
+
+    if (this.config.useRedis && url && token) {
       try {
-        this.redis = new Redis({
-          url: process.env.UPSTASH_REDIS_REST_URL,
-          token: process.env.UPSTASH_REDIS_REST_TOKEN,
-        })
-        this.initialized = true
+        this.redis = new Redis({ url, token })
       } catch (error) {
         console.error('[AdvancedCache] Failed to initialize Redis:', error)
       }
     }
+    this.initialized = true
   }
 
   async get<T>(key: string): Promise<T | null> {
@@ -71,11 +67,12 @@ class AdvancedCache {
       try {
         const data = await this.redis.get(key)
         if (data) {
-          const entry = JSON.parse(data as string) as CacheEntry<T>
-          
+          const entry = (typeof data === "string" ? JSON.parse(data) : data) as CacheEntry<T>
+          if (!entry || typeof entry !== "object" || !("data" in entry)) return null
+
           // Update local cache
           this.addToLocalCache(key, entry)
-          
+
           return entry.data
         }
       } catch (error) {

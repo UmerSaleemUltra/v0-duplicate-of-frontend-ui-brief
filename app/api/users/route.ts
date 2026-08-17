@@ -4,6 +4,7 @@ import { verifyToken } from "@/lib/jwt"
 import bcrypt from "bcryptjs"
 import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 import { broadcast } from "@/lib/realtime/broadcaster"
+import { advancedCache } from "@/lib/load-balancer/advanced-cache"
 
 export async function GET(req: NextRequest) {
   try {
@@ -19,10 +20,17 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const { db } = await connectDB()
     const { searchParams } = new URL(req.url)
     const includeCompanies = searchParams.get("includeCompanies") === "true"
+    const cacheKey = `admin:users:${includeCompanies ? "with-companies" : "basic"}`
+    const cached = await advancedCache.get<any>(cacheKey)
+    if (cached) {
+      const response = NextResponse.json(cached)
+      addSecurityHeaders(response)
+      return response
+    }
 
+    const { db } = await connectDB()
     const users = await db
       .collection("users")
       .find({})
@@ -79,6 +87,7 @@ export async function GET(req: NextRequest) {
       }))
     }
 
+    await advancedCache.set(cacheKey, result, { ttl: 15_000, tags: ["admin-dashboard"] })
     const response = NextResponse.json(result)
     addSecurityHeaders(response)
     return response
