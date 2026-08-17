@@ -5,6 +5,7 @@ import "./globals.css"
 import { AuthProvider } from "@/components/auth/auth-provider"
 import { CompanyProvider } from "@/components/client/company-provider"
 import { Toaster } from "@/components/ui/toaster"
+import { ThirdPartyErrorGuard } from "@/components/third-party-error-guard"
 
 const unbounded = Unbounded({
   subsets: ["latin"],
@@ -367,6 +368,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             style={{ display: "none", visibility: "hidden" }}
           />
         </noscript>
+
+        <ThirdPartyErrorGuard />
 
         <AuthProvider>
           <CompanyProvider>{children}</CompanyProvider>
