@@ -6,6 +6,7 @@ import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 import { ObjectId } from "mongodb"
 import { sendEmail, emailTemplates } from "@/config/email"
 import { removeAbandonedCheckout } from "@/lib/abandoned-checkout-service"
+import { advancedCache } from "@/lib/load-balancer/advanced-cache"
 
 export async function GET(req: NextRequest) {
   try {
@@ -21,11 +22,15 @@ export async function GET(req: NextRequest) {
       return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
     }
 
-    const { db } = await connectDB()
-
     const { searchParams } = new URL(req.url)
     const userIdParam = searchParams.get("userId")
+    const cacheKey = `admin:companies:${decoded.role}:${userIdParam || "all"}`
+    const cached = await advancedCache.get<any>(cacheKey)
+    if (cached) {
+      return addSecurityHeaders(NextResponse.json(cached))
+    }
 
+    const { db } = await connectDB()
     let query: any = decoded.role === "admin" ? {} : { userId: decoded.userId }
 
     // If userId is provided in query, filter by it (admin only)
@@ -131,8 +136,9 @@ export async function GET(req: NextRequest) {
       }),
     }
 
+    await advancedCache.set(cacheKey, result, { ttl: 15_000, tags: ["admin-dashboard"] })
     const response = NextResponse.json(result)
-    response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60")
+    response.headers.set("Cache-Control", "private, max-age=15, stale-while-revalidate=30")
     return addSecurityHeaders(response)
   } catch (error) {
     console.error(" GET /api/companies error:", error)

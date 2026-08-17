@@ -26,6 +26,8 @@ import {
   TrendingDown,
   Eye,
   Share2,
+  FileText,
+  Download,
 } from "lucide-react"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
@@ -71,6 +73,15 @@ export default function AdminDashboard() {
     stepBreakdown: {}
   })
   const [abandonedDrawerOpen, setAbandonedDrawerOpen] = useState(false)
+  const getDateInput = (date: Date) => date.toISOString().slice(0, 10)
+  const initialRangeEnd = new Date()
+  const initialRangeStart = new Date()
+  initialRangeStart.setDate(initialRangeStart.getDate() - 9)
+  const [abandonedFrom, setAbandonedFrom] = useState(getDateInput(initialRangeStart))
+  const [abandonedTo, setAbandonedTo] = useState(getDateInput(initialRangeEnd))
+  const [abandonedRange, setAbandonedRange] = useState({ from: getDateInput(initialRangeStart), to: getDateInput(initialRangeEnd) })
+  const [isExportingAbandoned, setIsExportingAbandoned] = useState(false)
+  const [isLoadingAbandoned, setIsLoadingAbandoned] = useState(false)
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -102,35 +113,31 @@ export default function AdminDashboard() {
       }
 
       try {
-        console.log(" Admin Dashboard: Starting data load...")
         const token = authService.getToken()
-        if (!token) {
-          console.log(" Admin Dashboard: No token found")
-          return
-        }
+        if (!token) return
 
-        const timestamp = Date.now()
-        const [usersResponse, companiesResponse] = await Promise.all([
+        const abandonedQuery = abandonedRange.from && abandonedRange.to
+          ? `?from=${abandonedRange.from}&to=${abandonedRange.to}`
+          : "?all=true"
+        setIsLoadingAbandoned(true)
+        const [usersResponse, companiesResponse, abandonedResponse]: [any, any, any] = await Promise.all([
           ApiClient.users.getAll(token),
-          fetch(`/api/companies?_t=${timestamp}`, {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Cache-Control": "no-cache, no-store, must-revalidate",
-            },
+          fetch("/api/companies", {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+          }).then((res) => res.json()),
+          fetch(`/api/abandoned-checkouts${abandonedQuery}`, {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
           }).then((res) => res.json()),
         ])
 
         const allUsers = usersResponse.data || []
         const allCompanies = companiesResponse.data || companiesResponse || []
 
-        console.log(" Admin Dashboard: Fetched data", {
-          usersCount: allUsers.length,
-          companiesCount: allCompanies.length,
-        })
-
+        const usersById = new Map<string, any>(allUsers.map((user: any) => [user.id, user] as [string, any]))
         const allOrders = allCompanies.flatMap((company: any) => {
           const companyOrders = company.orders || []
-          console.log(` Company ${company.name}: ${companyOrders.length} orders`)
 
           return companyOrders.map((order: any) => ({
             ...order,
@@ -146,17 +153,12 @@ export default function AdminDashboard() {
           }))
         })
 
-        console.log(" Admin Dashboard: Total orders extracted:", allOrders.length)
-
         const sortedOrders = allOrders
           .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-          .map((order: any) => {
-            const user = allUsers.find((u: any) => u.id === order.userId)
-            return {
-              ...order,
-              userName: user?.name || "Unknown Customer",
-            }
-          })
+          .map((order: any) => ({
+            ...order,
+            userName: usersById.get(order.userId)?.name || "Unknown Customer",
+          }))
 
         setAllOrders(sortedOrders)
         setOrders(sortedOrders.slice(0, 5))
@@ -173,7 +175,6 @@ export default function AdminDashboard() {
           })
           .reduce((sum: number, order: any) => {
             const orderAmount = order.pricing?.total || order.amount || order.total || 0
-            console.log(` Order ${order.id}: amount=${orderAmount}`)
             return sum + orderAmount
           }, 0)
 
@@ -308,37 +309,17 @@ export default function AdminDashboard() {
         })
         setHeatmapData(heatmap)
 
-        // Fetch abandoned checkouts
-        try {
-          const abandonedRes = await fetch("/api/abandoned-checkouts", {
-            headers: { Authorization: `Bearer ${token}` },
+        if (abandonedResponse.success) {
+          setAbandonedCheckouts(abandonedResponse.data || [])
+          setAbandonedStats(abandonedResponse.stats || {
+            total: 0, last24h: 0, last7Days: 0, potentialRevenue: 0, stepBreakdown: {}
           })
-          if (abandonedRes.ok) {
-            const abandonedJson = await abandonedRes.json()
-            if (abandonedJson.success) {
-              setAbandonedCheckouts(abandonedJson.data || [])
-              setAbandonedStats(abandonedJson.stats || {
-                total: 0, last24h: 0, last7Days: 0, potentialRevenue: 0, stepBreakdown: {}
-              })
-            }
-          }
-        } catch (e) {
-          // silent fail
         }
-
-        console.log(" Admin Dashboard: State breakdown set:", breakdown.length)
-
+        setIsLoadingAbandoned(false)
         setDataLoaded(true)
-
-        const loadTime = Date.now() - startTime
-        console.log(` Admin Dashboard: Data loaded in ${loadTime}ms`)
-
-        if (loadTime < 100) {
-          setIsLoadingData(false)
-        } else {
-          setTimeout(() => setIsLoadingData(false), 300)
-        }
+        setIsLoadingData(false)
       } catch (error) {
+        setIsLoadingAbandoned(false)
         console.error(" Admin Dashboard: Error loading data", error)
         if (error instanceof Error && error.message.includes("Unauthorized")) {
           authService.logout()
@@ -351,7 +332,56 @@ export default function AdminDashboard() {
     }
 
     loadData()
-  }, [isAuthenticating, router, dataLoaded, selectedYear])
+  }, [isAuthenticating, router, dataLoaded, selectedYear, abandonedRange])
+
+  const applyAbandonedRange = () => {
+    if (!abandonedFrom || !abandonedTo || abandonedFrom > abandonedTo) {
+      toast.error("Choose a valid date range")
+      return
+    }
+    setAbandonedRange({ from: abandonedFrom, to: abandonedTo })
+  }
+
+  const clearAbandonedRange = () => {
+    setAbandonedFrom("")
+    setAbandonedTo("")
+    setAbandonedRange({ from: "", to: "" })
+  }
+
+  const exportAbandonedPdf = async () => {
+    if (isExportingAbandoned) return
+    setIsExportingAbandoned(true)
+    try {
+      const { jsPDF } = await import("jspdf")
+      const doc = new jsPDF({ orientation: "landscape" })
+      const margin = 12
+      let y = 16
+      const line = (text: string, x = margin, size = 9) => { doc.setFontSize(size); doc.text(text, x, y); y += 5 }
+      doc.setTextColor(136, 0, 0)
+      line("BuzzFiling — Abandoned Checkout Report", margin, 16)
+      doc.setTextColor(40, 40, 40)
+      line(`Date range: ${abandonedRange.from} to ${abandonedRange.to}`)
+      line(`Total: ${abandonedStats.total}   Potential revenue: $${abandonedStats.potentialRevenue.toLocaleString()}`, margin, 10)
+      y += 4
+      const headers = ["Name / Business", "Email", "Phone", "State", "Package", "Step", "Est. Total", "Created", "Updated"]
+      const xs = [margin, 54, 100, 145, 171, 205, 235, 262, 282]
+      doc.setFillColor(136, 0, 0); doc.rect(margin, y - 4, 273, 7, "F"); doc.setTextColor(255, 255, 255)
+      headers.forEach((header, i) => doc.text(header, xs[i], y))
+      y += 8; doc.setTextColor(40, 40, 40); doc.setFontSize(7)
+      const stepNames = ["Account", "State & Package", "Business Info", "Owner Info", "Review", "Payment"]
+      abandonedCheckouts.forEach((item) => {
+        if (y > 190) { doc.addPage(); y = 16 }
+        const values = [item.name || item.businessName || "Anonymous", item.email || "—", item.phone || "—", item.state || "—", item.packageType || "—", stepNames[item.lastStep] || "Unknown", `$${Number(item.estimatedTotal || 0).toLocaleString()}`, new Date(item.createdAt).toLocaleDateString(), new Date(item.updatedAt || item.createdAt).toLocaleDateString()]
+        values.forEach((value, i) => doc.text(String(value).slice(0, i === 0 ? 24 : 20), xs[i], y))
+        y += 6
+      })
+      doc.save(`buzzfiling-abandoned-checkouts-${abandonedRange.from}-to-${abandonedRange.to}.pdf`)
+      toast.success("Abandoned checkout PDF downloaded")
+    } catch (error) {
+      console.error("[v0] Failed to export abandoned checkouts:", error)
+      toast.error("Unable to export PDF")
+    } finally { setIsExportingAbandoned(false) }
+  }
 
   if (isAuthenticating || (isLoadingData && !dataLoaded)) {
     return (
@@ -988,17 +1018,23 @@ export default function AdminDashboard() {
               </div>
               <h3 className="text-lg md:text-xl font-bold text-slate-900">Abandoned Checkouts</h3>
             </div>
-            <p className="text-xs md:text-sm text-slate-600 mt-1 ml-9">Users who started but did not complete checkout (last 30 days)</p>
+            <p className="text-xs md:text-sm text-slate-600 mt-1 ml-9">Users who started but did not complete checkout ({abandonedRange.from} to {abandonedRange.to})</p>
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setAbandonedDrawerOpen(true)}
-            className="self-start md:self-auto border-white/40 bg-white/30 hover:bg-white/50 text-slate-900 rounded-lg"
-          >
-            <Eye className="h-3.5 w-3.5 mr-1.5" />
-            View All ({abandonedStats.total})
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            <input aria-label="Abandoned checkout start date" type="date" value={abandonedFrom} onChange={(e) => setAbandonedFrom(e.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700" />
+            <span className="text-xs text-slate-400">to</span>
+            <input aria-label="Abandoned checkout end date" type="date" value={abandonedTo} onChange={(e) => setAbandonedTo(e.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700" />
+            <Button variant="secondary" size="sm" onClick={applyAbandonedRange} disabled={isLoadingAbandoned}>Apply</Button>
+            <Button variant="ghost" size="sm" onClick={clearAbandonedRange} disabled={isLoadingAbandoned || (!abandonedFrom && !abandonedTo)}>
+              Clear dates
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportAbandonedPdf} disabled={isExportingAbandoned || isLoadingAbandoned} className="border-white/40 bg-white/30 text-slate-900 rounded-lg">
+              <Download className="h-3.5 w-3.5 mr-1.5" />{isExportingAbandoned ? "Exporting..." : "Export PDF"}
+            </Button>
+            <Button variant="outline" size="sm" onClick={() => setAbandonedDrawerOpen(true)} className="border-white/40 bg-white/30 text-slate-900 rounded-lg">
+              <Eye className="h-3.5 w-3.5 mr-1.5" />View All ({abandonedStats.total})
+            </Button>
+          </div>
         </div>
 
         {/* Abandoned Stats Row */}
@@ -1133,7 +1169,7 @@ export default function AdminDashboard() {
               All Abandoned Checkouts
             </DialogTitle>
             <p className="text-sm text-slate-600">
-              {abandonedStats.total} abandoned — ${abandonedStats.potentialRevenue.toLocaleString()} potential revenue lost
+              {abandonedStats.total} abandoned from {abandonedRange.from} to {abandonedRange.to} — ${abandonedStats.potentialRevenue.toLocaleString()} potential revenue lost
             </p>
           </DialogHeader>
 
@@ -1157,7 +1193,7 @@ export default function AdminDashboard() {
             {abandonedCheckouts.length === 0 ? (
               <div className="text-center py-12">
                 <ShoppingBag className="h-10 w-10 text-slate-300 mx-auto mb-3" />
-                <p className="text-slate-500 text-sm">No abandoned checkouts found in the last 30 days</p>
+                <p className="text-slate-500 text-sm">No abandoned checkouts found in the selected date range</p>
               </div>
             ) : (
               abandonedCheckouts.map((item, i) => {
