@@ -116,9 +116,17 @@ export default function AdminDashboard() {
         const token = authService.getToken()
         if (!token) return
 
-        const [usersResponse, companiesResponse]: [any, any] = await Promise.all([
+        const abandonedQuery = abandonedRange.from && abandonedRange.to
+          ? `?from=${abandonedRange.from}&to=${abandonedRange.to}`
+          : "?all=true"
+        setIsLoadingAbandoned(true)
+        const [usersResponse, companiesResponse, abandonedResponse]: [any, any, any] = await Promise.all([
           ApiClient.users.getAll(token),
           fetch("/api/companies", {
+            headers: { Authorization: `Bearer ${token}` },
+            cache: "no-store",
+          }).then((res) => res.json()),
+          fetch(`/api/abandoned-checkouts${abandonedQuery}`, {
             headers: { Authorization: `Bearer ${token}` },
             cache: "no-store",
           }).then((res) => res.json()),
@@ -301,32 +309,17 @@ export default function AdminDashboard() {
         })
         setHeatmapData(heatmap)
 
-        // Keep the dashboard interactive while the secondary abandoned-checkout section loads.
-        void (async () => {
-          setIsLoadingAbandoned(true)
-          try {
-            const abandonedRes = await fetch(`/api/abandoned-checkouts?from=${abandonedRange.from}&to=${abandonedRange.to}`, {
-              headers: { Authorization: `Bearer ${token}` },
-              cache: "no-store",
-            })
-            if (!abandonedRes.ok) throw new Error("Abandoned checkout request failed")
-            const abandonedJson = await abandonedRes.json()
-            if (abandonedJson.success) {
-              setAbandonedCheckouts(abandonedJson.data || [])
-              setAbandonedStats(abandonedJson.stats || {
-                total: 0, last24h: 0, last7Days: 0, potentialRevenue: 0, stepBreakdown: {}
-              })
-            }
-          } catch {
-            toast.error("Unable to load abandoned checkouts")
-          } finally {
-            setIsLoadingAbandoned(false)
-          }
-        })()
-
+        if (abandonedResponse.success) {
+          setAbandonedCheckouts(abandonedResponse.data || [])
+          setAbandonedStats(abandonedResponse.stats || {
+            total: 0, last24h: 0, last7Days: 0, potentialRevenue: 0, stepBreakdown: {}
+          })
+        }
+        setIsLoadingAbandoned(false)
         setDataLoaded(true)
         setIsLoadingData(false)
       } catch (error) {
+        setIsLoadingAbandoned(false)
         console.error(" Admin Dashboard: Error loading data", error)
         if (error instanceof Error && error.message.includes("Unauthorized")) {
           authService.logout()
@@ -347,6 +340,12 @@ export default function AdminDashboard() {
       return
     }
     setAbandonedRange({ from: abandonedFrom, to: abandonedTo })
+  }
+
+  const clearAbandonedRange = () => {
+    setAbandonedFrom("")
+    setAbandonedTo("")
+    setAbandonedRange({ from: "", to: "" })
   }
 
   const exportAbandonedPdf = async () => {
@@ -1026,6 +1025,9 @@ export default function AdminDashboard() {
             <span className="text-xs text-slate-400">to</span>
             <input aria-label="Abandoned checkout end date" type="date" value={abandonedTo} onChange={(e) => setAbandonedTo(e.target.value)} className="h-9 rounded-lg border border-slate-200 bg-white px-2 text-xs text-slate-700" />
             <Button variant="secondary" size="sm" onClick={applyAbandonedRange} disabled={isLoadingAbandoned}>Apply</Button>
+            <Button variant="ghost" size="sm" onClick={clearAbandonedRange} disabled={isLoadingAbandoned || (!abandonedFrom && !abandonedTo)}>
+              Clear dates
+            </Button>
             <Button variant="outline" size="sm" onClick={exportAbandonedPdf} disabled={isExportingAbandoned || isLoadingAbandoned} className="border-white/40 bg-white/30 text-slate-900 rounded-lg">
               <Download className="h-3.5 w-3.5 mr-1.5" />{isExportingAbandoned ? "Exporting..." : "Export PDF"}
             </Button>

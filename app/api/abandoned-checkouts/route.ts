@@ -26,20 +26,21 @@ export async function GET(request: NextRequest) {
     const defaultFrom = new Date(now)
     defaultFrom.setHours(0, 0, 0, 0)
     defaultFrom.setDate(defaultFrom.getDate() - 9)
+    const showAll = searchParams.get("all") === "true"
     const from = fromParam ? new Date(`${fromParam}T00:00:00.000Z`) : defaultFrom
     const to = toParam ? new Date(`${toParam}T00:00:00.000Z`) : now
     const toExclusive = toParam ? new Date(to.getTime() + 24 * 60 * 60 * 1000) : now
 
-    if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from > to) {
+    if (!showAll && (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime()) || from > to)) {
       return NextResponse.json({ error: "Invalid date range" }, { status: 400 })
     }
 
+    const query: Record<string, unknown> = { recovered: { $ne: true } }
+    if (!showAll) query.createdAt = { $gte: from, $lt: toExclusive }
+
     const allAbandoned = await db
       .collection("abandoned_checkouts")
-      .find({
-        createdAt: { $gte: from, $lt: toExclusive },
-        recovered: { $ne: true }
-      })
+      .find(query)
       .sort({ updatedAt: -1 })
       .toArray()
 

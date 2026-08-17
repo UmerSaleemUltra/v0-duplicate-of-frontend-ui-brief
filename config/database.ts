@@ -52,7 +52,7 @@ export const connectDB = connectToDatabase
  * Creates compound indexes on the hottest query paths so MongoDB uses
  * index scans instead of full collection scans — typically 10-100x faster
  * on collections with >1000 documents.
- */
+ */ers
 export async function ensureIndexes(): Promise<void> {
   try {
     const db = await getDatabase()
