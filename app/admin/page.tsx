@@ -29,43 +29,51 @@ import {
   FileText,
   Download,
 } from "lucide-react"
-import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
+import {
+  getDashboardSnapshot,
+  setDashboardSnapshot,
+  fetchDashboardData,
+  buildAbandonedQuery,
+  type DashboardSnapshot,
+} from "@/lib/admin-dashboard-cache"
 import { toast } from "react-toastify"
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip as RechartsTooltip, ResponsiveContainer, AreaChart, Area, Cell, PieChart, Pie, Legend } from "recharts"
 
 export default function AdminDashboard() {
   const router = useRouter()
+  // Instant paint: hydrate from the last cached dashboard snapshot if present.
+  const cachedSnapshot = getDashboardSnapshot()
   const [isAuthenticating, setIsAuthenticating] = useState(true)
   const [isLoadingData, setIsLoadingData] = useState(false)
-  const [dataLoaded, setDataLoaded] = useState(false)
-  const [orders, setOrders] = useState<any[]>([])
-  const [stats, setStats] = useState({
+  const [dataLoaded, setDataLoaded] = useState(!!cachedSnapshot)
+  const [orders, setOrders] = useState<any[]>(cachedSnapshot?.orders ?? [])
+  const [stats, setStats] = useState(cachedSnapshot?.stats ?? {
     totalRevenue: 0,
     monthlyRevenue: 0,
     totalOrders: 0,
     activeCustomers: 0,
   })
-  const [stateBreakdown, setStateBreakdown] = useState<any[]>([])
-  const [monthlyData, setMonthlyData] = useState<any[]>([])
+  const [stateBreakdown, setStateBreakdown] = useState<any[]>(cachedSnapshot?.stateBreakdown ?? [])
+  const [monthlyData, setMonthlyData] = useState<any[]>(cachedSnapshot?.monthlyData ?? [])
   const [selectedYear] = useState(2026) // Locked to 2026
-  const [chartData, setChartData] = useState<any[]>([])
+  const [chartData, setChartData] = useState<any[]>(cachedSnapshot?.chartData ?? [])
   const [statesDrawerOpen, setStatesDrawerOpen] = useState(false)
   const [ordersDrawerOpen, setOrdersDrawerOpen] = useState(false)
   const [citiesDrawerOpen, setCitiesDrawerOpen] = useState(false)
-  const [allOrders, setAllOrders] = useState<any[]>([])
-  const [packageData, setPackageData] = useState<any[]>([])
-  const [heatmapData, setHeatmapData] = useState<any[]>([])
-  const [cityBreakdown, setCityBreakdown] = useState<{ city: string; country: string; count: number; percentage: number }[]>([])
-  const [abandonedCheckouts, setAbandonedCheckouts] = useState<any[]>([])
+  const [allOrders, setAllOrders] = useState<any[]>(cachedSnapshot?.allOrders ?? [])
+  const [packageData, setPackageData] = useState<any[]>(cachedSnapshot?.packageData ?? [])
+  const [heatmapData, setHeatmapData] = useState<any[]>(cachedSnapshot?.heatmapData ?? [])
+  const [cityBreakdown, setCityBreakdown] = useState<{ city: string; country: string; count: number; percentage: number }[]>(cachedSnapshot?.cityBreakdown ?? [])
+  const [abandonedCheckouts, setAbandonedCheckouts] = useState<any[]>(cachedSnapshot?.abandonedCheckouts ?? [])
   const [abandonedStats, setAbandonedStats] = useState<{
     total: number
     last24h: number
     last7Days: number
     potentialRevenue: number
     stepBreakdown: Record<string, number>
-  }>({
+  }>(cachedSnapshot?.abandonedStats ?? {
     total: 0,
     last24h: 0,
     last7Days: 0,
@@ -116,21 +124,10 @@ export default function AdminDashboard() {
         const token = authService.getToken()
         if (!token) return
 
-        const abandonedQuery = abandonedRange.from && abandonedRange.to
-          ? `?from=${abandonedRange.from}&to=${abandonedRange.to}`
-          : "?all=true"
+        const abandonedQuery = buildAbandonedQuery(abandonedRange)
         setIsLoadingAbandoned(true)
-        const [usersResponse, companiesResponse, abandonedResponse]: [any, any, any] = await Promise.all([
-          ApiClient.users.getAll(token),
-          fetch("/api/companies", {
-            headers: { Authorization: `Bearer ${token}` },
-            cache: "no-store",
-          }).then((res) => res.json()),
-          fetch(`/api/abandoned-checkouts${abandonedQuery}`, {
-            headers: { Authorization: `Bearer ${token}` },
-            cache: "no-store",
-          }).then((res) => res.json()),
-        ])
+        const { users: usersResponse, companies: companiesResponse, abandoned: abandonedResponse } =
+          await fetchDashboardData(token, abandonedQuery)
 
         const allUsers = usersResponse.data || []
         const allCompanies = companiesResponse.data || companiesResponse || []
@@ -162,7 +159,6 @@ export default function AdminDashboard() {
 
         setAllOrders(sortedOrders)
         setOrders(sortedOrders.slice(0, 5))
-        console.log(" Admin Dashboard: Recent orders set:", sortedOrders.length)
 
         const now = new Date()
         const startOfYear = new Date(now.getFullYear(), 0, 1)
@@ -187,12 +183,6 @@ export default function AdminDashboard() {
             const orderAmount = order.pricing?.total || order.amount || order.total || 0
             return sum + orderAmount
           }, 0)
-
-        console.log(" Admin Dashboard: Revenue calculated", {
-          yearRevenue,
-          currentMonthRevenue,
-          totalOrders: allOrders.length,
-        })
 
         const currentMonthName = now.toLocaleDateString("en-US", { month: "short", year: "numeric" })
         const monthlyRevenueData = [
@@ -309,13 +299,37 @@ export default function AdminDashboard() {
         })
         setHeatmapData(heatmap)
 
+        const nextAbandonedCheckouts = abandonedResponse.success ? abandonedResponse.data || [] : abandonedCheckouts
+        const nextAbandonedStats = abandonedResponse.success
+          ? abandonedResponse.stats || { total: 0, last24h: 0, last7Days: 0, potentialRevenue: 0, stepBreakdown: {} }
+          : abandonedStats
         if (abandonedResponse.success) {
-          setAbandonedCheckouts(abandonedResponse.data || [])
-          setAbandonedStats(abandonedResponse.stats || {
-            total: 0, last24h: 0, last7Days: 0, potentialRevenue: 0, stepBreakdown: {}
-          })
+          setAbandonedCheckouts(nextAbandonedCheckouts)
+          setAbandonedStats(nextAbandonedStats)
         }
         setIsLoadingAbandoned(false)
+
+        // Cache the computed snapshot so the next visit paints instantly.
+        const snapshot: DashboardSnapshot = {
+          orders: sortedOrders.slice(0, 5),
+          allOrders: sortedOrders,
+          stats: {
+            totalRevenue: yearRevenue,
+            monthlyRevenue: currentMonthRevenue,
+            totalOrders: allOrders.length,
+            activeCustomers,
+          },
+          stateBreakdown: breakdown,
+          monthlyData: monthlyRevenueData,
+          chartData: monthlyChartData,
+          packageData: pkgData,
+          heatmapData: heatmap,
+          cityBreakdown: cityBreakdownData,
+          abandonedCheckouts: nextAbandonedCheckouts,
+          abandonedStats: nextAbandonedStats,
+        }
+        setDashboardSnapshot(snapshot)
+
         setDataLoaded(true)
         setIsLoadingData(false)
       } catch (error) {

@@ -9,8 +9,9 @@ import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Package, LogOut, Shield, Sun, Moon, Tag } from "lucide-react"
 import { authService } from "@/lib/auth"
-import { AdminNotificationDropdown } from "@/components/admin/admin-notification-dropdown"
-import { useDarkMode } from "@/hooks/use-dark-mode"
+  import { AdminNotificationDropdown } from "@/components/admin/admin-notification-dropdown"
+  import { useDarkMode } from "@/hooks/use-dark-mode"
+  import { prefetchAdminDashboard } from "@/lib/admin-dashboard-cache"
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -102,6 +103,8 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                       <li key={item.name}>
                         <Link
                           href={item.href}
+                          prefetch
+                          onMouseEnter={item.href === "/admin" ? () => prefetchAdminDashboard() : undefined}
                           className={`group flex gap-x-3 rounded-lg p-3 text-sm font-medium leading-6 transition-all ${
                             isActive
                               ? "bg-[#ff3b30] text-white"
@@ -142,7 +145,10 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
                     <li key={item.name}>
                       <Link
                         href={item.href}
+                        prefetch
                         onClick={() => setMobileMenuOpen(false)}
+                        onMouseEnter={item.href === "/admin" ? () => prefetchAdminDashboard() : undefined}
+                        onTouchStart={item.href === "/admin" ? () => prefetchAdminDashboard() : undefined}
                         className={`group flex gap-x-3 rounded-lg p-3 text-sm font-medium leading-6 transition-all ${
                           isActive
                             ? "bg-[#ff3b30] text-white"
