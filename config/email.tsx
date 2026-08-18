@@ -372,6 +372,75 @@ orderConfirmation: (
     `,
   }),
 
+  abandonedCheckout: (name: string | null, resumeLink: string, packageType?: string | null, state?: string | null) => ({
+    subject: "You're almost there — finish your BuzzFiling order",
+    html: `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+      </head>
+      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
+        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
+          <tr>
+            <td align="center">
+              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
+                <tr>
+                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
+                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 40px 40px 40px;">
+                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">Hi ${name || "there"},</p>
+                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
+                      We noticed you started setting up your business with BuzzFiling but didn't finish. Good news — your progress is saved, so you can pick up right where you left off.
+                    </p>
+                    ${
+                      packageType || state
+                        ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 24px 0; background-color: #fdf2f2; border-radius: 8px;">
+                             <tr><td style="padding: 16px 20px;">
+                               ${packageType ? `<p style="margin: 0 0 6px 0; font-size: 14px; color: #333333;"><strong style="color: #880000;">Package:</strong> ${packageType}</p>` : ""}
+                               ${state ? `<p style="margin: 0; font-size: 14px; color: #333333;"><strong style="color: #880000;">State:</strong> ${state}</p>` : ""}
+                             </td></tr>
+                           </table>`
+                        : ""
+                    }
+                    <p style="margin: 0 0 30px 0; text-align: center;">
+                      <a href="${resumeLink}" style="display: inline-block; background-color: #880000; color: #ffffff; text-decoration: none; padding: 14px 34px; border-radius: 6px; font-size: 15px; font-weight: 600;">
+                        Resume My Order
+                      </a>
+                    </p>
+                    <p style="margin: 0 0 20px 0; font-size: 13px; color: #666666; line-height: 1.6;">
+                      Have questions before you continue? Just reply to this email or reach us at
+                      <a href="mailto:hello@buzzfiling.com" style="color: #880000;">hello@buzzfiling.com</a> — our team is happy to help.
+                    </p>
+                    <p style="margin: 0; font-size: 13px; color: #666666; line-height: 1.6;">
+                      Or copy and paste this link into your browser:<br/>
+                      <a href="${resumeLink}" style="color: #880000; word-break: break-all;">${resumeLink}</a>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding: 0 40px 40px 40px; text-align: center;">
+                    <p style="margin: 0; font-size: 12px; color: #999999;">
+                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
+                    </p>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </body>
+    </html>
+    `,
+  }),
+
   einUploaded: (name: string, companyName: string) => ({
     subject: "Your EIN Application Is Under Review",
     html: `
