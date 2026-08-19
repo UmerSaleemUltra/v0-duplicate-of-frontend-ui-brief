@@ -8,7 +8,6 @@ import type { CheckoutData } from "@/app/checkout/page"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { saveProgress } from "@/lib/checkout-storage"
-import { enablePushForLead, canUsePush } from "@/lib/push-client"
 
 type CheckoutShellProps = {
   steps: string[]
@@ -71,66 +70,6 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
     const timeoutId = setTimeout(trackAbandonedCheckout, 2000)
     return () => clearTimeout(timeoutId)
   }, [currentStep, data.email, data.state, data.businessName, data.totalAmount, data.packagePrice, data.name, data.phone, data.packageType, data.addons])
-
-  // Ask for push permission once the lead has shown intent (any detail entered).
-  useEffect(() => {
-    if (!canUsePush()) return
-    const hasIntent = data.email || data.state || data.businessName || data.name || data.phone
-    if (!hasIntent) return
-
-    const sessionId = getSessionId()
-    if (!sessionId) return
-
-    const timeoutId = setTimeout(() => {
-      enablePushForLead({ sessionId, email: data.email || null })
-    }, 1500)
-    return () => clearTimeout(timeoutId)
-  }, [data.email, data.state, data.businessName, data.name, data.phone])
-
-  // When the lead closes/leaves the checkout, fire a recovery beacon so the
-  // server can push to their device and send the instant recovery email.
-  useEffect(() => {
-    const notifyOnLeave = () => {
-      const hasIntent = data.email || data.state || data.businessName || data.name || data.phone
-      if (!hasIntent) return
-
-      const sessionId = getSessionId()
-      if (!sessionId) return
-
-      const payload = JSON.stringify({
-        sessionId,
-        email: data.email || null,
-        name: data.name || null,
-        phone: data.phone || null,
-        lastStep: currentStep,
-        state: data.state || null,
-        packageType: data.packageType || null,
-        businessName: data.businessName || null,
-        estimatedTotal: data.totalAmount || 0,
-        packagePrice: data.packagePrice || 0,
-        addons: data.addons || [],
-      })
-
-      try {
-        // sendBeacon reliably delivers during page unload.
-        const blob = new Blob([payload], { type: "application/json" })
-        navigator.sendBeacon("/api/abandoned-checkouts/notify", blob)
-      } catch {
-        // Best effort only — never block navigation.
-      }
-    }
-
-    const handleVisibility = () => {
-      if (document.visibilityState === "hidden") notifyOnLeave()
-    }
-
-    window.addEventListener("pagehide", notifyOnLeave)
-    document.addEventListener("visibilitychange", handleVisibility)
-    return () => {
-      window.removeEventListener("pagehide", notifyOnLeave)
-      document.removeEventListener("visibilitychange", handleVisibility)
-    }
-  }, [currentStep, data.email, data.name, data.phone, data.state, data.packageType, data.businessName, data.totalAmount, data.packagePrice, data.addons])
 
   useEffect(() => {
     // Clear save message when step changes
