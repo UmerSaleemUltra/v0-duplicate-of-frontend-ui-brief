@@ -8,6 +8,7 @@ import type { CheckoutData } from "@/app/checkout/page"
 import Image from "next/image"
 import { Button } from "@/components/ui/button"
 import { saveProgress } from "@/lib/checkout-storage"
+import { enableCheckoutPush } from "@/lib/push-notifications"
 
 type CheckoutShellProps = {
   steps: string[]
