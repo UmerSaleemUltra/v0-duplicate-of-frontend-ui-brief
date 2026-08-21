@@ -73,6 +73,50 @@ import { StatusManagementCard } from "@/components/admin/order-detail/StatusMana
 import { AssignedInfoCards } from "@/components/admin/order-detail/AssignedInfoCards"
 import { RequestDocumentModal } from "@/components/admin/request-document-modal"
 
+type TrustpilotInvitationPayload = {
+  recipientEmail: string
+  recipientName: string
+  referenceId: string
+  source: "InvitationScript"
+}
+
+declare global {
+  interface Window {
+    tp?: (command: "createInvitation", payload: TrustpilotInvitationPayload) => void
+  }
+}
+
+async function triggerTrustpilotInvitation(
+  orderId: string,
+  token: string,
+  payload: TrustpilotInvitationPayload,
+) {
+  let status: "sent" | "failed" = "failed"
+
+  try {
+    if (typeof window.tp !== "function") {
+      throw new Error("Trustpilot integration is unavailable")
+    }
+    window.tp("createInvitation", payload)
+    status = "sent"
+  } catch {
+    console.error("[v0] Trustpilot invitation failed for completed order:", orderId)
+  }
+
+  try {
+    await fetch(`/api/orders/${orderId}/trustpilot-invitation`, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    })
+  } catch {
+    console.error("[v0] Trustpilot invitation acknowledgement failed for order:", orderId)
+  }
+}
+
 const getDisplayValue = (value: any, defaultValue = "N/A"): string => {
   if (value === null || value === undefined || value === "") return defaultValue
   if (typeof value === "string" && value.trim() === "") return defaultValue
@@ -759,6 +803,10 @@ export default function OrderDetailPage() {
         title: "Status Updated",
         description: `Order status changed to ${newStatus}`,
       })
+
+      if (result.trustpilotInvitation) {
+        void triggerTrustpilotInvitation(order.id, token, result.trustpilotInvitation)
+      }
     } catch (error) {
       console.log(" Error updating status:", error)
       toast({
