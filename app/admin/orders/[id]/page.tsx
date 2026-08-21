@@ -82,8 +82,19 @@ type TrustpilotInvitationPayload = {
 
 declare global {
   interface Window {
-    tp?: (command: "createInvitation", payload: TrustpilotInvitationPayload) => void
+    TrustpilotObject?: string
+    tp?: ((command: "register", key: string) => void) &
+      ((command: "createInvitation", payload: TrustpilotInvitationPayload) => void)
   }
+}
+
+function isValidTrustpilotPayload(orderId: string, payload: TrustpilotInvitationPayload) {
+  return (
+    payload.source === "InvitationScript" &&
+    payload.referenceId === orderId &&
+    payload.recipientEmail.includes("@") &&
+    payload.recipientName.trim().length > 0
+  )
 }
 
 async function triggerTrustpilotInvitation(
@@ -92,19 +103,33 @@ async function triggerTrustpilotInvitation(
   payload: TrustpilotInvitationPayload,
 ) {
   let status: "sent" | "failed" = "failed"
+  const sdkState = {
+    trustpilotObject: window.TrustpilotObject || null,
+    tpType: typeof window.tp,
+    scriptPresent: Boolean(
+      document.querySelector('script[src="https://invitejs.trustpilot.com/tp.min.js"]'),
+    ),
+  }
 
   console.log("[v0] Trustpilot invitation starting", {
     orderId,
-    tpAvailable: typeof window.tp === "function",
+    ...sdkState,
+    payloadValid: isValidTrustpilotPayload(orderId, payload),
     hasCustomerEmail: Boolean(payload.recipientEmail),
     hasCustomerName: Boolean(payload.recipientName),
     referenceMatchesOrder: payload.referenceId === orderId,
   })
 
   try {
-    if (typeof window.tp !== "function") {
-      throw new Error("Trustpilot integration is unavailable")
+    if (!isValidTrustpilotPayload(orderId, payload)) {
+      throw new Error("Trustpilot invitation payload is invalid")
     }
+    if (typeof window.tp !== "function" || window.TrustpilotObject !== "tp") {
+      throw new Error(`Trustpilot SDK is not ready (${sdkState.tpType}/${sdkState.trustpilotObject || "none"})`)
+    }
+
+    // Trustpilot's registered queue function processes this immediately; no
+    // timeout, polling, cron, or artificial waiting period is introduced.
     window.tp("createInvitation", payload)
     status = "sent"
     console.log("[v0] Trustpilot createInvitation queued", { orderId })
