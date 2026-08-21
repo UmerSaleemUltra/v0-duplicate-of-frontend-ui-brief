@@ -797,16 +797,18 @@ export default function OrderDetailPage() {
       }
 
       const result = await response.json()
-      setOrder(result.data)
 
+      // The API returns this payload only for the one atomic transition to
+      // completed. Trigger Trustpilot before any other post-completion UI work.
+      if (result.trustpilotInvitation) {
+        void triggerTrustpilotInvitation(order.id, token, result.trustpilotInvitation)
+      }
+
+      setOrder(result.data)
       toast({
         title: "Status Updated",
         description: `Order status changed to ${newStatus}`,
       })
-
-      if (result.trustpilotInvitation) {
-        void triggerTrustpilotInvitation(order.id, token, result.trustpilotInvitation)
-      }
     } catch (error) {
       console.log(" Error updating status:", error)
       toast({

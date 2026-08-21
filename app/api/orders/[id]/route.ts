@@ -1,4 +1,4 @@
-import { type NextRequest, NextResponse } from "next/server"
+import { after, type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import { ObjectId } from "mongodb"
@@ -519,7 +519,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         }
 
         let completionDelivery: Record<string, unknown> = {
-          emailStatus: "failed",
+          emailStatus: "processing",
           trustpilotStatus: "not_eligible",
           completedAt,
         }
@@ -539,42 +539,50 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             : null
 
           if (user?.email) {
-            const { sendEmail, emailTemplates } = await import("@/config/email")
-            const completionEmail = emailTemplates.orderCompleted(
-              user.name || "Customer",
-              company?.name || order.companyName || "your company",
-            )
-            const emailResult = await sendEmail({
-              to: user.email,
-              subject: completionEmail.subject,
-              html: completionEmail.html,
-            })
-
-            if (emailResult.success) {
-              completionDelivery = {
-                emailStatus: "sent",
-                emailSentAt: new Date().toISOString(),
-                trustpilotStatus: "claimed",
-                trustpilotClaimedAt: new Date().toISOString(),
-                completedAt,
-              }
-              trustpilotInvitation = {
-                recipientEmail: user.email,
-                recipientName: user.name || "Customer",
-                referenceId: id,
-                source: "InvitationScript",
-              }
-            } else {
-              completionDelivery = {
-                emailStatus: "failed",
-                emailFailedAt: new Date().toISOString(),
-                trustpilotStatus: "not_eligible",
-                completedAt,
-              }
+            const customerName = user.name || "Customer"
+            completionDelivery = {
+              emailStatus: "processing",
+              trustpilotStatus: "claimed",
+              trustpilotClaimedAt: new Date().toISOString(),
+              completedAt,
             }
+            trustpilotInvitation = {
+              recipientEmail: user.email,
+              recipientName: customerName,
+              referenceId: id,
+              source: "InvitationScript",
+            }
+
+            // Email delivery is independent and must never delay or gate the
+            // immediate Trustpilot invitation returned with this completion.
+            after(async () => {
+              let emailState: Record<string, unknown>
+              try {
+                const { sendEmail, emailTemplates } = await import("@/config/email")
+                const completionEmail = emailTemplates.orderCompleted(
+                  customerName,
+                  company?.name || order.companyName || "your company",
+                )
+                const emailResult = await sendEmail({
+                  to: user.email,
+                  subject: completionEmail.subject,
+                  html: completionEmail.html,
+                })
+                emailState = emailResult.success
+                  ? { emailStatus: "sent", emailSentAt: new Date().toISOString() }
+                  : { emailStatus: "failed", emailFailedAt: new Date().toISOString() }
+              } catch {
+                emailState = { emailStatus: "failed", emailFailedAt: new Date().toISOString() }
+              }
+
+              await db.collection("order_completion_deliveries").updateOne(
+                { _id: deliveryId },
+                { $set: { ...emailState, updatedAt: new Date().toISOString() } },
+              )
+            })
           }
-        } catch (deliveryError) {
-          console.error("[v0] Order completion delivery failed for order:", id)
+        } catch {
+          console.error("[v0] Failed to prepare completion invitation for order:", id)
         }
 
         await db.collection("order_completion_deliveries").updateOne(
