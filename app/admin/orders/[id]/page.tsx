@@ -93,24 +93,43 @@ async function triggerTrustpilotInvitation(
 ) {
   let status: "sent" | "failed" = "failed"
 
+  console.log("[v0] Trustpilot invitation starting", {
+    orderId,
+    tpAvailable: typeof window.tp === "function",
+    hasCustomerEmail: Boolean(payload.recipientEmail),
+    hasCustomerName: Boolean(payload.recipientName),
+    referenceMatchesOrder: payload.referenceId === orderId,
+  })
+
   try {
     if (typeof window.tp !== "function") {
       throw new Error("Trustpilot integration is unavailable")
     }
     window.tp("createInvitation", payload)
     status = "sent"
-  } catch {
-    console.error("[v0] Trustpilot invitation failed for completed order:", orderId)
+    console.log("[v0] Trustpilot createInvitation queued", { orderId })
+  } catch (error) {
+    console.error("[v0] Trustpilot invitation failed for completed order", {
+      orderId,
+      reason: error instanceof Error ? error.message : "unknown_error",
+    })
   }
 
   try {
-    await fetch(`/api/orders/${orderId}/trustpilot-invitation`, {
+    const acknowledgement = await fetch(`/api/orders/${orderId}/trustpilot-invitation`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ status }),
+    })
+    const acknowledgementResult = await acknowledgement.json().catch(() => null)
+    console.log("[v0] Trustpilot invitation acknowledgement", {
+      orderId,
+      httpStatus: acknowledgement.status,
+      acknowledged: acknowledgementResult?.acknowledged === true,
+      invitationStatus: status,
     })
   } catch {
     console.error("[v0] Trustpilot invitation acknowledgement failed for order:", orderId)
@@ -798,10 +817,22 @@ export default function OrderDetailPage() {
 
       const result = await response.json()
 
+      console.log("[v0] Order completion Trustpilot decision", {
+        orderId: order.id,
+        requestedStatus: newStatus,
+        invitationStatus: result.trustpilotInvitationStatus,
+        hasInvitationPayload: Boolean(result.trustpilotInvitation),
+      })
+
       // The API returns this payload only for the one atomic transition to
       // completed. Trigger Trustpilot before any other post-completion UI work.
       if (result.trustpilotInvitation) {
         void triggerTrustpilotInvitation(order.id, token, result.trustpilotInvitation)
+      } else if (newStatus === "completed") {
+        console.warn("[v0] Trustpilot invitation was not triggered", {
+          orderId: order.id,
+          reason: result.trustpilotInvitationStatus,
+        })
       }
 
       setOrder(result.data)
