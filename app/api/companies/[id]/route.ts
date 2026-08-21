@@ -281,6 +281,39 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }
     }
 
+    const defaultMilestoneKeys = [
+      "orderSuccessfullyProcessed",
+      "registeredAgentAssigned",
+      "businessMailingAddressIssued",
+      "companyApplicationApplied",
+      "companyFormationCompleted",
+      "einApplicationSubmitted",
+      "einObtained",
+    ]
+    const finalMilestoneCompleted =
+      Boolean(body.milestones) &&
+      defaultMilestoneKeys.every((key) => body.milestones[key] === true) &&
+      !defaultMilestoneKeys.every((key) => company.milestones?.[key] === true)
+
+    let completionTriggered = false
+    let trustpilotInvitation: {
+      recipientEmail: string
+      recipientName: string
+      referenceId: string
+      source: "InvitationScript"
+    } | null = null
+    if (finalMilestoneCompleted && Array.isArray(company.orders)) {
+      const orders = company.orders.map((order: any) => {
+        if (order.status === "completed") return order
+        completionTriggered = true
+        return { ...order, status: "completed", completedAt: new Date().toISOString() }
+      })
+      updateData.orders = orders
+      updateData.companyStatus = "completed"
+      updateData.status = "completed"
+      console.log("[v0] Final EIN milestone completed order", { companyId: id, orderCount: orders.length })
+    }
+
     const result = await db
       .collection("companies")
       .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
@@ -293,6 +326,63 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       console.log(" Milestone update completed successfully. Updated milestones:", result.milestones)
     }
 
+    if (completionTriggered) {
+      try {
+        const deliveryId = new ObjectId()
+        await db.collection("order_completion_deliveries").insertOne({
+          _id: deliveryId,
+          companyId: id,
+          emailStatus: "processing",
+          trustpilotStatus: "not_eligible",
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        })
+
+        const userId = result.userId
+        const user = userId
+          ? await db.collection("users").findOne(
+              { _id: typeof userId === "string" ? new ObjectId(userId) : userId },
+              { projection: { name: 1, email: 1 } },
+            )
+          : null
+
+        if (user?.email) {
+          const { sendEmail, emailTemplates } = await import("@/config/email")
+          const completionEmail = emailTemplates.orderCompleted(user.name || "Customer", result.name)
+          const emailResult = await sendEmail({
+            to: user.email,
+            bcc: "buzzfiling.com+8b4a83c0f0@invite.trustpilot.com",
+            subject: completionEmail.subject,
+            html: completionEmail.html,
+          })
+          await db.collection("order_completion_deliveries").updateOne(
+            { _id: deliveryId },
+            {
+              $set: {
+                emailStatus: emailResult.success ? "sent" : "failed",
+                trustpilotStatus: "not_eligible",
+                updatedAt: new Date().toISOString(),
+              },
+            },
+          )
+          const completedOrder = result.orders?.find((item: any) => item.status === "completed")
+          trustpilotInvitation = {
+            recipientEmail: user.email,
+            recipientName: user.name || "Customer",
+            referenceId: completedOrder?.id?.toString() || completedOrder?._id?.toString() || id,
+            source: "InvitationScript",
+          }
+          console.log("[v0] Completion email sent after final EIN milestone", {
+            companyId: id,
+            emailSent: emailResult.success,
+            trustpilotPayloadReady: true,
+          })
+        }
+      } catch (completionError) {
+        console.error("[v0] Completion email failed after final EIN milestone", { companyId: id })
+      }
+    }
+
     const updatedCompany = { id: result._id.toString(), ...result }
 
     broadcastUpdate("companies", "updated", updatedCompany)
@@ -301,6 +391,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       NextResponse.json({
         success: true,
         data: updatedCompany,
+        orderCompleted: completionTriggered,
+        trustpilotInvitation,
       }),
     )
   } catch (error) {
