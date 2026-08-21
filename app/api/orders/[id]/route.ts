@@ -483,6 +483,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       referenceId: string
       source: "InvitationScript"
     } | null = null
+    let trustpilotInvitationStatus = isCompletionTransition
+      ? "completion_transition_detected"
+      : "not_a_new_completion_transition"
+
+    console.log("[v0] Trustpilot completion check", {
+      orderId: id,
+      previousStatus: order.status,
+      requestedStatus: updateData.status,
+      isCompletionTransition,
+    })
 
     if (isCompletionTransition) {
       const completedAt = new Date().toISOString()
@@ -500,8 +510,14 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           updatedAt: completedAt,
         })
         deliveryClaimed = true
+        trustpilotInvitationStatus = "delivery_claimed"
+        console.log("[v0] Trustpilot delivery claimed", { orderId: id })
       } catch (claimError: any) {
-        if (claimError?.code !== 11000) {
+        if (claimError?.code === 11000) {
+          trustpilotInvitationStatus = "duplicate_invitation_prevented"
+          console.log("[v0] Trustpilot duplicate invitation prevented", { orderId: id })
+        } else {
+          trustpilotInvitationStatus = "delivery_claim_failed"
           console.error("[v0] Failed to claim order completion delivery:", id)
         }
       }
@@ -552,6 +568,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               referenceId: id,
               source: "InvitationScript",
             }
+            trustpilotInvitationStatus = "invitation_payload_ready"
+            console.log("[v0] Trustpilot invitation payload ready", {
+              orderId: id,
+              hasCustomerEmail: true,
+              hasCustomerName: Boolean(user.name),
+            })
 
             // Email delivery is independent and must never delay or gate the
             // immediate Trustpilot invitation returned with this completion.
@@ -580,6 +602,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 { $set: { ...emailState, updatedAt: new Date().toISOString() } },
               )
             })
+          } else {
+            trustpilotInvitationStatus = "customer_email_not_found"
+            console.error("[v0] Trustpilot customer email not found", { orderId: id })
           }
         } catch {
           console.error("[v0] Failed to prepare completion invitation for order:", id)
@@ -625,6 +650,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         success: true,
         data: updatedOrder,
         trustpilotInvitation,
+        trustpilotInvitationStatus,
       }),
     )
   } catch (error) {
