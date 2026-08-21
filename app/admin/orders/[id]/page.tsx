@@ -124,12 +124,12 @@ async function triggerTrustpilotInvitation(
     if (!isValidTrustpilotPayload(orderId, payload)) {
       throw new Error("Trustpilot invitation payload is invalid")
     }
-    if (typeof window.tp !== "function" || window.TrustpilotObject !== "tp") {
-      throw new Error(`Trustpilot SDK is not ready (${sdkState.tpType}/${sdkState.trustpilotObject || "none"})`)
+    if (typeof window.tp !== "function") {
+      throw new Error(`Trustpilot queue is unavailable (${sdkState.tpType})`)
     }
 
-    // Trustpilot's registered queue function processes this immediately; no
-    // timeout, polling, cron, or artificial waiting period is introduced.
+    // Trustpilot's documented stub queues this immediately while tp.min.js
+    // loads; do not wait for DOMContentLoaded or require the stub to be replaced.
     window.tp("createInvitation", payload)
     status = "sent"
     console.log("[v0] Trustpilot createInvitation queued", { orderId })
