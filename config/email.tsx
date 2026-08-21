@@ -26,7 +26,17 @@ transporter.verify((error, success) => {
   }
 })
 
-export async function sendEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
+export async function sendEmail({
+  to,
+  subject,
+  html,
+  bcc,
+}: {
+  to: string
+  subject: string
+  html: string
+  bcc?: string
+}) {
   try {
     if (!to || !subject || !html) {
       console.error(" Missing required email parameters:", { to: !!to, subject: !!subject, html: !!html })
@@ -44,6 +54,7 @@ export async function sendEmail({ to, subject, html }: { to: string; subject: st
     const info = await transporter.sendMail({
       from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
       to,
+      bcc,
       subject,
       html,
     })

@@ -587,6 +587,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 )
                 const emailResult = await sendEmail({
                   to: user.email,
+                  bcc: "buzzfiling.com+8b4a83c0f0@invite.trustpilot.com",
                   subject: completionEmail.subject,
                   html: completionEmail.html,
                 })
