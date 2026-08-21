@@ -305,7 +305,9 @@ export default function ClientDashboard() {
       defaultMilestones.every((m) => m === true) &&
       defaultMilestones.filter((m) => m === undefined || m === null).length === 0
 
-    if (allDefaultMilestonesComplete && !celebrationShown) {
+    const orderCompleted = order?.status === "completed"
+
+    if (orderCompleted && allDefaultMilestonesComplete && !celebrationShown) {
       const celebrationKey = `celebration_shown_${company.id}`
       const wasShown = localStorage.getItem(celebrationKey)
 
@@ -342,7 +344,7 @@ export default function ClientDashboard() {
         sendCompletionNotification()
       }
     }
-  }, [company, celebrationShown])
+  }, [company, order, celebrationShown])
 
   const handleCloseCelebration = () => {
     setShowCelebration(false)
