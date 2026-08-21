@@ -388,40 +388,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       )
     }
 
-    if (body.status === "completed" && (order.companyId || companyId)) {
-      const cId = order.companyId || companyId
-      const companyIdObj = typeof cId === "string" && ObjectId.isValid(cId) ? new ObjectId(cId) : cId
-
-      if (companyIdObj) {
-        await db.collection("companies").updateOne(
-          { _id: companyIdObj },
-          {
-            $set: {
-              companyStatus: "completed",
-              updatedAt: new Date().toISOString(),
-            },
-          },
-        )
-
-        try {
-          const { sendEmail, emailTemplates } = await import("@/config/email")
-          const company = await db.collection("companies").findOne({ _id: companyIdObj })
-          if (company && company.userId) {
-            const user = await db
-              .collection("users")
-              .findOne({ _id: new ObjectId(company.userId) }, { projection: { name: 1, email: 1 } })
-
-            if (user) {
-              const completionEmail = emailTemplates.orderCompleted(user.name, company.name)
-              await sendEmail({ to: user.email, subject: completionEmail.subject, html: completionEmail.html })
-              console.log(" Sent order completion email to:", user.email)
-            }
-          }
-        } catch (emailError) {
-          console.log(" Error sending order completion email (non-critical):", emailError)
-        }
-      }
-    }
+    const isCompletionTransition =
+      decoded.role === "admin" && updateData.status === "completed" && order.status !== "completed"
 
     // Build company-level fields to sync when purchasedAddons or pricing are updated.
     // The DB stores purchasedAddons, pricing, and revenue at the TOP-LEVEL company doc,
@@ -509,6 +477,135 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
     }
 
+    let trustpilotInvitation: {
+      recipientEmail: string
+      recipientName: string
+      referenceId: string
+      source: "InvitationScript"
+    } | null = null
+
+    if (isCompletionTransition) {
+      const completedAt = new Date().toISOString()
+      const deliveryId = new ObjectId(id)
+      let deliveryClaimed = false
+
+      // The unique order ID makes completion side effects atomic across retries.
+      try {
+        await db.collection("order_completion_deliveries").insertOne({
+          _id: deliveryId,
+          orderId: id,
+          emailStatus: "processing",
+          trustpilotStatus: "pending",
+          createdAt: completedAt,
+          updatedAt: completedAt,
+        })
+        deliveryClaimed = true
+      } catch (claimError: any) {
+        if (claimError?.code !== 11000) {
+          console.error("[v0] Failed to claim order completion delivery:", id)
+        }
+      }
+
+      if (deliveryClaimed) {
+        const cId = order.companyId || companyId
+        const companyIdObj =
+          typeof cId === "string" && ObjectId.isValid(cId) ? new ObjectId(cId) : cId
+
+        if (companyIdObj) {
+          await db.collection("companies").updateOne(
+            { _id: companyIdObj },
+            { $set: { companyStatus: "completed", updatedAt: completedAt } },
+          )
+        }
+
+        let completionDelivery: Record<string, unknown> = {
+          emailStatus: "failed",
+          trustpilotStatus: "not_eligible",
+          completedAt,
+        }
+
+        try {
+          const company = companyIdObj
+            ? await db.collection("companies").findOne({ _id: companyIdObj })
+            : null
+          const userId = company?.userId || order.userId
+          const userIdObj =
+            typeof userId === "string" && ObjectId.isValid(userId) ? new ObjectId(userId) : userId
+          const user = userIdObj
+            ? await db.collection("users").findOne(
+                { _id: userIdObj },
+                { projection: { name: 1, email: 1 } },
+              )
+            : null
+
+          if (user?.email) {
+            const { sendEmail, emailTemplates } = await import("@/config/email")
+            const completionEmail = emailTemplates.orderCompleted(
+              user.name || "Customer",
+              company?.name || order.companyName || "your company",
+            )
+            const emailResult = await sendEmail({
+              to: user.email,
+              subject: completionEmail.subject,
+              html: completionEmail.html,
+            })
+
+            if (emailResult.success) {
+              completionDelivery = {
+                emailStatus: "sent",
+                emailSentAt: new Date().toISOString(),
+                trustpilotStatus: "claimed",
+                trustpilotClaimedAt: new Date().toISOString(),
+                completedAt,
+              }
+              trustpilotInvitation = {
+                recipientEmail: user.email,
+                recipientName: user.name || "Customer",
+                referenceId: id,
+                source: "InvitationScript",
+              }
+            } else {
+              completionDelivery = {
+                emailStatus: "failed",
+                emailFailedAt: new Date().toISOString(),
+                trustpilotStatus: "not_eligible",
+                completedAt,
+              }
+            }
+          }
+        } catch (deliveryError) {
+          console.error("[v0] Order completion delivery failed for order:", id)
+        }
+
+        await db.collection("order_completion_deliveries").updateOne(
+          { _id: deliveryId },
+          {
+            $set: {
+              ...completionDelivery,
+              updatedAt: new Date().toISOString(),
+            },
+          },
+        )
+
+        // Mirror compact delivery state onto the existing order document.
+        if (isEmbeddedOrder && companyId) {
+          const embeddedCompanyId =
+            typeof companyId === "string" && ObjectId.isValid(companyId) ? new ObjectId(companyId) : companyId
+          const orderMatch = order._id
+            ? { _id: embeddedCompanyId, "orders._id": order._id }
+            : { _id: embeddedCompanyId, "orders.id": order.id }
+          await db.collection("companies").updateOne(orderMatch, {
+            $set: { "orders.$.completionDelivery": completionDelivery },
+          })
+        } else {
+          await db.collection("orders").updateOne(
+            { _id: new ObjectId(id) },
+            { $set: { completionDelivery } },
+          )
+        }
+      }
+    }
+
     const updatedOrder = { id: result._id?.toString() || id, ...result }
     broadcastUpdate("orders", "updated", updatedOrder)
     if (hasCompanyLevelChanges) {
@@ -519,6 +616,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       NextResponse.json({
         success: true,
         data: updatedOrder,
+        trustpilotInvitation,
       }),
     )
   } catch (error) {
