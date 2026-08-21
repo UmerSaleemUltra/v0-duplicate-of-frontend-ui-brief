@@ -931,14 +931,6 @@ export default function OrderDetailPage() {
 
       const result = await response.json()
 
-      if (result.trustpilotInvitation && result.orderCompleted) {
-        void triggerTrustpilotInvitation(
-          result.trustpilotInvitation.referenceId,
-          token,
-          result.trustpilotInvitation,
-        )
-      }
-
       console.log(" Milestone update successful:", result.data)
 
       if (result.data?.milestones) {

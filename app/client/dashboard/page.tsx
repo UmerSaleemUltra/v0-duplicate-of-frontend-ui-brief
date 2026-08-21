@@ -305,7 +305,7 @@ export default function ClientDashboard() {
       defaultMilestones.every((m) => m === true) &&
       defaultMilestones.filter((m) => m === undefined || m === null).length === 0
 
-    const orderCompleted = order?.status === "completed" || company.orders?.some((item: any) => item.status === "completed")
+    const orderCompleted = order?.status === "completed"
 
     if (orderCompleted && allDefaultMilestonesComplete && !celebrationShown) {
       const celebrationKey = `celebration_shown_${company.id}`
