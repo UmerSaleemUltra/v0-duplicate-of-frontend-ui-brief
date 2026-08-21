@@ -24,7 +24,7 @@ const nextConfig = {
       "@radix-ui/react-select",
       "@radix-ui/react-tabs",
       "@radix-ui/react-tooltip",
-    ],
+    ], 
   },
   turbopack: {
     root: ".",
