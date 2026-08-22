@@ -499,23 +499,43 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       const deliveryId = new ObjectId(id)
       let deliveryClaimed = false
 
-      // The unique order ID makes completion side effects atomic across retries.
+      // Claim atomically. Successful delivery is terminal; failed or stale
+      // processing claims are retryable without changing the completed order.
+      const staleBefore = new Date(Date.now() - 5 * 60 * 1000).toISOString()
       try {
-        await db.collection("order_completion_deliveries").insertOne({
-          _id: deliveryId,
-          orderId: id,
-          emailStatus: "processing",
-          trustpilotStatus: "pending",
-          createdAt: completedAt,
-          updatedAt: completedAt,
-        })
-        deliveryClaimed = true
-        trustpilotInvitationStatus = "delivery_claimed"
-        console.log("[v0] Trustpilot delivery claimed", { orderId: id })
+        const claimedDelivery = await db.collection("order_completion_deliveries").findOneAndUpdate(
+          {
+            _id: deliveryId,
+            $or: [
+              { emailStatus: { $exists: false } },
+              { emailStatus: "failed" },
+              { trustpilotStatus: "failed" },
+              { emailStatus: "processing", updatedAt: { $lt: staleBefore } },
+              { trustpilotStatus: { $in: ["pending", "claimed"] }, updatedAt: { $lt: staleBefore } },
+            ],
+          },
+          {
+            $set: {
+              orderId: id,
+              emailStatus: "processing",
+              trustpilotStatus: "claimed",
+              claimedAt: completedAt,
+              updatedAt: completedAt,
+            },
+            $setOnInsert: { createdAt: completedAt },
+          },
+          { upsert: true, returnDocument: "after" },
+        )
+        deliveryClaimed = Boolean(claimedDelivery)
+        trustpilotInvitationStatus = deliveryClaimed ? "delivery_claimed" : "duplicate_invitation_prevented"
+        console.log(
+          deliveryClaimed ? "[v0] Trustpilot delivery claimed" : "[v0] Trustpilot duplicate invitation prevented",
+          { orderId: id },
+        )
       } catch (claimError: any) {
         if (claimError?.code === 11000) {
-          trustpilotInvitationStatus = "duplicate_invitation_prevented"
-          console.log("[v0] Trustpilot duplicate invitation prevented", { orderId: id })
+          trustpilotInvitationStatus = "active_delivery_protected"
+          console.log("[v0] Trustpilot active delivery protected", { orderId: id })
         } else {
           trustpilotInvitationStatus = "delivery_claim_failed"
           console.error("[v0] Failed to claim order completion delivery:", id)
