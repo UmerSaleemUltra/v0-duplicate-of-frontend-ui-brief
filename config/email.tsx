@@ -1394,6 +1394,39 @@ orderConfirmation: (
     `,
   }),
 
+  adminInvoice: (
+    clientName: string,
+    clientEmail: string,
+    companyName: string,
+    packageType: string,
+    totalAmount: string,
+    orderId: string,
+    promoCode?: { code: string; discountAmount: number } | null,
+  ) => {
+    const total = Number(totalAmount) || 0
+    const discount = promoCode?.discountAmount || 0
+    const subtotal = total + discount
+    const invoiceDate = new Date().toLocaleDateString("en-US")
+
+    return {
+      subject: `Invoice - ${companyName} - ${orderId}`,
+      html: `
+<!DOCTYPE html>
+<html><body style="margin:0;background:#f1f1f1;padding:24px 10px;font-family:Arial,Helvetica,sans-serif;color:#171717;">
+<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
+<table width="700" cellpadding="0" cellspacing="0" style="max-width:700px;background:#fff;border:1px solid #ddd;">
+<tr><td style="padding:28px 34px 18px;text-align:center;border-bottom:1px solid #eee;"><div style="font-size:28px;font-weight:800;"><span style="color:#ed1c24;font-size:42px;">b</span> Buzz Filing</div><div style="font-size:10px;color:#555;line-height:1.5;">Business Formation Services<br>Invoice generated automatically for internal records</div></td></tr>
+<tr><td style="padding:26px 34px 12px;font-size:28px;font-weight:800;"><span style="color:#ed1c24;">Hi!</span> This is Your Invoice.</td></tr>
+<tr><td style="padding:8px 34px 28px;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="48%" valign="top" style="font-size:12px;line-height:1.8;"><b>BILL TO</b><br>${clientName}<br>${clientEmail}</td><td width="30%" valign="top" style="font-size:12px;line-height:1.8;"><b>INVOICE NO.</b><br>${orderId}<br><b>INVOICE DATE</b><br>${invoiceDate}<br><b>SERVICE</b><br>${packageType}</td><td width="22%" valign="top"><div style="background:#ed1c24;color:#fff;padding:15px 8px;text-align:center;font-weight:700;font-size:12px;">Payment Status</div><div style="border:1px solid #eee;padding:14px 8px;text-align:center;font-weight:700;font-size:13px;">Unpaid</div></td></tr></table></td></tr>
+<tr><td style="padding:0 34px;"><table width="100%" cellpadding="10" cellspacing="0" style="font-size:12px;border-collapse:collapse;"><tr style="font-weight:700;border-bottom:1px solid #ddd;"><td>DESCRIPTION</td><td align="center">QTY</td><td align="right">RATE</td><td align="right">AMOUNT</td></tr><tr><td>${companyName} — ${packageType}</td><td align="center">1</td><td align="right">$${total.toFixed(2)}</td><td align="right">$${total.toFixed(2)}</td></tr></table></td></tr>
+<tr><td style="padding:0 34px 24px;"><table width="100%" cellpadding="9" cellspacing="0" style="background:#ed1c24;color:#fff;font-size:12px;"><tr><td align="right">Sub Total</td><td align="right" width="90">$${subtotal.toFixed(2)}</td></tr><tr><td align="right">Discount${promoCode ? ` (${promoCode.code})` : ""}</td><td align="right">-$${discount.toFixed(2)}</td></tr><tr style="font-size:18px;font-weight:800;"><td align="right">Balance</td><td align="right">$${total.toFixed(2)}</td></tr></table></td></tr>
+<tr><td style="padding:0 34px 28px;text-align:center;font-size:20px;font-weight:800;">Thank you for your <span style="color:#ed1c24;">business!</span></td></tr>
+<tr><td style="padding:18px 34px 34px;border-top:1px solid #eee;font-size:11px;line-height:1.7;color:#444;"><b>PAYMENT TERMS</b><br>Payment is due according to the selected order payment method. Please include the invoice number with any payment confirmation.<br><br><b>Order reference:</b> ${orderId}<br><b>Customer:</b> ${clientName} (${clientEmail})</td></tr>
+<tr><td style="padding:12px 34px;border-top:1px dashed #ddd;font-size:10px;color:#777;"><span>E. & O. E.</span><span style="float:right;color:#ed1c24;">Please retain this invoice for your records.</span></td></tr>
+</table></td></tr></table></body></html>`,
+    }
+  },
+
   adminNewOrder: (
     clientName: string,
     companyName: string,
