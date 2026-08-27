@@ -212,6 +212,25 @@ export async function POST(req: NextRequest) {
           } else {
             console.log(" Admin email sent successfully to:", adminEmail)
           }
+
+          const invoiceEmail = emailTemplates.adminInvoice(
+            user.name || "Customer",
+            user.email,
+            companyName,
+            packageType || "Starter",
+            (total || amount).toString(),
+            orderId,
+            promoCode || null,
+          )
+          const invoiceResult = await sendAdminEmail({
+            subject: invoiceEmail.subject,
+            html: invoiceEmail.html,
+          })
+          if (!invoiceResult?.success) {
+            console.error("[v0] Admin invoice email failed:", invoiceResult?.error)
+          } else {
+            console.log("[v0] Admin invoice email sent successfully", { orderId })
+          }
         } catch (adminEmailError) {
           console.error(" Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
           console.error(" Admin email full error:", adminEmailError)
