@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
+import { emailTemplates, sendEmail } from "@/config/email"
 
 // GET /api/orders - Get all orders (filtered by user for clients)
 export async function GET(req: NextRequest) {
@@ -108,12 +109,59 @@ export async function POST(req: NextRequest) {
     }
 
     const result = await db.collection("orders").insertOne(newOrder)
+    const orderId = result.insertedId.toString()
+
+    const invoiceCount = await db.collection("invoices").countDocuments()
+    const invoiceNumber = `INV-${String(invoiceCount + 1).padStart(5, "0")}`
+    const invoice = {
+      userId: decoded.userId,
+      companyId,
+      orderId,
+      invoiceNumber,
+      amount: total || amount,
+      status: "sent",
+      dueDate: new Date().toISOString(),
+      items: items || [{ description: type, quantity: 1, total: total || amount }],
+      notes: "Invoice generated from customer order",
+      emailTo: "buzzfilings@gmail.com",
+      emailStatus: "pending",
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+    }
+
+    const invoiceResult = await db.collection("invoices").insertOne(invoice)
+    const invoiceEmail = emailTemplates.orderInvoice({
+      invoiceNumber,
+      orderId,
+      companyName,
+      type,
+      amount: total || amount,
+      items: items || [],
+    })
+    const emailResult = await sendEmail(
+      "buzzfilings@gmail.com",
+      `New order invoice ${invoiceNumber}`,
+      invoiceEmail,
+    )
+
+    await db.collection("invoices").updateOne(
+      { _id: invoiceResult.insertedId },
+      {
+        $set: {
+          emailStatus: emailResult.success ? "sent" : "failed",
+          emailMessageId: emailResult.success ? emailResult.messageId : undefined,
+          updatedAt: new Date().toISOString(),
+        },
+      },
+    )
 
     return NextResponse.json({
       success: true,
       data: {
-        id: result.insertedId.toString(),
+        id: orderId,
         ...newOrder,
+        invoiceId: invoiceResult.insertedId.toString(),
+        invoiceNumber,
       },
     })
   } catch (error) {

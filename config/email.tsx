@@ -170,6 +170,49 @@ export const emailTemplates = {
     </html>
   `,
 
+  orderInvoice: (order: { invoiceNumber: string; orderId: string; companyName: string; type: string; amount: number; items?: Array<{ description?: string; name?: string; quantity?: number; total?: number; price?: number }> }) => {
+    const items = order.items?.length
+      ? order.items.map((item) => `<tr><td>${item.description || item.name || "Service"}</td><td>${item.quantity || 1}</td><td>$${Number(item.total ?? item.price ?? 0).toFixed(2)}</td></tr>`).join("")
+      : `<tr><td>${order.type}</td><td>1</td><td>$${Number(order.amount).toFixed(2)}</td></tr>`
+
+    return `
+    <!DOCTYPE html>
+    <html>
+      <head>
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 680px; margin: 0 auto; padding: 20px; }
+          .header { background: #0070f3; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background: #f4f4f4; padding: 30px; }
+          .details, table { width: 100%; background: white; padding: 16px; margin: 20px 0; border-radius: 5px; }
+          table { border-collapse: collapse; padding: 0; }
+          th, td { padding: 12px; border-bottom: 1px solid #e5e7eb; text-align: left; }
+          th:last-child, td:last-child { text-align: right; }
+          .total { font-size: 18px; font-weight: bold; text-align: right; padding-top: 18px; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header"><h1>New Order Invoice</h1></div>
+          <div class="content">
+            <div class="details">
+              <p><strong>Invoice number:</strong> ${order.invoiceNumber}</p>
+              <p><strong>Order ID:</strong> ${order.orderId}</p>
+              <p><strong>Company:</strong> ${order.companyName}</p>
+            </div>
+            <table>
+              <thead><tr><th>Description</th><th>Qty</th><th>Amount</th></tr></thead>
+              <tbody>${items}</tbody>
+            </table>
+            <p class="total">Total: $${Number(order.amount).toFixed(2)}</p>
+          </div>
+          <div class="footer"><p>This invoice was generated automatically by LLC Formation.</p></div>
+        </div>
+      </body>
+    </html>`
+  },
+
   documentReady: (name: string, documentName: string) => `
     <!DOCTYPE html>
     <html>
