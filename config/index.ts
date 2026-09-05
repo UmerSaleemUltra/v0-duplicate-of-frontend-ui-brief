@@ -4,9 +4,6 @@ export * from "./jwt"
 export * from "./blob"
 
 export const config = {
-  api: {
-    baseUrl: process.env.NEXT_PUBLIC_API_BASE_URL || "https://www.buzzfiling.com",
-  },
   mongodb: {
     uri: process.env.MONGODB_URI!,
     dbName: process.env.MONGODB_DB || "llc_formation",
@@ -16,12 +13,12 @@ export const config = {
     expiresIn: "7d",
   },
   email: {
-    host: process.env.SMTP_HOST || "smtp.secureserver.net",
+    host: process.env.SMTP_HOST || "smtp.hostinger.com",
     port: Number.parseInt(process.env.SMTP_PORT || "465"),
     secure: true,
-    user: process.env.SMTP_USER || "filings@buzzfiling.com",
+    user: process.env.SMTP_USER || "hello@umersaleem.com",
     password: process.env.SMTP_PASSWORD!,
-    from: process.env.SMTP_FROM || "filings@buzzfiling.com",
+    from: process.env.SMTP_FROM || "hello@umersaleem.com",
   },
   blob: {
     token: process.env.BLOB_READ_WRITE_TOKEN!,

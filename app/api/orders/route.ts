@@ -1,31 +1,28 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
-import { sendAdminEmail, sendUserEmail, emailTemplates } from "@/config/email"
-import { ObjectId } from "mongodb"
-import { addSecurityHeaders } from "@/lib/middleware/security-headers"
-import { broadcastUpdate } from "@/lib/realtime/broadcaster"
 
+// GET /api/orders - Get all orders (filtered by user for clients)
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
     if (!token) {
-      return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const decoded = verifyToken(token)
     if (!decoded) {
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
     }
 
-    const { db } = await connectDB()
+    const db = await connectDB()
     const query = decoded.role === "admin" ? {} : { userId: decoded.userId }
 
     const orders = await db.collection("orders").find(query).sort({ createdAt: -1 }).toArray()
 
-    const result = {
+    return NextResponse.json({
       success: true,
       data: orders.map((order) => ({
         id: order._id.toString(),
@@ -41,31 +38,33 @@ export async function GET(req: NextRequest) {
         addonsTotal: order.addonsTotal,
         paymentStatus: order.paymentStatus,
         paymentMethod: order.paymentMethod,
+        transactionId: order.transactionId,
+        transactionReference: order.transactionReference,
         items: order.items,
         purchasedAddons: order.purchasedAddons,
         createdAt: order.createdAt,
         updatedAt: order.updatedAt,
       })),
-    }
-
-    return addSecurityHeaders(NextResponse.json(result))
+    })
   } catch (error) {
-    return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 }))
+    console.error("Error fetching orders:", error)
+    return NextResponse.json({ error: "Failed to fetch orders" }, { status: 500 })
   }
 }
 
+// POST /api/orders - Create order
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
     if (!token) {
-      return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
     }
 
     const decoded = verifyToken(token)
     if (!decoded) {
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
+      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
     }
 
     const body = await req.json()
@@ -76,200 +75,49 @@ export async function POST(req: NextRequest) {
       amount,
       total,
       packagePrice,
-      packageType,
       stateFilingFee,
       addonsTotal,
       items,
       purchasedAddons,
       paymentMethod,
-      whatsappPhone,
-      receiptUrl,
-      members,
-      promoCode,
-      referralSource,
     } = body
 
     if (!companyId || !companyName || !type || !amount) {
-      return addSecurityHeaders(NextResponse.json({ error: "Missing required fields" }, { status: 400 }))
+      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    if (typeof amount !== "number" || amount <= 0) {
-      return addSecurityHeaders(NextResponse.json({ error: "Invalid amount" }, { status: 400 }))
-    }
-
-    const { db } = await connectDB()
-
-    const company = await db.collection("companies").findOne({ _id: new ObjectId(companyId) })
-    if (!company) {
-      return addSecurityHeaders(NextResponse.json({ error: "Company not found" }, { status: 404 }))
-    }
+    const db = await connectDB()
 
     const newOrder = {
       userId: decoded.userId,
       companyId,
       companyName,
       type,
-      packageType: packageType || "starter",
-      status: "Order Proceeded",
+      status: "pending",
       amount,
       total: total || amount,
       packagePrice,
       stateFilingFee,
       addonsTotal,
-      promoCode: promoCode || null,
-      referralSource: referralSource || null,
       paymentStatus: "pending",
       paymentMethod: paymentMethod || "stripe",
-      paymentInfo: {
-        method: paymentMethod || "stripe",
-        status: "pending",
-        whatsappPhone: whatsappPhone || null,
-        receiptUrl: receiptUrl || null,
-        date: new Date().toISOString(),
-      },
       items: items || [],
-      purchasedAddons: Array.isArray(purchasedAddons) ? purchasedAddons : [],
-      members: members || [],
+      purchasedAddons: purchasedAddons || [],
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
     const result = await db.collection("orders").insertOne(newOrder)
-    const orderId = result.insertedId.toString()
 
-    const createdOrder = { id: orderId, ...newOrder }
-
-    broadcastUpdate("orders", "created", createdOrder)
-
-    try {
-      await db.collection("companies").updateOne(
-        { _id: new ObjectId(companyId) },
-        {
-          $set: {
-            "customMilestones.0.completed": true,
-            "customMilestones.0.completedDate": new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
-          },
-        },
-      )
-    } catch (milestoneError) {
-      console.log(" Failed to mark first milestone complete:", milestoneError)
-    }
-
-    try {
-      const user = await db
-        .collection("users")
-        .findOne({ _id: new ObjectId(decoded.userId) }, { projection: { name: 1, email: 1 } })
-
-      if (user) {
-        console.log(" Attempting to send order confirmation email to:", user.email)
-        const orderEmail = emailTemplates.orderConfirmation(
-          user.name,
-          companyName,
-          packageType || "Starter Package",
-          (total || amount).toString(),
-          orderId,
-          promoCode || null
-        )
-
-        const emailResult = await sendUserEmail({
-          to: user.email,
-          subject: orderEmail.subject,
-          html: orderEmail.html,
-        })
-        console.log(" Order confirmation email result:", emailResult)
-        if (!emailResult?.success) {
-          console.error(" User email failed with result:", emailResult)
-        } else {
-          console.log(" User email sent successfully to:", user.email)
-        }
-
-        // Send admin notification
-        try {
-          console.log(" Starting admin email send for order:", orderId)
-          const adminEmail = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
-          console.log(" Admin email configured as:", adminEmail)
-          
-          const adminOrderEmail = emailTemplates.adminNewOrder(
-            user.name || "Customer",
-            companyName,
-            packageType || "Starter",
-            (total || amount).toString(),
-            orderId,
-            user.email,
-            promoCode || null,
-          )
-          console.log(" Admin email template created:", adminOrderEmail.subject)
-          
-          const adminEmailResult = await sendAdminEmail({
-            subject: adminOrderEmail.subject,
-            html: adminOrderEmail.html,
-          })
-          
-          console.log(" Admin notification email result:", adminEmailResult)
-          if (!adminEmailResult?.success) {
-            console.error(" Admin email failed:", adminEmailResult?.error)
-          } else {
-            console.log(" Admin email sent successfully to:", adminEmail)
-          }
-
-          const invoiceEmail = emailTemplates.adminInvoice(
-            user.name || "Customer",
-            user.email,
-            companyName,
-            packageType || "Starter",
-            (total || amount).toString(),
-            orderId,
-            promoCode || null,
-          )
-          const invoiceResult = await sendAdminEmail({
-            subject: invoiceEmail.subject,
-            html: invoiceEmail.html,
-          })
-          if (!invoiceResult?.success) {
-            console.error("[v0] Admin invoice email failed:", invoiceResult?.error)
-          } else {
-            console.log("[v0] Admin invoice email sent successfully", { orderId })
-          }
-        } catch (adminEmailError) {
-          console.error(" Admin notification email exception:", adminEmailError instanceof Error ? adminEmailError.message : String(adminEmailError))
-          console.error(" Admin email full error:", adminEmailError)
-        }
-      } else {
-        console.log(" User not found for email notification:", decoded.userId)
-      }
-    } catch (emailError) {
-      console.error(" Order confirmation email failed:", emailError)
-    }
-
-    try {
-      await db.collection("notifications").insertOne({
-        userId: decoded.userId,
-        companyId: companyId,
-        type: "order",
-        title: "Order Received!",
-        message: `Thank you! Your order to create "${companyName}" has been received. We'll start processing it shortly.`,
-        read: false,
-        metadata: {
-          orderId: orderId,
-          companyId: companyId,
-          companyName: companyName,
-          orderType: type,
-          amount: total || amount,
-        },
-        createdAt: new Date().toISOString(),
-      })
-
-      broadcastUpdate("notifications", "created", { userId: decoded.userId })
-    } catch (notificationError) {}
-
-    return addSecurityHeaders(
-      NextResponse.json({
-        success: true,
-        data: createdOrder,
-      }),
-    )
+    return NextResponse.json({
+      success: true,
+      data: {
+        id: result.insertedId.toString(),
+        ...newOrder,
+      },
+    })
   } catch (error) {
-    return addSecurityHeaders(NextResponse.json({ error: "Failed to create order" }, { status: 500 }))
+    console.error("Error creating order:", error)
+    return NextResponse.json({ error: "Failed to create order" }, { status: 500 })
   }
 }

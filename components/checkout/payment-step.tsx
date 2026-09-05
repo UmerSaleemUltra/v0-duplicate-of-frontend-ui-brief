@@ -1,22 +1,19 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { ArrowLeft, Lock, CheckCircle2, MessageCircle, Sparkles } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { ArrowLeft, ArrowRight, CheckCircle2, Lock, Upload, Building2, MessageSquare, X, Tag } from "lucide-react"
-import { packagePricing } from "@/lib/pricing"
-import { STATE_FEES } from "@/lib/constants"
-import { toast } from "@/components/ui/use-toast"
-import { getCheckoutData, saveCheckoutData } from "@/lib/checkout-storage"
+import type { CheckoutData } from "@/app/checkout/page"
+import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 
-interface PaymentStepProps {
-  data: any
+type PaymentStepProps = {
+  data: CheckoutData
   onBack: () => void
-  onSubmit: (orderData: any) => Promise<void>
 }
 
 function calculateRenewalDate(): string {
@@ -25,842 +22,329 @@ function calculateRenewalDate(): string {
   return date.toISOString()
 }
 
-function truncateFilename(filename: string, maxLength = 20): string {
-  const words = filename.split(" ")
-  let truncatedFilename = ""
-  let currentLength = 0
-
-  for (const word of words) {
-    if (currentLength + word.length + 1 > maxLength) {
-      break
-    }
-    truncatedFilename += word + " "
-    currentLength += word.length + 1
-  }
-
-  return truncatedFilename.trim() + (truncatedFilename !== filename ? "..." : "")
-}
-
-function PaymentStep({ data, onBack, onSubmit }: PaymentStepProps) {
+export function PaymentStep({ data, onBack }: PaymentStepProps) {
   const router = useRouter()
-  const [paymentMethod, setPaymentMethod] = useState<"bank_transfer" | "already_paid">("already_paid")
-  const [whatsappPhone, setWhatsappPhone] = useState("")
-  const [receiptUrl, setReceiptUrl] = useState<string | null>(null)
-  const [receiptFile, setReceiptFile] = useState<File | null>(null)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [isUploadingReceipt, setIsUploadingReceipt] = useState(false)
-  const [uploadError, setUploadError] = useState<string>("")
-  const PKR_FIXED_RATE = 285
-  const [pkrRate] = useState<number>(PKR_FIXED_RATE)
-  const [showValidationError, setShowValidationError] = useState(false)
-
-  const [errors, setErrors] = useState({ whatsappNumber: "", submit: "" })
-
-  useEffect(() => {
-    const savedData = getCheckoutData()
-    const hasCheckoutData = savedData && savedData.account?.email
-
-    if (!hasCheckoutData) {
-      toast({
-        title: "Authentication Required",
-        description: "Please complete the account step first before proceeding to payment.",
-        variant: "destructive",
-      })
-      setTimeout(() => {
-        window.location.href = "/checkout"
-      }, 1500)
-    }
-  }, [toast])
-
-
-
-  const getAddonName = (addon: any) => {
-    if (!addon) return "Unknown Add-on"
-
-    if (addon.serviceId === "itin" && addon.memberName) {
-      return `ITIN Application - ${addon.memberName}`
-    }
-
-    return addon.name || addon.serviceName || "Add-on"
-  }
+  const [loading, setLoading] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<"whatsapp" | null>(null)
+  const [whatsappReference, setWhatsappReference] = useState("")
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    setErrors({})
-    setIsSubmitting(true)
+    setLoading(true)
 
     try {
-      console.log(" ========== PAYMENT SUBMISSION STARTED ==========")
+      console.log("[v0] Starting checkout submission via API...")
 
-      if (paymentMethod === "already_paid") {
-        if (!whatsappPhone.trim()) {
-          setErrors({ whatsappNumber: "Please provide your phone number to proceed", submit: "" })
-          setShowValidationError(true)
-          console.log("❌ Validation failed: WhatsApp phone number is required")
-          return
-        }
-        const phoneDigits = whatsappPhone.replace(/\D/g, "")
-        if (phoneDigits.length < 10) {
-          setErrors({ whatsappNumber: "Please enter a valid phone number with at least 10 digits", submit: "" })
-          setShowValidationError(true)
-          console.log("❌ Validation failed: Invalid phone number format")
-          return
-        }
-      } else {
-        if (!receiptUrl) {
-          setShowValidationError(true)
-          console.log("❌ Validation failed: Payment receipt is required")
-          return
-        }
+      if (!data.email || !data.password || !data.name) {
+        alert("Please complete the account information")
+        setLoading(false)
+        return
       }
 
-      console.log(" ✅ Payment information validated")
-      setShowValidationError(false)
+      if (!data.businessName || !data.state || !data.entityType) {
+        alert("Please complete the business information")
+        setLoading(false)
+        return
+      }
 
-      console.log("\n === PAYMENT SUBMISSION START ===")
-      console.log(" Checkout data:", data)
+      console.log("[v0] Creating/logging in user...")
+      let token = ""
+      let userId = ""
 
-      let userId = data.userId
-      let currentToken = authService.getToken()
+      try {
+        // Try to signup first
+        const signupResponse = await ApiClient.auth.signup({
+          email: data.email,
+          password: data.password,
+          name: data.name || "User",
+          phone: data.phone || "",
+          role: "client",
+        })
 
-      // If we have a token, always verify it server-side to get the canonical userId
-      // This fixes the bug where a user has a stale/missing userId in client state
-      // but a valid token — the company would be created with a wrong/missing userId
-      // causing "user not registered" in the admin customers panel.
-      if (currentToken) {
-        try {
-          const meResponse = await fetch("/api/auth/me", {
-            headers: { Authorization: `Bearer ${currentToken}` },
+        token = signupResponse.token
+        userId = signupResponse.user.id
+        console.log("[v0] New user created:", userId)
+      } catch (signupError: any) {
+        // If user exists, login instead
+        if (signupError.message?.includes("exists")) {
+          console.log("[v0] User exists, logging in...")
+          const loginResponse = await ApiClient.auth.login({
+            email: data.email,
+            password: data.password,
           })
-          if (meResponse.ok) {
-            const meData = await meResponse.json()
-            const serverUserId = meData?.data?.id || meData?.id
-            if (serverUserId) {
-              userId = serverUserId
-            }
-          } else {
-            // Token is invalid/expired — force re-auth below
-            currentToken = null
-            userId = undefined
-          }
-        } catch {
-          // Network error — continue and let the signup/login block handle it
-        }
-      }
 
-      if (!userId || !currentToken) {
-        console.log(" No userId or token found, creating/logging in account...")
-
-        const email = data.email?.trim()
-        const password = data.password?.trim()
-        const name = data.name?.trim()
-        const phone = data.phone?.trim()
-
-        if (!email || !password) {
-          throw new Error("Email and password are required")
-        }
-
-        console.log(" Step 1: Creating/logging in account for:", email)
-
-        // Generate a secure checkout token first (required for signup)
-        console.log("[v0] Generating checkout token...")
-        const tokenResponse = await fetch("/api/checkout/token", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email }),
-        })
-
-        if (!tokenResponse.ok) {
-          const tokenError = await tokenResponse.json()
-          throw new Error(tokenError.error || "Failed to initialize checkout session")
-        }
-
-        const { data: tokenData } = await tokenResponse.json()
-        const checkoutToken = tokenData.checkoutToken
-        console.log("[v0] Checkout token generated")
-
-        const signupResponse = await fetch("/api/auth/signup", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password, name, phone, role: "client", checkoutToken }),
-        })
-
-        const signupData = await signupResponse.json()
-
-        if (!signupResponse.ok) {
-          if (signupData.error?.includes("already exists") || signupData.error?.includes("already registered")) {
-            console.log(" Email exists, attempting login...")
-            const loginResponse = await fetch("/api/auth/login", {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ email, password }),
-            })
-
-            const loginData = await loginResponse.json()
-
-            if (!loginResponse.ok) {
-              throw new Error(loginData.error || "Login failed after signup error")
-            }
-
-            console.log(" ✅ Login successful")
-            currentToken = loginData.data.token
-            userId = loginData.data.user.id
-
-            authService.setAuth(currentToken, loginData.data.user)
-
-            if (typeof window !== "undefined") {
-              localStorage.setItem("user_data", JSON.stringify(loginData.data.user))
-              localStorage.setItem("user_id", loginData.data.user.id)
-            }
-          } else {
-            throw new Error(signupData.error || "Account creation failed")
-          }
+          token = loginResponse.token
+          userId = loginResponse.user.id
+          console.log("[v0] User logged in:", userId)
         } else {
-          console.log(" ✅ Account created successfully")
-          currentToken = signupData.data.token
-          userId = signupData.data.user.id
-
-          authService.setAuth(currentToken, signupData.data.user)
-
-          if (typeof window !== "undefined") {
-            localStorage.setItem("user_data", JSON.stringify(signupData.data.user))
-            localStorage.setItem("user_id", signupData.data.user.id)
-          }
+          throw signupError
         }
-
-        const updatedData = { ...data, userId }
-        saveCheckoutData(updatedData)
-
-        console.log(" User ID set to:", userId)
       }
 
-      if (!userId) {
-        console.error(" ❌ Failed to retrieve userId after authentication")
-        throw new Error("User ID is missing - authentication may have failed. Please refresh and try again.")
+      if (!token || !userId) {
+        throw new Error("Authentication failed")
       }
 
-      console.log(" Verified userId:", userId)
-      console.log(" Verified token:", currentToken ? "Present" : "Missing")
+      authService.setToken(token)
 
-      console.log("\n === STEP 2: UPLOADING PASSPORTS ===")
-      console.log(` Found ${data.members?.length || 0} members to process`)
+      // Create company via API
+      console.log("[v0] Creating company via API...")
+      const firstMember = data.members && data.members.length > 0 && data.members[0] ? data.members[0] : null
 
-      const { uploadPassportsFromIndexedDB } = await import("@/lib/upload-passports-from-indexeddb")
-
-      let updatedMembers
-      try {
-        updatedMembers = await uploadPassportsFromIndexedDB(data.members || [], userId, "")
-        console.log(" ✅ All passports uploaded successfully")
-        console.log(" Updated members with passport URLs:", updatedMembers)
-      } catch (uploadError) {
-        console.error(" ❌ Passport upload error:", uploadError)
-        throw uploadError
-      }
-
-      console.log("\n === STEP 3: CREATING COMPANY WITH EMBEDDED ORDER ===")
-      console.log(" Company details:", {
-        name: data.businessName,
-        type: data.entityType,
-        state: data.state,
-        packageType: data.packageType,
-        membersCount: updatedMembers.length,
-      })
-
-      const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
-      const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
-      const packageWithStateFee = packagePrice + stateFilingFee
-      const addonsTotal =
-        data.addonsTotal ||
-        (Array.isArray(data.addons) ? data.addons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) : 0)
-      const promoDiscount = data.promoCode?.discountAmount || 0
-      const totalAmount = Math.max(0, packageWithStateFee + addonsTotal - promoDiscount)
-
-      const companyPayload = {
-        name: data.businessName,
-        type: data.entityType,
-        state: data.state,
-        address: {
-          street: data.businessAddress,
-          city: data.businessCity,
+      const companyResponse = await ApiClient.companies.create(
+        {
+          name: data.businessName,
+          type: data.entityType,
           state: data.state,
-          zip: data.businessZip,
-        },
-        businessCategory: data.businessCategory || "",
-        businessDescription: data.businessDescription || "",
-        businessWebsite: data.businessWebsite || "",
-        packageType: data.packageType,
-        members: updatedMembers,
-        status: "active",
-        transactionReference: `${paymentMethod.toUpperCase()}-${Date.now()}`,
-        purchasedAddons: data.addons || [],
-        userId: userId,
-        orderData: {
-          orderType: `${data.entityType.toUpperCase()} Formation`,
+          status: "processing",
+          address: {
+            street: firstMember?.address || "",
+            city: firstMember?.city || "",
+            state: firstMember?.state || data.state,
+            zip: firstMember?.zip || "",
+          },
+          businessCategory: data.businessCategory,
+          businessDescription: data.businessDescription,
+          businessWebsite: data.businessWebsite,
           packageType: data.packageType,
-          state: data.state,
-          status: "pending",
-          packagePrice: packagePrice,
-          stateFilingFee: stateFilingFee,
-          addonsTotal: addonsTotal,
-          subtotal: packageWithStateFee + addonsTotal,
-          total: totalAmount,
-          promoCode: data.promoCode || null,
-          referralSource: data.referralSource || null,
-          selectedAddons: data.addons || [],
-          paymentMethod: paymentMethod,
-          paymentStatus: "pending",
-          whatsappPhone: whatsappPhone ? (whatsappPhone.startsWith("+") ? whatsappPhone : `+${whatsappPhone}`) : null,
-          receiptUrl: receiptUrl || null,
-          transactionId: `${paymentMethod.toUpperCase()}-${Date.now()}`,
-          passportDocuments: updatedMembers
-            .filter((m: any) => m.passportUrl)
-            .map((m: any) => ({
-              id: new Date().getTime().toString(),
-              memberId: m.id || m.email,
-              memberName: `${m.firstName} ${m.lastName}`,
-              fileName: m.passportKey || "passport.pdf",
-              fileUrl: m.passportUrl,
-              fileType: "application/pdf",
-              fileSize: 0,
-              uploadedAt: new Date().toISOString(),
+          members: (data.members || [])
+            .filter((m) => m != null) // Remove null/undefined entries
+            .map((m) => ({
+              firstName: m.firstName || m.name?.split(" ")[0] || "",
+              middleName: m.middleName || "",
+              lastName: m.lastName || m.name?.split(" ").slice(1).join(" ") || "",
+              email: m.email || data.email, // Use account email as fallback
+              phone: m.phone || data.phone || "",
+              address: m.address || "",
+              city: m.city || "",
+              state: m.state || data.state,
+              zip: m.zip || "",
+              dateOfBirth: m.dateOfBirth || "",
+              ssn: m.ssn || "",
+              isResponsiblePerson: m.isResponsiblePerson || false,
+              ownershipPercentage: m.ownershipPercentage || 0,
+              needsItin: m.needsItin || false,
             })),
+          milestones: {
+            orderProcessed: false,
+            registeredAgentAssigned: false,
+            mailingAddressIssued: false,
+            formationCompleted: false,
+            einProcessed: false,
+            boiReportFiled: false,
+          },
+          purchasedAddons: data.addons || [],
         },
-      }
+        token,
+      )
 
-      console.log(" Company payload with embedded order")
+      console.log("[v0] Company created:", companyResponse.data.id)
 
-      const companyResponse = await fetch("/api/companies", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${currentToken}`,
-        },
-        body: JSON.stringify(companyPayload),
-      })
+      // Create order via API
+      console.log("[v0] Creating order via API...")
+      const totalAmount = data.totalAmount || (data.packageType === "advanced" ? 399 : 199)
 
-      const companyData = await companyResponse.json()
-
-      if (!companyResponse.ok) {
-        console.error(" ❌ Company creation failed:", companyData.error)
-        throw new Error(companyData.error || "Failed to create company")
-      }
-
-      console.log(" ✅ Company and order created successfully with ID:", companyData.data.id)
-      console.log(" ✅ Order embedded in company")
-
-      // Mark the abandoned checkout as recovered so it disappears from the admin panel
-      try {
-        const sessionId = sessionStorage.getItem("checkout_session_id")
-        if (sessionId) {
-          await fetch("/api/abandoned-checkouts", {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${currentToken}`,
+      const orderResponse = await ApiClient.orders.create(
+        {
+          companyId: companyResponse.data.id,
+          companyName: data.businessName,
+          type: `${data.entityType.toUpperCase()} Formation`,
+          amount: totalAmount,
+          total: totalAmount,
+          packagePrice: data.packagePrice || (data.packageType === "advanced" ? 249 : 149),
+          stateFilingFee: data.stateFilingFee || 50,
+          addonsTotal: data.addonsTotal || 0,
+          items: [
+            {
+              name: `${data.packageType} Package`,
+              price: data.packagePrice || (data.packageType === "advanced" ? 249 : 149),
+              quantity: 1,
             },
-            body: JSON.stringify({ sessionId, recovered: true }),
-          })
-          sessionStorage.removeItem("checkout_session_id")
-        }
-      } catch {
-        // Silent fail — don't block the user from reaching dashboard
-      }
+          ],
+          purchasedAddons: data.addons || [],
+          paymentMethod: "whatsapp",
+          transactionReference: whatsappReference,
+        },
+        token,
+      )
 
-      console.log("\n === CLEANING UP ===")
-      console.log(" Clearing checkout data from localStorage...")
-      localStorage.removeItem("checkoutData")
-      localStorage.removeItem("checkoutStep")
-      
-      // Clear company cache to force refresh on dashboard
-      try {
-        localStorage.removeItem("companies_cache")
-        localStorage.removeItem("selectedCompanyId")
-      } catch {
-        // ignore
-      }
-      
-      console.log(" ✅ Checkout data cleared")
+      console.log("[v0] Order created:", orderResponse.data.id)
 
-      console.log("\n === CHECKOUT COMPLETED SUCCESSFULLY ===")
-      console.log(" Dispatching checkout-completed event...")
-      
-      // Dispatch event to notify CompanyProvider to refresh
-      if (typeof window !== "undefined") {
-        window.dispatchEvent(new Event("checkout-completed"))
-      }
-      
-      console.log(" Redirecting to dashboard...")
+      // Create welcome notification
+      await ApiClient.notifications.create(
+        {
+          userId: userId,
+          type: "system",
+          title: "Welcome to BuzzFiling!",
+          message: `Your ${data.entityType.toUpperCase()} formation order has been received and is being processed.`,
+          read: false,
+        },
+        token,
+      )
 
-      window.location.href = "/client/dashboard"
-    } catch (error: any) {
-      console.error(" ❌ Payment submission error:", error)
-      setErrors({ submit: error.message || "Payment submission failed. Please try again." })
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+      console.log("[v0] Checkout completed successfully, redirecting...")
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setWhatsappPhone(e.target.value)
-    setErrors({ whatsappNumber: "", submit: "" })
-    setShowValidationError(false)
-  }
-
-  const handleReceiptUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    const allowedTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"]
-    if (!allowedTypes.includes(file.type)) {
-      setUploadError("Only image files (JPEG, PNG, WEBP) are allowed")
-      return
-    }
-
-    const maxSize = 5 * 1024 * 1024
-    if (file.size > maxSize) {
-      setUploadError("File size must be less than 5MB")
-      return
-    }
-
-    setReceiptFile(file)
-    setUploadError("")
-
-    setIsUploadingReceipt(true)
-    try {
-      const formData = new FormData()
-      formData.append("receipt", file)
-      formData.append("orderId", "temp-" + Date.now())
-
-      const response = await fetch("/api/payment-receipt/upload", {
-        method: "POST",
-        body: formData,
-      })
-
-      const result = await response.json()
-
-      if (result.success) {
-        setReceiptUrl(result.data.url)
-      } else {
-        setUploadError(result.error || "Failed to upload receipt")
-      }
+      // Redirect to order confirmation
+      setTimeout(() => {
+        router.push(`/order-confirmation?orderId=${orderResponse.data.id}`)
+      }, 1000)
     } catch (error) {
-      console.error("Receipt upload error:", error)
-      setUploadError("Failed to upload receipt. Please try again.")
-    } finally {
-      setIsUploadingReceipt(false)
+      console.error("[v0] Checkout error:", error)
+      alert("Failed to process checkout. Please try again.")
+      setLoading(false)
     }
   }
-
-  const handleRemoveReceipt = () => {
-    setReceiptFile(null)
-    setReceiptUrl(null)
-    setUploadError("")
-  }
-
-  const packagePrice = packagePricing[data.packageType as keyof typeof packagePricing] || 149
-  const stateFilingFee = STATE_FEES[data.state as keyof typeof STATE_FEES] || 0
-  const packageWithStateFee = packagePrice + stateFilingFee
-  const addonsTotal =
-    data.addonsTotal ||
-    (Array.isArray(data.addons) ? data.addons.reduce((sum: number, addon: any) => sum + (addon.price || 0), 0) : 0)
-  const promoDiscount = data.promoCode?.discountAmount || 0
-  const subtotalBeforeDiscount = packageWithStateFee + addonsTotal
-  const totalAmount = Math.max(0, subtotalBeforeDiscount - promoDiscount)
-
-  const isPaymentValid = paymentMethod === "already_paid" ? whatsappPhone.trim() !== "" : receiptUrl !== ""
-
-  const getValidationMessage = () => {
-    if (paymentMethod === "already_paid") {
-      if (!whatsappPhone.trim()) {
-        return "Please provide your phone number to proceed"
-      }
-    } else {
-      if (!receiptUrl) {
-        return "Please upload a payment receipt to proceed"
-      }
-    }
-    return ""
-  }
-
-  const calculateTotal = () => {
-    return totalAmount.toFixed(2)
-  }
-
-  const PKR_RATE = pkrRate
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8 pb-6 md:pb-10">
-      <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 tracking-tight">Complete Payment</h1>
-        <p className="text-sm md:text-base text-slate-700 leading-relaxed">
-          Choose a payment option below to continue your business setup.
-        </p>
-      </div>
-
-      <div className="space-y-3 md:space-y-4">
-        <h2 className="text-sm md:text-base font-semibold text-slate-900">Select Payment Method</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-4">
-          <button
-            type="button"
-            onClick={() => setPaymentMethod("already_paid")}
-            className={`relative p-4 md:p-5 rounded-lg border-2 transition-all text-left cursor-pointer ${
-              paymentMethod === "already_paid"
-                ? "border-[#ff0d13] bg-red-50"
-                : "border-slate-200 hover:border-slate-300 bg-white"
-            }`}
-          >
-            {paymentMethod === "already_paid" && (
-              <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                <CheckCircle2 className="w-4 h-4 text-white" />
-              </div>
-            )}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 className="w-5 h-5 md:w-6 md:h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm md:text-base font-semibold text-slate-900 mb-1">Already Paid</h3>
-                <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-                  Partial payment made / will be made via WhatsApp
-                </p>
-              </div>
-            </div>
-          </button>
-
-          <button
-            type="button"
-            onClick={() => setPaymentMethod("bank_transfer")}
-            className={`relative p-4 md:p-5 rounded-lg border-2 transition-all text-left cursor-pointer ${
-              paymentMethod === "bank_transfer"
-                ? "border-[#ff0d13] bg-red-50"
-                : "border-slate-200 hover:border-slate-300 bg-white"
-            }`}
-          >
-            {paymentMethod === "bank_transfer" && (
-              <div className="absolute top-3 right-3 w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center">
-                <Building2 className="w-4 h-4 text-white" />
-              </div>
-            )}
-            <div className="flex items-start gap-3">
-              <div className="w-10 h-10 md:w-12 md:h-12 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                <Building2 className="w-5 h-5 md:w-6 md:h-6 text-white" />
-              </div>
-              <div className="flex-1 min-w-0">
-                <h3 className="text-sm md:text-base font-semibold text-slate-900 mb-1">Make Payment</h3>
-                <p className="text-xs md:text-sm text-slate-600 leading-relaxed">
-                  View bank details, make payment, and upload receipt
-                </p>
-              </div>
-            </div>
-          </button>
-        </div>
-      </div>
-
-      <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6 space-y-3 md:space-y-4">
-        <h3 className="text-base md:text-lg font-semibold text-slate-900">Payment Summary</h3>
-        <div className="space-y-2 md:space-y-3">
-          <div className="flex items-center justify-between gap-4 py-2 md:py-2.5 border-b border-slate-200">
-            <span className="text-sm md:text-base text-slate-700 leading-relaxed">
-              {data.state} {data.packageType === "starter" ? "Starter" : "Advance"} Package
-            </span>
-            <div className="text-right flex-shrink-0">
-              <span className="font-semibold text-slate-900 text-sm md:text-base">
-                ${packageWithStateFee.toFixed(2)}
-              </span>
-              {pkrRate && (
-                <p className="text-xs md:text-sm text-slate-500">
-                  {Math.round(packageWithStateFee * pkrRate).toLocaleString()} PKR
-                </p>
-              )}
-            </div>
+    <div className="space-y-6">
+      <div className="glass-surface rounded-3xl p-8 lg:p-10">
+        <div className="flex items-start gap-4 mb-8">
+          <div className="w-14 h-14 rounded-2xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+            <Lock className="w-7 h-7 text-white" />
           </div>
-
-          {data.addons && data.addons.length > 0 ? (
-            data.addons.map((addon: any, index: number) => (
-              <div
-                key={index}
-                className="flex items-center justify-between gap-4 py-2 md:py-2.5 border-b border-slate-200"
-              >
-                <span className="text-sm md:text-base text-slate-700 leading-relaxed break-words">
-                  {getAddonName(addon)}
-                </span>
-                <div className="text-right flex-shrink-0">
-                  <span className="font-semibold text-slate-900 text-sm md:text-base">${addon.price || 0}</span>
-                  {pkrRate && addon.price && (
-                    <p className="text-xs md:text-sm text-slate-500">
-                      {Math.round(addon.price * pkrRate).toLocaleString()} PKR
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))
-          ) : addonsTotal > 0 ? (
-            <div className="flex items-center justify-between gap-4 py-2 md:py-2.5 border-b border-slate-200">
-              <span className="text-sm md:text-base text-slate-700">Add-ons</span>
-              <div className="text-right flex-shrink-0">
-                <span className="font-semibold text-slate-900 text-sm md:text-base">${addonsTotal.toFixed(2)}</span>
-                {pkrRate && (
-                  <p className="text-xs md:text-sm text-slate-500">
-                    {Math.round(Number.parseFloat(calculateTotal()) * PKR_RATE).toLocaleString()} PKR
-                  </p>
-                )}
-              </div>
-            </div>
-          ) : null}
-
-          {/* Promo Code Applied */}
-          {data.promoCode && (
-            <div className="flex items-center justify-between gap-4 py-3 md:py-4 border-b border-green-200 bg-green-50 px-3 md:px-4 rounded-lg mx-0 my-2">
-              <div className="flex items-center gap-2">
-                <Tag className="w-4 h-4 text-green-600" />
-                <span className="text-sm md:text-base text-green-700 font-medium">
-                  Promo: <span className="font-[family-name:var(--font-unbounded)] tracking-wider">{data.promoCode.code}</span>
-                </span>
-                <span className="text-xs text-green-600">
-                  ({data.promoCode.discountType === "percentage" 
-                    ? `${data.promoCode.discountValue}% off` 
-                    : `$${data.promoCode.discountValue} off`})
-                </span>
-              </div>
-              <div className="text-right flex-shrink-0">
-                <span className="font-semibold text-green-700 text-sm md:text-base">-${data.promoCode.discountAmount}</span>
-                {pkrRate && (
-                  <p className="text-xs text-green-600">
-                    -{Math.round(data.promoCode.discountAmount * pkrRate).toLocaleString()} PKR
-                  </p>
-                )}
-              </div>
-            </div>
-          )}
-
-          <div className="p-4 md:p-6 bg-slate-50 border-t border-slate-200 rounded-lg">
-            <div className="flex items-center justify-between gap-4">
-              <div>
-                <p className="text-sm md:text-base font-semibold text-slate-900">Total Amount</p>
-              </div>
-              <div className="text-right">
-                {data.promoCode && (
-                  <p className="text-sm text-slate-400 line-through">${subtotalBeforeDiscount.toFixed(2)}</p>
-                )}
-                <p className="text-xl md:text-2xl lg:text-3xl font-bold text-slate-900">${calculateTotal()}</p>
-                <p className="text-xs md:text-sm text-slate-600 mt-0.5">
-                  {Math.round(Number.parseFloat(calculateTotal()) * PKR_RATE).toLocaleString()} PKR
-                </p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {paymentMethod === "bank_transfer" && (
-        <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6 space-y-4 overflow-hidden">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-              <Lock className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-slate-900 mb-1 text-sm md:text-base">Bank Account Details</h4>
-              <p className="text-xs md:text-sm text-slate-600 break-words">
-                Please use these details to complete your payment
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-slate-50 rounded-lg p-3 md:p-5 border border-slate-200 space-y-3 overflow-hidden">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
-              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Bank Name</span>
-              <span className="font-semibold text-slate-900 text-sm md:text-base break-words">
-                United Bank Limited (UBL)
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
-              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Account Title</span>
-              <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
-                BUZZ FILING
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 border-b border-slate-200 overflow-hidden">
-              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">Account Number</span>
-              <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
-                1176314943776
-              </span>
-            </div>
-
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-4 py-2 overflow-hidden">
-              <span className="text-xs md:text-sm text-slate-600 flex-shrink-0">IBAN</span>
-              <span className="font-semibold text-slate-900 text-xs sm:text-sm md:text-base break-all">
-                PK22UNIL0109000314943776
-              </span>
-            </div>
-          </div>
-
-          <div className="p-3 md:p-4 rounded-lg bg-red-50 border border-red-200 flex items-start gap-2 sm:gap-3 overflow-hidden">
-            <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-              <Upload className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-            </div>
-            <div className="text-xs sm:text-sm flex-1 min-w-0">
-              <p className="text-red-900 break-words leading-relaxed">
-                <span className="font-semibold">Important:</span> After making the payment, please upload a screenshot
-                with transaction details. This helps us process your order faster.
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="receipt-upload" className="text-sm font-semibold text-slate-900">
-              Upload Payment Receipt
-            </Label>
-            <div className="space-y-3">
-              <div className="flex items-center gap-3">
-                <input
-                  id="receipt-upload"
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,image/webp"
-                  onChange={handleReceiptUpload}
-                  disabled={isUploadingReceipt || !!receiptFile}
-                  className="hidden"
-                />
-                <label
-                  htmlFor="receipt-upload"
-                  className={`inline-flex items-center justify-center gap-2 h-10 px-5 rounded-lg font-semibold transition-all text-sm flex-shrink-0 ${
-                    isUploadingReceipt || receiptFile
-                      ? "bg-slate-200 text-slate-500 cursor-not-allowed"
-                      : "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white cursor-pointer hover:from-[#990000] hover:to-[#ff1a1a]"
-                  }`}
-                >
-                  {isUploadingReceipt ? (
-                    <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white" />
-                      Uploading...
-                    </>
-                  ) : receiptFile ? (
-                    <>
-                      <CheckCircle2 className="w-4 h-4" />
-                      Uploaded
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      Choose File
-                    </>
-                  )}
-                </label>
-
-                {receiptFile?.name && (
-                  <div className="flex items-center gap-2 min-w-0 flex-1 px-3 py-2 bg-green-50 border border-green-200 rounded-lg">
-                    <CheckCircle2 className="w-4 h-4 text-green-600 flex-shrink-0" />
-                    <span
-                      className="text-xs sm:text-sm font-medium text-green-700 truncate flex-1 min-w-0"
-                      title={receiptFile.name}
-                    >
-                      {receiptFile.name}
-                    </span>
-                    <button
-                      type="button"
-                      onClick={handleRemoveReceipt}
-                      className="text-red-500 hover:text-red-700 flex-shrink-0 p-0.5 rounded"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {uploadError && (
-                <p className="text-xs sm:text-sm text-red-600 break-words leading-relaxed">{uploadError}</p>
-              )}
-
-              <p className="text-xs text-slate-500 break-words leading-relaxed">
-                Supported formats: PNG, JPG, WEBP (max. 5MB)
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {paymentMethod === "already_paid" && (
-        <div className="bg-white rounded-lg border border-slate-200 p-4 md:p-6 space-y-4 overflow-hidden">
-          <div className="flex items-start gap-3">
-            <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-              <MessageSquare className="w-5 h-5 text-white" />
-            </div>
-            <div className="flex-1 min-w-0">
-              <h4 className="font-semibold text-slate-900 mb-1 text-sm md:text-base">Contact Information</h4>
-              <p className="text-xs md:text-sm text-slate-600 break-words leading-relaxed">
-                Please provide your Whatsapp number to confirm your order
-              </p>
-            </div>
-          </div>
-
-          <div className="space-y-2 overflow-hidden">
-            <Label htmlFor="whatsapp-phone" className="text-sm font-medium text-slate-900">
-              Phone Number (WhatsApp)
-            </Label>
-            <Input
-              id="whatsapp-phone"
-              type="tel"
-              placeholder="+92 300 1234567"
-              value={whatsappPhone}
-              onChange={handlePhoneChange}
-              className="h-11 text-sm md:text-base w-full"
-            />
-            {errors.whatsappNumber && (
-              <p className="text-xs text-red-600 break-words leading-relaxed">{errors.whatsappNumber}</p>
-            )}
-            <p className="text-xs text-slate-500 break-words leading-relaxed">
-              We'll contact you on WhatsApp to process your order
+          <div className="flex-1">
+            <h1 className="text-3xl lg:text-4xl font-bold mb-3 text-balance">Secure Payment</h1>
+            <p className="text-muted text-lg leading-relaxed">
+              Complete your payment via WhatsApp to finalize your business formation order.
             </p>
           </div>
         </div>
-      )}
 
-      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
-        <Button
-          type="button"
-          variant="outline"
-          onClick={onBack}
-          disabled={isSubmitting}
-          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900 cursor-pointer"
-        >
-          <ArrowLeft className="w-5 h-5 mr-2" />
-          Back
-        </Button>
+        {!paymentMethod && (
+          <div className="space-y-6">
+            <h3 className="font-bold text-xl flex items-center gap-2">
+              <Sparkles className="w-5 h-5 text-brand" />
+              Payment Method
+            </h3>
+            <div className="max-w-md mx-auto">
+              <button
+                onClick={() => setPaymentMethod("whatsapp")}
+                className="group w-full p-8 rounded-2xl border-2 border-glass-border bg-white/40 hover:border-success/50 hover:bg-white/60 transition-smooth text-left"
+              >
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="w-14 h-14 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center group-hover:scale-110 transition-smooth">
+                    <MessageCircle className="w-7 h-7 text-white" />
+                  </div>
+                  <div>
+                    <div className="font-bold text-lg">Pay with WhatsApp</div>
+                    <div className="text-sm text-muted">Manual Payment</div>
+                  </div>
+                </div>
+                <p className="text-sm text-muted leading-relaxed mb-4">
+                  Complete payment via WhatsApp and submit your transaction reference for quick verification.
+                </p>
+                <div className="flex items-center gap-2 text-xs text-warning">
+                  <CheckCircle2 className="w-4 h-4" />
+                  <span className="font-medium">Verified within 1-2 hours</span>
+                </div>
+              </button>
+            </div>
 
-        <Button
-          type="submit"
-          disabled={isSubmitting || !isPaymentValid}
-          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-        >
-          {isSubmitting ? (
-            <>
-              <div className="animate-spin h-5 w-5 border-2 border-white/30 border-t-white rounded-full mr-2" />
-              Processing...
-            </>
-          ) : (
-            <>
-              Complete Payment
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </>
-          )}
-        </Button>
+            <Button
+              onClick={onBack}
+              variant="outline"
+              size="lg"
+              className="w-full bg-white/50 hover:bg-white/80 border-glass-border transition-smooth"
+            >
+              <ArrowLeft className="mr-2 w-5 h-5" /> Back to Review
+            </Button>
+          </div>
+        )}
+
+        {paymentMethod === "whatsapp" && (
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-glass-border">
+              <h3 className="font-bold text-xl flex items-center gap-2">
+                <MessageCircle className="w-5 h-5 text-success" />
+                WhatsApp Payment
+              </h3>
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setPaymentMethod(null)}
+                className="text-muted hover:text-foreground"
+              >
+                Change Method
+              </Button>
+            </div>
+
+            <div className="p-6 rounded-xl bg-success/5 border border-success/20">
+              <div className="flex items-start gap-4 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-success/10 flex items-center justify-center flex-shrink-0">
+                  <MessageCircle className="w-6 h-6 text-success" />
+                </div>
+                <div className="flex-1">
+                  <p className="font-semibold text-success mb-3">Payment Instructions</p>
+                  <ol className="text-sm text-muted space-y-2 list-decimal list-inside leading-relaxed">
+                    <li>Contact us on WhatsApp to receive payment details</li>
+                    <li>Complete your payment via WhatsApp</li>
+                    <li>Enter your transaction reference below</li>
+                    <li>Submit to complete your order</li>
+                  </ol>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="whatsapp-ref" className="text-sm font-semibold">
+                Transaction Reference / Group Code
+              </Label>
+              <Input
+                id="whatsapp-ref"
+                placeholder="Enter your transaction ID or reference number"
+                value={whatsappReference}
+                onChange={(e) => setWhatsappReference(e.target.value)}
+                className="h-12 bg-white/60 border-glass-border focus:border-success/50 transition-smooth"
+                required
+              />
+              <p className="text-sm text-muted leading-relaxed">
+                Please enter the transaction ID, reference number, or group code from your WhatsApp payment
+              </p>
+            </div>
+
+            <div className="p-5 rounded-xl bg-warning/5 border border-warning/20 flex items-start gap-4">
+              <div className="w-10 h-10 rounded-lg bg-warning/10 flex items-center justify-center flex-shrink-0">
+                <CheckCircle2 className="w-5 h-5 text-warning" />
+              </div>
+              <div className="text-sm">
+                <p className="font-semibold text-warning mb-1">Payment Verification</p>
+                <p className="text-muted leading-relaxed">
+                  Your order will be processed once we verify your payment. This usually takes 1-2 business hours during
+                  office hours.
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-col sm:flex-row gap-4 pt-4">
+              <Button
+                type="button"
+                onClick={() => setPaymentMethod(null)}
+                variant="outline"
+                size="lg"
+                className="flex-1 bg-white/50 hover:bg-white/80 border-glass-border transition-smooth"
+                disabled={loading}
+              >
+                <ArrowLeft className="mr-2 w-5 h-5" /> Back
+              </Button>
+              <Button
+                type="submit"
+                className="flex-1 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white shadow-lg shadow-success/20 transition-smooth"
+                size="lg"
+                disabled={loading || !whatsappReference}
+              >
+                {loading ? (
+                  "Processing Order..."
+                ) : (
+                  <>
+                    Submit Order <CheckCircle2 className="ml-2 w-5 h-5" />
+                  </>
+                )}
+              </Button>
+            </div>
+          </form>
+        )}
       </div>
-
-      {showValidationError && (
-        <div className="p-3 rounded-lg bg-red-50 border border-red-200 overflow-hidden">
-          <p className="text-sm text-red-600 break-words leading-relaxed">{getValidationMessage()}</p>
-        </div>
-      )}
-
-      {errors.submit && (
-        <div className="p-3 rounded-lg bg-red-50 border border-red-200 overflow-hidden">
-          <p className="text-sm text-red-600 break-words leading-relaxed">{errors.submit}</p>
-        </div>
-      )}
-    </form>
+    </div>
   )
 }
-
-export default PaymentStep
-export { PaymentStep }

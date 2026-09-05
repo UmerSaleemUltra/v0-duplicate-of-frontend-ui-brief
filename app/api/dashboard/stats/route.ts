@@ -1,8 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { connectDB } from "@/config/database"
+import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
-import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 
+// GET /api/dashboard/stats - Get dashboard statistics
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization")
@@ -17,42 +17,33 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const { db } = await connectDB()
+    const db = await connectDB()
 
-    const [orderStats, companyStats, activeCompanies, pendingOrders] = await Promise.all([
-      db
-        .collection("orders")
-        .aggregate([
-          { $match: { paymentStatus: "paid" } },
-          {
-            $group: {
-              _id: null,
-              totalRevenue: { $sum: "$total" },
-              totalOrders: { $sum: 1 },
-            },
+    // Get total revenue
+    const orderStats = await db
+      .collection("orders")
+      .aggregate([
+        { $match: { paymentStatus: "paid" } },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: "$total" },
+            totalOrders: { $sum: 1 },
           },
-        ])
-        .toArray(),
-      db
-        .collection("companies")
-        .aggregate([
-          {
-            $group: {
-              _id: null,
-              totalCompanyRevenue: { $sum: "$revenue" },
-            },
-          },
-        ])
-        .toArray(),
-      db.collection("companies").countDocuments({ status: "active" }),
-      db.collection("orders").countDocuments({ status: "pending" }),
-    ])
+        },
+      ])
+      .toArray()
 
-    const orderRevenue = orderStats[0]?.totalRevenue || 0
-    const companyRevenue = companyStats[0]?.totalCompanyRevenue || 0
-    const totalRevenue = orderRevenue + companyRevenue
+    const totalRevenue = orderStats[0]?.totalRevenue || 0
     const totalOrders = orderStats[0]?.totalOrders || 0
 
+    // Get active companies
+    const activeCompanies = await db.collection("companies").countDocuments({ status: "active" })
+
+    // Get pending orders
+    const pendingOrders = await db.collection("orders").countDocuments({ status: "pending" })
+
+    // Calculate changes (mock data for now - implement proper comparison with previous period)
     const stats = {
       totalRevenue,
       totalOrders,
@@ -64,15 +55,12 @@ export async function GET(req: NextRequest) {
       pendingChange: -5.4,
     }
 
-    const result = {
+    return NextResponse.json({
       success: true,
       data: stats,
-    }
-
-    const response = NextResponse.json(result)
-    addSecurityHeaders(response)
-    return response
+    })
   } catch (error) {
+    console.error("Error fetching dashboard stats:", error)
     return NextResponse.json({ error: "Failed to fetch dashboard stats" }, { status: 500 })
   }
 }

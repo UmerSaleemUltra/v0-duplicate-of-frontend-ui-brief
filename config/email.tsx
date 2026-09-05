@@ -1,1611 +1,205 @@
 import nodemailer from "nodemailer"
 
 const EMAIL_CONFIG = {
-  host: process.env.SMTP_HOST || "smtpout.secureserver.net",
-  port: parseInt(process.env.SMTP_PORT || "587"),
-  secure: false,
+  host: "smtp.hostinger.com",
+  port: 465,
+  secure: true,
   auth: {
-    user: process.env.EMAIL_USER || "hello@buzzfiling.com",
-    pass: process.env.EMAIL_PASS || "@Buzz2899",
+    user: "hello@umersaleem.com",
+    pass: "Umer2024",
   },
-  requireTLS: true,
 }
 
-const SENDER_EMAIL = process.env.SENDER_EMAIL || "hello@buzzfiling.com" // Email domain kept as is for functionality
-const SENDER_NAME = "Buzz Filing"
+const SENDER_EMAIL = "hello@umersaleem.com"
+const SENDER_NAME = "LLC Formation"
 
-const transporter = nodemailer.createTransport(EMAIL_CONFIG)
+export const transporter = nodemailer.createTransport(EMAIL_CONFIG)
 
-let isVerified = false
-transporter.verify((error, success) => {
-  if (error) {
-    console.error(" Email transport verification failed:", error)
-  } else {
-    isVerified = true
-    console.log(" Email transport verified successfully")
-  }
-})
-
-export async function sendEmail({
-  to,
-  subject,
-  html,
-  bcc,
-}: {
-  to: string
-  subject: string
-  html: string
-  bcc?: string
-}) {
+export async function sendEmail(to: string, subject: string, html: string) {
   try {
-    if (!to || !subject || !html) {
-      console.error(" Missing required email parameters:", { to: !!to, subject: !!subject, html: !!html })
-      return { success: false, error: "Missing email parameters" }
-    }
-
-    console.log(" Sending email to:", to, "| Subject:", subject)
-    console.log(" Email config:", {
-      host: EMAIL_CONFIG.host,
-      port: EMAIL_CONFIG.port,
-      user: EMAIL_CONFIG.auth.user,
-      sender: SENDER_EMAIL,
-    })
-
     const info = await transporter.sendMail({
-      from: `"${SENDER_NAME}" <${SENDER_EMAIL}>`,
+      from: `${SENDER_NAME} <${SENDER_EMAIL}>`,
       to,
-      bcc,
       subject,
       html,
     })
-
-    console.log(" Email sent successfully:", info.messageId)
     return { success: true, messageId: info.messageId }
-  } catch (error: any) {
-    console.error(" Email send error details:", {
-      message: error.message,
-      code: error.code,
-      command: error.command,
-      response: error.response,
-    })
-    return { success: false, error: error.message || "Unknown email error" }
+  } catch (error) {
+    console.error("Email send error:", error)
+    return { success: false, error }
   }
-}
-
-export async function sendAdminEmail({ subject, html }: { subject: string; html: string }) {
-  const adminEmail = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
-  console.log(" Sending admin email to:", adminEmail, "| Subject:", subject)
-  return sendEmail({ to: adminEmail, subject, html })
-}
-
-export async function sendUserEmail({ to, subject, html }: { to: string; subject: string; html: string }) {
-  if (!to) {
-    console.error(" sendUserEmail: No recipient email provided")
-    return { success: false, error: "No recipient email provided" }
-  }
-  console.log(" Sending user email to:", to, "| Subject:", subject)
-  return sendEmail({ to, subject, html })
 }
 
 export const emailTemplates = {
-  welcome: (name: string) => ({
-    subject: "Welcome to Buzz Filing – Your Dashboard Is Ready",
-    html: `
+  welcome: (name: string, email: string) => `
     <!DOCTYPE html>
     <html>
       <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0070f3; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background: #f4f4f4; padding: 30px; }
+          .button { display: inline-block; padding: 12px 30px; background: #0070f3; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
       </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Welcome to Buzz Filing! Your account has been successfully created. You now have access to your Buzz Filing Dashboard, where you can:
-                    </p>
-                    
-                    <ul style="margin: 0 0 20px 0; padding-left: 20px;">
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">Track your service progress</li>
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">View important updates</li>
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">Securely upload documents</li>
-                      <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">Receive compliance reminders — all in one place</li>
-                    </ul>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Our team will start working on your order immediately. You can monitor progress and updates directly from your dashboard.
-                    </p>
-                    
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #000000; font-weight: 600;">
-                      We support:
-                    </p>
-                    
-                    <ul style="margin: 0 0 20px 0; padding-left: 20px;">
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">U.S. & UK company formation</li>
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">EIN & ITIN processing</li>
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">Business bank accounts</li>
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">State & IRS compliance</li>
-                      <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">Tax filing support</li>
-                    </ul>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      To get started, log in to your dashboard or simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Welcome to LLC Formation</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${name}!</h2>
+            <p>Thank you for registering with LLC Formation. We're excited to have you on board.</p>
+            <p>Your account has been successfully created with email: <strong>${email}</strong></p>
+            <p>You can now log in and start managing your LLC formation process.</p>
+            <a href="${process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000"}/login" class="button">Go to Dashboard</a>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} LLC Formation. All rights reserved.</p>
+          </div>
+        </div>
       </body>
     </html>
-    `,
-  }),
+  `,
 
-  abandonedCheckout: (name: string | null, resumeLink: string, packageLabel?: string | null) => ({
-    subject: "You're almost done — finish your BuzzFiling order",
-    html: `
+  verifyEmail: (name: string, otp: string) => `
     <!DOCTYPE html>
     <html>
       <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0070f3; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background: #f4f4f4; padding: 30px; text-align: center; }
+          .otp-box { background: white; padding: 20px; margin: 20px 0; border-radius: 5px; font-size: 32px; font-weight: bold; letter-spacing: 10px; color: #0070f3; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
       </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hi${name ? " " + name : ""},
-                    </p>
-
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      We noticed you started setting up your business with <span style="color: #880000; font-weight: 600;">Buzz Filing</span>${packageLabel ? ` and selected the <strong>${packageLabel}</strong> package` : ""}, but didn't finish. Good news — your details are saved, so you can pick up right where you left off.
-                    </p>
-
-                    <table width="100%" cellpadding="0" cellspacing="0" style="margin: 0 0 28px 0;">
-                      <tr>
-                        <td align="center">
-                          <a href="${resumeLink}" style="display: inline-block; background-color: #880000; color: #ffffff; text-decoration: none; font-size: 15px; font-weight: 600; padding: 14px 34px; border-radius: 8px;">
-                            Resume My Order
-                          </a>
-                        </td>
-                      </tr>
-                    </table>
-
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #000000; font-weight: 600;">
-                      Why finish now:
-                    </p>
-
-                    <ul style="margin: 0 0 20px 0; padding-left: 20px;">
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">Protect your personal assets with a formal business structure</li>
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">Get your EIN, compliance, and filings handled in one place</li>
-                      <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">Our team starts working on your order as soon as you complete it</li>
-                    </ul>
-
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Need a hand? Just reply to this email and our team will help you finish in minutes.
-                    </p>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-
-              </table>
-            </td>
-          </tr>
-        </table>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Verify Your Email</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${name}!</h2>
+            <p>Please use the following OTP to verify your email address:</p>
+            <div class="otp-box">${otp}</div>
+            <p>This OTP will expire in 10 minutes.</p>
+            <p>If you didn't request this, please ignore this email.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} LLC Formation. All rights reserved.</p>
+          </div>
+        </div>
       </body>
     </html>
-    `,
-  }),
+  `,
 
-orderConfirmation: (
-  name: string,
-  companyName: string,
-  packageType: string,
-  totalAmount: string,
-  orderId: string,
-  promoCode?: {
-    code: string
-    discountType: string
-    discountValue: number
-    discountAmount: number
-  } | null,
-) => {
-  const raw = (packageType || "").toLowerCase().trim()
-  const packageLabel = raw.includes("advanced") ? "Advanced" : "Starter"
-
-  const promoHtml = promoCode
-    ? `
-      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-        <strong>Promo Code:</strong>
-        <span style="color: #880000; font-weight: 600;">
-          ${promoCode.code}
-        </span>
-        (
-          ${
-            promoCode.discountType === "percentage"
-              ? `${promoCode.discountValue}% off`
-              : `$${promoCode.discountValue} off`
-          }
-        )
-      </li>
-
-      <li style="margin: 0 0 8px 0; font-size: 14px; color: #16a34a; line-height: 1.6;">
-        <strong>You Saved:</strong>
-        $${promoCode.discountAmount}
-      </li>
-    `
-    : ""
-
-  return {
-    subject: "Your Order Has Been Confirmed",
-
-    html: `
-<!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-</head>
-
-<body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-    <tr>
-      <td align="center">
-
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-
-          <tr>
-            <td style="padding: 40px 40px 30px 40px; text-align: center;">
-              <img
-                src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png"
-                alt="Buzz Filing"
-                style="width: 180px; height: auto;"
-              />
-            </td>
-          </tr>
-
-          <tr>
-            <td style="padding: 0 40px 40px 40px;">
-
-              <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                Hello,
-              </p>
-
-              <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                Thank you for placing your order with Buzz Filing.
-              </p>
-
-              <p style="margin: 0 0 10px 0; font-size: 14px; color: #000000; font-weight: 600;">
-                Order Details:
-              </p>
-
-              <ul style="margin: 0 0 20px 0; padding-left: 20px;">
-
-                <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                  <strong>Company Name:</strong> ${companyName}
-                </li>
-
-                <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                  <strong>Package:</strong> ${packageLabel}
-                </li>
-
-                ${promoHtml}
-
-                <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                  <strong>Order ID:</strong> ${orderId}
-                </li>
-
-              </ul>
-
-              <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                Your order is now in our system, and you can track progress and updates directly from your Buzz Filing Dashboard.
-              </p>
-
-              <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                If you have any questions or need assistance, simply reply to this email.
-              </p>
-
-              <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                Thank you for choosing
-                <span style="color: #880000; font-weight: 600;">
-                  Buzz Filing
-                </span>
-                to support your business setup.
-              </p>
-
-            </td>
-          </tr>
-
-          <tr>
-            <td style="padding: 0 40px 40px 40px; text-align: center;">
-              <p style="margin: 0; font-size: 12px; color: #999999;">
-                All rights reserved © 2026 |
-                <span style="color: #880000; font-weight: 600;">
-                  Buzz Filing
-                </span>
-              </p>
-
-              <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">
-                ...
-              </p>
-            </td>
-          </tr>
-
-          <tr>
-            <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-          </tr>
-
-        </table>
-
-      </td>
-    </tr>
-  </table>
-
-</body>
-</html>
-    `,
-  }
-},
-
-  passwordReset: (name: string, resetLink: string) => ({
-    subject: "Reset Your Password - Buzz Filing",
-    html: `
+  resetPassword: (name: string, resetLink: string) => `
     <!DOCTYPE html>
     <html>
       <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0070f3; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background: #f4f4f4; padding: 30px; }
+          .button { display: inline-block; padding: 12px 30px; background: #0070f3; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
       </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">Dear ${name},</p>
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      We received a request to reset the password for your Buzz Filing account. Click the button below to set a new password. This email is valid for 15 minutes.
-                    </p>
-                    <p style="margin: 0 0 30px 0; text-align: center;">
-                      <a href="${resetLink}" style="display: inline-block; background-color: #880000; color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-size: 14px; font-weight: 600;">
-                        Reset Password
-                      </a>
-                    </p>
-                    <p style="margin: 0 0 20px 0; font-size: 13px; color: #666666; line-height: 1.6;">
-                      If you did not request a password reset, you can safely ignore this email. Your password will remain unchanged.
-                    </p>
-                    <p style="margin: 0; font-size: 13px; color: #666666; line-height: 1.6;">
-                      Or copy and paste this link into your browser:<br/>
-                      <a href="${resetLink}" style="color: #880000; word-break: break-all;">${resetLink}</a>
-                    </p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                  </td>
-                </tr>
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-              </table>
-            </td>
-          </tr>
-        </table>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Reset Your Password</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${name}!</h2>
+            <p>We received a request to reset your password. Click the button below to create a new password:</p>
+            <a href="${resetLink}" class="button">Reset Password</a>
+            <p>This link will expire in 1 hour.</p>
+            <p>If you didn't request this, please ignore this email and your password will remain unchanged.</p>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} LLC Formation. All rights reserved.</p>
+          </div>
+        </div>
       </body>
     </html>
-    `,
-  }),
+  `,
 
-  einUploaded: (name: string, companyName: string) => ({
-    subject: "Your EIN Application Is Under Review",
-    html: `
+  orderConfirmation: (name: string, orderId: string, orderDetails: any) => `
     <!DOCTYPE html>
     <html>
       <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0070f3; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background: #f4f4f4; padding: 30px; }
+          .order-details { background: white; padding: 20px; margin: 20px 0; border-radius: 5px; }
+          .button { display: inline-block; padding: 12px 30px; background: #0070f3; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
       </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      We're writing to inform you that your EIN application has been successfully submitted to the IRS. The application is currently under review. Processing times may vary, and updates will be reflected as they become available.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can monitor the status and receive updates directly in your Buzz Filing Dashboard.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      If you have any questions, simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Order Confirmed!</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${name}!</h2>
+            <p>Thank you for your order. We've received your payment and are processing your LLC formation.</p>
+            <div class="order-details">
+              <h3>Order Details</h3>
+              <p><strong>Order ID:</strong> ${orderId}</p>
+              <p><strong>Package:</strong> ${orderDetails.package || "Standard"}</p>
+              <p><strong>State:</strong> ${orderDetails.state || "N/A"}</p>
+              <p><strong>Amount:</strong> $${orderDetails.amount || "0.00"}</p>
+            </div>
+            <p>We'll keep you updated on the progress of your LLC formation.</p>
+            <a href="${process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000"}/client/dashboard" class="button">View Dashboard</a>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} LLC Formation. All rights reserved.</p>
+          </div>
+        </div>
       </body>
     </html>
-    `,
-  }),
+  `,
 
-  itinUploaded: (name: string, companyName: string) => ({
-    subject: "ITIN Application Submitted",
-    html: `
+  documentReady: (name: string, documentName: string) => `
     <!DOCTYPE html>
     <html>
       <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <style>
+          body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+          .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+          .header { background: #0070f3; color: white; padding: 20px; text-align: center; border-radius: 5px 5px 0 0; }
+          .content { background: #f4f4f4; padding: 30px; }
+          .button { display: inline-block; padding: 12px 30px; background: #0070f3; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+          .footer { text-align: center; padding: 20px; color: #666; font-size: 12px; }
+        </style>
       </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Dear ${name},
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Your ITIN application for ${companyName} has been successfully submitted to the IRS.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #666666; line-height: 1.6;">
-                      Processing time is typically 6-10 weeks. We'll notify you as soon as we receive your ITIN.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>Document Ready</h1>
+          </div>
+          <div class="content">
+            <h2>Hello ${name}!</h2>
+            <p>Good news! Your document is ready for download.</p>
+            <p><strong>Document:</strong> ${documentName}</p>
+            <p>You can download it from your dashboard.</p>
+            <a href="${process.env.NEXT_PUBLIC_FRONTEND_URL || "http://localhost:3000"}/client/documents" class="button">View Documents</a>
+          </div>
+          <div class="footer">
+            <p>&copy; ${new Date().getFullYear()} LLC Formation. All rights reserved.</p>
+          </div>
+        </div>
       </body>
     </html>
-    `,
-  }),
-
-  businessIdUploaded: (name: string, companyName: string, businessId: string) => ({
-    subject: "Business ID Assigned",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Dear ${name},
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Your Business ID has been assigned for ${companyName}.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333;">
-                      <strong>Business ID:</strong> ${businessId}
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can now access all your business details through your dashboard.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  orderStarted: (name: string, companyName: string) => ({
-    subject: "Your Order Has Been Started",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      We're excited to let you know that your order has been started. Our team is now actively working on your request, and progress updates will be reflected as the process moves forward.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can monitor the status and receive updates directly in your Buzz Filing Dashboard.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      If you have any questions, simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  registeredAgentAssigned: (name: string, companyName: string) => ({
-    subject: "Your Registered Agent Is Now Active",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Your Registered Agent has been assigned to your company. This service is now active and ensures your company receives official state communications on time.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can view the status in your Buzz Filing Dashboard.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      If you have any questions, simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  businessAddressAssigned: (name: string, companyName: string) => ({
-    subject: "Your Business Address Is Now Active",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Your Business Address has been successfully assigned to your company. This address is now active for official business use and will be used for state and compliance-related purposes.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can view the status in your Buzz Filing Dashboard.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      If you have any questions, simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  companyFormed: (name: string, companyName: string) => ({
-    subject: "Your Company Has Been Successfully Registered",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      We're pleased to inform you that your company has been successfully registered with the State. Your business is now officially active, and the formation process has been completed successfully.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can view the status in your Buzz Filing Dashboard.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      If you have any questions, simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  einObtained: (name: string, companyName: string) => ({
-    subject: "Your EIN Has Been Successfully Issued",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      We're pleased to inform you that your Employer Identification Number (EIN) has been successfully issued by the IRS. Your business now has an official federal tax ID, which can be used for:
-                    </p>
-                    
-                    <ul style="margin: 0 0 20px 0; padding-left: 20px;">
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">Banking</li>
-                      <li style="margin: 0 0 8px 0; font-size: 14px; color: #333333; line-height: 1.6;">Compliance</li>
-                      <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">Tax-related purposes</li>
-                    </ul>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can view your EIN status and updates directly in your Buzz Filing Dashboard.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      If you have any questions, simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  orderCompleted: (name: string, companyName: string) => ({
-    subject: "Your Order Has Been Completed",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      We're pleased to inform you that your order has been successfully completed. All services included in your order have been finalized.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can review the completion status and any updates directly in your Buzz Filing Dashboard.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      If you have any questions or need further assistance, simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  milestoneCompleted: (name: string, milestoneName: string, companyName: string) => ({
-    subject: `Milestone Achieved: ${milestoneName}`,
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Congratulations! You've reached a new milestone for ${companyName}.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333;">
-                      <strong>Milestone:</strong> ${milestoneName}
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Check your dashboard to see your progress and next steps.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  documentUploaded: (name: string, documentName: string) => ({
-    subject: "Document Uploaded Successfully",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Dear ${name},
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      A new document has been uploaded to your account: <strong>${documentName}</strong>
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      You can view and download it from your dashboard.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  mailReceived: (
-    name: string,
-    subject: string,
-    from: string,
-    companyName: string,
-    type: string,
-    receivedDate: string,
-  ) => ({
-    subject: "New Mail Received at Your Business Address",
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: left;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000; text-align: left;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6; text-align: left;">
-                      A new document has been received at your business address.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      The document has been scanned and uploaded to the Mailroom in your Buzz Filing Dashboard, where you can securely view and download it.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Please log in to your dashboard to review the document.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      If you have any questions, simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  addonPurchaseConfirmation: (name: string, addonName: string, price: string) => ({
-    subject: `${addonName} Add-On Successfully Added`,
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Hello,
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      We're writing to confirm that the following add-on service has been successfully purchased:
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      <strong>Service Name:</strong> ${addonName}
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Our team will begin processing this service, and progress updates will be available in your Buzz Filing Dashboard.
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      If you have any questions, simply reply to this email.
-                    </p>
-                    
-                    <p style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      Thank you for choosing <span style="color: #880000; font-weight: 600;">Buzz Filing</span> to support your business setup.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  adminMailReceived: (companyName: string, from: string, subject: string, type: string) => ({
-    subject: `New Mail Received - ${companyName}`,
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000;">
-                      Admin Alert: New Mail Received
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      A new mail has been uploaded for <strong>${companyName}</strong>.
-                    </p>
-                    
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;">
-                      <strong>From:</strong> ${from}
-                    </p>
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #333333;">
-                      <strong>Subject:</strong> ${subject}
-                    </p>
-                    <p style="margin: 0; font-size: 14px; color: #333333;">
-                      <strong>Type:</strong> ${type}
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                    <p style="margin: 8px 0 0 0; font-size: 12px; color: #999999;">...</p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
-
-  adminInvoice: (
-    clientName: string,
-    clientEmail: string,
-    companyName: string,
-    packageType: string,
-    totalAmount: string,
-    orderId: string,
-    promoCode?: { code: string; discountAmount: number } | null,
-  ) => {
-    const total = Number(totalAmount) || 0
-    const discount = promoCode?.discountAmount || 0
-    const subtotal = total + discount
-    const invoiceDate = new Date().toLocaleDateString("en-US")
-
-    return {
-      subject: `Invoice - ${companyName} - ${orderId}`,
-      html: `
-<!DOCTYPE html>
-<html><body style="margin:0;background:#f1f1f1;padding:24px 10px;font-family:Arial,Helvetica,sans-serif;color:#171717;">
-<table width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
-<table width="700" cellpadding="0" cellspacing="0" style="max-width:700px;background:#fff;border:1px solid #ddd;">
-<tr><td style="padding:28px 34px 18px;text-align:center;border-bottom:1px solid #eee;"><div style="font-size:28px;font-weight:800;"><span style="color:#ed1c24;font-size:42px;">b</span> Buzz Filing</div><div style="font-size:10px;color:#555;line-height:1.5;">Business Formation Services<br>Invoice generated automatically for internal records</div></td></tr>
-<tr><td style="padding:26px 34px 12px;font-size:28px;font-weight:800;"><span style="color:#ed1c24;">Hi!</span> This is Your Invoice.</td></tr>
-<tr><td style="padding:8px 34px 28px;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="48%" valign="top" style="font-size:12px;line-height:1.8;"><b>BILL TO</b><br>${clientName}<br>${clientEmail}</td><td width="30%" valign="top" style="font-size:12px;line-height:1.8;"><b>INVOICE NO.</b><br>${orderId}<br><b>INVOICE DATE</b><br>${invoiceDate}<br><b>SERVICE</b><br>${packageType}</td><td width="22%" valign="top"><div style="background:#ed1c24;color:#fff;padding:15px 8px;text-align:center;font-weight:700;font-size:12px;">Payment Status</div><div style="border:1px solid #eee;padding:14px 8px;text-align:center;font-weight:700;font-size:13px;">Unpaid</div></td></tr></table></td></tr>
-<tr><td style="padding:0 34px;"><table width="100%" cellpadding="10" cellspacing="0" style="font-size:12px;border-collapse:collapse;"><tr style="font-weight:700;border-bottom:1px solid #ddd;"><td>DESCRIPTION</td><td align="center">QTY</td><td align="right">RATE</td><td align="right">AMOUNT</td></tr><tr><td>${companyName} — ${packageType}</td><td align="center">1</td><td align="right">$${total.toFixed(2)}</td><td align="right">$${total.toFixed(2)}</td></tr></table></td></tr>
-<tr><td style="padding:0 34px 24px;"><table width="100%" cellpadding="9" cellspacing="0" style="background:#ed1c24;color:#fff;font-size:12px;"><tr><td align="right">Sub Total</td><td align="right" width="90">$${subtotal.toFixed(2)}</td></tr><tr><td align="right">Discount${promoCode ? ` (${promoCode.code})` : ""}</td><td align="right">-$${discount.toFixed(2)}</td></tr><tr style="font-size:18px;font-weight:800;"><td align="right">Balance</td><td align="right">$${total.toFixed(2)}</td></tr></table></td></tr>
-<tr><td style="padding:0 34px 28px;text-align:center;font-size:20px;font-weight:800;">Thank you for your <span style="color:#ed1c24;">business!</span></td></tr>
-<tr><td style="padding:18px 34px 34px;border-top:1px solid #eee;font-size:11px;line-height:1.7;color:#444;"><b>PAYMENT TERMS</b><br>Payment is due according to the selected order payment method. Please include the invoice number with any payment confirmation.<br><br><b>Order reference:</b> ${orderId}<br><b>Customer:</b> ${clientName} (${clientEmail})</td></tr>
-<tr><td style="padding:12px 34px;border-top:1px dashed #ddd;font-size:10px;color:#777;"><span>E. & O. E.</span><span style="float:right;color:#ed1c24;">Please retain this invoice for your records.</span></td></tr>
-</table></td></tr></table></body></html>`,
-    }
-  },
-
-  adminNewOrder: (
-    clientName: string,
-    companyName: string,
-    packageType: string,
-    totalAmount: string,
-    orderId: string,
-    clientEmail: string,
-    promoCode?: { code: string; discountType: string; discountValue: number; discountAmount: number } | null,
-  ) => {
-    const promoHtml = promoCode ? `
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #16a34a; line-height: 1.6;">
-                        <strong>Promo Code Used:</strong> ${promoCode.code} (${promoCode.discountType === "percentage" ? `${promoCode.discountValue}% off` : `$${promoCode.discountValue} off`}) - Saved $${promoCode.discountAmount}
-                      </li>` : ""
-    return {
-    subject: `New Order Placed - ${companyName}`,
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000; font-weight: 600;">
-                      New Order Received
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      A new order has been placed and is ready for processing.
-                    </p>
-                    
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #000000; font-weight: 600;">
-                      Order Details:
-                    </p>
-                    
-                    <ul style="margin: 0 0 20px 0; padding-left: 20px; border-left: 3px solid #880000;">
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Order ID:</strong> ${orderId}
-                      </li>
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Client Name:</strong> ${clientName}
-                      </li>
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Client Email:</strong> ${clientEmail}
-                      </li>
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Company Name:</strong> ${companyName}
-                      </li>
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Package Type:</strong> ${packageType}
-                      </li>${promoHtml}
-                      <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Total Amount:</strong> $${totalAmount}
-                      </li>
-                    </ul>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 13px; color: #666666; line-height: 1.6;">
-                      Please log in to your admin dashboard to view and process this order.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }},
-
-  adminAddonPurchase: (
-    clientName: string,
-    companyName: string,
-    addonName: string,
-    price: string,
-    clientEmail: string,
-  ) => ({
-    subject: `New Add-on Purchase - ${companyName}`,
-    html: `
-    <!DOCTYPE html>
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      </head>
-      <body style="margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif; background-color: #f5f5f5;">
-        <table width="100%" cellpadding="0" cellspacing="0" style="background-color: #f5f5f5; padding: 40px 20px;">
-          <tr>
-            <td align="center">
-              <table width="600" cellpadding="0" cellspacing="0" style="max-width: 600px; background-color: #ffffff; border-radius: 8px;">
-                
-                <tr>
-                  <td style="padding: 40px 40px 30px 40px; text-align: center;">
-                    <img src="https://hebbkx1anhila5yf.public.blob.vercel-storage.com/git-blob/prj_T2AXdANj1Znlvt1rgkguWADlBkz6/q1VfaZBjjYg-A0FO6974Ar/public/images/buzz-filing-logo.png" alt="Buzz Filing" style="width: 180px; height: auto;" />
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px;">
-                    <p style="margin: 0 0 20px 0; font-size: 16px; color: #000000; font-weight: 600;">
-                      New Add-on Purchase
-                    </p>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                      A client has purchased an add-on service and submitted payment details.
-                    </p>
-                    
-                    <p style="margin: 0 0 10px 0; font-size: 14px; color: #000000; font-weight: 600;">
-                      Purchase Details:
-                    </p>
-                    
-                    <ul style="margin: 0 0 20px 0; padding-left: 20px; border-left: 3px solid #880000;">
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Client Name:</strong> ${clientName}
-                      </li>
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Client Email:</strong> ${clientEmail}
-                      </li>
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Company Name:</strong> ${companyName}
-                      </li>
-                      <li style="margin: 0 0 10px 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Add-on Name:</strong> ${addonName}
-                      </li>
-                      <li style="margin: 0; font-size: 14px; color: #333333; line-height: 1.6;">
-                        <strong>Price:</strong> $${price}
-                      </li>
-                    </ul>
-                    
-                    <p style="margin: 0 0 20px 0; font-size: 13px; color: #666666; line-height: 1.6;">
-                      Please log in to your admin dashboard to verify the payment and process the add-on.
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="padding: 0 40px 40px 40px; text-align: center;">
-                    <p style="margin: 0; font-size: 12px; color: #999999;">
-                      All rights reserved © 2026 | <span style="color: #880000; font-weight: 600;">Buzz Filing</span>
-                    </p>
-                  </td>
-                </tr>
-                
-                <tr>
-                  <td style="background-color: #880000; height: 8px; border-radius: 0 0 8px 8px;"></td>
-                </tr>
-                
-              </table>
-            </td>
-          </tr>
-        </table>
-      </body>
-    </html>
-    `,
-  }),
+  `,
 }

@@ -7,6 +7,7 @@ import { usePathname, useRouter } from "next/navigation"
 import {
   Building2,
   LayoutDashboard,
+  FileText,
   Mail,
   Menu,
   X,
@@ -17,43 +18,23 @@ import {
   Check,
   Package,
   Settings,
-  FileText,
-  ShieldAlert,
-  RefreshCw,
-  Search,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Image from "next/image"
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
+import { NotificationDropdown } from "@/components/notifications/notification-dropdown"
+import { companyStorage } from "@/lib/local-storage"
 import { BusinessNameDisplay } from "@/components/ui/business-name-display"
 import { useSelectedCompany } from "@/lib/company-context"
 import { authService } from "@/lib/auth"
-import { NotificationDropdown } from "@/components/client/notification-dropdown"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 
 const NAV_ITEMS = [
   { href: "/client/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { href: "/client/company", label: "Company", icon: Building2 },
-  { href: "/client/documents", label: "Documents", icon: FileText },
+  { href: "/client/documents", label: "Documents", icon: Mail },
   { href: "/client/mailroom", label: "Mailroom", icon: Mail },
+  { href: "/client/invoices", label: "Invoices", icon: FileText },
   { href: "/client/addons", label: "Addons", icon: Package },
   { href: "/client/settings", label: "Settings", icon: Settings },
 ]
@@ -63,100 +44,23 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
   const router = useRouter()
   const [sidebarOpen, setSidebarOpen] = useState(false)
   const [companyModalOpen, setCompanyModalOpen] = useState(false)
-  const [userInitials, setUserInitials] = useState("U")
-  const [userName, setUserName] = useState("")
-  const [isAdminView, setIsAdminView] = useState(false)
-  const [isRefreshing, setIsRefreshing] = useState(false)
-  const [showHamburger, setShowHamburger] = useState(true)
-  const [lastScrollY, setLastScrollY] = useState(0)
-  const [isPageReady, setIsPageReady] = useState(true)
-  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
-  const [companySearch, setCompanySearch] = useState("")
+  const [allCompanies, setAllCompanies] = useState<any[]>([])
 
-  const { selectedCompanyId, setSelectedCompanyId, companies: allCompanies, companiesLoading, initialLoadDone, isResetting } = useSelectedCompany()
-  // Check both c.id and c._id to handle MongoDB documents that may use _id
-  const selectedCompany = selectedCompanyId
-    ? allCompanies.find((c) => (c.id || c._id) === selectedCompanyId)
-    : null
-  // Show skeleton only when actively loading/resetting AND we have no companies to display yet
-  const isCompanyLoading = (companiesLoading || isResetting || !initialLoadDone) && allCompanies.length === 0
+  const { selectedCompanyId, setSelectedCompanyId } = useSelectedCompany()
+  const selectedCompany = selectedCompanyId ? companyStorage.getById(selectedCompanyId) : null
 
   useEffect(() => {
-    const loadUserData = async () => {
-      const impersonatingUserId = sessionStorage.getItem("impersonating_user_id")
-      const impersonatingUserName = sessionStorage.getItem("impersonating_user_name")
-      const adminToken = sessionStorage.getItem("admin_impersonation_token")
+    const companies = companyStorage.getAll()
+    setAllCompanies(companies)
 
-      if (impersonatingUserId && impersonatingUserName && adminToken) {
-        setIsAdminView(true)
-        setUserName(impersonatingUserName)
-        const initials =
-          impersonatingUserName
-            ?.split(" ")
-            .map((n) => n[0])
-            .join("")
-            .toUpperCase()
-            .slice(0, 2) || "U"
-        setUserInitials(initials)
-      } else {
-        const currentUser = authService.getCurrentUser()
-
-        if (currentUser) {
-          setUserName(currentUser.name || "User")
-          const initials =
-            currentUser.name
-              ?.split(" ")
-              .map((n) => n[0])
-              .join("")
-              .toUpperCase()
-              .slice(0, 2) || "U"
-          setUserInitials(initials)
-        }
-      }
+    if (!selectedCompanyId && companies.length > 0) {
+      setSelectedCompanyId(companies[0].id)
     }
+  }, [selectedCompanyId, setSelectedCompanyId])
 
-    loadUserData()
-  }, [])
-
-  // Companies are now sourced reactively from CompanyProvider context (allCompanies above).
-  // No localStorage polling needed — the context keeps allCompanies in sync automatically.
-
-  // Intentionally removed: the visibilitychange listener was triggering a full
-  // company re-fetch (and skeleton re-render) every time the user switched tabs.
-  // The topbar refresh button still dispatches "client-dashboard-refresh" for
-  // manual data refreshes without showing the skeleton.
-
-  useEffect(() => {
-    let ticking = false
-
-    const handleScroll = () => {
-      if (!ticking) {
-        window.requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY
-
-          if (currentScrollY < 50) {
-            setShowHamburger(true)
-          } else {
-            setShowHamburger(false)
-          }
-
-          setLastScrollY(currentScrollY)
-          ticking = false
-        })
-        ticking = true
-      }
-    }
-
-    window.addEventListener("scroll", handleScroll, { passive: true })
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [lastScrollY])
-
-  const handleSelectCompany = async (company: any) => {
-    const companyId = company.id || company._id
-    setSelectedCompanyId(companyId)
-    localStorage.setItem("selectedCompanyId", companyId)
+  const handleSelectCompany = (company: any) => {
+    setSelectedCompanyId(company.id)
     setCompanyModalOpen(false)
-    window.dispatchEvent(new Event("client-dashboard-refresh"))
   }
 
   const handleAddNewCompany = () => {
@@ -164,363 +68,210 @@ export function ClientShell({ children }: { children: React.ReactNode }) {
     router.push("/checkout")
   }
 
-  const handleExitAdminMode = () => {
-    if (typeof window === "undefined") return
-
-    const adminToken = sessionStorage.getItem("admin_impersonation_token")
-    const adminData = sessionStorage.getItem("admin_impersonation_data")
-
-    if (adminToken && adminData) {
-      try {
-        sessionStorage.removeItem("impersonating_user_id")
-        sessionStorage.removeItem("impersonating_user_name")
-        sessionStorage.removeItem("impersonating_user_email")
-        sessionStorage.removeItem("admin_impersonation_token")
-        sessionStorage.removeItem("admin_impersonation_data")
-
-        const admin = JSON.parse(adminData)
-
-        authService.setAuth(adminToken, admin)
-
-        window.location.href = "/admin/users"
-      } catch (error) {
-        console.error(" Error exiting admin mode:", error)
-        authService.logout()
-        router.push("/login")
-      }
-    }
-  }
-
   const handleLogout = () => {
-    if (isAdminView) {
-      // Admin exit mode doesn't need a confirmation dialog
-      handleExitAdminMode()
-    } else {
-      setLogoutConfirmOpen(true)
-    }
-  }
-
-  const confirmLogout = () => {
-    setLogoutConfirmOpen(false)
     authService.logout()
     router.push("/")
   }
 
   return (
-    <div className="min-h-screen flex bg-white">
-      <style>{`
-        #whatsapp-chat-widget,
-        #wati-chat-widget,
-        .wati-chat-widget,
-        .whatsapp-chat-button,
-        [id^="wati"],
-        [class^="wati"],
-        [id*="whatsapp-widget"],
-        [class*="whatsapp-widget"] {
-          display: none !important;
-          visibility: hidden !important;
-          opacity: 0 !important;
-          pointer-events: none !important;
-        }
-      `}</style>
-      {!isPageReady && (
-        <div className="flex items-center justify-center min-h-screen bg-white">
-          <div className="w-full max-w-md space-y-4 p-4">
-            <div className="h-12 bg-slate-200 rounded-lg animate-pulse"></div>
-            <div className="space-y-3">
-              <div className="h-4 bg-slate-200 rounded w-3/4 animate-pulse"></div>
-              <div className="h-4 bg-slate-200 rounded w-1/2 animate-pulse"></div>
-            </div>
-            <div className="h-64 bg-slate-200 rounded-lg animate-pulse"></div>
-          </div>
-        </div>
-      )}
-      {isPageReady && (
-        <>
-          <aside
-            className={`
-              w-64 sm:w-72 lg:w-64 fixed lg:sticky left-0 top-0 h-screen z-40
-              bg-gradient-to-r from-[#880000] to-[#ff0d13]
-              text-white 
-              transition-transform duration-300 ease-in-out
-              ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
-              flex flex-col
-            `}
+    <div className="min-h-screen flex bg-background">
+      <aside
+        className={`
+          w-64 sm:w-72 lg:w-64 fixed lg:sticky left-0 top-0 h-screen z-40
+          bg-gradient-to-r from-[#880000] to-[#ff0d13]
+          text-white 
+          transition-transform duration-300 ease-in-out
+          ${sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"}
+          flex flex-col overflow-y-auto scrollbar-hide
+        `}
+        style={{
+          scrollbarWidth: "none",
+          msOverflowStyle: "none",
+        }}
+      >
+        <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between">
+          <Link href="/client/dashboard" className="flex items-center flex-1 min-w-0">
+            <Image
+              src="/images/buzz-filing-logo-white.png"
+              alt="BuzzFiling"
+              width={360}
+              height={146}
+              className="sm:shrink-0 sm:max-w-full w-[240px] sm:w-[280px] md:w-[320px] lg:w-[360px] mr-5"
+              priority
+            />
+          </Link>
+          <button
+            onClick={() => setSidebarOpen(false)}
+            className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors duration-200 flex-shrink-0 ml-2"
+            aria-label="Close sidebar"
           >
-            <div className="px-6 py-5 border-b border-white/10 flex items-center justify-between flex-shrink-0">
-              <Link href="/client/dashboard" className="flex items-center flex-1 min-w-0">
-                <Image
-                  src="/images/buzz-filing-logo-white.png"
-                  alt="BuzzFiling"
-                  width={360}
-                  height={146}
-                  className="sm:shrink-0 sm:max-w-full w-[240px] sm:w-[280px] md:w-[320px] lg:w-[360px] mr-5"
-                  priority
-                />
-              </Link>
-              <button
-                onClick={() => setSidebarOpen(false)}
-                className="lg:hidden p-2 hover:bg-white/10 rounded-lg transition-colors duration-200 flex-shrink-0 ml-2"
-                aria-label="Close sidebar"
-              >
-                <X className="w-4 h-4 text-white" />
-              </button>
-            </div>
+            <X className="w-4 h-4 text-white" />
+          </button>
+        </div>
 
-            {isAdminView && (
-              <div className="px-4 py-3 bg-yellow-500/20 border-b border-white/10 flex-shrink-0">
-                <div className="flex items-center gap-2 text-xs text-white">
-                  <ShieldAlert className="w-4 h-4" />
-                  <span className="font-medium">Admin View Mode</span>
-                </div>
-                <p className="text-[10px] text-white/80 mt-1">Viewing as: {userName}</p>
+        <div className="px-4 py-3 border-b border-white/10">
+          <button
+            onClick={() => setCompanyModalOpen(true)}
+            className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 group backdrop-blur-sm min-h-[44px]"
+            aria-label="Select company"
+          >
+            <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0">
+              <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0 shadow-lg">
+                <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white" />
               </div>
-            )}
+              <div className="flex-1 min-w-0 text-left">
+                <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-0.5">Current Company</p>
+                <BusinessNameDisplay
+                  name={selectedCompany?.name || "No company"}
+                  maxLength={18}
+                  className="text-xs sm:text-sm font-semibold text-white"
+                  truncateMode="smart"
+                />
+              </div>
+            </div>
+            <ChevronDown className="w-4 h-4 text-white/70 group-hover:text-white transition-colors flex-shrink-0 ml-1" />
+          </button>
+        </div>
 
-            <div className="px-4 py-3 border-b border-white/10 flex-shrink-0">
-              <button
-                onClick={() => setCompanyModalOpen(true)}
-                className="w-full flex items-center justify-between p-2.5 sm:p-3 rounded-lg bg-white/10 hover:bg-white/20 transition-all duration-200 group backdrop-blur-sm min-h-[44px]"
-                aria-label="Select company"
+        <nav className="flex-1 p-3 space-y-1 overflow-y-auto scrollbar-hide">
+          {NAV_ITEMS.map((item) => {
+            const Icon = item.icon
+            const isActive = pathname === item.href
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`
+                  flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium min-h-[44px]
+                  ${
+                    isActive
+                      ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
+                      : "text-white/80 hover:bg-white/10 hover:text-white"
+                  }
+                `}
+                onClick={() => setSidebarOpen(false)}
               >
-                <div className="flex items-center gap-2 sm:gap-3 flex-1 min-w-0 overflow-hidden">
-                  <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0 shadow-lg">
-                    <Building2 className="w-4 h-4 sm:w-4.5 sm:h-4.5 text-white" />
-                  </div>
-                  <div className="flex-1 min-w-0 text-left overflow-hidden">
-                    <p className="text-[10px] sm:text-xs text-white/70 font-medium mb-0.5 truncate">Current Company</p>
-                    {isCompanyLoading ? (
-                      <div className="h-4 w-28 bg-white/20 rounded animate-pulse" />
-                    ) : (
+                <div className="flex items-center gap-2.5">
+                  <Icon className="w-5 h-5 flex-shrink-0" />
+                  <span className="text-sm">{item.label}</span>
+                </div>
+                {isActive && <ChevronRight className="w-4 h-4 flex-shrink-0" />}
+              </Link>
+            )
+          })}
+        </nav>
+
+        <div className="p-3 border-t border-white/10">
+          <Button
+            variant="ghost"
+            onClick={handleLogout}
+            className="w-full justify-start text-white/80 hover:bg-white/10 hover:text-white h-11 transition-all duration-200 text-sm"
+          >
+            <LogOut className="w-5 h-5 mr-2.5 flex-shrink-0" />
+            Sign Out
+          </Button>
+        </div>
+      </aside>
+
+      <button
+        onClick={() => setSidebarOpen(!sidebarOpen)}
+        className="lg:hidden fixed top-4 left-4 z-50 p-2.5 sm:p-3 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 rounded-lg transition-all duration-200 shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center"
+        aria-label={sidebarOpen ? "Close menu" : "Open menu"}
+      >
+        {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+      </button>
+
+      {/* Mobile Overlay */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden transition-opacity duration-300"
+          onClick={() => setSidebarOpen(false)}
+          aria-hidden="true"
+        />
+      )}
+
+      <Dialog open={companyModalOpen} onOpenChange={setCompanyModalOpen}>
+        <DialogContent className="w-[calc(100%-2rem)] max-w-[450px] mx-auto max-h-[85vh] overflow-y-auto">
+          <DialogHeader className="space-y-2">
+            <DialogTitle className="text-base sm:text-lg font-semibold">Select Company</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm text-slate-700">
+              {allCompanies.length > 0
+                ? `Choose from ${allCompanies.length} company${allCompanies.length !== 1 ? "ies" : ""} or register a new one`
+                : "No companies yet. Start by registering a new one"}
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-2 mt-3 sm:mt-4">
+            {allCompanies.map((company) => (
+              <button
+                key={company.id}
+                onClick={() => handleSelectCompany(company)}
+                className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 text-left hover:border-[#ff0d13]/50 hover:bg-slate-50 min-h-[60px] sm:min-h-[68px] ${
+                  selectedCompany?.id === company.id ? "border-[#ff0d13] bg-red-50/50" : "border-slate-200 bg-white"
+                }`}
+              >
+                <div className="flex items-start justify-between gap-2 sm:gap-3">
+                  <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
+                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0 mt-0.5">
+                      <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
                       <BusinessNameDisplay
-                        name={selectedCompany?.name || "Select company"}
-                        maxLength={18}
-                        className="text-xs sm:text-sm font-semibold text-white truncate"
+                        name={company.name}
+                        maxLength={25}
+                        className="font-semibold text-xs sm:text-sm text-slate-900 mb-1"
                         truncateMode="smart"
                       />
-                    )}
+                      <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-slate-600">
+                        <span className="truncate max-w-[80px] sm:max-w-none">{company.entityType}</span>
+                        <span className="hidden xs:inline">•</span>
+                        <span className="truncate max-w-[80px] sm:max-w-none">{company.state}</span>
+                        <Badge
+                          variant="outline"
+                          className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 ${
+                            company.status === "active"
+                              ? "bg-green-50 text-green-700 border-green-200"
+                              : "bg-yellow-50 text-yellow-700 border-yellow-200"
+                          }`}
+                        >
+                          {company.status}
+                        </Badge>
+                      </div>
+                    </div>
                   </div>
+                  {selectedCompany?.id === company.id && (
+                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-[#ff0d13] flex-shrink-0 mt-0.5" />
+                  )}
                 </div>
-                <ChevronDown className="w-4 h-4 text-white/70 group-hover:text-white transition-colors flex-shrink-0 ml-1" />
               </button>
-            </div>
+            ))}
 
-            <div className="flex-1 flex flex-col min-h-0">
-              <nav className="flex-1 p-3 space-y-1 overflow-y-auto max-h-[calc(100vh-280px)]">
-                {NAV_ITEMS.map((item) => {
-                  const Icon = item.icon
-                  const isActive = pathname === item.href
-                  return (
-                    <Link
-                      key={item.href}
-                      href={item.href}
-                      className={`
-                        flex items-center justify-between px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium min-h-[44px]
-                        ${
-                          isActive
-                            ? "bg-white/20 text-white shadow-lg backdrop-blur-sm"
-                            : "text-white/80 hover:bg-white/10 hover:text-white"
-                        }
-                      `}
-                      onClick={() => setSidebarOpen(false)}
-                    >
-                      <div className="flex items-center gap-2.5">
-                        <Icon className="w-5 h-5 flex-shrink-0" />
-                        <span className="text-sm">{item.label}</span>
-                      </div>
-                      {isActive && <ChevronRight className="w-4 h-4 flex-shrink-0" />}
-                    </Link>
-                  )
-                })}
-
-                <button
-                  onClick={handleLogout}
-                  className="lg:hidden w-full mt-2 px-3 py-2.5 rounded-lg transition-all duration-200 text-sm font-medium min-h-[44px] bg-white/20 hover:bg-white/30 text-white border border-white/30 hover:border-white/50 shadow-lg backdrop-blur-sm flex items-center justify-center gap-2.5"
-                >
-                  <LogOut className="w-5 h-5 flex-shrink-0" />
-                  <span className="text-sm font-semibold">{isAdminView ? "Exit Admin Mode" : "Sign Out"}</span>
-                </button>
-              </nav>
-
-              <div className="hidden lg:block p-3 border-t border-white/10 flex-shrink-0 bg-gradient-to-b from-transparent to-black/5">
-                <Button
-                  variant="ghost"
-                  onClick={handleLogout}
-                  className="w-full justify-start text-white/80 hover:bg-white/10 hover:text-white h-11 transition-all duration-200 text-sm font-normal"
-                >
-                  <LogOut className="w-5 h-5 mr-2.5 flex-shrink-0" />
-                  {isAdminView ? "Exit Admin Mode" : "Sign Out"}
-                </Button>
-              </div>
-            </div>
-          </aside>
-
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className={`lg:hidden fixed top-4 left-4 z-50 p-2.5 sm:p-3 bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 rounded-lg shadow-lg min-h-[44px] min-w-[44px] flex items-center justify-center transition-all duration-300 ${
-              showHamburger && isPageReady && !sidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
-            aria-label={sidebarOpen ? "Close menu" : "Open menu"}
-          >
-            <Menu className="w-5 h-5" />
-          </button>
-
-          {sidebarOpen && (
-            <div
-              className="fixed inset-0 bg-black/50 backdrop-blur-sm z-30 lg:hidden transition-opacity duration-300"
-              onClick={() => setSidebarOpen(false)}
-              onTouchStart={() => setSidebarOpen(false)}
-              aria-hidden="true"
-            />
-          )}
-
-          <Dialog open={companyModalOpen} onOpenChange={(open) => { setCompanyModalOpen(open); if (!open) setCompanySearch("") }}>
-            <DialogContent className="w-[calc(100%-2rem)] max-w-[450px] mx-auto max-h-[85vh] overflow-y-auto">
-              <DialogHeader className="space-y-2">
-                <DialogTitle className="text-base sm:text-lg font-semibold">Select Company</DialogTitle>
-                <DialogDescription className="text-xs sm:text-sm text-slate-700">
-                  {allCompanies.length > 0
-                    ? `Choose from ${allCompanies.length} company${allCompanies.length !== 1 ? "ies" : ""} or register a new one`
-                    : "No companies yet. Start by registering a new one"}
-                </DialogDescription>
-              </DialogHeader>
-
-              {allCompanies.length > 3 && (
-                <div className="relative mt-3">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
-                  <input
-                    type="text"
-                    placeholder="Search companies..."
-                    value={companySearch}
-                    onChange={(e) => setCompanySearch(e.target.value)}
-                    className="w-full pl-9 pr-3 py-2 text-sm border border-slate-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-[#ff0d13]/30 focus:border-[#ff0d13]"
-                  />
+            <button
+              onClick={handleAddNewCompany}
+              className="w-full p-3 sm:p-4 rounded-lg border-2 border-dashed border-slate-300 hover:border-[#ff0d13] hover:bg-red-50/50 transition-all duration-200 group min-h-[60px] sm:min-h-[68px]"
+            >
+              <div className="flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center transition-all duration-200 flex-shrink-0">
+                  <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white transition-colors duration-200" />
                 </div>
-              )}
-
-              <div className="space-y-2 mt-3 sm:mt-4">
-                {allCompanies.filter((c) =>
-                  !companySearch || c.name?.toLowerCase().includes(companySearch.toLowerCase()) || c.state?.toLowerCase().includes(companySearch.toLowerCase())
-                ).map((company) => (
-                  <button
-                    key={company.id}
-                    onClick={() => handleSelectCompany(company)}
-                    className={`w-full p-3 sm:p-4 rounded-lg border-2 transition-all duration-200 text-left hover:border-[#ff0d13]/50 hover:bg-slate-50 min-h-[60px] sm:min-h-[68px] ${
-                      selectedCompany?.id === company.id ? "border-[#ff0d13] bg-red-50/50" : "border-slate-200 bg-white"
-                    }`}
-                  >
-                    <div className="flex items-start justify-between gap-2 sm:gap-3">
-                      <div className="flex items-start gap-2 sm:gap-3 flex-1 min-w-0">
-                        <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0 mt-0.5">
-                          <Building2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white" />
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <BusinessNameDisplay
-                            name={company.name}
-                            maxLength={25}
-                            className="font-semibold text-xs sm:text-sm text-slate-900 mb-1"
-                            truncateMode="smart"
-                          />
-                          <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 text-[10px] sm:text-xs text-slate-600">
-                            <span className="truncate max-w-[80px] sm:max-w-none">{company.state}</span>
-                            <Badge
-                              variant="outline"
-                              className={`text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 ${
-                                company.serviceStatus === "active"
-                                  ? "bg-green-50 text-green-700 border-green-200"
-                                  : company.serviceStatus === "inactive"
-                                    ? "bg-red-50 text-red-700 border-red-200"
-                                    : "bg-yellow-50 text-yellow-700 border-yellow-200"
-                              }`}
-                            >
-                              {company.serviceStatus || "pending"}
-                            </Badge>
-                          </div>
-                        </div>
-                      </div>
-                      {selectedCompany?.id === company.id && (
-                        <Check className="w-4 h-4 sm:w-5 sm:h-5 text-[#ff0d13] flex-shrink-0 mt-0.5" />
-                      )}
-                    </div>
-                  </button>
-                ))}
-
-                <button
-                  onClick={handleAddNewCompany}
-                  className="w-full p-3 sm:p-4 rounded-lg border-2 border-dashed border-slate-300 hover:border-[#ff0d13] hover:bg-red-50/50 transition-all duration-200 group min-h-[60px] sm:min-h-[68px]"
-                >
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center transition-all duration-200 flex-shrink-0">
-                      <Plus className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-white transition-colors duration-200" />
-                    </div>
-                    <div className="text-left flex-1 min-w-0">
-                      <h3 className="font-semibold text-xs sm:text-sm text-slate-900 group-hover:text-[#ff0d13] transition-colors duration-200 mb-0.5">
-                        Register New Company
-                      </h3>
-                      <p className="text-[10px] sm:text-xs text-slate-600 truncate">Start a new business formation</p>
-                    </div>
-                  </div>
-                </button>
+                <div className="text-left flex-1 min-w-0">
+                  <h3 className="font-semibold text-xs sm:text-sm text-slate-900 group-hover:text-[#ff0d13] transition-colors duration-200 mb-0.5">
+                    Register New Company
+                  </h3>
+                  <p className="text-[10px] sm:text-xs text-slate-600 truncate">Start a new business formation</p>
+                </div>
               </div>
-            </DialogContent>
-          </Dialog>
-
-          <AlertDialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
-            <AlertDialogContent className="max-w-sm">
-              <AlertDialogHeader>
-                <AlertDialogTitle>Sign out of your account?</AlertDialogTitle>
-                <AlertDialogDescription>
-                  You will be redirected to the home page and will need to log in again to access your dashboard.
-                </AlertDialogDescription>
-              </AlertDialogHeader>
-              <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction
-                  onClick={confirmLogout}
-                  className="bg-red-600 hover:bg-red-700 text-white"
-                >
-                  Sign Out
-                </AlertDialogAction>
-              </AlertDialogFooter>
-            </AlertDialogContent>
-          </AlertDialog>
-
-          <div className="flex-1 flex flex-col min-w-0 bg-white">
-            <div className="z-20 bg-white/80 backdrop-blur-sm border-b border-slate-200/70 px-4 sm:px-6 lg:px-8 py-3 sm:py-4">
-              <div className="flex items-center justify-end gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={async () => {
-                    setIsRefreshing(true)
-                    window.dispatchEvent(new Event("client-dashboard-refresh"))
-                    setTimeout(() => {
-                      setIsRefreshing(false)
-                    }, 1500)
-                  }}
-                  disabled={isRefreshing}
-                  className="h-10 w-10"
-                  aria-label="Refresh dashboard"
-                >
-                  <RefreshCw className={`w-5 h-5 ${isRefreshing ? "animate-spin" : ""}`} />
-                </Button>
-                <NotificationDropdown />
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={handleLogout}
-                  className="h-10 w-10 hover:bg-red-50 hover:text-red-600"
-                  aria-label={isAdminView ? "Exit admin mode" : "Logout"}
-                  title={isAdminView ? "Exit Admin Mode" : "Logout"}
-                >
-                  <LogOut className="w-5 h-5" />
-                </Button>
-              </div>
-            </div>
-            <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full">{children}</main>
+            </button>
           </div>
-        </>
-      )}
+        </DialogContent>
+      </Dialog>
+
+      <div className="flex-1 flex flex-col min-w-0">
+        <div className="sticky top-0 z-20 bg-white border-b border-slate-200 px-4 sm:px-6 lg:px-8 py-3 sm:py-4 flex items-center justify-end">
+          <NotificationDropdown />
+        </div>
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto w-full bg-white">{children}</main>
+      </div>
     </div>
   )
 }
