@@ -2,10 +2,8 @@ import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import bcrypt from "bcryptjs"
-import { addSecurityHeaders } from "@/lib/middleware/security-headers"
-import { broadcast } from "@/lib/realtime/broadcaster"
-import { advancedCache } from "@/lib/load-balancer/advanced-cache"
 
+// GET /api/users - Get all users (admin only)
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization")
@@ -20,176 +18,89 @@ export async function GET(req: NextRequest) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const { searchParams } = new URL(req.url)
-    const includeCompanies = searchParams.get("includeCompanies") === "true"
-    const cacheKey = `admin:users:${includeCompanies ? "with-companies" : "basic"}`
-    const cached = await advancedCache.get<any>(cacheKey)
-    if (cached) {
-      const response = NextResponse.json(cached)
-      addSecurityHeaders(response)
-      return response
-    }
+    const db = await connectDB()
+    const users = await db.collection("users").find({}).toArray()
 
-    const { db } = await connectDB()
-    const users = await db
-      .collection("users")
-      .find({})
-      .project({
-        email: 1,
-        name: 1,
-        phone: 1,
-        role: 1,
-        createdAt: 1,
-        updatedAt: 1,
-      })
-      .sort({ createdAt: -1 })
-      .limit(1000) // Increased limit for larger customer bases
-      .toArray()
-
-    let result: any = {
+    return NextResponse.json({
       success: true,
       data: users.map((user) => ({
         id: user._id.toString(),
         email: user.email,
         name: user.name,
-        phone: user.phone || null,
+        phone: user.phone,
         role: user.role,
+        accountStatus: user.accountStatus,
+        emailVerified: user.emailVerified,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       })),
-    }
-
-    // If includeCompanies is requested, fetch associated companies for each user
-    if (includeCompanies) {
-      const companies = await db
-        .collection("companies")
-        .find({})
-        .project({
-          userId: 1,
-          name: 1,
-        })
-        .toArray()
-
-      // Create a map of userId -> companies for efficient lookup
-      const companiesByUserId = new Map<string, string[]>()
-      companies.forEach((company) => {
-        const userId = company.userId.toString()
-        if (!companiesByUserId.has(userId)) {
-          companiesByUserId.set(userId, [])
-        }
-        companiesByUserId.get(userId)!.push(company.name)
-      })
-
-      // Enrich user data with company names
-      result.data = result.data.map((user: any) => ({
-        ...user,
-        companyNames: companiesByUserId.get(user.id) || [],
-      }))
-    }
-
-    await advancedCache.set(cacheKey, result, { ttl: 15_000, tags: ["admin-dashboard"] })
-    const response = NextResponse.json(result)
-    addSecurityHeaders(response)
-    return response
+    })
   } catch (error) {
-    console.error(" Error fetching users:", error)
+    console.error("Error fetching users:", error)
     return NextResponse.json({ error: "Failed to fetch users" }, { status: 500 })
   }
 }
 
+// POST /api/users - Create user (admin only)
 export async function POST(req: NextRequest) {
   try {
+    const authHeader = req.headers.get("authorization")
+    const token = authHeader?.replace("Bearer ", "")
+
+    if (!token) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+    }
+
+    const decoded = verifyToken(token)
+    if (!decoded || decoded.role !== "admin") {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 })
+    }
+
     const body = await req.json()
-    const { email, name, phone, password, role, isCheckout } = body
+    const { email, name, phone, password, role } = body
 
     if (!email || !name || !password) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
     }
 
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
-    }
+    const db = await connectDB()
 
-    if (password.length < 6) {
-      return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 })
-    }
-
-    if (!isCheckout) {
-      const authHeader = req.headers.get("authorization")
-      const token = authHeader?.replace("Bearer ", "")
-
-      if (!token) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
-      }
-
-      const decoded = verifyToken(token)
-      if (!decoded || decoded.role !== "admin") {
-        return NextResponse.json({ error: "Forbidden" }, { status: 403 })
-      }
-    }
-
-    const { db } = await connectDB()
-
-    const existingUser = await db
-      .collection("users")
-      .findOne({ email }, { projection: { _id: 1, email: 1, name: 1, phone: 1, role: 1 } })
-
+    // Check if user exists
+    const existingUser = await db.collection("users").findOne({ email })
     if (existingUser) {
-      if (isCheckout) {
-        return NextResponse.json({
-          success: true,
-          userExists: true,
-          data: {
-            id: existingUser._id.toString(),
-            email: existingUser.email,
-            name: existingUser.name,
-            phone: existingUser.phone,
-            role: existingUser.role,
-          },
-        })
-      }
       return NextResponse.json({ error: "User already exists" }, { status: 400 })
     }
 
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10)
 
     const newUser = {
       email,
       name,
-      phone: phone || null,
+      phone,
       password: hashedPassword,
       role: role || "client",
+      accountStatus: "active",
+      emailVerified: true,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
     const result = await db.collection("users").insertOne(newUser)
 
-    console.log(" User created:", result.insertedId.toString())
-
-    broadcast("user_created", {
-      id: result.insertedId.toString(),
-      email: newUser.email,
-      name: newUser.name,
-      role: newUser.role,
-    })
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
-      userExists: false,
       data: {
         id: result.insertedId.toString(),
-        _id: result.insertedId.toString(),
         email: newUser.email,
         name: newUser.name,
         phone: newUser.phone,
         role: newUser.role,
+        accountStatus: newUser.accountStatus,
       },
     })
-    addSecurityHeaders(response)
-    return response
   } catch (error) {
-    console.error(" Error creating user:", error)
+    console.error("Error creating user:", error)
     return NextResponse.json({ error: "Failed to create user" }, { status: 500 })
   }
 }

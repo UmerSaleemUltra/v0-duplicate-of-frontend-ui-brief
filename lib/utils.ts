@@ -120,33 +120,3 @@ export function getMonthlyRevenue(invoices: any[], months = 12): Array<{ month: 
 
   return monthlyData
 }
-
-/**
- * Formats a date string or Date object for display
- * @param date - The date to format (string, Date, or null/undefined)
- * @param options - Intl.DateTimeFormatOptions for custom formatting
- * @returns Formatted date string or "N/A" for invalid dates
- */
-export function formatDate(date: string | Date | null | undefined, options?: Intl.DateTimeFormatOptions): string {
-  if (!date) return "N/A"
-
-  try {
-    const dateObj = typeof date === "string" ? new Date(date) : date
-
-    if (isNaN(dateObj.getTime())) {
-      return "N/A"
-    }
-
-    const defaultOptions: Intl.DateTimeFormatOptions = {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-      ...options,
-    }
-
-    return dateObj.toLocaleDateString("en-US", defaultOptions)
-  } catch (error) {
-    console.error("[BuzzFiling] Error formatting date:", error)
-    return "N/A"
-  }
-}

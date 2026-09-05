@@ -3,17 +3,11 @@ import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import { ObjectId } from "mongodb"
 import bcrypt from "bcryptjs"
-import { addSecurityHeaders } from "@/lib/middleware/security-headers"
-import { broadcast } from "@/lib/realtime/broadcaster"
 
+// GET /api/users/[id] - Get user by ID
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-
-    if (!id || !ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "Invalid user ID format" }, { status: 400 })
-    }
-
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
@@ -26,54 +20,42 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "Invalid token" }, { status: 401 })
     }
 
+    // Users can only access their own data unless admin
     if (decoded.role !== "admin" && decoded.userId !== id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const { db } = await connectDB()
-
+    const db = await connectDB()
     const user = await db.collection("users").findOne({ _id: new ObjectId(id) })
 
     if (!user) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    console.log(" User fetched:", user.email)
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       data: {
         id: user._id.toString(),
         email: user.email,
         name: user.name,
-        phone: user.phone || null,
+        phone: user.phone,
         role: user.role,
+        accountStatus: user.accountStatus,
+        emailVerified: user.emailVerified,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
     })
-    addSecurityHeaders(response)
-    return response
-  } catch (error: any) {
-    console.error(" Error fetching user:", error)
-    return NextResponse.json(
-      {
-        error: "Failed to fetch user",
-        details: process.env.NODE_ENV === "development" ? error.message : undefined,
-      },
-      { status: 500 },
-    )
+  } catch (error) {
+    console.error("Error fetching user:", error)
+    return NextResponse.json({ error: "Failed to fetch user" }, { status: 500 })
   }
 }
 
+// PUT /api/users/[id] - Update user
 export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-
-    if (!id || !ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "Invalid user ID format" }, { status: 400 })
-    }
-
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
@@ -86,19 +68,16 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "Invalid token" }, { status: 401 })
     }
 
+    // Users can only update their own data unless admin
     if (decoded.role !== "admin" && decoded.userId !== id) {
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
     const body = await req.json()
-    const { name, phone, email, password } = body
+    const { name, phone, email, password, accountStatus } = body
 
-    if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      return NextResponse.json({ error: "Invalid email format" }, { status: 400 })
-    }
-
-    const { db } = await connectDB()
-    const updateData: Record<string, any> = {
+    const db = await connectDB()
+    const updateData: any = {
       updatedAt: new Date().toISOString(),
     }
 
@@ -106,10 +85,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (phone) updateData.phone = phone
     if (email) updateData.email = email
 
+    // Only admin can change account status
+    if (accountStatus && decoded.role === "admin") {
+      updateData.accountStatus = accountStatus
+    }
+
+    // If password is being changed
     if (password) {
-      if (password.length < 6) {
-        return NextResponse.json({ error: "Password must be at least 6 characters" }, { status: 400 })
-      }
       updateData.password = await bcrypt.hash(password, 10)
     }
 
@@ -121,24 +103,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    console.log(" User updated:", result.email)
-
-    // Broadcast logout if email or password changed
-    if (email || password) {
-      broadcast("force_logout", {
-        userId: id,
-        reason: email ? "email_changed" : "password_changed",
-        timestamp: new Date().toISOString(),
-      })
-    }
-
-    broadcast("user_updated", {
-      id: result._id.toString(),
-      email: result.email,
-      name: result.name,
-    })
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
       data: {
         id: result._id.toString(),
@@ -146,24 +111,19 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         name: result.name,
         phone: result.phone,
         role: result.role,
+        accountStatus: result.accountStatus,
       },
     })
-    addSecurityHeaders(response)
-    return response
   } catch (error) {
-    console.error(" Error updating user:", error)
+    console.error("Error updating user:", error)
     return NextResponse.json({ error: "Failed to update user" }, { status: 500 })
   }
 }
 
+// DELETE /api/users/[id] - Delete user (admin only)
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params
-
-    if (!id || !ObjectId.isValid(id)) {
-      return NextResponse.json({ error: "Invalid user ID format" }, { status: 400 })
-    }
-
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
@@ -176,45 +136,19 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       return NextResponse.json({ error: "Forbidden" }, { status: 403 })
     }
 
-    const { db } = await connectDB()
-    const userId = new ObjectId(id)
-    const userIdString = id
-
-    console.log(" Deleting user and all related data:", id)
-
-    await Promise.all([
-      db.collection("companies").deleteMany({ userId: userIdString }),
-      db.collection("orders").deleteMany({ userId: userIdString }),
-      db.collection("passports").deleteMany({ userId: userIdString }),
-      db.collection("notifications").deleteMany({ userId: userIdString }),
-      db.collection("documents").deleteMany({ userId: userIdString }),
-    ])
-
-    const result = await db.collection("users").deleteOne({ _id: userId })
+    const db = await connectDB()
+    const result = await db.collection("users").deleteOne({ _id: new ObjectId(id) })
 
     if (result.deletedCount === 0) {
       return NextResponse.json({ error: "User not found" }, { status: 404 })
     }
 
-    console.log(" User deleted successfully")
-
-    // Broadcast logout when user is deleted
-    broadcast("force_logout", {
-      userId: id,
-      reason: "user_deleted",
-      timestamp: new Date().toISOString(),
-    })
-
-    broadcast("user_deleted", { id })
-
-    const response = NextResponse.json({
+    return NextResponse.json({
       success: true,
-      message: "User and all associated data deleted successfully",
+      message: "User deleted successfully",
     })
-    addSecurityHeaders(response)
-    return response
   } catch (error) {
-    console.error(" Error deleting user:", error)
+    console.error("Error deleting user:", error)
     return NextResponse.json({ error: "Failed to delete user" }, { status: 500 })
   }
 }

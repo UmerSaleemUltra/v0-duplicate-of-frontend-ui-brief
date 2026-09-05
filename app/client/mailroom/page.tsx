@@ -1,57 +1,29 @@
 "use client"
 
 import { ClientShell } from "@/components/client/client-shell"
-import { Mail, Eye, Search, FileText, Building2, User, Download } from "lucide-react"
+import { Mail, Eye, Search, Calendar, FileText, Building2, User, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { useState, useEffect } from "react"
-import type { MailItem } from "@/lib/types"
+import { mailStorage, type MailItem } from "@/lib/local-storage"
 import { useSelectedCompany } from "@/lib/company-context"
 import { useToast } from "@/hooks/use-toast"
 import { useAuthGuard } from "@/lib/use-auth-guard"
-import { ApiClient } from "@/lib/api-client"
-import { authService } from "@/lib/auth"
-import { MailroomSkeleton } from "@/components/client/mailroom-skeleton"
+import { Spinner } from "@/components/ui/spinner"
+import { documentStorage } from "@/lib/document-storage"
 
 export default function MailroomPage() {
   const { isAuthenticated, isLoading } = useAuthGuard()
   const { selectedCompanyId } = useSelectedCompany()
   const { toast } = useToast()
-  // Seed from localStorage cache so the page paints immediately on return visits
-  const [mailItems, setMailItems] = useState<MailItem[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const cached = localStorage.getItem(`mail_cache_${selectedCompanyId}`)
-        if (cached) return JSON.parse(cached)
-      } catch { /* ignore */ }
-    }
-    return []
-  })
-  const [filteredItems, setFilteredItems] = useState<MailItem[]>(() => {
-    if (typeof window !== "undefined") {
-      try {
-        const cached = localStorage.getItem(`mail_cache_${selectedCompanyId}`)
-        if (cached) return JSON.parse(cached)
-      } catch { /* ignore */ }
-    }
-    return []
-  })
+  const [mailItems, setMailItems] = useState<MailItem[]>([])
+  const [filteredItems, setFilteredItems] = useState<MailItem[]>([])
+  const [statusFilter, setStatusFilter] = useState("all")
   const [typeFilter, setTypeFilter] = useState("all-types")
   const [searchQuery, setSearchQuery] = useState("")
-  // Only show skeleton if there is no cached data
-  const [loading, setLoading] = useState(() => {
-    if (typeof window !== "undefined") {
-      try {
-        return !localStorage.getItem(`mail_cache_${selectedCompanyId}`)
-      } catch { /* ignore */ }
-    }
-    return true
-  })
-  const [viewingDocument, setViewingDocument] = useState<{ url: string; name: string } | null>(null)
-  const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
+  const [mailDocuments, setMailDocuments] = useState<Record<string, any>>({})
 
   useEffect(() => {
     if (selectedCompanyId) {
@@ -59,51 +31,45 @@ export default function MailroomPage() {
     }
   }, [selectedCompanyId])
 
+  useEffect(() => {
+    if (selectedCompanyId && mailItems.length > 0) {
+      loadMailDocuments()
+    }
+  }, [selectedCompanyId, mailItems])
+
   const loadMailroomData = async () => {
     if (!selectedCompanyId) return
 
-    try {
-      setLoading(true)
-      const token = authService.getToken()
-      if (!token) {
-        toast({
-          title: "Authentication Required",
-          description: "Please log in to view mail.",
-          variant: "destructive",
-        })
-        return
+    const items = mailStorage.getByCompanyId(selectedCompanyId)
+    setMailItems(items)
+    setFilteredItems(items)
+  }
+
+  const loadMailDocuments = async () => {
+    if (!selectedCompanyId) return
+
+    const docs: Record<string, any> = {}
+    for (const mail of mailItems) {
+      if (mail.documentId) {
+        try {
+          const doc = await documentStorage.getById(mail.documentId)
+          if (doc && (doc.isMailDocument || doc.category === "mail")) {
+            docs[mail.documentId] = doc
+          }
+        } catch (error) {
+          console.error("[v0] Error loading mail document:", error)
+        }
       }
-
-      const response = await ApiClient.mail.getAll(token, selectedCompanyId)
-      const items = response.data || []
-
-      const normalizedItems = items.map((mail: any) => ({
-        ...mail,
-        id: mail.id || mail._id?.toString(),
-        sender: mail.from || mail.sender || "Unknown Sender",
-        receivedAt: mail.receivedDate || mail.receivedAt || new Date(),
-        type: mail.type || "general",
-      }))
-
-      setMailItems(normalizedItems)
-      setFilteredItems(normalizedItems)
-      try {
-        localStorage.setItem(`mail_cache_${selectedCompanyId}`, JSON.stringify(normalizedItems))
-      } catch { /* ignore */ }
-    } catch (error) {
-      console.error(" Error loading mail:", error)
-      toast({
-        title: "Error Loading Mail",
-        description: "Failed to load mail items. Please try again.",
-        variant: "destructive",
-      })
-    } finally {
-      setLoading(false)
     }
+    setMailDocuments(docs)
   }
 
   useEffect(() => {
     let filtered = mailItems
+
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((item) => item.status === statusFilter)
+    }
 
     if (typeFilter !== "all-types") {
       filtered = filtered.filter((item) => item.type === typeFilter)
@@ -113,55 +79,75 @@ export default function MailroomPage() {
       filtered = filtered.filter(
         (item) =>
           item.subject.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (item.from || item.sender || "").toLowerCase().includes(searchQuery.toLowerCase()),
+          item.sender.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     }
 
     setFilteredItems(filtered)
-    setCurrentPage(1) // Reset to first page when filters change
-  }, [typeFilter, searchQuery, mailItems])
+  }, [statusFilter, typeFilter, searchQuery, mailItems])
+
+  const handleMarkAsRead = (mailId: string) => {
+    const mail = mailStorage.getById(mailId)
+    if (mail) {
+      mailStorage.update(mailId, { ...mail, status: "read" })
+      if (selectedCompanyId) {
+        const items = mailStorage.getByCompanyId(selectedCompanyId)
+        setMailItems(items)
+        setFilteredItems(items)
+      }
+      toast({
+        title: "Marked as Read",
+        description: "Mail item marked as read",
+      })
+    }
+  }
 
   const handleDownloadDocument = async (mailId: string) => {
     const mail = mailItems.find((m) => m.id === mailId)
-    if (!mail) {
+    if (!mail || !mail.documentId) {
       toast({
-        title: "Error",
-        description: "Mail item not found",
-        variant: "destructive",
-      })
-      return
-    }
-
-    if (!mail.attachments || mail.attachments.length === 0) {
-      toast({
-        title: "No Attachments",
-        description: "This mail item doesn't have any attached documents",
+        title: "No Document",
+        description: "This mail item doesn't have an attached document",
         variant: "destructive",
       })
       return
     }
 
     try {
-      for (const attachment of mail.attachments) {
-        const link = document.createElement("a")
-        link.href = attachment.fileUrl
-        link.download = attachment.name
-        link.target = "_blank"
-        link.rel = "noopener noreferrer"
-        document.body.appendChild(link)
-        link.click()
-        document.body.removeChild(link)
+      const doc = await documentStorage.getById(mail.documentId)
+      if (!doc) {
+        throw new Error("Document not found")
       }
+
+      const blob = new Blob([doc.fileData], { type: doc.fileType || "application/octet-stream" })
+      const fileName = doc.fileName || mail.subject.replace(/\s+/g, "-") || "document"
+
+      console.log("[v0] Downloading mail document:", {
+        fileName,
+        fileType: doc.fileType,
+        fileSize: doc.fileSize,
+        blobSize: blob.size,
+      })
+
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement("a")
+      link.href = url
+      link.download = fileName
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
 
       toast({
         title: "Download Started",
-        description: `Downloading ${mail.attachments.length} file(s)`,
+        description: `Downloading ${fileName}`,
       })
     } catch (error) {
-      console.error(" Download error:", error)
+      console.error("[v0] Download error:", error)
       toast({
         title: "Download Failed",
-        description: "Failed to download attachments. Please try again.",
+        description: "Failed to download document. Please try again.",
         variant: "destructive",
       })
     }
@@ -169,24 +155,36 @@ export default function MailroomPage() {
 
   const handleViewDocument = async (mailId: string) => {
     const mail = mailItems.find((m) => m.id === mailId)
-    if (!mail || !mail.attachments || mail.attachments.length === 0) {
+    if (!mail || !mail.documentId) {
       toast({
-        title: "No Attachments",
-        description: "This mail item doesn't have any attached documents",
+        title: "No Document",
+        description: "This mail item doesn't have an attached document",
         variant: "destructive",
       })
       return
     }
 
     try {
-      window.open(mail.attachments[0].fileUrl, "_blank", "noopener,noreferrer")
+      const doc = await documentStorage.getById(mail.documentId)
+      if (!doc) {
+        throw new Error("Document not found")
+      }
 
-      toast({
-        title: "Document Opened",
-        description: "Document opened in a new tab",
+      const blob = new Blob([doc.fileData], { type: doc.fileType || "application/octet-stream" })
+
+      console.log("[v0] Viewing mail document:", {
+        fileName: doc.fileName,
+        fileType: doc.fileType,
+        fileSize: doc.fileSize,
+        blobSize: blob.size,
       })
+
+      const url = URL.createObjectURL(blob)
+      window.open(url, "_blank")
+
+      setTimeout(() => URL.revokeObjectURL(url), 5000)
     } catch (error) {
-      console.error(" View error:", error)
+      console.error("[v0] View error:", error)
       toast({
         title: "View Failed",
         description: "Failed to open document. Please try again.",
@@ -196,20 +194,8 @@ export default function MailroomPage() {
   }
 
   const totalMail = mailItems.length
-  const mailWithAttachments = mailItems.filter(
-    (m) => m.hasAttachment && m.attachments && m.attachments.length > 0,
-  ).length
-
-  // Pagination calculations
-  const totalPages = Math.ceil(filteredItems.length / itemsPerPage)
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  const currentMailItems = filteredItems.slice(startIndex, endIndex)
-
-  const goToPage = (page: number) => {
-    setCurrentPage(page)
-    window.scrollTo({ top: 0, behavior: "smooth" })
-  }
+  const unreadMail = mailItems.filter((item) => item.status === "unread").length
+  const readMail = mailItems.filter((item) => item.status === "read").length
 
   const getIcon = (type: string) => {
     switch (type) {
@@ -218,18 +204,17 @@ export default function MailroomPage() {
       case "tax":
         return Building2
       case "letter":
-      case "official":
         return Mail
       default:
         return User
     }
   }
 
-  if (isLoading || loading) {
+  if (isLoading) {
     return (
-      <ClientShell>
-        <MailroomSkeleton />
-      </ClientShell>
+      <div className="flex items-center justify-center min-h-screen">
+        <Spinner className="w-8 h-8" />
+      </div>
     )
   }
 
@@ -239,42 +224,86 @@ export default function MailroomPage() {
 
   return (
     <ClientShell>
-      <div className="space-y-6 md:space-y-8">
+      <div className="space-y-8">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg flex-shrink-0">
-            <Mail className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+          <div className="w-12 h-12 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-lg">
+            <Mail className="w-6 h-6 text-white" />
           </div>
-          <div className="min-w-0 flex-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Mailroom</h1>
-            <p className="text-slate-600 text-xs sm:text-sm md:text-base">
-              View and manage official correspondence
-            </p>
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-semibold">Mailroom</h1>
+            <p className="text-slate-600 text-sm sm:text-base">View and manage official correspondence</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-slate-200 p-4 sm:p-6">
+        <div className="grid md:grid-cols-3 gap-6">
+          <div className="bg-white rounded-xl border border-slate-200 p-8 transition-shadow duration-200 hover:shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
+                <Mail className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-semibold text-slate-900">{totalMail}</div>
+                <div className="text-sm text-slate-600">Total Mail</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-8 transition-shadow duration-200 hover:shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
+                <Eye className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-semibold text-slate-900">{unreadMail}</div>
+                <div className="text-sm text-slate-600">Unread</div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-slate-200 p-8 transition-shadow duration-200 hover:shadow-lg">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm">
+                <Calendar className="w-5 h-5 text-white" />
+              </div>
+              <div>
+                <div className="text-2xl font-semibold text-slate-900">{readMail}</div>
+                <div className="text-sm text-slate-600">Read</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl border border-slate-200 p-6 transition-shadow duration-200 hover:shadow-lg">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                 <Input
                   placeholder="Search mail by subject or sender..."
-                  className="pl-10 h-10 border-slate-200 focus:border-primary focus:ring-primary text-sm"
+                  className="pl-10 h-10 border-slate-200 focus:border-primary focus:ring-primary"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
               </div>
             </div>
+            <Select value={statusFilter} onValueChange={setStatusFilter}>
+              <SelectTrigger className="w-full sm:w-[180px] h-10 border-slate-200">
+                <SelectValue placeholder="Filter by status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Mail</SelectItem>
+                <SelectItem value="unread">Unread</SelectItem>
+                <SelectItem value="read">Read</SelectItem>
+              </SelectContent>
+            </Select>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full sm:w-[180px] h-10 border-slate-200 cursor-pointer">
+              <SelectTrigger className="w-full sm:w-[180px] h-10 border-slate-200">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all-types">All Types</SelectItem>
-                <SelectItem value="official">Official</SelectItem>
                 <SelectItem value="legal">Legal</SelectItem>
                 <SelectItem value="tax">Tax</SelectItem>
-                <SelectItem value="general">General</SelectItem>
                 <SelectItem value="letter">Letter</SelectItem>
                 <SelectItem value="package">Package</SelectItem>
                 <SelectItem value="other">Other</SelectItem>
@@ -283,123 +312,86 @@ export default function MailroomPage() {
           </div>
         </div>
 
-        <div className="bg-white rounded-lg border border-slate-200 overflow-hidden">
-          <div className="overflow-x-auto">
-            {filteredItems.length === 0 ? (
-              <div className="text-center py-12 px-4">
-                <Mail className="w-12 h-12 sm:w-16 sm:h-16 text-slate-300 mx-auto mb-4" />
-                <p className="text-slate-600 mb-2 text-sm sm:text-base">No mail items found</p>
-                <p className="text-xs sm:text-sm text-slate-500">Mail sent to your company will appear here</p>
+        <div className="bg-white rounded-xl border border-slate-200 p-8 transition-shadow duration-200 hover:shadow-lg">
+          <h2 className="text-lg font-semibold mb-4">Your Mail</h2>
+          {filteredItems.length === 0 ? (
+            <div className="text-center py-12">
+              <div className="w-16 h-16 rounded-xl bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center mx-auto mb-4 shadow-lg">
+                <Mail className="w-8 h-8 text-white" />
               </div>
-            ) : (
-              <table className="w-full">
-                <thead className="bg-slate-50 border-b border-slate-200">
-                  <tr>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Subject</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">From</th>
-                    <th className="text-left py-3 px-4 text-sm font-medium text-slate-700">Date</th>
-                    <th className="text-center py-3 px-4 text-sm font-medium text-slate-700">Attachments</th>
-                    <th className="text-center py-3 px-4 text-sm font-medium text-slate-700">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentMailItems.map((item, index) => (
-                    <tr
-                      key={item.id}
-                      className={index !== currentMailItems.length - 1 ? "border-b border-slate-200" : ""}
-                    >
-                      <td className="py-3 px-4">
-                        <div className="flex items-center gap-3">
-                          <Mail className="w-5 h-5 text-slate-400 flex-shrink-0" />
-                          <span className="text-sm text-slate-900 truncate">{item.subject}</span>
-                        </div>
-                      </td>
-                      <td className="py-3 px-4 text-sm text-slate-600">{item.from || item.sender}</td>
-                      <td className="py-3 px-4 text-sm text-slate-600">
-                        {new Date(item.receivedDate || item.receivedAt).toLocaleDateString()}
-                      </td>
-                      <td className="py-3 px-4 text-center">
-                        {item.hasAttachment && item.attachments && item.attachments.length > 0 ? (
-                          <Badge variant="secondary" className="text-xs">
-                            {item.attachments.length} file(s)
-                          </Badge>
-                        ) : (
-                          <span className="text-sm text-slate-400">-</span>
-                        )}
-                      </td>
-                      <td className="py-3 px-4">
-                        <div className="flex items-center justify-center gap-2">
-                          {item.hasAttachment && (
-                            <>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 cursor-pointer"
-                                onClick={() => handleViewDocument(item.id)}
-                                title="View"
-                              >
-                                <Eye className="w-4 h-4 text-slate-600" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="sm"
-                                className="h-8 w-8 p-0 cursor-pointer"
-                                onClick={() => handleDownloadDocument(item.id)}
-                                title="Download"
-                              >
-                                <Download className="w-4 h-4 text-slate-600" />
-                              </Button>
-                            </>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </div>
+              <p className="text-slate-900 font-medium">No mail items found</p>
+              <p className="text-sm text-slate-600 mt-1">Mail sent to your company will appear here</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredItems.map((item) => {
+                const Icon = getIcon(item.type)
 
-          {filteredItems.length > itemsPerPage && (
-            <div className="flex items-center justify-between px-4 py-4 border-t border-slate-200 bg-white">
-              <div className="text-sm text-slate-600">
-                Showing {startIndex + 1} to {Math.min(endIndex, filteredItems.length)} of {filteredItems.length} mail items
-              </div>
-              <div className="flex items-center gap-1">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => goToPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={`${currentPage === 1 ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"}`}
-                >
-                  Previous
-                </Button>
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button
-                    key={page}
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => goToPage(page)}
-                    className={`min-w-[36px] cursor-pointer ${
-                      currentPage === page 
-                        ? "bg-[#dc0000] text-white" 
-                        : "text-slate-700"
-                    }`}
+                return (
+                  <div
+                    key={item.id}
+                    className="p-4 rounded-lg bg-slate-50 flex items-center justify-between hover:bg-slate-100 transition-all duration-200"
                   >
-                    {page}
-                  </Button>
-                ))}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={`${currentPage === totalPages ? "text-slate-400 cursor-not-allowed" : "text-slate-700 cursor-pointer"}`}
-                >
-                  Next
-                </Button>
-              </div>
+                    <div className="flex items-center gap-3 flex-1 min-w-0">
+                      <div className="w-10 h-10 rounded-lg bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center shadow-sm flex-shrink-0">
+                        <Icon className="w-5 h-5 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="font-medium text-slate-900 truncate">{item.subject}</div>
+                        <div className="text-sm text-slate-600 truncate">
+                          {item.sender} • {new Date(item.receivedAt).toLocaleDateString()} • {item.type}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-3 flex-shrink-0">
+                      {item.status === "unread" ? (
+                        <Badge className="bg-amber-50 text-amber-700 border-amber-200">Unread</Badge>
+                      ) : (
+                        <Badge className="bg-emerald-50 text-emerald-700 border-emerald-200">Read</Badge>
+                      )}
+                      {item.documentId && mailDocuments[item.documentId] && (
+                        <div className="flex items-center gap-1 text-xs text-slate-600">
+                          <FileText className="w-3 h-3" />
+                          <span className="truncate max-w-[120px]">
+                            {mailDocuments[item.documentId].fileName || "Document"}
+                          </span>
+                        </div>
+                      )}
+                      <div className="flex gap-2">
+                        {item.documentId && (
+                          <>
+                            <Button
+                              variant="ghost"
+                              className="h-10 w-10 p-0"
+                              onClick={() => handleViewDocument(item.id)}
+                              title="View document"
+                            >
+                              <FileText className="w-4 h-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              className="h-10 w-10 p-0"
+                              onClick={() => handleDownloadDocument(item.id)}
+                              title="Download document"
+                            >
+                              <Download className="w-4 h-4" />
+                            </Button>
+                          </>
+                        )}
+                        <Button
+                          variant="ghost"
+                          className="h-10 w-10 p-0"
+                          onClick={() => handleMarkAsRead(item.id)}
+                          disabled={item.status === "read"}
+                          title="Mark as read"
+                        >
+                          <Eye className="w-4 h-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           )}
         </div>
