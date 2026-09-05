@@ -9,8 +9,6 @@ import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Download, Receipt, Calendar, DollarSign, CheckCircle2, Clock, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { invoiceStorage, currentUserStorage, companyStorage } from "@/lib/local-storage"
-import { jsPDF } from "jspdf"
-import html2canvas from "html2canvas"
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -86,6 +84,10 @@ export default function InvoiceDetailPage({ params }: { params: Promise<{ id: st
   const handleDownloadPDF = async () => {
     if (!invoice || !company) return
 
+    const [{ jsPDF }, { default: html2canvas }] = await Promise.all([
+      import("jspdf"),
+      import("html2canvas"),
+    ])
     const doc = new jsPDF()
     const element = document.getElementById("invoice-content")
     if (element) {
