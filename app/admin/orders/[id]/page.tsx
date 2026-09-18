@@ -849,16 +849,19 @@ export default function OrderDetailPage() {
         hasInvitationPayload: Boolean(result.trustpilotInvitation),
       })
 
-      // The API returns this payload only for the one atomic transition to
-      // completed. Trigger Trustpilot before any other post-completion UI work.
-      if (result.trustpilotInvitation) {
-        void triggerTrustpilotInvitation(order.id, token, result.trustpilotInvitation)
-      } else if (newStatus === "completed") {
-        console.warn("[v0] Trustpilot invitation was not triggered", {
-          orderId: order.id,
-          reason: result.trustpilotInvitationStatus,
-        })
-      }
+  // Trustpilot invitation trigger temporarily disabled. Preserved for reactivation.
+  /*
+  // The API returns this payload only for the one atomic transition to
+  // completed. Trigger Trustpilot before any other post-completion UI work.
+  if (result.trustpilotInvitation) {
+    void triggerTrustpilotInvitation(order.id, token, result.trustpilotInvitation)
+  } else if (newStatus === "completed") {
+    console.warn("[v0] Trustpilot invitation was not triggered", {
+      orderId: order.id,
+      reason: result.trustpilotInvitationStatus,
+    })
+  }
+  */
 
       setOrder(result.data)
       toast({

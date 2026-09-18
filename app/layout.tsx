@@ -253,6 +253,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           `}
         </Script>
 
+        {/* Trustpilot invitation integration temporarily disabled. Preserved here for reactivation. */}
+        {/*
         <script
           dangerouslySetInnerHTML={{
             __html: `(function(w,d,s,r,n){w.TrustpilotObject=n;w[n]=w[n]||function(){(w[n].q=w[n].q||[]).push(arguments)};
@@ -261,6 +263,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               tp('register','liFAb0cyyrIgf5j4');`,
           }}
         />
+        */}
 
         <meta httpEquiv="X-Content-Type-Options" content="nosniff" />
         <meta httpEquiv="X-Frame-Options" content="SAMEORIGIN" />
