@@ -1,9 +1,5 @@
 "use client"
 
-import { useEffect } from "react"
-
-import { useState } from "react"
-
 import { use } from "react"
 import { ClientShell } from "@/components/client/client-shell"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -22,7 +18,8 @@ import {
   Printer,
 } from "lucide-react"
 import { useRouter } from "next/navigation"
-import { authService } from "@/lib/auth"
+import { documentStorage, companyStorage } from "@/lib/local-storage"
+import { useEffect, useState } from "react"
 
 export default function DocumentDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params)
@@ -32,76 +29,14 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    loadDocument()
-  }, [resolvedParams.id])
-
-  const loadDocument = async () => {
-    try {
-      const token = authService.getToken()
-      if (!token) {
-        router.push("/login")
-        return
-      }
-
-      console.log(" Fetching document:", resolvedParams.id)
-
-      const response = await fetch(`/api/documents/${resolvedParams.id}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      })
-
-      if (!response.ok) {
-        throw new Error("Failed to fetch document")
-      }
-
-      const result = await response.json()
-      console.log(" Document loaded:", result)
-
-      const doc = result.data || result
+    const doc = documentStorage.getById(resolvedParams.id)
+    if (doc) {
       setDocument(doc)
-
-      // Fetch company details
-      if (doc.companyId) {
-        const compResponse = await fetch(`/api/companies/${doc.companyId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        })
-
-        if (compResponse.ok) {
-          const compResult = await compResponse.json()
-          setCompany(compResult.data || compResult)
-        }
-      }
-    } catch (error) {
-      console.error(" Error loading document:", error)
-    } finally {
-      setLoading(false)
+      const comp = companyStorage.getById(doc.companyId)
+      setCompany(comp)
     }
-  }
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "ready":
-        return "bg-emerald-50 text-emerald-700 border-emerald-200"
-      case "pending":
-        return "bg-amber-50 text-amber-700 border-amber-200"
-      case "downloaded":
-        return "bg-blue-50 text-blue-700 border-blue-200"
-      default:
-        return "bg-slate-50 text-slate-700 border-slate-200"
-    }
-  }
-
-  const getStatusIcon = (status: string) => {
-    switch (status) {
-      case "ready":
-        return <CheckCircle2 className="w-4 h-4" />
-      case "pending":
-        return <Clock className="w-4 h-4" />
-      case "downloaded":
-        return <CheckCircle2 className="w-4 h-4" />
-      default:
-        return null
-    }
-  }
+    setLoading(false)
+  }, [resolvedParams.id])
 
   if (loading) {
     return (
@@ -135,6 +70,32 @@ export default function DocumentDetailPage({ params }: { params: Promise<{ id: s
         </div>
       </ClientShell>
     )
+  }
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "ready":
+        return "bg-emerald-50 text-emerald-700 border-emerald-200"
+      case "pending":
+        return "bg-amber-50 text-amber-700 border-amber-200"
+      case "downloaded":
+        return "bg-blue-50 text-blue-700 border-blue-200"
+      default:
+        return "bg-slate-50 text-slate-700 border-slate-200"
+    }
+  }
+
+  const getStatusIcon = (status: string) => {
+    switch (status) {
+      case "ready":
+        return <CheckCircle2 className="w-4 h-4" />
+      case "pending":
+        return <Clock className="w-4 h-4" />
+      case "downloaded":
+        return <CheckCircle2 className="w-4 h-4" />
+      default:
+        return null
+    }
   }
 
   return (

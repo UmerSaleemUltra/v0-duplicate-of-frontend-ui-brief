@@ -8,14 +8,7 @@ import { BusinessInfoStep } from "@/components/checkout/business-info-step"
 import { OwnerInfoStep } from "@/components/checkout/owner-info-step"
 import { ReviewStep } from "@/components/checkout/review-step"
 import { PaymentStep } from "@/components/checkout/payment-step"
-import {
-  saveCheckoutData,
-  getCheckoutData,
-  initCheckoutData,
-  saveCheckoutStep,
-  getSavedStep,
-} from "@/lib/checkout-storage"
-import { authService } from "@/lib/auth"
+import { saveCheckoutData, getCheckoutData, initCheckoutData } from "@/lib/checkout-storage"
 
 export type Member = {
   id: string
@@ -28,18 +21,14 @@ export type Member = {
   address2?: string
   city?: string
   state?: string
-  country?: string
   zip?: string
   dateOfBirth?: string
   ssn?: string
+  ownershipPercentage?: number
   isResponsiblePerson?: boolean
   needsItin?: boolean
   itinAdded?: boolean
   passportFile?: File | null
-  passportKey?: string
-  passportUrl?: string
-  passportId?: string
-  passportIndexedDBId?: string // Added IndexedDB ID field
   // Legacy fields
   name?: string
 }
@@ -50,7 +39,6 @@ export type CheckoutData = {
   password: string
   phone: string
   name: string
-  userId?: string
   // State & Package
   state: string
   entityType: string
@@ -66,36 +54,21 @@ export type CheckoutData = {
   needsResellerCertificate?: boolean
   members: Member[]
   // Add-ons
-  addons: any[] // Changed from string[] to any[] to support full addon objects
+  addons: string[]
   // Upsells
   upsells: string[]
-  // Pricing
-  totalAmount?: number
-  packagePrice?: number
-  stateFilingFee?: number
-  addonsTotal?: number
-  // Promo Code
-  promoCode?: {
-    code: string
-    discountType: "percentage" | "fixed"
-    discountValue: number
-    discountAmount: number
-  } | null
-  // Referral Source
-  referralSource?: "google" | "friend" | "social" | "youtube" | "chatgpt" | "other" | null
 }
 
 const STEPS = ["Account", "State & Package", "Business Info", "Owner Info", "Review", "Payment"]
 
 export default function CheckoutPage() {
   const [currentStep, setCurrentStep] = useState(0)
-  const [isAuthenticated, setIsAuthenticated] = useState(false)
+  const [isInitialized, setIsInitialized] = useState(false)
   const [data, setData] = useState<CheckoutData>({
     email: "",
     password: "",
     phone: "",
     name: "",
-    userId: undefined,
     state: "",
     entityType: "",
     packageType: "",
@@ -119,7 +92,6 @@ export default function CheckoutPage() {
         address: "",
         city: "",
         state: "",
-        country: "US",
         zip: "",
         ssn: "",
         dateOfBirth: "",
@@ -127,289 +99,40 @@ export default function CheckoutPage() {
         needsItin: false,
         itinAdded: false,
         passportFile: null,
-        passportKey: undefined,
-        passportUrl: undefined,
-        passportId: undefined,
-        passportIndexedDBId: undefined,
+        ownershipPercentage: 100,
       },
     ],
     addons: [],
     upsells: [],
-    totalAmount: undefined,
-    packagePrice: undefined,
-    stateFilingFee: undefined,
-    addonsTotal: undefined,
-    promoCode: null,
-    referralSource: null,
   })
 
   useEffect(() => {
+    console.log("[v0] Checkout - initializing data")
     initCheckoutData()
     const savedData = getCheckoutData()
-    const savedStep = getSavedStep()
-
-    const isAuthenticated = authService.isAuthenticated()
-    const currentUser = authService.getCurrentUser()
-
-    setIsAuthenticated(isAuthenticated)
-
-    if (savedStep !== null && savedStep >= 0) {
-      setCurrentStep(savedStep)
-    } else {
-      setCurrentStep(0)
-      saveCheckoutStep(0)
-    }
-
-    if (isAuthenticated && currentUser) {
-      // Pre-fill user data from authenticated session
-      if (savedData) {
-        const savedMembers = Array.isArray(savedData.members)
-          ? savedData.members.filter((m): m is NonNullable<typeof m> => m != null && typeof m === "object")
-          : []
-
-        setData({
-          email: savedData.account?.email || currentUser.email,
-          password: savedData.account?.password || "",
-          phone: savedData.account?.phone || "",
-          name: savedData.account?.name || currentUser.name,
-          userId: savedData.account?.userId || currentUser.id,
-          state: savedData.state?.state || "",
-          entityType: savedData.state?.entityType || "",
-          packageType: savedData.state?.packageType || "",
-          businessName: savedData.businessInfo?.businessName || "",
-          businessAddress: "",
-          businessCity: "",
-          businessZip: "",
-          businessWebsite: "",
-          businessCategory: savedData.businessInfo?.businessCategory || "",
-          businessDescription: savedData.businessInfo?.businessDescription || "",
-          needsResellerCertificate: savedData.businessInfo?.needsResellerCertificate || false,
-          members:
-            savedMembers.length > 0
-              ? savedMembers.map((m) => ({
-                  id: m.id || crypto.randomUUID(),
-                  name: m.name || "",
-                  firstName: m.firstName || "",
-                  middleName: m.middleName || "",
-                  lastName: m.lastName || "",
-                  email: m.email || "",
-                  phone: m.phone || "",
-                  address: m.address || "",
-                  city: m.city || "",
-                  state: m.state || "",
-                  country: m.country || "US",
-                  zip: m.zip || "",
-                  ssn: m.ssn || "",
-                  dateOfBirth: m.dateOfBirth || "",
-                  isResponsiblePerson: m.isResponsiblePerson || false,
-                  needsItin: false,
-                  itinAdded: m.itinAdded || false,
-                  passportFile: null,
-                  passportKey: m.passportKey,
-                  passportUrl: m.passportUrl,
-                  passportId: m.passportId,
-                  passportIndexedDBId: m.passportIndexedDBId,
-                }))
-              : [
-                  {
-                    id: crypto.randomUUID(),
-                    name: "",
-                    firstName: "",
-                    middleName: "",
-                    lastName: "",
-                    email: "",
-                    phone: "",
-                    address: "",
-                    city: "",
-                    state: "",
-                    country: "US",
-                    zip: "",
-                    ssn: "",
-                    dateOfBirth: "",
-                    isResponsiblePerson: true,
-                    needsItin: false,
-                    itinAdded: false,
-                    passportFile: null,
-                    passportKey: undefined,
-                    passportUrl: undefined,
-                    passportId: undefined,
-                    passportIndexedDBId: undefined,
-                  },
-                ],
-          addons: savedData.addons || [],
-          upsells: [],
-          totalAmount: savedData.totalAmount,
-          packagePrice: savedData.packagePrice,
-          stateFilingFee: savedData.stateFilingFee,
-          addonsTotal: savedData.addonsTotal,
-          referralSource: savedData.referralSource || null,
-        })
-      } else {
-        setData((prev) => ({
-          ...prev,
-          email: currentUser.email,
-          name: currentUser.name,
-          userId: currentUser.id,
-        }))
-      }
-    } else {
-      if (savedData) {
-        const savedMembers = Array.isArray(savedData.members)
-          ? savedData.members.filter((m): m is NonNullable<typeof m> => m != null && typeof m === "object")
-          : []
-
-        setData({
-          email: savedData.account?.email || "",
-          password: savedData.account?.password || "",
-          phone: savedData.account?.phone || "",
-          name: savedData.account?.name || "",
-          userId: savedData.account?.userId,
-          state: savedData.state?.state || "",
-          entityType: savedData.state?.entityType || "",
-          packageType: savedData.state?.packageType || "",
-          businessName: savedData.businessInfo?.businessName || "",
-          businessAddress: "",
-          businessCity: "",
-          businessZip: "",
-          businessWebsite: "",
-          businessCategory: savedData.businessInfo?.businessCategory || "",
-          businessDescription: savedData.businessInfo?.businessDescription || "",
-          needsResellerCertificate: savedData.businessInfo?.needsResellerCertificate || false,
-          members:
-            savedMembers.length > 0
-              ? savedMembers.map((m) => ({
-                  ...m,
-                  id: m.id || crypto.randomUUID(),
-                }))
-              : [
-                  {
-                    id: crypto.randomUUID(),
-                    name: "",
-                    firstName: "",
-                    middleName: "",
-                    lastName: "",
-                    email: "",
-                    phone: "",
-                    address: "",
-                    city: "",
-                    state: "",
-                    country: "US",
-                    zip: "",
-                    ssn: "",
-                    dateOfBirth: "",
-                    isResponsiblePerson: true,
-                    needsItin: false,
-                    itinAdded: false,
-                    passportFile: null,
-                    passportKey: undefined,
-                    passportUrl: undefined,
-                    passportId: undefined,
-                    passportIndexedDBId: undefined,
-                  },
-                ],
-          addons: savedData.addons || [],
-          upsells: [],
-          totalAmount: savedData.totalAmount,
-          packagePrice: savedData.packagePrice,
-          stateFilingFee: savedData.stateFilingFee,
-          addonsTotal: savedData.addonsTotal,
-          referralSource: savedData.referralSource || null,
-        })
-      }
-    }
-  }, [])
-
-  useEffect(() => {
-    const checkAuth = () => {
-      const isAuth = authService.isAuthenticated()
-      setIsAuthenticated(isAuth)
-    }
-
-    // Initial check
-    checkAuth()
-
-    // Listen for storage events (if user logs in/out in another tab)
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === "token" || e.key === "user") {
-        checkAuth()
-      }
-    }
-
-    window.addEventListener("storage", handleStorageChange)
-
-    // Cleanup listener on unmount
-    return () => {
-      window.removeEventListener("storage", handleStorageChange)
-    }
-  }, []) // Removed race condition: useEffect with currentStep dependency caused stale state
-
-  const updateData = (updates: Partial<CheckoutData>) => {
-    setData((prev) => {
-      const newData = { ...prev, ...updates }
-
-      const validMembers = Array.isArray(newData.members)
-        ? newData.members
-            .filter((m): m is NonNullable<typeof m> => m != null && typeof m === "object")
-            .map((m) => ({
-              ...m,
-              id: m.id || crypto.randomUUID(),
-            }))
-        : []
-
-      // Ensure at least one member exists
-      const finalMembers =
-        validMembers.length > 0
-          ? validMembers
-          : [
-              {
-                id: crypto.randomUUID(),
-                name: "",
-                firstName: "",
-                middleName: "",
-                lastName: "",
-                email: "",
-                phone: "",
-                address: "",
-                city: "",
-                state: "",
-                country: "US",
-                zip: "",
-                ssn: "",
-                dateOfBirth: "",
-                isResponsiblePerson: true,
-                needsItin: false,
-                itinAdded: false,
-                passportFile: null,
-                passportKey: undefined,
-                passportUrl: undefined,
-                passportId: undefined,
-                passportIndexedDBId: undefined,
-              },
-            ]
-
-      try {
-        saveCheckoutData({
-          account: {
-            email: newData.email,
-            password: newData.password,
-            phone: newData.phone || "",
-            name: newData.name || "",
-            userId: newData.userId,
-          },
-          state: {
-            state: newData.state,
-            entityType: newData.entityType as "llc" | "s-corp",
-            packageType: newData.packageType as "starter" | "advanced",
-          },
-          businessInfo: {
-            businessName: newData.businessName,
-            businessCategory: newData.businessCategory || "",
-            businessDescription: newData.businessDescription || "",
-            needsResellerCertificate: newData.needsResellerCertificate || false,
-          },
-          members: finalMembers.map((m) => ({
-            id: m.id,
-            name: m.name || `${m.firstName || ""} ${m.lastName || ""}`.trim(),
+    if (savedData) {
+      console.log("[v0] Checkout - found saved data:", savedData)
+      setData({
+        email: savedData.account.email || "",
+        password: savedData.account.password || "",
+        phone: savedData.account.phone || "",
+        name: savedData.account.name || "",
+        state: savedData.state.state || "",
+        entityType: savedData.state.entityType || "",
+        packageType: savedData.state.packageType || "",
+        businessName: savedData.businessInfo.businessName || "",
+        businessAddress: "",
+        businessCity: "",
+        businessZip: "",
+        businessWebsite: "",
+        businessCategory: savedData.businessInfo.businessCategory || "",
+        businessDescription: savedData.businessInfo.businessDescription || "",
+        needsResellerCertificate: savedData.businessInfo.needsResellerCertificate || false,
+        members: (savedData.members || [])
+          .filter((m) => m != null)
+          .map((m) => ({
+            id: crypto.randomUUID(),
+            name: m.name || "",
             firstName: m.firstName || "",
             middleName: m.middleName || "",
             lastName: m.lastName || "",
@@ -418,74 +141,103 @@ export default function CheckoutPage() {
             address: m.address || "",
             city: m.city || "",
             state: m.state || "",
-            country: m.country || "US",
+            zip: m.zip || "",
+            ssn: m.ssn || "",
+            dateOfBirth: m.dateOfBirth || "",
+            isResponsiblePerson: m.isResponsiblePerson || false,
+            needsItin: false,
+            itinAdded: m.itinAdded || false,
+            ownershipPercentage: m.ownershipPercentage || 0,
+            passportFile: null,
+          })),
+        addons: [],
+        upsells: [],
+      })
+    }
+    console.log("[v0] Checkout - data initialized")
+    setIsInitialized(true)
+  }, [])
+
+  const updateData = (updates: Partial<CheckoutData>) => {
+    setData((prev) => {
+      const newData = { ...prev, ...updates }
+
+      saveCheckoutData({
+        account: {
+          email: newData.email,
+          password: newData.password,
+          phone: newData.phone || "",
+          name: newData.name || "",
+        },
+        state: {
+          state: newData.state,
+          entityType: newData.entityType as "llc" | "s-corp",
+          packageType: newData.packageType as "starter" | "advanced",
+        },
+        businessInfo: {
+          businessName: newData.businessName,
+          businessCategory: newData.businessCategory || "",
+          businessDescription: newData.businessDescription || "",
+          needsResellerCertificate: newData.needsResellerCertificate || false,
+        },
+        members: (newData.members || [])
+          .filter((m) => m != null) // Remove null/undefined entries
+          .map((m) => ({
+            name: m.name || `${m.firstName || ""} ${m.lastName || ""}`.trim(),
+            address: m.address || "",
+            city: m.city || "",
+            state: m.state || "",
+            country: "US",
             zip: m.zip || "",
             ssn: m.ssn || "",
             dateOfBirth: m.dateOfBirth || "",
             isResponsiblePerson: m.isResponsiblePerson || false,
             itinAdded: m.itinAdded || false,
-            passportKey: m.passportKey,
-            passportUrl: m.passportUrl,
-            passportId: m.passportId,
-            passportIndexedDBId: m.passportIndexedDBId,
+            ownershipPercentage: m.ownershipPercentage || 0,
           })),
-          addons: newData.addons || [],
-          orderId: getCheckoutData()?.orderId || `ORD-${Date.now()}`,
-          createdAt: getCheckoutData()?.createdAt || new Date().toISOString(),
-          status: "draft",
-          payment: {
-            method: "bank-transfer",
-            status: "pending",
-          },
-          totalAmount: newData.totalAmount,
-          packagePrice: newData.packagePrice,
-          stateFilingFee: newData.stateFilingFee,
-          addonsTotal: newData.addonsTotal,
-        })
-      } catch (saveError) {
-        console.error("Error saving checkout data:", saveError)
-      }
+        orderId: getCheckoutData()?.orderId || `ORD-${Date.now()}`,
+        createdAt: getCheckoutData()?.createdAt || new Date().toISOString(),
+        status: "draft",
+        payment: {
+          method: "bank-transfer",
+          status: "pending",
+        },
+      })
 
-      return { ...newData, members: finalMembers }
+      return newData
     })
-
-    if (updates.userId || updates.email) {
-      const isAuth = authService.isAuthenticated()
-      setIsAuthenticated(isAuth)
-    }
-  }
-
-  const goToStep = (step: number) => {
-    if (step >= 0 && step < STEPS.length) {
-      setCurrentStep(step)
-      saveCheckoutStep(step)
-      window.scrollTo(0, 0)
-    }
   }
 
   const nextStep = () => {
+    console.log("[v0] Checkout - nextStep called, current step:", currentStep)
     if (currentStep < STEPS.length - 1) {
-      const newStep = currentStep + 1
-      setCurrentStep(newStep)
-      saveCheckoutStep(newStep)
+      console.log("[v0] Checkout - moving to step:", currentStep + 1)
+      setCurrentStep((prev) => prev + 1)
       window.scrollTo(0, 0)
     }
   }
 
   const prevStep = () => {
     if (currentStep > 0) {
-      const newStep = currentStep - 1
-      setCurrentStep(newStep)
-      saveCheckoutStep(newStep)
+      setCurrentStep((prev) => prev - 1)
       window.scrollTo(0, 0)
     }
   }
 
-  const handlePaymentSubmit = async (orderData: any) => {
-    // This function is a placeholder - all logic is in PaymentStep component
-  }
-
   const renderStep = () => {
+    console.log("[v0] Checkout - renderStep called, current step:", currentStep)
+    if (!data || !isInitialized) {
+      console.log("[v0] Checkout - data not ready, showing loading")
+      return (
+        <div className="flex items-center justify-center min-h-[400px]">
+          <div className="text-center">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#880000] mx-auto mb-4"></div>
+            <p className="text-slate-600">Loading checkout...</p>
+          </div>
+        </div>
+      )
+    }
+
     switch (currentStep) {
       case 0:
         return <AccountStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
@@ -494,24 +246,22 @@ export default function CheckoutPage() {
       case 2:
         return <BusinessInfoStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
       case 3:
+        console.log("[v0] Checkout - rendering OwnerInfoStep")
         return <OwnerInfoStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
       case 4:
-        return <ReviewStep formData={data} updateData={updateData} onNext={nextStep} onBack={prevStep} goToStep={goToStep} />
+        console.log("[v0] Checkout - rendering ReviewStep")
+        console.log("[v0] Checkout - ReviewStep props - data:", data)
+        console.log("[v0] Checkout - ReviewStep props - updateData type:", typeof updateData)
+        return <ReviewStep data={data} updateData={updateData} onNext={nextStep} onBack={prevStep} />
       case 5:
-        return <PaymentStep data={data} onBack={prevStep} onSubmit={handlePaymentSubmit} />
+        return <PaymentStep data={data} onBack={prevStep} />
       default:
         return null
     }
   }
 
   return (
-    <CheckoutShell
-      steps={STEPS}
-      currentStep={currentStep}
-      data={data}
-      isAuthenticated={isAuthenticated}
-      originalStep={currentStep}
-    >
+    <CheckoutShell steps={STEPS} currentStep={currentStep} data={data}>
       {renderStep()}
     </CheckoutShell>
   )

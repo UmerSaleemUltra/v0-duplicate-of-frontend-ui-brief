@@ -3,8 +3,6 @@ import { getDatabase } from "@/config/database"
 import { hashPassword } from "@/config/jwt"
 import { apiResponse, apiError } from "@/lib/api-middleware"
 import { ObjectId } from "mongodb"
-import { passwordUpdateRateLimit } from "@/lib/middleware/advanced-rate-limit"
-import { addSecurityHeaders } from "@/lib/middleware/security-headers"
 
 export async function POST(request: NextRequest) {
   try {
@@ -16,39 +14,25 @@ export async function POST(request: NextRequest) {
     }
 
     const db = await getDatabase()
+    const otpCollection = db.collection("otps")
     const usersCollection = db.collection("users")
 
-    const user = await usersCollection.findOne({ _id: new ObjectId(userId) })
+    // Verify reset token
+    const otpDoc = await otpCollection.findOne({
+      userId,
+      otp: token,
+      type: "password_reset",
+      expiresAt: { $gt: new Date() },
+    })
 
-    if (!user) {
-      return apiError("User not found", 404)
+    if (!otpDoc) {
+      return apiError("Invalid or expired reset token", 400)
     }
 
-    const rateLimitResult = await passwordUpdateRateLimit(user.email)
-
-    if (!rateLimitResult.allowed) {
-      return addSecurityHeaders(
-        apiError(
-          `Too many password reset attempts. Please try again in ${rateLimitResult.remainingTime} minutes.`,
-          429,
-        ),
-      )
-    }
-
-    if (!user.resetToken || !user.resetTokenExpiry) {
-      return apiError("No reset token found. Please request a new reset link.", 400)
-    }
-
-    if (user.resetToken !== token) {
-      return apiError("Invalid reset token", 400)
-    }
-
-    if (new Date(user.resetTokenExpiry) < new Date()) {
-      return apiError("Reset token has expired. Please request a new reset link.", 400)
-    }
-
+    // Hash new password
     const hashedPassword = await hashPassword(newPassword)
 
+    // Update user password
     await usersCollection.updateOne(
       { _id: new ObjectId(userId) },
       {
@@ -56,15 +40,15 @@ export async function POST(request: NextRequest) {
           password: hashedPassword,
           updatedAt: new Date().toISOString(),
         },
-        $unset: {
-          resetToken: "",
-          resetTokenExpiry: "",
-        },
       },
     )
 
-    return addSecurityHeaders(apiResponse({ message: "Password reset successfully" }))
+    // Delete used token
+    await otpCollection.deleteOne({ _id: otpDoc._id })
+
+    return apiResponse({ message: "Password reset successfully" })
   } catch (error) {
+    console.error("[v0] Reset password error:", error)
     return apiError("Failed to reset password", 500)
   }
 }

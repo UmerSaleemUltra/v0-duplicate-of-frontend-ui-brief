@@ -10,6 +10,8 @@ export interface User {
   email: string
   name: string
   phone?: string
+  accountStatus: "pending_payment" | "pending_verification" | "active" | "suspended"
+  emailVerified: boolean
   role: "client" | "admin"
   createdAt: string
   updatedAt: string
@@ -32,72 +34,39 @@ export interface Company {
   type: "LLC" | "Corporation" | "S-Corp" | "Non-Profit"
   state: string
   status: "pending" | "processing" | "active" | "suspended"
-
-  // Status fields - all manual (M)
-  companyStatus?: "pending" | "active" | "inactive"
-  registeredAgentStatus?: "pending" | "active" | "inactive"
-  businessAddressStatus?: "pending" | "active" | "inactive"
-  serviceStatus?: "pending" | "active" | "inactive"
-
-  // Formation & Tax fields - manual (M)
-  formationDate?: string // (M) - Admin sets formation date
-  taxClassification?: string // (M) - Admin sets tax classification
-  annualReportFilingDate?: string // (M) - Admin sets annual report date
-  irsFilingDate?: string // (M) - Admin sets IRS filing date
-
-  // Business ID fields - manual (M)
-  businessId?: string // (M) - State filing number set by admin
-  ein?: string // (M) - Admin assigns EIN
-  itin?: string // (M) - Admin assigns ITIN/SSN
-
-  // Registered Agent - manual (M)
-  registeredAgent?: {
-    name: string // (M)
-    company?: string // (M)
-    address: string // (M)
-    city: string // (M)
-    state: string // (M)
-    zip: string // (M)
-    phone?: string
-    email?: string
-    servicePeriod?: string // (M)
-    expiryDate?: string // (M)
-    status?: string // (M)
-  }
-
-  // Business Address - manual (M)
-  businessAddress?: {
-    companyName?: string // (M)
-    street: string // (M)
-    city: string // (M)
-    state: string // (M)
-    zip: string // (M)
-    expiryDate?: string // (M)
-    status?: string // (M)
-  }
-
-  // Fetched fields (F) - from forms/API
-  businessCategory?: string // (F)
-  businessDescription?: string // (F)
-  businessWebsite?: string // (F)
-  packageType?: string // (F)
-
+  ein?: string
+  itin?: string // Added ITIN field
+  businessId?: string
   einDocument?: string
-  notes?: string
-  mailingAddress?: {
+  itemNumber?: string
+  itemNumberDocument?: string
+  address?: {
     street: string
     city: string
     state: string
     zip: string
   }
+  formationDate?: string
+  notes?: string
+  registeredAgent?: {
+    name: string
+    company?: string
+    address: string
+    city: string
+    state: string
+    zip: string
+    phone?: string
+    email?: string
+    servicePeriod?: string
+    status?: string
+  }
   milestones?: {
-    orderSuccessfullyProcessed: boolean
+    orderProcessed: boolean
     registeredAgentAssigned: boolean
-    businessMailingAddressIssued: boolean
-    companyApplicationApplied: boolean
-    companyFormationCompleted: boolean
-    einApplicationSubmitted: boolean
-    einObtained: boolean
+    mailingAddressIssued: boolean
+    formationCompleted: boolean
+    einProcessed: boolean
+    boiReportFiled: boolean
   }
   customMilestones?: Array<{
     id: string
@@ -107,37 +76,19 @@ export interface Company {
     createdAt: string
     completedAt?: string
   }>
-
-  // Members - fetched (F) with some manual fields (M)
   members?: Array<{
-    address: string // (F)
-    city: string // (F)
-    state?: string // (F)
-    zip: string // (F)
-    isResponsiblePerson: boolean // (F)
-    needsItin?: boolean // (F)
-    passportKey?: string
-    ssn?: string // (M) - Admin assigns SSN for ITIN purposes
-  }>
-
-  // Addons - fetched (F)
-  purchasedAddons?: Array<{
-    serviceId: string
     name: string
-    price: number
-    paymentDetails?: {
-      phoneNumber?: string | null
-      receiptUrl?: string | null
-      receiptFileName?: string | null
-      paymentMethod?: string
-      createdAt?: string | Date
-    }
-    purchasedAt?: string | Date
-  }> // (F) - List of purchased addons with pricing and payment details
-
-  orders?: Order[]
-  revenue?: number
-  lastOrderDate?: string | null
+    address: string
+    city: string
+    state?: string
+    zip: string
+    ssn?: string
+    dateOfBirth?: string
+    isResponsiblePerson: boolean
+    ownershipPercentage?: number
+    passportKey?: string // Store the IndexedDB key for the passport
+  }>
+  purchasedAddons?: string[]
   createdAt: string
   updatedAt: string
 }
@@ -148,40 +99,22 @@ export interface Company {
 
 export interface Order {
   id: string
-  orderType: string
-  packageType?: string
-  state?: string
+  userId: string
+  companyId: string
+  companyName: string
+  type: "formation" | "addon" | "renewal"
   status: "pending" | "processing" | "completed" | "cancelled"
-  pricing: {
-    packagePrice: number
-    stateFilingFee: number
-    addonsTotal: number
-    subtotal: number
-    total: number
-  }
-  selectedAddons?: Array<{
-    id: string
-    name: string
-    price: number
-  }>
-  paymentInfo: {
-    method: "whatsapp" | "bank_transfer" | "stripe"
-    status: "pending" | "pending_verification" | "paid" | "failed"
-    whatsappPhone?: string
-    receiptUrl?: string
-    date: string
-    terms?: string
-  }
-  passportDocuments?: Array<{
-    id: string
-    memberId: string
-    memberName: string
-    fileName: string
-    fileUrl: string
-    fileType: string
-    fileSize: number
-    uploadedAt: string
-  }>
+  amount: number
+  total: number // Added total field for order total with addons
+  packagePrice?: number // Base package price (e.g., $149 or $249)
+  stateFilingFee?: number // State-specific filing fee
+  addonsTotal?: number // Total cost of all add-ons
+  paymentStatus: "pending" | "pending_verification" | "paid" | "failed"
+  paymentMethod?: "whatsapp" | "bank_transfer" // Removed stripe from payment methods
+  transactionId?: string
+  transactionReference?: string // Added transaction reference field
+  items: OrderItem[]
+  purchasedAddons?: string[] // Added purchasedAddons array
   createdAt: string
   updatedAt: string
 }
@@ -192,25 +125,6 @@ export interface OrderItem {
   description: string
   price: number
   quantity: number
-}
-
-// ============================================
-// PASSPORT TYPES
-// ============================================
-
-export interface PassportDocument {
-  id: string
-  userId: string // Will be "checkout-pending" before account creation
-  companyId?: string
-  memberId?: string
-  memberName: string
-  fileName: string
-  fileUrl: string
-  fileType?: string
-  mimeType: string
-  fileSize: number
-  uploadedAt: string
-  updatedAt?: string
 }
 
 // ============================================
@@ -246,18 +160,15 @@ export interface MailItem {
   userId: string
   companyId: string
   companyName: string
-  from: string // Changed from 'sender'
+  from: string
   subject: string
-  type: "official" | "tax" | "legal" | "general" | "letter" | "package" | "other"
+  type: "official" | "tax" | "legal" | "general"
+  status: "new" | "read" | "processed"
   hasAttachment: boolean
   attachments?: MailAttachment[]
-  receivedDate: string // Changed from 'receivedAt'
+  receivedDate: string
   processedDate?: string
   notes?: string
-  // Legacy field mapping
-  sender?: string // Alias for 'from'
-  receivedAt?: string // Alias for 'receivedDate'
-  documentId?: string // For backward compatibility with old system
   createdAt: string
   updatedAt: string
 }
@@ -338,6 +249,7 @@ export interface PaymentDetails {
 
 export interface PaymentVerification {
   orderId: string
+  transactionId: string
   screenshot?: File
   status: "pending" | "verifying" | "approved" | "rejected"
   verifiedAt?: string
@@ -410,6 +322,7 @@ export interface CompanyForm {
   name: string
   type: Company["type"]
   state: string
+  address?: Company["address"]
 }
 
 export interface ProfileUpdateForm {

@@ -1,4 +1,6 @@
 "use client"
+
+import type React from "react"
 import { useState, useMemo, useEffect } from "react"
 import {
   ArrowRight,
@@ -9,6 +11,7 @@ import {
   Shield,
   Check,
   DollarSign,
+  FileText,
   Upload,
   X,
   Globe,
@@ -19,9 +22,9 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Country } from "country-state-city"
 import type { CheckoutData, Member } from "@/app/checkout/page"
-import { saveFileToIndexedDB, deleteFileFromIndexedDB, isIndexedDBAvailable } from "@/lib/indexeddb"
+import { savePassport, deletePassport } from "@/lib/passport-storage"
+import { Country } from "country-state-city"
 
 type OwnerInfoStepProps = {
   data: CheckoutData
@@ -30,39 +33,16 @@ type OwnerInfoStepProps = {
   onBack: () => void
 }
 
-// Helper function to truncate long filenames to 5-6 words
-const truncateFilename = (filename: string, maxWords = 6): string => {
-  const words = filename.split(/[\s._-]+/)
-  if (words.length <= maxWords) {
-    return filename
-  }
-  return words.slice(0, maxWords).join(" ") + "..."
-}
-
 export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [passportPreviews, setPassportPreviews] = useState<Record<string, string>>({})
+
   const countries = useMemo(() => {
     return Country.getAllCountries().sort((a, b) => a.name.localeCompare(b.name))
   }, [])
 
   useEffect(() => {
-    if (data.members && data.members.length > 0) {
-      const needsUpdate = data.members.some((m) => !m.country || m.country === "US")
-      if (needsUpdate) {
-        updateData({
-          members: data.members.map((m) => ({
-            ...m,
-            country: m.country && m.country !== "US" ? m.country : "PK",
-          })),
-        })
-      }
-    }
-  }, [])
-
-  useEffect(() => {
     return () => {
-      // Cleanup all blob URLs when component unmounts
       Object.values(passportPreviews).forEach((url) => {
         if (url) URL.revokeObjectURL(url)
       })
@@ -71,69 +51,40 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
 
   const addMember = () => {
     const newMember: Member = {
-      id: Math.random().toString(),
+      id: crypto.randomUUID(),
       name: "",
       address: "",
       city: "",
       state: "",
-      country: "PK",
+      country: "US",
       zip: "",
       ssn: "",
-      isResponsiblePerson: (data.members || []).length === 0,
+      dateOfBirth: "",
+      isResponsiblePerson: false,
       itinAdded: false,
       passportFile: null,
       passportKey: undefined,
-      passportUrl: undefined,
-      passportId: undefined,
-      passportIndexedDBId: undefined,
     }
-    updateData({ members: [...(data.members || []), newMember] })
+    updateData({ members: [...data.members, newMember] })
   }
 
   const removeMember = (id: string) => {
-    if (data.members?.length > 1) {
-      const member = data.members?.find((m) => m.id === id)
-      if (member?.passportIndexedDBId) {
-        deleteFileFromIndexedDB(member.passportIndexedDBId).catch(() => {})
-      }
-      if (passportPreviews[id]) {
-        URL.revokeObjectURL(passportPreviews[id])
-      }
-
-      const updatedMembers = (data.members || []).filter((m) => m.id !== id)
-
-      const hadResponsible = data.members.find((m) => m.id === id)?.isResponsiblePerson
-      if (hadResponsible && updatedMembers.length > 0) {
-        updatedMembers[0].isResponsiblePerson = true
-      }
-
-      updateData({ members: updatedMembers })
-
-      setPassportPreviews((prev) => {
-        const newPreviews = { ...prev }
-        delete newPreviews[id]
-        return newPreviews
-      })
-
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[`member-${id}`]
-        return newErrors
-      })
+    if (data.members.length > 1) {
+      updateData({ members: data.members.filter((m) => m.id !== id) })
     }
   }
 
   const updateMember = (id: string, updates: Partial<Member>) => {
     updateData({
-      members: (data.members || []).map((m) => (m.id === id ? { ...m, ...updates } : m)),
+      members: data.members.map((m) => (m.id === id ? { ...m, ...updates } : m)),
     })
   }
 
   const toggleResponsiblePerson = (id: string, checked: boolean) => {
     updateData({
-      members: (data.members || []).map((m) => ({
+      members: data.members.map((m) => ({
         ...m,
-        isResponsiblePerson: m.id === id ? checked : false,
+        isResponsiblePerson: m.id === id ? checked : m.isResponsiblePerson,
       })),
     })
   }
@@ -141,161 +92,114 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
   const validate = () => {
     const newErrors: Record<string, string> = {}
 
-    const hasResponsiblePerson = (data.members || []).some((m) => m.isResponsiblePerson)
+    const hasResponsiblePerson = data.members.some((m) => m.isResponsiblePerson)
     if (!hasResponsiblePerson) {
       newErrors.responsiblePerson = "At least one member must be designated as Responsible Person"
     }
-    ;(data.members || []).forEach((member, index) => {
-      if (!member.name) newErrors[`member${index}Name`] = "Name is required"
 
+    data.members.forEach((member, index) => {
+      if (!member.name) newErrors[`member${index}Name`] = "Name is required"
       if (!member.address) newErrors[`member${index}Address`] = "Address is required"
       if (!member.city) newErrors[`member${index}City`] = "City is required"
-      if (!member.state) newErrors[`member${index}State`] = "State/Province is required"
       if (!member.country) newErrors[`member${index}Country`] = "Country is required"
       if (!member.zip) newErrors[`member${index}Zip`] = "ZIP code is required"
-      if (!member.passportFile) {
-        newErrors[`member${index}Passport`] = "Passport is required"
-      }
+      if (!member.passportFile) newErrors[`member${index}Passport`] = "Passport is required"
     })
 
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = () => {
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    console.log("[v0] OwnerInfoStep - handleSubmit called")
+    console.log("[v0] OwnerInfoStep - data:", data)
+    console.log("[v0] OwnerInfoStep - onNext type:", typeof onNext)
     if (validate()) {
+      console.log("[v0] OwnerInfoStep - validation passed, calling onNext")
       onNext()
+    } else {
+      console.log("[v0] OwnerInfoStep - validation failed")
     }
   }
 
+  const handleAddItinForMember = (memberId: string) => {
+    updateData({
+      members: data.members.map((m) => (m.id === memberId ? { ...m, itinAdded: true } : m)),
+    })
+  }
+
   const handlePassportUpload = async (memberId: string, file: File | null) => {
-    if (!file) {
-      // Remove file from IndexedDB and preview
-      const member = data.members?.find((m) => m.id === memberId)
-      if (member?.passportIndexedDBId) {
-        await deleteFileFromIndexedDB(member.passportIndexedDBId).catch(() => {})
+    if (file) {
+      try {
+        const memberIndex = data.members.findIndex((m) => m.id === memberId)
+        const passportKey = `passport_${Date.now()}_member${memberIndex + 1}`
+
+        console.log("[v0] Uploading passport for member:", memberId)
+        console.log("[v0] Using passport key:", passportKey)
+        console.log("[v0] File name:", file.name)
+        console.log("[v0] File size:", file.size)
+
+        await savePassport(passportKey, file)
+
+        const blobUrl = URL.createObjectURL(file)
+        console.log("[v0] Created blob URL for preview:", blobUrl)
+        setPassportPreviews((prev) => ({ ...prev, [memberId]: blobUrl }))
+
+        console.log("[v0] Passport saved successfully with key:", passportKey)
+
+        updateData({
+          members: data.members.map((m) => (m.id === memberId ? { ...m, passportFile: file, passportKey } : m)),
+        })
+      } catch (error) {
+        console.error("[v0] Error saving passport to IndexedDB:", error)
+      }
+    } else {
+      if (passportPreviews[memberId]) {
+        URL.revokeObjectURL(passportPreviews[memberId])
+      }
+      setPassportPreviews((prev) => {
+        const newPreviews = { ...prev }
+        delete newPreviews[memberId]
+        return newPreviews
+      })
+
+      updateData({
+        members: data.members.map((m) =>
+          m.id === memberId ? { ...m, passportFile: null, passportKey: undefined } : m,
+        ),
+      })
+    }
+  }
+
+  const handleRemovePassport = async (memberId: string) => {
+    try {
+      const member = data.members.find((m) => m.id === memberId)
+      if (member?.passportKey) {
+        await deletePassport(member.passportKey)
       }
 
       if (passportPreviews[memberId]) {
         URL.revokeObjectURL(passportPreviews[memberId])
       }
-
       setPassportPreviews((prev) => {
-        const n = { ...prev }
-        delete n[memberId]
-        return n
+        const newPreviews = { ...prev }
+        delete newPreviews[memberId]
+        return newPreviews
       })
 
-      updateMember(memberId, {
-        passportFile: null,
-        passportIndexedDBId: undefined,
-      })
-      return
-    }
-
-    try {
-      if (!isIndexedDBAvailable()) {
-        setErrors((prev) => ({
-          ...prev,
-          [`member${data.members?.findIndex((m) => m.id === memberId)}Passport`]:
-            "Cannot upload files in incognito/private mode. Please use normal browsing mode.",
-        }))
-        return
-      }
-
-      // Save file to IndexedDB
-      const memberIndex = data.members?.findIndex((m) => m.id === memberId) ?? 0
-      const indexedDBId = await saveFileToIndexedDB(file, memberIndex)
-
-      // Create preview URL
-      const blobUrl = URL.createObjectURL(file)
-      setPassportPreviews((prev) => ({ ...prev, [memberId]: blobUrl }))
-
-      // Update member with file reference
-      updateMember(memberId, {
-        passportFile: file,
-        passportIndexedDBId: indexedDBId,
-      })
-
-      setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[`member${memberIndex}Passport`]
-        return newErrors
-      })
-    } catch (error) {
-      console.error("Error saving passport to IndexedDB:", error)
-      const memberIndex = data.members?.findIndex((m) => m.id === memberId) ?? 0
-      setErrors((prev) => ({
-        ...prev,
-        [`member${memberIndex}Passport`]:
-          error instanceof Error && error.message.includes("incognito")
-            ? "Cannot upload files in incognito/private mode. Please use normal browsing mode."
-            : "Failed to upload passport. Please try again.",
-      }))
-    }
-  }
-
-  const handleRemovePassport = async (memberId: string) => {
-    const member = data.members?.find((m) => m.id === memberId)
-
-    // Remove from IndexedDB
-    if (member?.passportIndexedDBId) {
-      await deleteFileFromIndexedDB(member.passportIndexedDBId).catch(() => {})
-    }
-
-    // Clean up preview URL
-    if (passportPreviews[memberId]) {
-      URL.revokeObjectURL(passportPreviews[memberId])
-    }
-
-    setPassportPreviews((prev) => {
-      const n = { ...prev }
-      delete n[memberId]
-      return n
-    })
-
-    updateMember(memberId, {
-      passportFile: null,
-      passportIndexedDBId: undefined,
-    })
-
-    // Clear file input
-    const fileInput = document.getElementById(`passport-${memberId}`) as HTMLInputElement
-    if (fileInput) fileInput.value = ""
-  }
-
-  const handleAddItinForMember = (memberId: string) => {
-    const itinAddon = {
-      id: `itin-${memberId}`,
-      name: `ITIN Application - ${data.members?.find((m) => m.id === memberId)?.name || "Member"}`,
-      price: 199,
-      memberId: memberId,
-    }
-
-    const currentAddons = data.addons || []
-    const addonExists = currentAddons.some((a) => a.id === itinAddon.id)
-
-    if (!addonExists) {
       updateData({
-        addons: [...currentAddons, itinAddon],
-        addonsTotal: (data.addonsTotal || 0) + 199,
+        members: data.members.map((m) =>
+          m.id === memberId ? { ...m, passportFile: null, passportKey: undefined } : m,
+        ),
       })
+      const fileInput = document.getElementById(`passport-${memberId}`) as HTMLInputElement
+      if (fileInput) {
+        fileInput.value = ""
+      }
+    } catch (error) {
+      console.error("[v0] Error removing passport from IndexedDB:", error)
     }
-
-    updateMember(memberId, { itinAdded: true })
-  }
-
-  const handleRemoveItinForMember = (memberId: string) => {
-    const itinAddonId = `itin-${memberId}`
-    const currentAddons = data.addons || []
-    const updatedAddons = currentAddons.filter((a) => a.id !== itinAddonId)
-
-    updateData({
-      addons: updatedAddons,
-      addonsTotal: Math.max(0, (data.addonsTotal || 0) - 199),
-    })
-
-    updateMember(memberId, { itinAdded: false })
   }
 
   const getCountryName = (isoCode: string) => {
@@ -303,346 +207,345 @@ export function OwnerInfoStep({ data, updateData, onNext, onBack }: OwnerInfoSte
   }
 
   return (
-    <div className="space-y-6 md:space-y-8 pb-6 md:pb-10">
+    <div className="space-y-8 md:space-y-12">
       <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-950 tracking-tight">Member Information</h1>
+        <h1 className="text-3xl md:text-4xl font-bold text-slate-950 tracking-tight">Member Information</h1>
         <p className="text-sm md:text-base text-slate-500 max-w-2xl leading-relaxed">
-          Add all members or owners of the business. At least one must be designated as the Responsible Party.
+          Add all members or owners of the business. At least one must be designated as the Responsible Person.
         </p>
-
         {errors.responsiblePerson && (
           <p className="text-xs text-red-600 mt-3 font-medium">{errors.responsiblePerson}</p>
         )}
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4 md:space-y-6">
-        {(data.members || [])
-          .filter((m) => m)
-          .map((member, index) => (
-            <div key={member.id} className="space-y-4">
-              <div className="p-4 md:p-6 rounded-lg border border-slate-200 bg-white space-y-4 md:space-y-5">
-                {/* Member Header */}
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                  <h3 className="text-base md:text-lg font-semibold text-slate-900">Member {index + 1}</h3>
+      <form onSubmit={handleSubmit} className="space-y-6">
+        {data.members.map((member, index) => (
+          <div key={member.id} className="space-y-4">
+            <div className="p-4 md:p-6 rounded-lg border border-slate-200 bg-white space-y-4 md:space-y-6">
+              <div className="flex items-center justify-between">
+                <h3 className="text-base md:text-lg font-semibold text-slate-900">Member {index + 1}</h3>
+                {data.members.length > 1 && (
+                  <Button
+                    type="button"
+                    onClick={() => removeMember(member.id)}
+                    variant="ghost"
+                    size="sm"
+                    className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-3 text-sm rounded-md"
+                  >
+                    <Trash2 className="w-4 h-4 mr-1" />
+                    Remove
+                  </Button>
+                )}
+              </div>
 
-                  {data.members.length > 1 && (
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeMember(member.id)}
-                      className="text-red-600 hover:text-red-700 hover:bg-red-50 h-9 px-3 text-sm rounded-md w-full sm:w-auto cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4 mr-1" />
-                      Remove
-                    </Button>
-                  )}
-                </div>
-
-                {/* Responsible Person */}
-                <div className="p-3 md:p-4 rounded-lg border border-slate-200 bg-slate-50">
-                  <div className="flex items-start gap-2">
-                    <Checkbox
-                      id={`responsible-${member.id}`}
-                      checked={member.isResponsiblePerson}
-                      onCheckedChange={(c) => toggleResponsiblePerson(member.id, c as boolean)}
-                      disabled={data.members?.length === 1}
-                      className="data-[state=checked]:bg-[#ff0d13] data-[state=checked]:border-[#ff0d13] mt-0.5"
-                    />
-                    <label
-                      htmlFor={`responsible-${member.id}`}
-                      className="text-xs md:text-sm font-medium text-slate-900 cursor-pointer leading-relaxed"
-                    >
-                      Responsible Party / Authorized Person
-                    </label>
-                  </div>
-                  <p className="text-xs text-slate-600 mt-2 ml-6">
-                    {data.members?.length === 1
-                      ? "As the only member, you are automatically the responsible party."
-                      : "Person authorized to represent the company"}
-                  </p>
-                </div>
-
-                {/* Full Name */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-900">Full Legal Name</Label>
-                  <div className="relative">
-                    <User className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
-                    <Input
-                      placeholder="Muhammad Ahmed Khan"
-                      value={member.name}
-                      onChange={(e) => updateMember(member.id, { name: e.target.value })}
-                      className="pl-10 h-10 md:h-11 text-sm md:text-base"
-                    />
-                  </div>
-                  {errors[`member${index}Name`] && (
-                    <p className="text-xs text-red-600">{errors[`member${index}Name`]}</p>
-                  )}
-                </div>
-
-                {/* Address */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-900">Home Address</Label>
-                  <Input
-                    placeholder="House 123, Street 4, F-7 Markaz"
-                    value={member.address}
-                    onChange={(e) => updateMember(member.id, { address: e.target.value })}
-                    className="h-10 md:h-11 text-sm md:text-base"
+              <div className="p-3 rounded-lg border border-slate-200 bg-slate-50">
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`responsible-${member.id}`}
+                    checked={member.isResponsiblePerson}
+                    onCheckedChange={(checked) => toggleResponsiblePerson(member.id, checked as boolean)}
                   />
-                  {errors[`member${index}Address`] && (
-                    <p className="text-xs text-red-600">{errors[`member${index}Address`]}</p>
-                  )}
+                  <label
+                    htmlFor={`responsible-${member.id}`}
+                    className="text-xs md:text-sm font-medium text-slate-900 cursor-pointer"
+                  >
+                    Responsible Person / Authorized Person
+                  </label>
                 </div>
+              </div>
 
-                {/* City / State */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-slate-900">City</Label>
-                    <Input
-                      placeholder="Islamabad"
-                      value={member.city}
-                      onChange={(e) => updateMember(member.id, { city: e.target.value })}
-                      className="h-10 md:h-11 text-sm md:text-base"
-                    />
-                    {errors[`member${index}City`] && (
-                      <p className="text-xs text-red-600">{errors[`member${index}City`]}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-slate-900">State / Province</Label>
-                    <Input
-                      placeholder="Punjab"
-                      value={member.state}
-                      onChange={(e) => updateMember(member.id, { state: e.target.value })}
-                      className="h-10 md:h-11 text-sm md:text-base"
-                    />
-                    {errors[`member${index}State`] && (
-                      <p className="text-xs text-red-600">{errors[`member${index}State`]}</p>
-                    )}
-                  </div>
+              <div className="space-y-3">
+                <Label htmlFor={`name-${member.id}`} className="text-sm font-semibold text-slate-900">
+                  Full Legal Name
+                </Label>
+                <div className="relative">
+                  <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    id={`name-${member.id}`}
+                    placeholder="John Smith"
+                    value={member.name}
+                    onChange={(e) => updateMember(member.id, { name: e.target.value })}
+                    className="pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
+                  />
                 </div>
+                {errors[`member${index}Name`] && (
+                  <p className="text-xs text-red-600 mt-1">{errors[`member${index}Name`]}</p>
+                )}
+              </div>
 
-                {/* Country / ZIP */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:gap-4">
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-slate-900">Country</Label>
+              <div className="space-y-3">
+                <Label htmlFor={`address-${member.id}`} className="text-sm font-semibold text-slate-900">
+                  Home Address
+                </Label>
+                <Input
+                  id={`address-${member.id}`}
+                  placeholder="456 Oak Avenue"
+                  value={member.address}
+                  onChange={(e) => updateMember(member.id, { address: e.target.value })}
+                  className="h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
+                />
+                {errors[`member${index}Address`] && (
+                  <p className="text-xs text-red-600 mt-1">{errors[`member${index}Address`]}</p>
+                )}
+              </div>
 
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className="w-full justify-between pl-10 h-10 md:h-11 relative bg-transparent text-sm md:text-base cursor-pointer"
-                        >
-                          <Globe className="absolute left-3 w-4 h-4 md:w-5 md:h-5 text-slate-400" />
-                          <span className="truncate">{getCountryName(member.country)}</span>
-                          <ChevronDown className="w-4 h-4 opacity-50 flex-shrink-0" />
-                        </Button>
-                      </DropdownMenuTrigger>
-
-                      <DropdownMenuContent className="w-56 max-h-64 overflow-y-auto">
-                        {countries.map((c) => (
-                          <DropdownMenuItem
-                            key={c.isoCode}
-                            onClick={() => updateMember(member.id, { country: c.isoCode })}
-                          >
-                            {c.name}
-                          </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-
-                    {errors[`member${index}Country`] && (
-                      <p className="text-xs text-red-600">{errors[`member${index}Country`]}</p>
-                    )}
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label className="text-sm font-semibold text-slate-900">ZIP Code</Label>
-                    <Input
-                      placeholder="44000"
-                      value={member.zip}
-                      onChange={(e) => updateMember(member.id, { zip: e.target.value })}
-                      className="h-10 md:h-11 text-sm md:text-base"
-                    />
-                    {errors[`member${index}Zip`] && (
-                      <p className="text-xs text-red-600">{errors[`member${index}Zip`]}</p>
-                    )}
-                  </div>
-                </div>
-
-                {/* SSN / ITIN */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-900">SSN or ITIN (optional)</Label>
-                  <div className="relative">
-                    <Shield className="absolute left-3 w-4 h-4 md:w-5 md:h-5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <Input
-                      type="password"
-                      placeholder="XXXXX-XXXXXXX-X"
-                      value={member.ssn}
-                      onChange={(e) => updateMember(member.id, { ssn: e.target.value })}
-                      className="pl-10 h-10 md:h-11 text-sm md:text-base"
-                    />
-                  </div>
-                  <p className="text-xs text-slate-600 flex items-start gap-2">
-                    <Check className="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5" />
-                    Your information is encrypted & secure.
-                  </p>
-                </div>
-
-                {/* Passport Upload */}
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold text-slate-900">
-                    Passport / National ID Card <span className="text-red-600">*</span>
-                  </Label>
-
-                  <div className="relative">
-                    <Upload className="absolute left-3 w-4 h-4 md:w-5 md:h-5 top-1/2 -translate-y-1/2 text-slate-400" />
-                    <Input
-                      id={`passport-${member.id}`}
-                      type="file"
-                      accept="image/*,.pdf"
-                      onChange={(e) => handlePassportUpload(member.id, e.target.files?.[0] || null)}
-                      className="pl-10 h-10 md:h-11 file:text-sm file:font-medium"
-                    />
-                  </div>
-
-                  {/* Uploaded File */}
-                  {member.passportFile && (
-                    <div className="p-2.5 md:p-3 rounded-lg bg-green-50 border border-green-200">
-                      <div className="flex items-start gap-2">
-                        {/* Filename and status text - takes available space and truncates properly */}
-                        <div className="flex-1 min-w-0 overflow-hidden">
-                          <p
-                            className="text-sm font-medium text-green-700 break-words"
-                            title={member.passportFile.name}
-                          >
-                            {truncateFilename(member.passportFile.name, 6)}
-                          </p>
-                          <p className="text-xs text-green-600 mt-0.5 leading-tight break-words">
-                            Saved locally - will upload after order
-                          </p>
-                        </div>
-
-                        {/* Remove button - fixed width, won't shrink */}
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="sm"
-                          onClick={() => handleRemovePassport(member.id)}
-                          className="text-red-600 hover:bg-red-50 flex-shrink-0 h-7 w-7 md:h-8 md:w-auto md:px-2 p-0"
-                        >
-                          <X className="w-4 h-4" />
-                          <span className="ml-1 hidden md:inline">Remove</span>
-                        </Button>
+              <div className="space-y-3">
+                <Label htmlFor={`country-${member.id}`} className="text-sm font-semibold text-slate-900">
+                  Country
+                </Label>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full justify-between pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm relative"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Globe className="w-5 h-5 text-slate-400 absolute left-3" />
+                        <span className="ml-2">{getCountryName(member.country)}</span>
                       </div>
-                    </div>
-                  )}
+                      <ChevronDown className="w-4 h-4 opacity-50" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-56 max-h-64 overflow-y-auto">
+                    {countries.map((country) => (
+                      <DropdownMenuItem
+                        key={country.isoCode}
+                        onClick={() => updateMember(member.id, { country: country.isoCode })}
+                        className="cursor-pointer"
+                      >
+                        {country.name}
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+                {errors[`member${index}Country`] && (
+                  <p className="text-xs text-red-600 mt-1">{errors[`member${index}Country`]}</p>
+                )}
+              </div>
 
-                  {errors[`member${index}Passport`] && (
-                    <p className="text-xs text-red-600">{errors[`member${index}Passport`]}</p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
+                  <Label htmlFor={`city-${member.id}`} className="text-sm font-semibold text-slate-900">
+                    City
+                  </Label>
+                  <Input
+                    id={`city-${member.id}`}
+                    placeholder="San Francisco"
+                    value={member.city}
+                    onChange={(e) => updateMember(member.id, { city: e.target.value })}
+                    className="h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
+                  />
+                  {errors[`member${index}City`] && (
+                    <p className="text-xs text-red-600 mt-1">{errors[`member${index}City`]}</p>
                   )}
                 </div>
 
-                {/* ITIN Card */}
-                {!member.ssn && (
-                  <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden mt-6">
-                    <div className="p-3 md:p-6 space-y-4">
-                      <div className="flex flex-col gap-4">
-                        <div className="space-y-3">
-                          <h3 className="text-base md:text-xl font-semibold text-slate-900 break-words">
-                            ITIN Application for {member.name || `Member ${index + 1}`}
-                          </h3>
+                <div className="space-y-3">
+                  <Label htmlFor={`zip-${member.id}`} className="text-sm font-semibold text-slate-900">
+                    ZIP Code
+                  </Label>
+                  <Input
+                    id={`zip-${member.id}`}
+                    placeholder="94102"
+                    value={member.zip}
+                    onChange={(e) => updateMember(member.id, { zip: e.target.value })}
+                    className="h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
+                  />
+                  {errors[`member${index}Zip`] && (
+                    <p className="text-xs text-red-600 mt-1">{errors[`member${index}Zip`]}</p>
+                  )}
+                </div>
+              </div>
 
-                          <p className="text-sm md:text-base text-slate-600 leading-relaxed">
-                            Need an ITIN to open payment accounts or file taxes? We handle the complete process for you.
-                          </p>
+              <div className="space-y-3">
+                <Label htmlFor={`ssn-${member.id}`} className="text-sm font-semibold text-slate-900">
+                  SSN or ITIN (Optional)
+                </Label>
+                <div className="relative">
+                  <Shield className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+                  <Input
+                    id={`ssn-${member.id}`}
+                    type="password"
+                    placeholder="XXX-XX-XXXX"
+                    value={member.ssn}
+                    onChange={(e) => updateMember(member.id, { ssn: e.target.value })}
+                    className="pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
+                  />
+                </div>
+                <p className="text-xs text-slate-600 flex items-start gap-2">
+                  <Check className="w-4 h-4 text-red-600 flex-shrink-0 mt-0.5" />
+                  Your information is encrypted and secure.
+                </p>
+              </div>
 
-                          <ul className="space-y-2 text-sm md:text-base text-slate-700">
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 md:w-5 md:h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                              <span className="break-words">Document checklist & review</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 md:w-5 md:h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                              <span className="break-words">Form W-7 preparation</span>
-                            </li>
-                            <li className="flex items-start gap-2">
-                              <Check className="w-4 h-4 md:w-5 md:h-5 text-red-600 flex-shrink-0 mt-0.5" />
-                              <span className="break-words">Application guidance & submission</span>
-                            </li>
-                          </ul>
-                        </div>
-
-                        <div className="flex flex-col items-center gap-3 pt-3 md:flex-row md:justify-between md:items-center">
-                          <div className="text-center md:text-left">
-                            <div className="text-2xl md:text-2xl font-bold text-red-600">$199.00</div>
-                          </div>
-
-                          {member.itinAdded ? (
-                            <Button
-                              type="button"
-                              variant="outline"
-                              className="w-full md:w-auto border-red-300 text-red-600 bg-transparent hover:bg-red-50 h-10 md:h-9 text-sm cursor-pointer"
-                              onClick={() => handleRemoveItinForMember(member.id)}
-                            >
-                              <X className="w-4 h-4 mr-2" /> Remove from Order
-                            </Button>
+              <div className="space-y-3">
+                <Label htmlFor={`passport-${member.id}`} className="text-sm font-semibold text-slate-900">
+                  Passport <span className="text-[#ff0d13]">*</span>
+                </Label>
+                <div className="relative">
+                  <Upload className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+                  <Input
+                    id={`passport-${member.id}`}
+                    type="file"
+                    accept="image/*,.pdf"
+                    onChange={(e) => handlePassportUpload(member.id, e.target.files?.[0] || null)}
+                    className="pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-slate-50 file:text-slate-700 hover:file:bg-slate-100"
+                  />
+                </div>
+                {member.passportFile && (
+                  <div className="space-y-3">
+                    <div className="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-200">
+                      <div className="flex items-center gap-2 flex-1 min-w-0">
+                        <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0" />
+                        <span className="text-xs text-slate-700 truncate">{member.passportFile.name}</span>
+                      </div>
+                      <Button
+                        type="button"
+                        onClick={() => handleRemovePassport(member.id)}
+                        variant="ghost"
+                        size="sm"
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50 h-8 px-3 flex-shrink-0 cursor-pointer"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Remove
+                      </Button>
+                    </div>
+                    {passportPreviews[member.id] && (
+                      <div className="rounded-lg border border-slate-200 overflow-hidden bg-slate-50">
+                        <div className="p-2">
+                          <p className="text-xs font-medium text-slate-700 mb-2">Preview:</p>
+                          {member.passportFile.type.startsWith("image/") ? (
+                            <img
+                              src={passportPreviews[member.id] || "/placeholder.svg"}
+                              alt="Passport preview"
+                              className="w-full h-auto max-h-64 object-contain rounded"
+                            />
                           ) : (
-                            <Button
-                              type="button"
-                              className="w-full md:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white hover:opacity-90 h-10 md:h-9 text-sm cursor-pointer"
-                              onClick={() => handleAddItinForMember(member.id)}
-                            >
-                              <DollarSign className="w-4 h-4 mr-2" />
-                              Add to Order
-                            </Button>
+                            <div className="flex items-center justify-center h-32 bg-slate-100 rounded">
+                              <FileText className="w-12 h-12 text-slate-400" />
+                              <p className="text-sm text-slate-600 ml-2">PDF Document</p>
+                            </div>
                           )}
                         </div>
                       </div>
-
-                      <div className="pt-4 border-t border-slate-100 text-xs md:text-sm text-slate-500 flex items-center gap-2">
-                        <Upload className="w-4 h-4 flex-shrink-0" />
-                        <span className="break-words">Processing time: 7–12 weeks after IRS receives your file</span>
-                      </div>
-                    </div>
+                    )}
                   </div>
                 )}
+                {errors[`member${index}Passport`] && (
+                  <p className="text-xs text-red-600 mt-1">{errors[`member${index}Passport`]}</p>
+                )}
+                <p className="text-xs text-slate-600">
+                  Upload a copy of your passport or government-issued ID (Required)
+                </p>
               </div>
             </div>
-          ))}
+
+            {!member.ssn && (
+              <div className="rounded-xl border border-slate-200 bg-white shadow-sm overflow-hidden">
+                <div className="p-4 md:p-6 space-y-4">
+                  <div className="flex flex-col lg:flex-row items-start justify-between gap-4">
+                    <div className="space-y-3 flex-1 w-full">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+                        <h3 className="text-lg font-semibold text-slate-900">
+                          ITIN Application for {member.name || `Member ${index + 1}`}
+                        </h3>
+                        <div className="flex flex-wrap gap-1.5">
+                          <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 border-0">Tax ID</span>
+                          <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 border-0">No SSN?</span>
+                          <span className="text-xs px-2 py-0.5 bg-slate-100 text-slate-700 border-0">
+                            Banking Friendly
+                          </span>
+                        </div>
+                      </div>
+
+                      <p className="text-sm text-slate-600 leading-relaxed">
+                        Need an Individual Taxpayer Identification Number (ITIN) to open bank accounts and file taxes?
+                        We'll handle your complete ITIN application end-to-end.
+                      </p>
+
+                      <ul className="space-y-2">
+                        <li className="flex items-start gap-2 text-sm text-slate-700">
+                          <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
+                          <span>Document checklist & review</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-slate-700">
+                          <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
+                          <span>Form W-7 preparation</span>
+                        </li>
+                        <li className="flex items-start gap-2 text-sm text-slate-700">
+                          <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
+                          <span>Application guidance & submission support</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-start gap-3 w-full lg:w-auto lg:flex-shrink-0">
+                      <div className="text-left sm:text-right">
+                        <div className="text-2xl font-bold text-[#ff0d13]">$149.00</div>
+                        <div className="text-xs text-slate-500">per application</div>
+                      </div>
+
+                      {member.itinAdded ? (
+                        <Button
+                          type="button"
+                          onClick={() => updateMember(member.id, { itinAdded: false })}
+                          variant="outline"
+                          className="border-red-200 text-red-600 hover:bg-red-50 h-10 px-5 text-sm font-medium rounded-lg shadow-sm transition-all whitespace-nowrap cursor-pointer"
+                        >
+                          <X className="w-4 h-4 mr-2" />
+                          Remove
+                        </Button>
+                      ) : (
+                        <Button
+                          type="button"
+                          onClick={() => handleAddItinForMember(member.id)}
+                          className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-10 px-5 text-sm font-medium rounded-lg shadow-sm transition-all whitespace-nowrap cursor-pointer"
+                        >
+                          <DollarSign className="w-4 h-4 mr-2" />
+                          Add to Order
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="pt-4 border-t border-slate-100">
+                    <div className="flex items-center gap-2 text-xs text-slate-500">
+                      <FileText className="w-4 h-4 flex-shrink-0" />
+                      <span>Processing time: 6-8 weeks after IRS receives your application</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        ))}
+        <Button
+          type="button"
+          onClick={addMember}
+          variant="outline"
+          className="w-full border border-slate-200 bg-white text-slate-900 h-10 text-sm font-medium rounded-lg cursor-pointer"
+          size="lg"
+        >
+          <Plus className="w-4 h-4 mr-2" />
+          Add Another Member
+        </Button>
       </form>
 
-      {/* Add Member Button */}
-      <Button
-        type="button"
-        onClick={addMember}
-        variant="outline"
-        className="w-full border-slate-300 hover:bg-slate-50 bg-white h-12 text-base font-medium cursor-pointer"
-      >
-        <Plus className="w-5 h-5 mr-2" />
-        Add Another Member
-      </Button>
-
-      {/* Navigation Buttons */}
-      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
+      <div className="flex flex-col sm:flex-row gap-3 pt-6">
         <Button
-          type="button"
-          variant="outline"
           onClick={onBack}
-          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900 cursor-pointer"
+          variant="outline"
+          className="w-full sm:w-auto px-6 h-10 border border-slate-200 bg-white text-slate-900 font-medium text-sm rounded-lg cursor-pointer"
         >
-          <ArrowLeft className="w-5 h-5 mr-2" />
           Back
+          <ArrowLeft className="ml-2 w-4 h-4" />
         </Button>
-
         <Button
-          type="button"
           onClick={handleSubmit}
-          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold cursor-pointer"
+          className="w-full sm:w-auto bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-10 text-sm font-medium rounded-lg px-5 flex items-center justify-center cursor-pointer"
         >
           Next
-          <ArrowRight className="w-5 h-5 ml-2" />
+          <ArrowRight className="ml-2 w-4 h-4" />
         </Button>
       </div>
     </div>

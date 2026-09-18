@@ -16,13 +16,13 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}) {
 
   useEffect(() => {
     const checkAuth = () => {
-      console.log(" Checking authentication...")
+      console.log("[v0] Checking authentication...")
 
       // Check if user is authenticated
       const authenticated = authService.isAuthenticated()
 
       if (!authenticated) {
-        console.log(" Not authenticated, redirecting to login")
+        console.log("[v0] Not authenticated, redirecting to login")
         const redirectPath = options.redirectTo || "/login"
         router.push(redirectPath)
         return
@@ -33,14 +33,14 @@ export function useAuthGuard(options: UseAuthGuardOptions = {}) {
         const user = authService.getCurrentUser()
 
         if (!user || user.role !== options.requiredRole) {
-          console.log(" Unauthorized role, redirecting")
+          console.log("[v0] Unauthorized role, redirecting")
           const redirectPath = user?.role === "admin" ? "/admin" : "/client/dashboard"
           router.push(redirectPath)
           return
         }
       }
 
-      console.log(" Authentication successful")
+      console.log("[v0] Authentication successful")
       setIsAuthenticated(true)
       setIsLoading(false)
     }

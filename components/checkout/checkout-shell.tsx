@@ -1,82 +1,21 @@
 "use client"
 
 import type React from "react"
-import { Check, Menu, X, Save } from "lucide-react"
+import { Check, Menu, X } from "lucide-react"
 import Link from "next/link"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import type { CheckoutData } from "@/app/checkout/page"
 import Image from "next/image"
-import { Button } from "@/components/ui/button"
-import { saveProgress } from "@/lib/checkout-storage"
 
 type CheckoutShellProps = {
   steps: string[]
   currentStep: number
   data: CheckoutData
   children: React.ReactNode
-  isAuthenticated?: boolean
-  originalStep?: number
-}
-
-// Generate or retrieve session ID for tracking
-const getSessionId = (): string => {
-  if (typeof window === "undefined") return ""
-  let sessionId = sessionStorage.getItem("checkout_session_id")
-  if (!sessionId) {
-    sessionId = `sess_${Date.now()}_${Math.random().toString(36).substring(2, 11)}`
-    sessionStorage.setItem("checkout_session_id", sessionId)
-  }
-  return sessionId
 }
 
 export function CheckoutShell({ steps, currentStep, data, children }: CheckoutShellProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
-  const [saveMessage, setSaveMessage] = useState<string>("")
-
-  // Track abandoned checkout progress
-  useEffect(() => {
-    const trackAbandonedCheckout = async () => {
-      // Only track if user has entered some data
-      if (!data.email && !data.state && !data.businessName) return
-      
-      const sessionId = getSessionId()
-      if (!sessionId) return
-
-      try {
-        await fetch("/api/abandoned-checkouts", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            sessionId,
-            email: data.email || null,
-            name: data.name || null,
-            phone: data.phone || null,
-            lastStep: currentStep,
-            state: data.state || null,
-            packageType: data.packageType || null,
-            businessName: data.businessName || null,
-            estimatedTotal: data.totalAmount || 0,
-            packagePrice: data.packagePrice || 0,
-            addons: data.addons || []
-          })
-        })
-      } catch (error) {
-        // Silent fail - don't interrupt checkout
-        console.error("Failed to track checkout progress:", error)
-      }
-    }
-
-    // Debounce tracking to avoid too many requests
-    const timeoutId = setTimeout(trackAbandonedCheckout, 2000)
-    return () => clearTimeout(timeoutId)
-  }, [currentStep, data.email, data.state, data.businessName, data.totalAmount, data.packagePrice, data.name, data.phone, data.packageType, data.addons])
-
-  useEffect(() => {
-    // Clear save message when step changes
-    if (saveMessage) {
-      setSaveMessage("")
-    }
-  }, [currentStep, data, saveMessage])
 
   const stepDescriptions = [
     "Create Your Account",
@@ -86,16 +25,6 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
     "Review Your Order",
     "Complete Your Payment",
   ]
-
-  const handleSaveProgress = () => {
-    console.log(" Checkout: Saving progress at step:", currentStep)
-    const result = saveProgress()
-    setSaveMessage(result.message)
-
-    setTimeout(() => {
-      setSaveMessage("")
-    }, 3000)
-  }
 
   return (
     <div className="min-h-screen flex bg-gray-50">
@@ -130,8 +59,8 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
                   index === currentStep
                     ? "opacity-100 scale-100"
                     : index < currentStep
-                      ? "opacity-90 scale-[0.98]"
-                      : "opacity-60 scale-95"
+                    ? "opacity-90 scale-[0.98]"
+                    : "opacity-60 scale-95"
                 }`}
               >
                 <div className="flex items-start gap-3">
@@ -140,8 +69,8 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
                       index < currentStep
                         ? "bg-white/25 text-white backdrop-blur-sm"
                         : index === currentStep
-                          ? "bg-white text-[#ff0d13] ring-4 ring-white/40 shadow-xl scale-110"
-                          : "bg-white/10 text-white/60 backdrop-blur-sm"
+                        ? "bg-white text-[#ff0d13] ring-4 ring-white/40 shadow-xl scale-110"
+                        : "bg-white/10 text-white/60 backdrop-blur-sm"
                     }`}
                     aria-current={index === currentStep ? "step" : undefined}
                   >
@@ -215,19 +144,6 @@ export function CheckoutShell({ steps, currentStep, data, children }: CheckoutSh
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 xl:p-10 max-w-7xl w-full mx-auto">
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5 sm:p-7 lg:p-8">
-            <div className="flex justify-end mb-4">
-              <Button onClick={handleSaveProgress} variant="outline" className="gap-2 text-sm bg-transparent">
-                <Save className="w-4 h-4" />
-                Save Progress
-              </Button>
-            </div>
-
-            {saveMessage && (
-              <div className="mb-4 p-3 rounded-lg bg-green-50 border border-green-200">
-                <p className="text-sm text-green-700">{saveMessage}</p>
-              </div>
-            )}
-
             {children}
           </div>
         </main>

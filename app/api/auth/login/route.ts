@@ -2,162 +2,47 @@ import type { NextRequest } from "next/server"
 import { getDatabase } from "@/config/database"
 import { comparePassword, generateToken } from "@/config/jwt"
 import { apiResponse, apiError } from "@/lib/api-middleware"
-import { sendEmail, emailTemplates } from "@/config/email"
-import { validateEmail } from "@/lib/validation"
-import { loginRateLimit, clearLoginAttempts } from "@/lib/middleware/advanced-rate-limit"
-import { addSecurityHeaders } from "@/lib/middleware/security-headers"
-import { securityGuard } from "@/lib/middleware/security-guard"
 
 export async function POST(request: NextRequest) {
-  const securityResponse = await securityGuard(request)
-  if (securityResponse) {
-    return securityResponse
-  }
-
   try {
     const body = await request.json()
     const { email, password } = body
 
+    // Validate required fields
     if (!email || !password) {
-      return apiError("Please enter your email and password", 400)
+      return apiError("Email and password are required", 400)
     }
 
-    if (typeof email !== "string" || typeof password !== "string") {
-      return apiError("Please provide valid email and password", 400)
-    }
-
-    if (!validateEmail(email)) {
-      return apiError("Please provide a valid email address", 400)
-    }
-
-    const rateLimitResult = await loginRateLimit(request, email)
-    if (rateLimitResult instanceof Response) {
-      return addSecurityHeaders(rateLimitResult)
-    }
-
-    let db
-    try {
-      db = await getDatabase()
-    } catch (dbError) {
-      return apiError("Unable to connect to the database. Please try again later.", 500)
-    }
-
+    const db = await getDatabase()
     const usersCollection = db.collection("users")
 
-    let user
-    try {
-      // Hint the email index so MongoDB doesn't do a collection scan
-      user = await usersCollection.findOne(
-        { email },
-        { projection: { _id: 1, email: 1, password: 1, name: 1, role: 1, phone: 1, createdAt: 1, lastLoginAt: 1 } },
-      )
-    } catch (queryError) {
-      return apiError("Unable to search for user. Please try again later.", 500)
-    }
-
+    // Find user by email
+    const user = await usersCollection.findOne({ email })
     if (!user) {
-      return apiError("Invalid email or password. Please check your credentials and try again.", 401)
+      return apiError("Invalid email or password", 401)
     }
 
-    const userId = user._id?.toString() || user.id?.toString()
-
-    if (!userId) {
-      return apiError("There was a problem with your account. Please contact support.", 500)
-    }
-
-    if (!user.password) {
-      return apiError("Invalid email or password. Please check your credentials and try again.", 401)
-    }
-
+    // Verify password
     const isValidPassword = await comparePassword(password, user.password)
     if (!isValidPassword) {
-      const attemptsMessage = rateLimitResult.userRemaining
-        ? ` (${rateLimitResult.userRemaining} attempts remaining)`
-        : ""
-
-      return apiError(`Invalid email or password. Please check your credentials and try again.${attemptsMessage}`, 401)
+      return apiError("Invalid email or password", 401)
     }
 
-    clearLoginAttempts(email)
-
+    // Generate JWT token
     const token = generateToken({
-      userId: userId,
+      userId: user._id.toString(),
       email: user.email,
       role: user.role,
     })
 
-    const userResponse = {
-      id: userId,
-      email: user.email,
-      name: user.name,
-      role: user.role,
-      phone: user.phone || "",
-      createdAt: user.createdAt,
-    }
-
-    const isFirstLogin = !user.lastLoginAt
-
-    // Fire-and-forget: update lastLoginAt without blocking the response
-    usersCollection.updateOne(
-      { _id: user._id },
-      {
-        $set: {
-          lastLoginAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        },
-      },
-    ).catch(() => { /* Non-fatal */ })
-
-    // Fire-and-forget: send login email without blocking the response
-    ;(async () => {
-      try {
-        const loginDateTime = new Date()
-        const pakistaniTime = new Date(loginDateTime.toLocaleString("en-US", { timeZone: "Asia/Karachi" }))
-        const formattedLoginTime =
-          pakistaniTime.toLocaleDateString("en-US", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          }) +
-          " at " +
-          pakistaniTime.toLocaleTimeString("en-US", {
-            hour: "numeric",
-            minute: "2-digit",
-            hour12: true,
-          }) +
-          " PST"
-
-        if (isFirstLogin) {
-          const welcomeEmail = emailTemplates.welcome(userResponse.name)
-          if (welcomeEmail && welcomeEmail.html && welcomeEmail.subject) {
-            await sendEmail({
-              to: email,
-              subject: welcomeEmail.subject,
-              html: welcomeEmail.html,
-            })
-          }
-        } else {
-          const loginEmail = emailTemplates.loginAlert(userResponse.name, formattedLoginTime)
-          if (loginEmail && loginEmail.html && loginEmail.subject) {
-            await sendEmail({
-              to: email,
-              subject: loginEmail.subject,
-              html: loginEmail.html,
-            })
-          }
-        }
-      } catch (emailError) {
-        // Email failure is non-fatal, logged silently
-      }
-    })()
-
-    return addSecurityHeaders(
-      apiResponse({
-        user: userResponse,
-        token,
-      }),
-    )
+    // Return user data (without password) and token
+    const { password: _, ...userWithoutPassword } = user
+    return apiResponse({
+      user: { id: user._id.toString(), ...userWithoutPassword },
+      token,
+    })
   } catch (error) {
-    return addSecurityHeaders(apiError("We couldn't log you in at this time. Please try again.", 500))
+    console.error("[v0] Login error:", error)
+    return apiError("Failed to login", 500)
   }
 }

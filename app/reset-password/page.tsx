@@ -13,9 +13,7 @@ import { Label } from "@/components/ui/label"
 function ResetPasswordForm() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [authChecked, setAuthChecked] = useState(false)
   const [token, setToken] = useState("")
-  const [userId, setUserId] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
   const [showPassword, setShowPassword] = useState(false)
@@ -26,63 +24,16 @@ function ResetPasswordForm() {
 
   useEffect(() => {
     const tokenParam = searchParams.get("token")
-    const userIdParam = searchParams.get("userId")
-
-    if (tokenParam && userIdParam) {
-      // Valid reset link - allow page access regardless of auth status
+    if (tokenParam) {
       setToken(tokenParam)
-      setUserId(userIdParam)
-      setAuthChecked(true)
-      return
+    } else {
+      setError("Invalid or missing reset token")
     }
-
-    // No reset link - check if user is logged in and redirect
-    const checkAuth = async () => {
-      try {
-        const { authService } = await import("@/lib/auth")
-        const currentUser = await authService.getCurrentUser()
-        if (currentUser) {
-          if (currentUser.role === "admin") {
-            router.push("/admin")
-          } else {
-            router.push("/client/dashboard")
-          }
-        } else {
-          setAuthChecked(true)
-        }
-      } catch {
-        setAuthChecked(true)
-      }
-    }
-    checkAuth()
-  }, [searchParams, router])
-
-  useEffect(() => {
-    const tokenParam = searchParams.get("token")
-    const userIdParam = searchParams.get("userId")
-
-    if (!tokenParam || !userIdParam) {
-      setError("Invalid or missing reset link. Please request a new password reset.")
-      return
-    }
-
-    if (!/^\d+$/.test(tokenParam)) {
-      setError("Invalid reset token format. Please request a new password reset.")
-      return
-    }
-
-    setToken(tokenParam)
-    setUserId(userIdParam)
   }, [searchParams])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
-
-    if (!token || !userId) {
-      setError("Missing required information. Please use the link from your email.")
-      return
-    }
 
     if (password !== confirmPassword) {
       setError("Passwords do not match")
@@ -96,44 +47,18 @@ function ResetPasswordForm() {
 
     setLoading(true)
 
-    try {
-      const response = await fetch("/api/auth/reset-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          userId,
-          token,
-          newPassword: password,
-        }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
+    // Simulate API call
+    setTimeout(() => {
+      if (token && password) {
         setSuccess(true)
         setTimeout(() => {
           router.push("/login")
         }, 2000)
       } else {
-        setError(data.error || "Failed to reset password. Token may have expired. Please request a new reset link.")
+        setError("Failed to reset password. Please try again.")
+        setLoading(false)
       }
-    } catch (err) {
-      console.error("Reset password error:", err)
-      setError("An error occurred. Please try again.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-brand/20 animate-pulse mx-auto mb-4"></div>
-          <p className="text-muted">Checking authentication...</p>
-        </div>
-      </div>
-    )
+    }, 1000)
   }
 
   if (success) {
@@ -144,7 +69,7 @@ function ResetPasswordForm() {
             <div className="flex items-center justify-center gap-2 mb-8">
               <Image
                 src="/images/buzz-filing-logo.png"
-                alt="Buzz Filing"
+                alt="BuzzFiling"
                 width={220}
                 height={137}
                 className="w-[180px] sm:w-[200px] md:w-[220px] h-auto"
@@ -182,7 +107,7 @@ function ResetPasswordForm() {
           <div className="flex items-center justify-center gap-2 mb-8">
             <Image
               src="/images/buzz-filing-logo.png"
-              alt="Buzz Filing"
+              alt="BuzzFiling"
               width={220}
               height={137}
               className="w-[180px] sm:w-[200px] md:w-[220px] h-auto"

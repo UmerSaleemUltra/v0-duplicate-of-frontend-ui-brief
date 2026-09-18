@@ -2,8 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Mail, Lock, ArrowRight, ArrowLeft, Eye, EyeOff, User, ShieldCheck } from "lucide-react"
-import { useRouter } from "next/navigation"
+import { Mail, Lock, ArrowRight, ArrowLeft, Eye, EyeOff, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -31,11 +30,9 @@ const countries = [
 ]
 
 export function AccountStep({ data, updateData, onNext, onBack }: AccountStepProps) {
-  const router = useRouter()
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [showPassword, setShowPassword] = useState(false)
   const [phone, setPhone] = useState<string>("")
-  const [acceptedTerms, setAcceptedTerms] = useState(false)
 
   useEffect(() => {
     if (data?.phone) {
@@ -43,11 +40,19 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
     }
   }, [data?.phone])
 
-  useEffect(() => {
-    if (phone && phone !== data.phone) {
-      updateData({ phone })
-    }
-  }, [phone])
+  if (!data) {
+    console.log("[v0] AccountStep - data is undefined, showing loader")
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-[#880000] mx-auto mb-4"></div>
+          <p className="text-slate-600">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  console.log("[v0] AccountStep - rendering with data:", data)
 
   const validate = () => {
     const newErrors: Record<string, string> = {}
@@ -76,150 +81,101 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
       newErrors.password = "Password must be at least 8 characters"
     }
 
-    if (!acceptedTerms) {
-      newErrors.terms = "You must accept the terms and conditions to proceed"
-    }
-
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    if (validate()) {
+      updateData({
+        phone: phone,
+        name: data.name,
+        email: data.email,
+        password: data.password,
+      })
 
-    if (!validate()) {
-      setErrors((prev) => ({
-        ...prev,
-        submit: "Please complete all account information: Full Name, Phone Number, Email Address, and Password",
-      }))
-      return
+      console.log("[v0] Account step completed, data stored in state")
+      onNext()
     }
-
-    // Save the data to localStorage and proceed to next step
-    updateData({
-      phone: phone,
-      name: data.name,
-      email: data.email,
-      password: data.password,
-    })
-
-    // Clear any previous errors
-    setErrors({})
-
-    // Proceed to next step
-    onNext()
-  }
-
-  const handleNameChange = (value: string) => {
-    updateData({ name: value })
-    if (errors.name) {
-      setErrors((prev) => ({ ...prev, name: "" }))
-    }
-  }
-
-  const handleEmailChange = (value: string) => {
-    updateData({ email: value })
-    if (errors.email) {
-      setErrors((prev) => ({ ...prev, email: "" }))
-    }
-  }
-
-  const handlePasswordChange = (value: string) => {
-    updateData({ password: value })
-    if (errors.password) {
-      setErrors((prev) => ({ ...prev, password: "" }))
-    }
-  }
-
-  const handlePhoneChange = (value: string | undefined) => {
-    const phoneValue = value || ""
-    setPhone(phoneValue)
-    if (errors.phone) {
-      setErrors((prev) => ({ ...prev, phone: "" }))
-    }
-  }
-
-  const handleBackClick = () => {
-    setErrors({})
-    router.push("/auth")
   }
 
   return (
-    <div className="space-y-6 overflow-hidden max-w-full">
+    <div className="space-y-12">
       <div className="space-y-2">
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-950 break-words">Create Your Account</h1>
-        <p className="text-sm text-slate-600 break-words leading-relaxed">
+        <h1 className="text-4xl font-bold text-slate-950 tracking-tight">Create Your Account</h1>
+        <p className="text-base text-slate-700 max-w-2xl leading-relaxed">
           Set up your account to track your formation progress and manage your business.
         </p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-5 overflow-hidden">
-        <div className="space-y-2 overflow-hidden">
-          <Label htmlFor="name" className="text-sm font-medium text-slate-900">
+      <form onSubmit={handleSubmit} className="space-y-6">
+        <div className="space-y-3">
+          <Label htmlFor="name" className="text-sm font-semibold text-slate-900">
             Full Name
           </Label>
-          <div className="relative overflow-hidden">
-            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+          <div className="relative">
+            <User className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 pointer-events-none" />
             <Input
               id="name"
               type="text"
               placeholder="John Doe"
               value={data.name || ""}
-              onChange={(e) => handleNameChange(e.target.value)}
-              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
+              onChange={(e) => updateData({ name: e.target.value })}
+              className="pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
             />
           </div>
-          {errors.name && <p className="text-xs text-red-600 break-words">{errors.name}</p>}
-          <p className="text-xs text-slate-500 break-words">Your full legal name</p>
+          {errors.name && <p className="text-xs text-red-600 mt-1">{errors.name}</p>}
+          <p className="text-xs text-slate-700">Your full legal name</p>
         </div>
 
-        <div className="space-y-2 overflow-hidden">
-          <Label htmlFor="phone" className="text-sm font-medium text-slate-900">
+        <div className="space-y-3">
+          <Label htmlFor="phone" className="text-sm font-semibold text-slate-900">
             Phone Number
           </Label>
           <PhoneInput
             value={phone}
-            onChange={handlePhoneChange}
-            defaultCountry="PK"
+            onChange={(value) => setPhone(value || "")}
+            defaultCountry="US"
             international
             withCountryCallingCode
           />
-          {errors.phone && <p className="text-xs text-red-600 break-words">{errors.phone}</p>}
-          <p className="text-xs text-slate-500 break-words">We'll use this to contact you about your order</p>
+          {errors.phone && <p className="text-xs text-red-600 mt-1">{errors.phone}</p>}
+          <p className="text-xs text-slate-700">We'll use this to contact you about your order</p>
         </div>
 
-        <div className="space-y-2 overflow-hidden">
-          <Label htmlFor="email" className="text-sm font-medium text-slate-900">
+        <div className="space-y-3">
+          <Label htmlFor="email" className="text-sm font-semibold text-slate-900">
             Email Address
           </Label>
-          <div className="relative overflow-hidden">
-            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+          <div className="relative">
+            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 pointer-events-none" />
             <Input
               id="email"
               type="email"
               placeholder="you@example.com"
               value={data.email || ""}
-              onChange={(e) => handleEmailChange(e.target.value)}
-              className="pl-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
+              onChange={(e) => updateData({ email: e.target.value })}
+              className="pl-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
             />
           </div>
-          {errors.email && <p className="text-xs text-red-600 break-words">{errors.email}</p>}
-          <p className="text-xs text-slate-500 break-words">We'll send order updates to this email</p>
+          {errors.email && <p className="text-xs text-red-600 mt-1">{errors.email}</p>}
+          <p className="text-xs text-slate-700">We'll send order updates to this email</p>
         </div>
 
-        <div className="space-y-2 overflow-hidden">
-          <Label htmlFor="password" className="text-sm font-medium text-slate-900">
+        <div className="space-y-3">
+          <Label htmlFor="password" className="text-sm font-semibold text-slate-900">
             Password
           </Label>
-          <div className="relative overflow-hidden">
-            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+          <div className="relative">
+            <Lock className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-600 pointer-events-none" />
             <Input
               id="password"
               type={showPassword ? "text" : "password"}
               placeholder="At least 8 characters"
               value={data.password || ""}
-              onChange={(e) => handlePasswordChange(e.target.value)}
-              className="pl-10 pr-10 h-11 border-slate-200 bg-white text-slate-900 rounded-lg w-full"
+              onChange={(e) => updateData({ password: e.target.value })}
+              className="pl-10 pr-10 h-11 border border-slate-200 bg-white text-slate-900 rounded-lg text-sm"
             />
             <button
               type="button"
@@ -229,83 +185,23 @@ export function AccountStep({ data, updateData, onNext, onBack }: AccountStepPro
               {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
             </button>
           </div>
-          {errors.password && <p className="text-xs text-red-600 break-words">{errors.password}</p>}
-          <p className="text-xs text-slate-500 break-words">Choose a strong password to secure your account</p>
+          {errors.password && <p className="text-xs text-red-600 mt-1">{errors.password}</p>}
+          <p className="text-xs text-slate-700">Choose a strong password to secure your account</p>
         </div>
 
-        {/* Terms and Conditions */}
-        <div className="space-y-3 pt-1">
-          <div className="flex items-start gap-2">
-            <ShieldCheck className="w-4 h-4 text-[#880000] mt-0.5 shrink-0" />
-            <p className="text-sm font-semibold text-slate-900">
-              Do you accept our terms and conditions?{" "}
-              <span className="text-[#880000]">*</span>
-            </p>
-          </div>
-          <p className="text-sm text-slate-600 leading-relaxed pl-6">
-            To ensure a smooth experience, please review our terms and conditions here:{" "}
-            <a
-              href="/terms"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-[#880000] font-medium underline underline-offset-2 hover:text-[#ff0d13] transition-colors"
-            >
-              Buzz Filing Terms &amp; Conditions
-            </a>
-            . By proceeding, you acknowledge and accept these terms.
-          </p>
-          <label className="flex items-center gap-3 cursor-pointer group pl-6">
-            <div className="relative flex items-center">
-              <input
-                type="checkbox"
-                checked={acceptedTerms}
-                onChange={(e) => {
-                  setAcceptedTerms(e.target.checked)
-                  if (errors.terms) setErrors((prev) => ({ ...prev, terms: "" }))
-                }}
-                className="peer sr-only"
-              />
-              <div
-                className={`w-5 h-5 rounded border-2 flex items-center justify-center transition-all
-                  ${acceptedTerms
-                    ? "bg-[#880000] border-[#880000]"
-                    : "bg-white border-slate-300 group-hover:border-[#880000]"
-                  }`}
-              >
-                {acceptedTerms && (
-                  <svg className="w-3 h-3 text-white" viewBox="0 0 12 12" fill="none">
-                    <path d="M2 6l3 3 5-5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                  </svg>
-                )}
-              </div>
-            </div>
-            <span className="text-sm text-slate-700 select-none">Yes I agree</span>
-          </label>
-          {errors.terms && (
-            <p className="text-xs text-red-600 pl-6">{errors.terms}</p>
-          )}
-        </div>
-
-        {errors.submit && (
-          <div className="p-3 rounded-lg bg-red-50 border border-red-200 overflow-hidden">
-            <p className="text-sm text-red-600 break-words leading-relaxed">{errors.submit}</p>
-          </div>
-        )}
-
-        <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6">
+        <div className="flex gap-3 pt-6">
           <Button
-            type="button"
-            onClick={handleBackClick}
+            onClick={onBack}
             variant="outline"
-            className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900 cursor-pointer"
+            className="px-6 h-10 border border-slate-200 bg-white text-slate-900 font-medium text-sm rounded-lg cursor-pointer"
           >
-            <ArrowLeft className="mr-2 w-5 h-5" /> Back
+            <ArrowLeft className="mr-2 w-4 h-4" /> Back
           </Button>
           <Button
             type="submit"
-            className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold cursor-pointer"
+            className="bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white h-10 text-sm font-medium rounded-lg px-4 cursor-pointer"
           >
-            Next <ArrowRight className="ml-2 w-5 h-5" />
+            Continue <ArrowRight className="ml-2 w-4 h-4" />
           </Button>
         </div>
       </form>

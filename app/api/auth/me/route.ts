@@ -16,7 +16,7 @@ export const GET = requireAuth(async (request: NextRequest, user) => {
 
     return apiResponse({ id: userDoc._id.toString(), ...userDoc })
   } catch (error) {
-    console.error(" Get user error:", error)
+    console.error("[v0] Get user error:", error)
     return apiError("Failed to get user", 500)
   }
 })

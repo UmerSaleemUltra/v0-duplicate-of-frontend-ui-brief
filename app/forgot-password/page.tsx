@@ -1,105 +1,34 @@
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
-import { useRouter } from "next/navigation"
-import { Mail, ArrowRight, ArrowLeft, CheckCircle, Clock, RefreshCw, InboxIcon } from "lucide-react"
+import { Mail, ArrowRight, ArrowLeft, CheckCircle } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 
 export default function ForgotPasswordPage() {
-  const router = useRouter()
-  const [authChecked, setAuthChecked] = useState(false)
   const [email, setEmail] = useState("")
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
   const [error, setError] = useState("")
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const { authService } = await import("@/lib/auth")
-        const currentUser = await authService.getCurrentUser()
-        if (currentUser) {
-          if (currentUser.role === "admin") {
-            router.push("/admin")
-          } else {
-            router.push("/client/dashboard")
-          }
-        } else {
-          setAuthChecked(true)
-        }
-      } catch {
-        setAuthChecked(true)
-      }
-    }
-    checkAuth()
-  }, [router])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError("")
     setLoading(true)
 
-    try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-
-      const data = await response.json()
-
-      if (response.ok) {
+    // Simulate API call
+    setTimeout(() => {
+      if (email) {
         setSuccess(true)
       } else {
-        setError(data.error || "Failed to send reset link")
+        setError("Please enter a valid email address")
       }
-    } catch (err) {
-      console.error(" Forgot password error:", err)
-      setError("An error occurred. Please try again.")
-    } finally {
       setLoading(false)
-    }
-  }
-
-  const handleResend = async () => {
-    setError("")
-    setLoading(true)
-
-    try {
-      const response = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      })
-
-      if (response.ok) {
-        alert("Reset link resent successfully!")
-      } else {
-        const data = await response.json()
-        setError(data.error || "Failed to resend link")
-      }
-    } catch (err) {
-      console.error(" Resend error:", err)
-      setError("An error occurred. Please try again.")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  if (!authChecked) {
-    return (
-      <div className="min-h-screen flex items-center justify-center p-6">
-        <div className="text-center">
-          <div className="w-12 h-12 rounded-full bg-brand/20 animate-pulse mx-auto mb-4"></div>
-          <p className="text-muted">Checking authentication...</p>
-        </div>
-      </div>
-    )
+    }, 1000)
   }
 
   if (success) {
@@ -110,7 +39,7 @@ export default function ForgotPasswordPage() {
             <div className="flex items-center justify-center gap-2 mb-8">
               <Image
                 src="/images/buzz-filing-logo.png"
-                alt="Buzz Filing"
+                alt="BuzzFiling"
                 width={220}
                 height={137}
                 className="w-[180px] sm:w-[200px] md:w-[220px] h-auto"
@@ -125,50 +54,21 @@ export default function ForgotPasswordPage() {
             </div>
 
             <h1 className="text-3xl font-bold text-center mb-2">Check Your Email</h1>
-            <p className="text-muted text-center mb-6">
-              We've sent a password reset link to{" "}
-              <span className="text-foreground font-semibold">{email}</span>
+            <p className="text-muted text-center mb-8">
+              We've sent a password reset link to <span className="text-foreground font-medium">{email}</span>
             </p>
 
-            {/* Token expiry notice */}
-            <div className="flex items-center gap-3 p-3 rounded-xl bg-amber-500/10 border border-amber-500/25 mb-6">
-              <div className="flex-shrink-0 w-8 h-8 rounded-lg bg-amber-500/15 flex items-center justify-center">
-                <Clock className="w-4 h-4 text-amber-500" />
-              </div>
-              <p className="text-sm text-amber-600 dark:text-amber-400 font-medium">
-                This link expires in <strong>15 minutes</strong>. Please check your email promptly.
-              </p>
-            </div>
-
             <div className="space-y-4">
-              {/* Didn't receive card — redesigned */}
-              <div className="rounded-2xl border border-glass-border bg-background/60 overflow-hidden">
-                <div className="flex items-center gap-3 px-4 py-3 border-b border-glass-border bg-muted/30">
-                  <div className="w-8 h-8 rounded-lg bg-brand/10 flex items-center justify-center flex-shrink-0">
-                    <InboxIcon className="w-4 h-4 text-brand" />
-                  </div>
-                  <p className="text-sm font-semibold text-foreground">Didn't receive the email?</p>
-                </div>
-                <div className="px-4 py-3 space-y-1.5">
-                  <p className="text-sm text-muted flex items-start gap-2">
-                    <span className="mt-0.5 text-brand font-bold">1.</span>
-                    Make sure you entered the correct email address.
-                  </p>
-                  <p className="text-sm text-muted flex items-start gap-2">
-                    <span className="mt-0.5 text-brand font-bold">2.</span>
-                    Use the button below to resend a new link.
-                  </p>
-                </div>
+              <div className="p-4 rounded-xl bg-muted/50 border border-glass-border">
+                <p className="text-sm text-muted">
+                  <strong className="text-foreground">Didn't receive the email?</strong>
+                  <br />
+                  Check your spam folder or try resending the link.
+                </p>
               </div>
 
-              <Button
-                onClick={handleResend}
-                variant="outline"
-                className="w-full h-11 bg-transparent gap-2"
-                disabled={loading}
-              >
-                <RefreshCw className={`w-4 h-4 ${loading ? "animate-spin" : ""}`} />
-                {loading ? "Sending..." : "Resend Reset Email"}
+              <Button onClick={() => setSuccess(false)} variant="outline" className="w-full h-11">
+                Resend Email
               </Button>
 
               <Link href="/login">
@@ -191,7 +91,7 @@ export default function ForgotPasswordPage() {
           <div className="flex items-center justify-center gap-2 mb-8">
             <Image
               src="/images/buzz-filing-logo.png"
-              alt="Buzz Filing"
+              alt="BuzzFiling"
               width={220}
               height={137}
               className="w-[180px] sm:w-[200px] md:w-[220px] h-auto"
