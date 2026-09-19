@@ -30,6 +30,9 @@ export async function sendEmail(to: string, subject: string, html: string) {
   }
 }
 
+export const sendAdminEmail = async ({ subject, html }: { subject: string; html: string }) =>
+  sendEmail("buzzfilings@gmail.com", subject, html)
+
 export const emailTemplates = {
   welcome: (name: string, email: string) => `
     <!DOCTYPE html>

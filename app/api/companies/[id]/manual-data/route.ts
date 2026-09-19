@@ -1,7 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/db"
 import { ObjectId } from "mongodb"
-import { verifyToken } from "@/lib/auth"
+import { verifyToken } from "@/config/jwt"
 
 export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
   try {
