@@ -30,3 +30,5 @@ export const clearCheckoutData = (): void => {
   if (typeof window === "undefined") return
   localStorage.removeItem("checkoutData")
 }
+
+export const clearCompletedOrderData = clearCheckoutData

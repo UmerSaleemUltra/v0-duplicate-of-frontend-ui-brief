@@ -6,14 +6,7 @@ import { Button } from "@/components/ui/button"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { US_STATES, STATE_FEES } from "@/lib/constants"
-import type { CheckoutData } from "@/app/checkout/page"
-
-type StatePackageStepProps = {
-  data: CheckoutData
-  updateData: (updates: Partial<CheckoutData>) => void
-  onNext: () => void
-  onBack: () => void
-}
+import type { StatePackageStepProps } from "./state-package-step-props" // Declare the variable before using it
 
 const ENTITY_TYPES = [
   {
@@ -29,16 +22,16 @@ const ENTITY_TYPES = [
     bestFor: "General purpose, consultants, e-commerce, agencies",
   },
   {
-    id: "s-corp",
-    name: "S Corporation",
+    id: "C-Corp",
+    name: "C Corporation",
     badges: ["Growth"],
     features: [
-      "Pass-through taxation",
+      "Separate taxation",
       "Limited liability protection",
-      "Potential self-employment tax savings",
-      "Great for owner-operators",
+      "Unlimited shareholders",
+      "Great for raising capital",
     ],
-    bestFor: "Owner-operators with steady profit and U.S. payroll",
+    bestFor: "Startups seeking investment, businesses planning to go public",
   },
 ]
 
@@ -46,26 +39,35 @@ const PACKAGES = [
   {
     id: "starter",
     name: "Starter",
-    price: 150, // Updated from 149 to 150 per user requirements
-    features: ["Articles of Organization", "Registered Agent (1 year)", "Operating Agreement", "EIN Application"],
+    price: 149,
+    features: [
+      { name: "Name Check & Clearance", included: true },
+      { name: "Business Address - 1 Year", included: true },
+      { name: "Registered Agent - 1 Year", included: true },
+      { name: "Govt / State Filing Fee", included: true },
+      { name: "Articles of Incorporation", included: true },
+      { name: "Business Tax ID (EIN)", included: true },
+      { name: "U.S. Phone Number", included: true },
+      { name: "Business Bank Account Setup", included: true },
+      { name: "Digital Dashboard Access", included: true },
+    ],
     includesResellerCert: false,
   },
   {
     id: "advanced",
-    name: "Advanced",
+    name: "Advance",
     price: 249,
     features: [
-      "Everything in Starter",
-      "Expedited Filing",
-      "Banking Resolution",
-      "Compliance Calendar",
-      "Priority Support",
-      "Annual Report Service",
-      "Reseller Certificate Included",
+      { name: "Everything in Starter Package", included: true },
+      { name: "Business Address with Unique Suite", included: true },
+      { name: "Reseller Certificate / Seller Permit", included: true },
+      { name: "Dedicated IP VPS - 1 Month", included: true },
     ],
     includesResellerCert: true,
   },
 ]
+
+const PRIORITY_STATES = ["Wyoming", "Montana", "Florida", "New Mexico"]
 
 export function StatePackageStep({ data, updateData, onNext, onBack }: StatePackageStepProps) {
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -86,64 +88,66 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
     }
   }
 
+  const orderedStates = [...PRIORITY_STATES, ...US_STATES.filter((state) => !PRIORITY_STATES.includes(state))]
+
   return (
-    <div className="space-y-10">
-      <div className="space-y-3">
-        <h1 className="text-3xl font-bold text-slate-900 tracking-tight">Select your company formation</h1>
-        <p className="text-base text-slate-700 leading-relaxed">
-          Choose the legal entity structure that aligns with your business goals.
+    <div className="space-y-6 overflow-hidden max-w-full">
+      <div className="space-y-2">
+        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 break-words">Formation Details</h1>
+        <p className="text-sm text-slate-600 break-words leading-relaxed">
+          Select your state of formation and business entity type.
         </p>
       </div>
 
-      <div className="space-y-3">
-        <Label htmlFor="state" className="text-sm font-semibold text-slate-900">
+      <div className="space-y-2 overflow-hidden">
+        <Label htmlFor="state" className="text-sm font-medium text-slate-900">
           Formation State
         </Label>
         <Select value={data.state} onValueChange={(value) => updateData({ state: value })}>
-          <SelectTrigger className="w-full h-11 text-sm border-slate-200 bg-white text-slate-900 rounded-lg shadow-sm">
+          <SelectTrigger className="w-full h-11 border-slate-200 bg-white text-slate-900 rounded-lg overflow-hidden">
             <SelectValue placeholder="Select a state..." />
           </SelectTrigger>
           <SelectContent>
-            {US_STATES.map((state) => (
+            {orderedStates.map((state) => (
               <SelectItem key={state} value={state}>
                 {state}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
-        {errors.state && <p className="text-sm text-[#ff0d13] mt-1.5">{errors.state}</p>}
+        {errors.state && <p className="text-sm text-[#ff0d13] break-words">{errors.state}</p>}
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-sm font-semibold text-slate-900">Entity Type</h2>
-        <div className="space-y-4">
+      <div className="space-y-3 overflow-hidden">
+        <h2 className="text-base font-semibold text-slate-900">Entity Type</h2>
+        <div className="space-y-3">
           {ENTITY_TYPES.map((entity) => (
             <button
               key={entity.id}
               type="button"
               onClick={() => updateData({ entityType: entity.id })}
-              className={`w-full text-left p-6 rounded-lg border-2 transition-all shadow-sm hover:shadow-md ${
+              className={`w-full text-left p-3 sm:p-4 rounded-lg border-2 transition-all overflow-hidden ${
                 data.entityType === entity.id
                   ? "border-[#ff0d13] bg-[#fff5f5]"
                   : "border-slate-200 bg-white hover:border-slate-300"
               }`}
             >
-              <div className="flex items-start gap-4">
+              <div className="flex items-start gap-2 sm:gap-3">
                 <input
                   type="radio"
                   checked={data.entityType === entity.id}
                   onChange={() => updateData({ entityType: entity.id })}
-                  className="w-5 h-5 text-[#ff0d13] accent-[#ff0d13] mt-0.5 flex-shrink-0"
+                  className="w-4 h-4 sm:w-5 sm:h-5 text-[#ff0d13] accent-[#ff0d13] mt-1 flex-shrink-0 cursor-pointer"
                 />
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-3">
-                    <h3 className="text-base font-semibold text-slate-900">{entity.name}</h3>
+                <div className="flex-1 min-w-0 overflow-hidden">
+                  <div className="flex flex-wrap items-center gap-2 mb-2">
+                    <h3 className="text-sm sm:text-base font-semibold text-slate-900 break-words">{entity.name}</h3>
                   </div>
-                  <div className="flex gap-2 mb-4">
+                  <div className="flex flex-wrap gap-1.5 mb-2">
                     {entity.badges.map((badge) => (
                       <span
                         key={badge}
-                        className={`px-2.5 py-1 rounded-md text-xs font-medium ${
+                        className={`px-2 py-0.5 rounded-md text-xs font-medium whitespace-nowrap ${
                           badge === "POPULAR"
                             ? "bg-gradient-to-r from-[#880000] to-[#ff0d13] text-white"
                             : "bg-slate-100 text-slate-700"
@@ -153,15 +157,15 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                       </span>
                     ))}
                   </div>
-                  <ul className="space-y-2 mb-4">
+                  <ul className="space-y-1.5 mb-2">
                     {entity.features.map((feature, i) => (
-                      <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                        <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
-                        <span>{feature}</span>
+                      <li key={i} className="text-xs sm:text-sm text-slate-700 flex items-start gap-1.5">
+                        <Check className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
+                        <span className="break-words">{feature}</span>
                       </li>
                     ))}
                   </ul>
-                  <p className="text-sm text-slate-700 pt-4 border-t border-slate-100">
+                  <p className="text-xs sm:text-sm text-slate-600 pt-2 border-t border-slate-100 break-words leading-relaxed">
                     <span className="font-medium text-slate-900">Best for:</span> {entity.bestFor}
                   </p>
                 </div>
@@ -169,12 +173,12 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
             </button>
           ))}
         </div>
-        {errors.entityType && <p className="text-sm text-[#ff0d13] mt-1.5">{errors.entityType}</p>}
+        {errors.entityType && <p className="text-sm text-[#ff0d13] break-words">{errors.entityType}</p>}
       </div>
 
-      <div className="space-y-4">
-        <h2 className="text-sm font-semibold text-slate-900">Choose Your Package</h2>
-        <div className="grid md:grid-cols-2 gap-4">
+      <div className="space-y-3 overflow-hidden">
+        <h2 className="text-base font-semibold text-slate-900">Choose Your Package</h2>
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
           {PACKAGES.map((pkg) => {
             const total = data.state ? pkg.price + stateFee : pkg.price
             return (
@@ -182,30 +186,40 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
                 key={pkg.id}
                 type="button"
                 onClick={() => updateData({ packageType: pkg.id })}
-                className={`p-6 rounded-lg border-2 cursor-pointer
- transition-all text-left shadow-sm hover:shadow-md ${
-   data.packageType === pkg.id ? "border-[#ff0d13] bg-[#fff5f5]" : "border-slate-200 bg-white hover:border-slate-300"
- }`}
+                className={`p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-all text-left flex flex-col overflow-hidden min-w-0 ${
+                  data.packageType === pkg.id
+                    ? "border-[#ff0d13] bg-[#fff5f5]"
+                    : "border-slate-200 bg-white hover:border-slate-300"
+                }`}
               >
-                <div className="flex items-start justify-between gap-3 mb-4">
-                  <h3 className="text-base font-semibold text-slate-900">{pkg.name}</h3>
+                <div className="flex items-start justify-between gap-2 mb-2">
+                  <h3 className="text-base sm:text-lg font-semibold text-slate-900 break-words min-w-0">{pkg.name}</h3>
                   {data.packageType === pkg.id && (
-                    <div className="w-6 h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
-                      <Check className="w-4 h-4 text-white" />
+                    <div className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-gradient-to-r from-[#880000] to-[#ff0d13] flex items-center justify-center flex-shrink-0">
+                      <Check className="w-3 h-3 sm:w-4 sm:h-4 text-white" />
                     </div>
                   )}
                 </div>
-                <div className="mb-5">
-                  <div className="text-3xl font-bold text-[#ff0d13]">${total}</div>
-                  <div className="text-sm text-slate-700 mt-1">
+                <div className="mb-3">
+                  <div className="text-xl sm:text-2xl font-bold text-[#ff0d13]">${total}</div>
+                  <div className="text-xs sm:text-sm text-slate-600 mt-0.5 break-words">
                     {data.state ? "Total (includes state fees)" : "Base price + state fees"}
                   </div>
                 </div>
-                <ul className="space-y-2.5">
+                <ul className="space-y-1.5 flex-1">
                   {pkg.features.map((feature, i) => (
-                    <li key={i} className="text-sm text-slate-700 flex items-start gap-2">
-                      <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
-                      <span>{feature}</span>
+                    <li
+                      key={i}
+                      className={`text-xs sm:text-sm flex items-start gap-1.5 ${
+                        feature.included ? "text-slate-700" : "text-slate-400"
+                      }`}
+                    >
+                      <Check
+                        className={`w-3.5 h-3.5 sm:w-4 sm:h-4 flex-shrink-0 mt-0.5 ${
+                          feature.included ? "text-[#ff0d13]" : "text-slate-300"
+                        }`}
+                      />
+                      <span className="break-words min-w-0">{feature.name}</span>
                     </li>
                   ))}
                 </ul>
@@ -213,24 +227,25 @@ export function StatePackageStep({ data, updateData, onNext, onBack }: StatePack
             )
           })}
         </div>
-        {errors.packageType && <p className="text-sm text-[#ff0d13] mt-1.5">{errors.packageType}</p>}
+        {errors.packageType && <p className="text-sm text-[#ff0d13] break-words">{errors.packageType}</p>}
       </div>
 
-      <div className="flex gap-3 pt-8 border-t border-slate-100">
+      <div className="flex flex-col-reverse sm:flex-row gap-3 pt-6 border-t border-slate-100">
         <Button
-          onClick={onBack}
+          onClick={() => {
+            setErrors({})
+            onBack()
+          }}
           variant="outline"
-          className="h-11 cursor-pointer
- bg-transparent"
+          className="w-full sm:w-auto px-8 h-12 text-base font-semibold border-slate-300 hover:bg-slate-50 bg-white text-slate-900 cursor-pointer"
         >
-          <ArrowLeft className="mr-2 w-4 h-4" /> Previous
+          <ArrowLeft className="mr-2 w-5 h-5" /> Back
         </Button>
         <Button
           onClick={handleSubmit}
-          className="h-11 bg-gradient-to-r from-[#880000] to-[#ff0d13] cursor-pointer
-"
+          className="w-full sm:w-auto h-12 px-10 text-base bg-gradient-to-r from-[#880000] to-[#ff0d13] hover:from-[#990000] hover:to-[#ff1a1a] text-white font-semibold cursor-pointer"
         >
-          Next <ArrowRight className="ml-2 w-4 h-4 " />
+          Next <ArrowRight className="ml-2 w-5 h-5" />
         </Button>
       </div>
     </div>
