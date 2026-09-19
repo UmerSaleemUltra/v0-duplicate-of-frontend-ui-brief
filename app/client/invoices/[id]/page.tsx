@@ -9,7 +9,7 @@ import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Download, Receipt, Calendar, DollarSign, CheckCircle2, Clock, AlertCircle } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { invoiceStorage, currentUserStorage, companyStorage } from "@/lib/local-storage"
-import { jsPDF } from "jspdf"
+import { jsPDF } from "jspdf/dist/jspdf.es.min.js"
 import html2canvas from "html2canvas"
 
 export default function InvoiceDetailPage({ params }: { params: Promise<{ id: string }> }) {

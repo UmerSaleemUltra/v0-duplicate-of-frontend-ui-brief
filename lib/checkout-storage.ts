@@ -32,3 +32,12 @@ export const clearCheckoutData = (): void => {
 }
 
 export const clearCompletedOrderData = clearCheckoutData
+
+export const saveProgress = (): { success: boolean; message: string } => {
+  if (typeof window === "undefined") {
+    return { success: false, message: "Progress can only be saved in the browser." }
+  }
+
+  saveCheckoutData({})
+  return { success: true, message: "Your progress has been saved." }
+}

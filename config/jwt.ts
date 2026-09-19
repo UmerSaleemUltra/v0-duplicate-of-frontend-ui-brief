@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken"
-import bcrypt from "bcrypt"
+import bcrypt from "bcryptjs"
 
 const JWT_SECRET = "@Saleem8637"
 const JWT_EXPIRES_IN = "7d"
