@@ -518,7 +518,8 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             $set: {
               orderId: id,
               emailStatus: "processing",
-              trustpilotStatus: "claimed",
+              // Trustpilot invitation delivery is disabled; completion email remains active.
+              trustpilotStatus: "not_eligible",
               claimedAt: completedAt,
               updatedAt: completedAt,
             },
@@ -578,10 +579,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             const customerName = user.name || "Customer"
             completionDelivery = {
               emailStatus: "processing",
-              trustpilotStatus: "claimed",
-              trustpilotClaimedAt: new Date().toISOString(),
+              // Trustpilot invitation disabled; only the customer completion email is sent.
+              trustpilotStatus: "not_eligible",
               completedAt,
             }
+            /* Trustpilot invitation disabled. Preserve this payload for reactivation.
             trustpilotInvitation = {
               recipientEmail: user.email,
               recipientName: customerName,
@@ -594,6 +596,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               hasCustomerEmail: true,
               hasCustomerName: Boolean(user.name),
             })
+            */
 
             // Email delivery is independent and must never delay or gate the
             // immediate Trustpilot invitation returned with this completion.
