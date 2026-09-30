@@ -1,43 +1,97 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Package, DollarSign, Check, ShoppingCart, Info } from "lucide-react"
+import { Package, DollarSign, Check, ShoppingCart } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { addonStorage, type Addon, companyStorage, orderStorage } from "@/lib/local-storage"
+import type { Addon } from "@/lib/local-storage"
 import { ClientShell } from "@/components/client/client-shell"
 import { useRouter } from "next/navigation"
 import { useSelectedCompany } from "@/lib/company-context"
 import { useAuthGuard } from "@/lib/use-auth-guard"
-import { Spinner } from "@/components/ui/spinner"
+import { ApiClient } from "@/lib/api-client"
+import { authService } from "@/lib/auth"
+import { AddonsSkeleton } from "@/components/client/addons-skeleton"
+
+interface AddonWithBilling extends Addon {
+  billingType?: "one_time" | "recurring_monthly" | "recurring_quarterly" | "recurring_annual" | "custom"
+  customDuration?: string
+}
 
 export default function ClientAddonsPage() {
   const { isAuthenticated, isLoading: authLoading } = useAuthGuard()
   const router = useRouter()
   const { selectedCompanyId } = useSelectedCompany()
-  const [addons, setAddons] = useState<Addon[]>([])
+  // Seed from cache for instant render — background refresh keeps it fresh
+  const [addons, setAddons] = useState<AddonWithBilling[]>(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const cached = localStorage.getItem("addons_cache")
+        if (cached) return JSON.parse(cached)
+      } catch { /* ignore */ }
+    }
+    return []
+  })
   const [selectedCategory, setSelectedCategory] = useState<string>("all")
-  const [hasAdvancedPackage, setHasAdvancedPackage] = useState(false)
+  const [hasAdvancePackage, setHasAdvancePackage] = useState(false)
+  const [isLoadingAddons, setIsLoadingAddons] = useState(() => {
+    if (typeof window !== "undefined") {
+      try {
+        return !localStorage.getItem("addons_cache")
+      } catch { /* ignore */ }
+    }
+    return true
+  })
 
-  const loadAddons = () => {
-    const activeAddons = addonStorage.getActive()
-    setAddons(activeAddons)
+  const loadAddons = async () => {
+    try {
+      const token = authService.getToken()
+      if (!token) {
+        setIsLoadingAddons(false)
+        return
+      }
+
+      const response = await fetch("/api/addons", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+
+      if (response.ok) {
+        const data = await response.json()
+        const addonsList = data.data?.addons || data.addons || []
+        setAddons(addonsList)
+        try {
+          localStorage.setItem("addons_cache", JSON.stringify(addonsList))
+        } catch { /* ignore */ }
+      }
+    } catch (error) {
+      // Error handled silently
+    } finally {
+      setIsLoadingAddons(false)
+    }
   }
 
-  const checkPackageType = () => {
+  const checkPackageType = async () => {
     if (selectedCompanyId) {
-      const company = companyStorage.getById(selectedCompanyId)
-      if (company) {
-        const orders = orderStorage.getAll().filter((o) => o.companyId === selectedCompanyId)
-        if (orders.length > 0) {
-          const hasAdvanced = orders.some(
-            (order) =>
-              order.packageType?.toLowerCase() === "advanced" || order.service?.toLowerCase().includes("advanced"),
-          )
-          setHasAdvancedPackage(hasAdvanced)
+      try {
+        const token = authService.getToken()
+        if (!token) return
+
+        const companyResponse = await ApiClient.companies.getById(selectedCompanyId, token)
+        const company = companyResponse.data
+
+        if (company) {
+          const hasAdvance =
+            company.packageType?.toLowerCase() === "advanced" ||
+            company.items?.some(
+              (item: any) => item.category === "package" && item.name?.toLowerCase().includes("advanced"),
+            )
+          setHasAdvancePackage(hasAdvance)
         }
+      } catch (error) {
+        // Error handled silently
       }
     }
   }
@@ -69,11 +123,20 @@ export default function ClientAddonsPage() {
     return addonName.toLowerCase().includes("reseller") || addonName.toLowerCase().includes("resale")
   }
 
-  const isAddonDisabled = (addon: Addon) => {
-    return hasAdvancedPackage && isResellerCertificate(addon.name)
+  const isAddonDisabled = (addon: AddonWithBilling) => {
+    return hasAdvancePackage && isResellerCertificate(addon.name)
   }
 
-  const handleBuyAddon = (addonId: string, addon: Addon) => {
+  const getBillingTypeLabel = (addon: AddonWithBilling) => {
+    if (addon.billingType === "one_time") return "one-time"
+    if (addon.billingType === "recurring_monthly") return "monthly"
+    if (addon.billingType === "recurring_quarterly") return "quarterly"
+    if (addon.billingType === "recurring_annual") return "annually"
+    if (addon.billingType === "custom") return `every ${addon.customDuration} days`
+    return "one-time"
+  }
+
+  const handleBuyAddon = (addonId: string, addon: AddonWithBilling) => {
     if (isAddonDisabled(addon)) {
       return
     }
@@ -81,17 +144,19 @@ export default function ClientAddonsPage() {
   }
 
   useEffect(() => {
-    if (isAuthenticated && selectedCompanyId) {
+    if (isAuthenticated) {
       loadAddons()
-      checkPackageType()
+      if (selectedCompanyId) {
+        checkPackageType()
+      }
     }
   }, [isAuthenticated, selectedCompanyId])
 
-  if (authLoading) {
+  if (authLoading || isLoadingAddons) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Spinner className="w-8 h-8" />
-      </div>
+      <ClientShell>
+        <AddonsSkeleton />
+      </ClientShell>
     )
   }
 
@@ -103,18 +168,9 @@ export default function ClientAddonsPage() {
     <ClientShell>
       <div className="space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-slate-900">Available Addons</h1>
-          <p className="text-slate-600 mt-1">Enhance your business with additional services</p>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-semibold">Available Addons</h1>
+          <p className="text-slate-600 text-xs sm:text-sm md:text-base mt-1">Enhance your business with additional services</p>
         </div>
-
-        {hasAdvancedPackage && (
-          <Alert className="bg-blue-50 border-blue-200">
-            <Info className="w-4 h-4 text-blue-600" />
-            <AlertDescription className="text-blue-900">
-              You have the Advanced package which includes the Reseller Certificate. Some addons may not be available.
-            </AlertDescription>
-          </Alert>
-        )}
 
         <div className="flex gap-2 flex-wrap">
           {categories.map((category) => (
@@ -151,19 +207,19 @@ export default function ClientAddonsPage() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    <div className="flex items-center gap-2">
-                      <DollarSign className="w-5 h-5 text-slate-500" />
-                      <span className="text-3xl font-bold text-slate-900">${addon.price}</span>
-                      <span className="text-sm text-slate-500">one-time</span>
-                    </div>
+                  <div className="flex items-center gap-2">
+                    <DollarSign className="w-5 h-5 text-slate-500" />
+                    <span className="text-3xl font-bold text-slate-900">${addon.price}</span>
+                    <span className="text-sm text-slate-500">{getBillingTypeLabel(addon)}</span>
+                  </div>
 
-                    {addon.features && addon.features.length > 0 && (
+                    {addon.features && Array.isArray(addon.features) && addon.features.length > 0 && (
                       <div className="space-y-2 pt-2 border-t">
                         <p className="text-sm font-medium text-slate-700">What's included:</p>
                         <ul className="space-y-2">
                           {addon.features.map((feature, index) => (
                             <li key={index} className="text-sm text-slate-600 flex items-start gap-2">
-                              <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5" />
+                              <Check className="w-4 h-4 text-[#ff0d13] flex-shrink-0 mt-0.5 cursor-pointer" />
                               <span>{feature}</span>
                             </li>
                           ))}
@@ -174,16 +230,16 @@ export default function ClientAddonsPage() {
                     <Button
                       onClick={() => handleBuyAddon(addon.id, addon)}
                       disabled={disabled}
-                      className={`w-full mt-4 gap-2 ${disabled ? "cursor-not-allowed" : "bg-gradient-to-r from-[#880000] to-[#ff0d13]"}`}
+                      className={`w-full mt-4 gap-2 cursor-pointer ${disabled ? "cursor-not-allowed" : "bg-gradient-to-r from-[#880000] to-[#ff0d13]"}`}
                     >
                       {disabled ? (
                         <>
-                          <Check className="w-4 h-4" />
+                          <Check className="w-4 h-4 cursor-pointer" />
                           Already Included
                         </>
                       ) : (
                         <>
-                          <ShoppingCart className="w-4 h-4" />
+                          <ShoppingCart className="w-4 h-4 cursor-pointer" />
                           Buy Now
                         </>
                       )}

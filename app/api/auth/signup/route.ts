@@ -3,38 +3,67 @@ import { getDatabase } from "@/config/database"
 import { hashPassword, generateToken } from "@/config/jwt"
 import { sendEmail, emailTemplates } from "@/config/email"
 import { apiResponse, apiError } from "@/lib/api-middleware"
+import { validateEmail, validatePassword, validatePhone, sanitizeString } from "@/lib/validation"
+import { addSecurityHeaders } from "@/lib/middleware/security-headers"
+import { verifyCheckoutToken, invalidateCheckoutToken } from "@/lib/checkout-token"
+
+export async function GET() {
+  return addSecurityHeaders(apiError("Please use POST method to signup", 405))
+}
 
 export async function POST(request: NextRequest) {
+
   try {
     const body = await request.json()
-    const { name, email, phone, password } = body
+    const { name, email, phone, password, checkoutToken } = body
 
-    // Validate required fields
-    if (!name || !email || !password) {
-      return apiError("Name, email, and password are required", 400)
+    // SECURITY: Require checkout token to prevent direct API signups
+    // Users must go through the proper checkout flow to create an account
+    if (!checkoutToken) {
+      return addSecurityHeaders(apiError("Invalid request. Please complete checkout to create an account.", 403))
     }
+
+    const tokenValidation = await verifyCheckoutToken(checkoutToken, email)
+    if (!tokenValidation.valid) {
+      return addSecurityHeaders(apiError(tokenValidation.error || "Invalid or expired checkout session. Please restart checkout.", 403))
+    }
+
+    if (!name || !email || !password) {
+      return addSecurityHeaders(apiError("Please provide your name, email, and password", 400))
+    }
+
+    if (!validateEmail(email)) {
+      return addSecurityHeaders(apiError("Please provide a valid email address", 400))
+    }
+
+    const passwordValidation = validatePassword(password)
+    if (!passwordValidation.valid) {
+      return addSecurityHeaders(apiError(passwordValidation.error || "Invalid password", 400))
+    }
+
+    if (phone && !validatePhone(phone)) {
+      return addSecurityHeaders(apiError("Please provide a valid phone number", 400))
+    }
+
+    const sanitizedName = sanitizeString(name, 100)
+    const sanitizedPhone = phone ? sanitizeString(phone, 20) : ""
 
     const db = await getDatabase()
     const usersCollection = db.collection("users")
 
-    // Check if user already exists
     const existingUser = await usersCollection.findOne({ email })
     if (existingUser) {
-      return apiError("User with this email already exists", 409)
+      return addSecurityHeaders(apiError("An account with this email already exists", 409))
     }
 
-    // Hash password
     const hashedPassword = await hashPassword(password)
 
-    // Create user
     const newUser = {
-      name,
+      name: sanitizedName,
       email,
-      phone: phone || "",
+      phone: sanitizedPhone,
       password: hashedPassword,
       role: "client" as const,
-      accountStatus: "pending_verification" as const,
-      emailVerified: false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
@@ -42,32 +71,39 @@ export async function POST(request: NextRequest) {
     const result = await usersCollection.insertOne(newUser)
     const userId = result.insertedId.toString()
 
-    // Generate JWT token
+    // Invalidate the checkout token after successful signup (one-time use)
+    await invalidateCheckoutToken(checkoutToken)
+
     const token = generateToken({
       userId,
       email,
       role: "client",
     })
 
-    // Send welcome email
-    const welcomeEmail = emailTemplates.welcome(name)
-    await sendEmail({
+    // Send welcome email (non-blocking)
+    const welcomeTemplate = emailTemplates.welcome(sanitizedName)
+    console.log(" Attempting to send welcome email to:", email)
+    sendEmail({
       to: email,
-      subject: welcomeEmail.subject,
-      html: welcomeEmail.html,
+      subject: welcomeTemplate.subject,
+      html: welcomeTemplate.html,
     })
+      .then((result) => {
+        console.log(" Welcome email result:", result)
+      })
+      .catch((error) => {
+        console.error(" Welcome email failed:", error)
+      })
 
-    // Return user data (without password) and token
     const { password: _, ...userWithoutPassword } = newUser
-    return apiResponse(
+    return addSecurityHeaders(apiResponse(
       {
         user: { id: userId, ...userWithoutPassword },
         token,
       },
       201,
-    )
+    ))
   } catch (error) {
-    console.error("[v0] Signup error:", error)
-    return apiError("Failed to create account", 500)
+    return addSecurityHeaders(apiError("We couldn't create your account at this time. Please try again.", 500))
   }
 }

@@ -429,31 +429,20 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       )
 
       if (!updatedCompany) {
-        console.log("[v0] Embedded order _id update missed; applying id-safe array update", {
-          companyId: companyIdObj?.toString(),
-          orderId: id,
-        })
-        const companySnapshot = await db.collection("companies").findOne({ _id: companyIdObj })
-        const matchingOrder = companySnapshot?.orders?.find((item: any) => {
-          const embeddedId = item?._id?.toString() || item?.id?.toString()
-          return embeddedId === id
-        })
-
-        if (matchingOrder) {
-          updatedCompany = await db.collection("companies").findOneAndUpdate(
-            { _id: companyIdObj },
-            {
-              $set: {
-                ...setPayload,
-                orders: companySnapshot.orders.map((item: any) => {
-                  const embeddedId = item?._id?.toString() || item?.id?.toString()
-                  return embeddedId === id ? { ...item, ...updateData } : item
-                }),
-              },
+        console.log(" Update by _id failed, trying by id field")
+        updatedCompany = await db.collection("companies").findOneAndUpdate(
+          { _id: companyIdObj },
+          {
+            $set: {
+              ...setPayload,
+              "orders.$[elem]": { ...order, ...updateData },
             },
-            { returnDocument: "after" },
-          )
-        }
+          },
+          {
+            arrayFilters: [{ "elem.id": id }],
+            returnDocument: "after",
+          },
+        )
       }
       result = updatedCompany
     } else {

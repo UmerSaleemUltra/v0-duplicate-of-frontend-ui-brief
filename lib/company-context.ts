@@ -5,6 +5,11 @@ import { createContext, useContext } from "react"
 interface CompanyContextType {
   selectedCompanyId: string | null
   setSelectedCompanyId: (id: string | null) => void
+  companies: any[]
+  companiesLoading: boolean
+  hasCompanies: boolean
+  initialLoadDone: boolean
+  isResetting: boolean
 }
 
 const CompanyContext = createContext<CompanyContextType | undefined>(undefined)

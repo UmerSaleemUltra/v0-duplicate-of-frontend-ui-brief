@@ -1,27 +1,30 @@
 import { type NextRequest, NextResponse } from "next/server"
-import { getDatabase } from "@/config/database"
-import { verifyToken } from "@/config/jwt"
+import { connectDB } from "@/lib/mongodb"
+import { verifyToken } from "@/lib/jwt"
 import { blobStorage } from "@/config/storage"
 
-// GET /api/documents - Get all documents (filtered by user for clients)
+
+import { addSecurityHeaders } from "@/lib/middleware/security-headers"
+import { broadcastUpdate } from "@/lib/realtime/broadcaster"
+
 export async function GET(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
     if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
     }
 
     const decoded = verifyToken(token)
     if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
     }
 
     const { searchParams } = new URL(req.url)
     const companyId = searchParams.get("companyId")
 
-    const db = await getDatabase()
+    const { db } = await connectDB()
     const query: any = {}
 
     if (decoded.role === "client") {
@@ -32,9 +35,11 @@ export async function GET(req: NextRequest) {
     }
 
     const documents = await db.collection("documents").find(query).sort({ createdAt: -1 }).toArray()
+    const totalCount = await db.collection("documents").countDocuments(query)
 
-    return NextResponse.json({
+    const result = {
       success: true,
+      total: totalCount,
       data: documents.map((doc) => ({
         id: doc._id.toString(),
         userId: doc.userId,
@@ -44,87 +49,116 @@ export async function GET(req: NextRequest) {
         type: doc.type,
         category: doc.category,
         fileUrl: doc.fileUrl,
+        fileUrls: doc.fileUrls,
         fileSize: doc.fileSize,
+        fileCount: doc.fileCount,
         mimeType: doc.mimeType,
         uploadedBy: doc.uploadedBy,
         uploadedByName: doc.uploadedByName,
         status: doc.status,
-        isMailDocument: doc.isMailDocument,
         createdAt: doc.createdAt,
+        uploadedAt: doc.createdAt,
         updatedAt: doc.updatedAt,
       })),
-    })
+    }
+
+    const response = NextResponse.json(result)
+    response.headers.set("Cache-Control", "private, max-age=30, stale-while-revalidate=60")
+    return addSecurityHeaders(response)
   } catch (error) {
-    console.error("Error fetching documents:", error)
-    return NextResponse.json({ error: "Failed to fetch documents" }, { status: 500 })
+    return addSecurityHeaders(NextResponse.json({ error: "Failed to fetch documents" }, { status: 500 }))
   }
 }
 
-// POST /api/documents - Upload document
 export async function POST(req: NextRequest) {
   try {
     const authHeader = req.headers.get("authorization")
     const token = authHeader?.replace("Bearer ", "")
 
     if (!token) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 })
+      return addSecurityHeaders(NextResponse.json({ error: "Unauthorized" }, { status: 401 }))
     }
 
     const decoded = verifyToken(token)
     if (!decoded) {
-      return NextResponse.json({ error: "Invalid token" }, { status: 401 })
+      return addSecurityHeaders(NextResponse.json({ error: "Invalid token" }, { status: 401 }))
     }
 
     const formData = await req.formData()
-    const file = formData.get("file") as File
+    const files = formData.getAll("files") as File[]
     const userId = formData.get("userId") as string
     const companyId = formData.get("companyId") as string
     const title = formData.get("title") as string
     const type = formData.get("type") as string
     const category = formData.get("category") as string
-    const isMailDocument = formData.get("isMailDocument") === "true"
 
-    if (!file || !companyId) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 })
+    if (files.length === 0 || !companyId) {
+      return addSecurityHeaders(NextResponse.json({ error: "Missing required fields" }, { status: 400 }))
     }
 
-    const uploadResult = await blobStorage.upload(file, {
-      folder: "documents",
-      filename: file.name,
-      access: "public",
-    })
+    const maxFileSize = 200 * 1024 * 1024
+    for (const file of files) {
+      if (file.size > maxFileSize) {
+        return addSecurityHeaders(NextResponse.json({ error: `File ${file.name} exceeds 200MB limit` }, { status: 400 }))
+      }
+    }
 
-    const db = await getDatabase()
+    const uploadPromises = files.map((file) =>
+      blobStorage
+        .upload(file, {
+          folder: "documents",
+          filename: file.name,
+          access: "public",
+        })
+        .then((uploadResult) => ({
+          url: uploadResult.url,
+          name: file.name,
+          size: file.size,
+          mimeType: file.type,
+        })),
+    )
+
+    const fileUrls = await Promise.all(uploadPromises)
+    const totalSize = fileUrls.reduce((sum, file) => sum + file.size, 0)
+
+    const { db } = await connectDB()
 
     const newDocument = {
       userId: userId || decoded.userId,
       companyId,
-      title: title || file.name,
-      name: file.name,
+      title: title || files[0].name,
+      fileName: files.length > 1 ? `${files.length} files` : files[0].name,
+      name: title || files[0].name,
       type: type || "other",
+      documentType: type || "other",
       category: category || "general",
-      fileUrl: uploadResult.url,
-      fileSize: file.size,
-      mimeType: file.type,
+      fileUrls: fileUrls,
+      fileUrl: fileUrls[0].url,
+      fileSize: totalSize,
+      mimeType: files[0].type,
+      fileCount: files.length,
       uploadedBy: decoded.role,
       uploadedByName: decoded.name || decoded.email,
       status: "available",
-      isMailDocument: isMailDocument || false,
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
     }
 
     const result = await db.collection("documents").insertOne(newDocument)
+    const documentId = result.insertedId.toString()
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        id: result.insertedId.toString(),
-        ...newDocument,
-      },
-    })
+    const createdDocument = { id: documentId, ...newDocument }
+
+    broadcastUpdate("documents", "created", createdDocument)
+
+    return addSecurityHeaders(
+      NextResponse.json({
+        success: true,
+        data: createdDocument,
+      }),
+    )
   } catch (error) {
-    console.error("Error uploading document:", error)
-    return NextResponse.json({ error: "Failed to upload document" }, { status: 500 })
+    console.log(" API Error in POST /api/documents:", error)
+    return addSecurityHeaders(NextResponse.json({ error: "Failed to upload document" }, { status: 500 }))
   }
 }
