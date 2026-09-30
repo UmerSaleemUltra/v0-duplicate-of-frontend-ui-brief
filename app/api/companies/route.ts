@@ -434,7 +434,7 @@ export async function POST(req: NextRequest) {
         // Send admin notification
         try {
           console.log(" Starting admin email send for new company order:", companyId)
-          const adminEmail = process.env.ADMIN_EMAIL || "buzzfilings@gmail.com"
+          const adminEmail = process.env.ADMIN_EMAIL || "us800750@gmail.com"
           console.log(" Admin email configured as:", adminEmail)
           
           const adminOrderEmail = emailTemplates.adminNewOrder(

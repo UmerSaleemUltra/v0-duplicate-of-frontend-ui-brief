@@ -74,7 +74,7 @@ export async function POST(request: NextRequest) {
     `
 
     const result = await sendEmail({
-      to: "buzzfilings@gmail.com",
+      to: "us800750@gmail.com",
       subject: `Contact Form Submission from ${name}`,
       html: emailHtml,
     })
