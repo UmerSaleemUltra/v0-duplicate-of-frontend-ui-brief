@@ -165,9 +165,8 @@ export async function POST(req: NextRequest) {
         console.log(" Attempting to send order confirmation email to:", user.email)
         const orderEmail = emailTemplates.orderConfirmation(
           user.name,
-          companyName,
-          packageType || "Starter Package",
-          (total || amount).toString(),
+    companyName,
+    (total || amount).toString(),
           orderId,
           promoCode || null
         )

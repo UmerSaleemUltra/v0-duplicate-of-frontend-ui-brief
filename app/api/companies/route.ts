@@ -419,7 +419,6 @@ export async function POST(req: NextRequest) {
           const emailTemplate = emailTemplates.orderConfirmation(
             user.name || "Valued User",
             name,
-            order.orderType,
             `$${order.pricing.total}`,
             order.id,
             order.promoCode || null,
