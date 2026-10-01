@@ -596,10 +596,10 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
           )}
 
           {/* Promo Code Section */}
-          <div className="pt-4 border-t border-slate-200">
+          <div className="pt-5 border-t border-slate-200">
             <div className="flex items-center gap-2 mb-3">
-              <Tag className="w-4 h-4 text-slate-500" />
-              <span className="text-sm font-medium text-slate-700">Promo Code</span>
+              <Tag className="w-4 h-4 text-slate-500" aria-hidden="true" />
+              <span className="text-sm font-semibold text-slate-700">Promo Code</span>
             </div>
             
             {appliedPromo ? (
@@ -632,14 +632,18 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
                       setPromoCodeInput(e.target.value.toUpperCase())
                       setPromoError("")
                     }}
-                    onKeyDown={(e) => e.key === "Enter" && handleApplyPromoCode()}
-                    className="font-mono uppercase flex-1"
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.nativeEvent.isComposing && e.keyCode !== 229) {
+                        handleApplyPromoCode()
+                      }
+                    }}
+                    className="h-11 flex-1 font-mono uppercase text-sm border-slate-200 shadow-none focus-visible:ring-1 focus-visible:ring-[#ff0d13]"
                   />
                   <Button
                     variant="outline"
                     onClick={handleApplyPromoCode}
                     disabled={isValidatingPromo || !promoCodeInput.trim()}
-                    className="px-4"
+                    className="h-11 rounded-md border-slate-200 px-5 text-sm font-semibold text-slate-600 shadow-sm hover:bg-slate-50 hover:text-slate-900"
                   >
                     {isValidatingPromo ? (
                       <Loader2 className="w-4 h-4 animate-spin" />
@@ -686,8 +690,14 @@ export function ReviewStep({ formData, onBack, onNext, updateData, goToStep }: R
             <span className="text-xs text-slate-500">(Optional)</span>
           </div>
           
-          <Select value={referralSource} onValueChange={setReferralSource}>
-            <SelectTrigger className="w-full h-11 text-base">
+          <Select
+            value={referralSource}
+            onValueChange={(value) => {
+              setReferralSource(value)
+              updateData?.({ referralSource: value })
+            }}
+          >
+            <SelectTrigger className="h-11 w-full rounded-md border-slate-200 bg-white text-sm font-medium text-slate-700 shadow-none focus:ring-1 focus:ring-[#ff0d13]">
               <SelectValue placeholder="Select an option..." />
             </SelectTrigger>
             <SelectContent>
