@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import {
   Dialog,
   DialogContent,
@@ -102,6 +103,7 @@ export function RequestDocumentModal({
   // Status update state
   const [updatingId, setUpdatingId] = useState<string | null>(null)
   const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [requestToDelete, setRequestToDelete] = useState<{ id: string; label: string } | null>(null)
 
   const fetchRequests = async () => {
     setLoadingRequests(true)
@@ -199,7 +201,9 @@ export function RequestDocumentModal({
     }
   }
 
-  const handleDelete = async (requestId: string) => {
+  const handleDelete = async () => {
+    if (!requestToDelete) return
+    const requestId = requestToDelete.id
     setDeletingId(requestId)
     try {
       const token = authService.getToken()
@@ -208,8 +212,9 @@ export function RequestDocumentModal({
         headers: { Authorization: `Bearer ${token}` },
       })
       if (!res.ok) throw new Error("Failed to delete")
-      setRequests((prev) => prev.filter((r) => r.id !== requestId))
-      toast({ title: "Request deleted" })
+  setRequests((prev) => prev.filter((r) => r.id !== requestId))
+  setRequestToDelete(null)
+  toast({ title: "Request deleted" })
     } catch (err: any) {
       toast({ title: "Error", description: err.message, variant: "destructive" })
     } finally {
@@ -218,7 +223,8 @@ export function RequestDocumentModal({
   }
 
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
       <DialogContent className="max-w-lg">
         {/* ── FORM VIEW ── */}
         {view === "form" && (
@@ -395,7 +401,7 @@ export function RequestDocumentModal({
                     {/* Delete */}
                     <div className="flex justify-end">
                       <button
-                        onClick={() => handleDelete(r.id)}
+                        onClick={() => setRequestToDelete({ id: r.id, label: r.documentType || "this document request" })}
                         disabled={deletingId === r.id}
                         className="text-gray-300 hover:text-red-400 transition-colors disabled:opacity-40"
                         title="Delete request"
@@ -424,7 +430,26 @@ export function RequestDocumentModal({
             </DialogFooter>
           </>
         )}
-      </DialogContent>
-    </Dialog>
+  </DialogContent>
+  </Dialog>
+
+  <AlertDialog open={requestToDelete !== null} onOpenChange={(open) => !open && setRequestToDelete(null)}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Delete document request?</AlertDialogTitle>
+        <AlertDialogDescription>
+          Are you sure you want to permanently delete {requestToDelete?.label || "this document request"}? This action cannot be undone.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel disabled={deletingId !== null}>Cancel</AlertDialogCancel>
+        <AlertDialogAction onClick={handleDelete} disabled={deletingId !== null} className="bg-red-600 hover:bg-red-700">
+          {deletingId !== null ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+          Delete
+        </AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+    </>
   )
 }

@@ -6,6 +6,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from "@/components/ui/alert-dialog"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { LayoutDashboard, ShoppingCart, Users, FileText, Mail, Menu, Package, LogOut, Shield, Sun, Moon, Tag } from "lucide-react"
 import { authService } from "@/lib/auth"
@@ -35,6 +36,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   const [userInitials, setUserInitials] = useState("AU")
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
+  const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false)
   const { isDark, toggle: toggleDark } = useDarkMode()
 
   useEffect(() => {
@@ -67,10 +69,13 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }, [router])
 
   const handleLogout = () => {
-    if (confirm("Are you sure you want to logout?")) {
-      authService.logout()
-      router.push("/login")
-    }
+    setLogoutConfirmOpen(true)
+  }
+
+  const confirmLogout = () => {
+    authService.logout()
+    setLogoutConfirmOpen(false)
+    router.push("/login")
   }
 
   if (isLoading) {
@@ -89,7 +94,24 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className={`min-h-screen bg-background${isDark ? " dark" : ""}`}>
+    <>
+      <AlertDialog open={logoutConfirmOpen} onOpenChange={setLogoutConfirmOpen}>
+        <AlertDialogContent className="max-w-md">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Sign out of admin?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You will need to sign in again to access the Admin Dashboard.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmLogout} className="bg-red-600 hover:bg-red-700">
+              Sign out
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <div className={`min-h-screen bg-background${isDark ? " dark" : ""}`}>
       <aside className="hidden lg:fixed lg:inset-y-0 lg:z-50 lg:flex lg:w-72 lg:flex-col">
         <div className="flex grow flex-col gap-y-5 overflow-y-auto bg-background border-r border-border px-6 pb-4">
           <div className="flex h-16 shrink-0 items-center" />
@@ -215,6 +237,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
         <main className="py-6 px-4 sm:px-6 lg:px-8 bg-background">{children}</main>
       </div>
-    </div>
+      </div>
+    </>
   )
 }
