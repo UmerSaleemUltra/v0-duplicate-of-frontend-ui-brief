@@ -1,4 +1,8 @@
 import { EventEmitter } from "events"
+import { Redis } from "@upstash/redis"
+
+const redis = Redis.fromEnv()
+const REALTIME_EVENTS_KEY = "buzzfiling:realtime:events"
 
 class RealtimeBroadcaster extends EventEmitter {
   private static instance: RealtimeBroadcaster
@@ -40,11 +44,17 @@ class RealtimeBroadcaster extends EventEmitter {
 export const broadcaster = RealtimeBroadcaster.getInstance()
 
 export function broadcastUpdate(resource: string, action: string, data: any) {
-  broadcaster.broadcast(`${resource}:${action}`, {
+  const event = {
+    id: `${Date.now()}-${Math.random().toString(36).slice(2)}`,
     resource,
     action,
     data,
     timestamp: new Date().toISOString(),
+  }
+
+  broadcaster.broadcast(`${resource}:${action}`, event)
+  void redis.lpush(REALTIME_EVENTS_KEY, JSON.stringify(event)).then(() => redis.ltrim(REALTIME_EVENTS_KEY, 0, 99)).catch(() => {
+    // Local SSE remains the fallback when Redis is unavailable.
   })
 }
 

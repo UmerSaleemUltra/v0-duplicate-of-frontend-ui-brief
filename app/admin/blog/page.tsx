@@ -333,12 +333,23 @@ export default function BlogManagement() {
           ))}
         </div>
         </TooltipProvider>
-        {filteredPosts.length > itemsPerPage && (
-          <div className="flex items-center justify-between border-t border-[#d2d2d7] pt-4 mt-6">
-            <p className="text-xs text-[#6e6e73]">Page {currentPage} of {totalPages}</p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => page - 1)}><ChevronLeft className="h-4 w-4" /> Previous</Button>
-              <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => page + 1)}>Next <ChevronRight className="h-4 w-4" /></Button>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between gap-4 border-t border-[#d2d2d7] px-2 py-4 mt-6">
+            <p className="shrink-0 whitespace-nowrap text-xs text-[#6e6e73]">
+              {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, filteredPosts.length)} of {filteredPosts.length} posts
+            </p>
+            <div className="flex min-w-0 flex-1 items-center justify-end gap-1 overflow-x-auto">
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPage((page) => Math.max(1, page - 1))} disabled={currentPage === 1} className="h-8 shrink-0 px-3 text-xs">
+                <ChevronLeft className="mr-1 h-4 w-4" /> Previous
+              </Button>
+              {Array.from({ length: totalPages }, (_, page) => page + 1).map((page) => (
+                <Button key={page} variant="ghost" size="sm" onClick={() => setCurrentPage(page)} className={`h-8 w-8 shrink-0 p-0 text-xs ${currentPage === page ? "bg-[#0071e3] text-white hover:bg-[#0077ed]" : "text-[#6e6e73]"}`} aria-label={`Go to page ${page}`} aria-current={currentPage === page ? "page" : undefined}>
+                  {page}
+                </Button>
+              ))}
+              <Button variant="ghost" size="sm" onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))} disabled={currentPage === totalPages} className="h-8 shrink-0 px-3 text-xs">
+                Next <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
             </div>
           </div>
         )}
