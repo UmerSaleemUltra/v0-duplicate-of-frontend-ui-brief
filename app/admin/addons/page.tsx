@@ -530,6 +530,13 @@ export default function AdminAddonsPage() {
     customDuration: "",
   })
 
+  const totalPages = Math.max(1, Math.ceil(addons.length / itemsPerPage))
+  const paginatedAddons = addons.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages))
+  }, [totalPages])
+
   if (isLoading) {
     return (
       <div className="space-y-6 p-6 animate-pulse">
@@ -579,13 +586,6 @@ export default function AdminAddonsPage() {
       </div>
     )
   }
-
-  const totalPages = Math.max(1, Math.ceil(addons.length / itemsPerPage))
-  const paginatedAddons = addons.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-
-  useEffect(() => {
-    setCurrentPage((page) => Math.min(page, totalPages))
-  }, [totalPages])
 
   return (
       <div className="space-y-6">
