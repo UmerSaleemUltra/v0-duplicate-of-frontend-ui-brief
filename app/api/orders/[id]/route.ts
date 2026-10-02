@@ -329,9 +329,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const body = await req.json()
     const { db } = await connectDB()
 
-    let order = await db.collection("orders").findOne({
-      $or: [{ _id: new ObjectId(id) }, { id }],
-    })
+    const orderIdFilters = [
+      { id },
+      ...(ObjectId.isValid(id) ? [{ _id: new ObjectId(id) }] : []),
+    ]
+    let order = await db.collection("orders").findOne({ $or: orderIdFilters })
     let isEmbeddedOrder = false
     let companyId: ObjectId | string | null = null
 
@@ -342,7 +344,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
           { "orders.id": id },
           { "orders.orderId": id },
           { "orders._id": id },
-          { "orders._id": new ObjectId(id) },
+          ...(ObjectId.isValid(id) ? [{ "orders._id": new ObjectId(id) }] : []),
         ],
       }).toArray()
 
@@ -439,7 +441,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         _id: companyIdObj,
         $or: [
           { "orders._id": id },
-          { "orders._id": new ObjectId(id) },
+          ...(ObjectId.isValid(id) ? [{ "orders._id": new ObjectId(id) }] : []),
           { "orders.id": id },
           { "orders.orderId": id },
         ],
@@ -704,12 +706,13 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }),
     )
   } catch (error) {
-    console.log(" PUT Error:", error)
-    if (error instanceof Error) {
-      console.log(" Error details:", error.message)
-      console.log(" Error stack:", error.stack)
-    }
-    return addSecurityHeaders(NextResponse.json({ error: "Failed to update order" }, { status: 500 }))
+    console.error("[v0] PUT order status error:", { orderId: id, error })
+    return addSecurityHeaders(
+      NextResponse.json(
+        { error: error instanceof Error ? error.message : "Failed to update order" },
+        { status: 500 },
+      ),
+    )
   }
 }
 
@@ -827,7 +830,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
       }),
     )
   } catch (error) {
-    console.error(" DELETE ERROR:", error)
+    console.log(" DELETE Error:", error)
     return addSecurityHeaders(NextResponse.json({ error: "Failed to delete order" }, { status: 500 }))
   }
 }
