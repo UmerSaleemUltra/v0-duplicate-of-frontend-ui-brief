@@ -58,9 +58,11 @@ export function OrderStatusCard({
 
         {/* Change status */}
         <div className="space-y-2">
-          <p className="text-xs font-medium text-stone-400 uppercase tracking-widest">Update</p>
+          <p className="text-xs font-medium text-stone-400 uppercase tracking-widest">
+            {order?.status === "completed" ? "Completed status is final" : "Update"}
+          </p>
           <div className="flex gap-2">
-            <Select value={newStatus} onValueChange={onStatusChange}>
+            <Select value={newStatus} onValueChange={onStatusChange} disabled={order?.status === "completed"}>
               <SelectTrigger className="h-8 text-sm border-stone-200 rounded-lg flex-1 focus:ring-stone-300">
                 <SelectValue placeholder="Select status" />
               </SelectTrigger>

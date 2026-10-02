@@ -388,8 +388,31 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       )
     }
 
+    const requestedStatus = updateData.status
+    const validStatuses = new Set(["pending", "processing", "completed"])
+    if (requestedStatus !== undefined) {
+      if (!validStatuses.has(requestedStatus)) {
+        return addSecurityHeaders(NextResponse.json({ error: "Invalid order status" }, { status: 400 }))
+      }
+
+      const allowedNextStatuses: Record<string, string[]> = {
+        pending: ["processing", "completed"],
+        processing: ["completed"],
+        completed: [],
+      }
+      const allowedTransitions = allowedNextStatuses[order.status || "pending"] || []
+      if (requestedStatus !== order.status && !allowedTransitions.includes(requestedStatus)) {
+        return addSecurityHeaders(
+          NextResponse.json(
+            { error: `Cannot change order status from ${order.status || "pending"} to ${requestedStatus}` },
+            { status: 409 },
+          ),
+        )
+      }
+    }
+
     const isCompletionTransition =
-      decoded.role === "admin" && updateData.status === "completed" && order.status !== "completed"
+      decoded.role === "admin" && requestedStatus === "completed" && order.status !== "completed"
 
     // Build company-level fields to sync when purchasedAddons or pricing are updated.
     // The DB stores purchasedAddons, pricing, and revenue at the TOP-LEVEL company doc,
@@ -632,6 +655,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               console.error("[v0] Completion email/Trustpilot delivery threw", { orderId: id, error })
             }
 
+            completionDelivery = { ...completionDelivery, ...emailState }
             await db.collection("order_completion_deliveries").updateOne(
               { _id: deliveryId },
               { $set: { ...emailState, updatedAt: new Date().toISOString() } },
