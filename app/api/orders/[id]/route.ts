@@ -395,20 +395,10 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         return addSecurityHeaders(NextResponse.json({ error: "Invalid order status" }, { status: 400 }))
       }
 
-      const allowedNextStatuses: Record<string, string[]> = {
-        pending: ["processing", "completed"],
-        processing: ["completed"],
-        completed: [],
-      }
-      const allowedTransitions = allowedNextStatuses[order.status || "pending"] || []
-      if (requestedStatus !== order.status && !allowedTransitions.includes(requestedStatus)) {
-        return addSecurityHeaders(
-          NextResponse.json(
-            { error: `Cannot change order status from ${order.status || "pending"} to ${requestedStatus}` },
-            { status: 409 },
-          ),
-        )
-      }
+    // Admins may move an order between any supported status. Completion delivery
+    // is re-claimed only when the order transitions into completed, so changing
+    // completed -> processing and back to completed sends a fresh notification.
+
     }
 
     const isCompletionTransition =
@@ -535,6 +525,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               { trustpilotStatus: "failed" },
               { emailStatus: "processing", updatedAt: { $lt: staleBefore } },
               { trustpilotStatus: { $in: ["pending", "claimed"] }, updatedAt: { $lt: staleBefore } },
+              { emailStatus: "sent", trustpilotStatus: { $in: ["sent", "acknowledged"] } },
             ],
           },
           {
