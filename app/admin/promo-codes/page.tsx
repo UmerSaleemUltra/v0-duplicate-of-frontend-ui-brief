@@ -549,28 +549,30 @@ export default function PromoCodesPage() {
             </div>
           )}
         </CardContent>
-        {promoCodes.length > 0 && (
+        {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 gap-4">
             <p className="text-xs text-slate-400 whitespace-nowrap shrink-0">
               {startIndex + 1}–{Math.min(endIndex, promoCodes.length)} of {promoCodes.length}
             </p>
             <div className="overflow-x-auto flex-1">
               <div className="flex items-center gap-1 min-w-max">
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))} 
-                  disabled={currentPage === 1} 
-                  className="h-8 px-3 text-xs shrink-0"
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="h-8 shrink-0 px-3 text-xs"
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="mr-1 h-4 w-4" /> Previous
                 </Button>
                 {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <Button 
-                    key={page} 
-                    variant="ghost" 
-                    size="sm" 
+                  <Button
+                    key={page}
+                    variant="ghost"
+                    size="sm"
                     onClick={() => setCurrentPage(page)}
+                    aria-label={`Go to page ${page}`}
+                    aria-current={currentPage === page ? "page" : undefined}
                     className={`h-8 w-8 p-0 text-xs shrink-0 ${
                       currentPage === page 
                         ? "bg-slate-900 text-white hover:bg-slate-800" 
@@ -585,9 +587,9 @@ export default function PromoCodesPage() {
                   size="sm" 
                   onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))} 
                   disabled={currentPage === totalPages} 
-                  className="h-8 px-3 text-xs shrink-0"
+                  className="h-8 shrink-0 px-3 text-xs"
                 >
-                  <ChevronRight className="h-4 w-4" />
+                  Next <ChevronRight className="ml-1 h-4 w-4" />
                 </Button>
               </div>
             </div>
