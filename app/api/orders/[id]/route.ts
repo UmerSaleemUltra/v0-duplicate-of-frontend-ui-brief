@@ -329,27 +329,28 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     const body = await req.json()
     const { db } = await connectDB()
 
-    let order = await db.collection("orders").findOne({ _id: new ObjectId(id) })
+    let order = await db.collection("orders").findOne({
+      $or: [{ _id: new ObjectId(id) }, { id }],
+    })
     let isEmbeddedOrder = false
     let companyId: ObjectId | string | null = null
 
     if (!order) {
-      // Search in companies for embedded order
-      const companies = await db
-        .collection("companies")
-        .find({ orders: { $exists: true, $ne: [] } })
-        .toArray()
+      // Embedded orders may use either MongoDB _id or the legacy string id.
+      const companies = await db.collection("companies").find({
+        $or: [{ "orders.id": id }, { "orders._id": new ObjectId(id) }],
+      }).toArray()
 
       for (const company of companies) {
         const embeddedOrder = company.orders?.find((o: any) => {
-          const orderId = o._id?.toString() || o.id?.toString() || o.id
+          const orderId = o._id?.toString() || o.id?.toString()
           return orderId === id
         })
         if (embeddedOrder) {
           order = embeddedOrder
           isEmbeddedOrder = true
           companyId = company._id
-          console.log(" Found embedded order in company:", company._id.toString())
+          console.log("[v0] Found embedded order in company:", company._id.toString())
           break
         }
       }
@@ -427,7 +428,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       let updatedCompany = await db.collection("companies").findOneAndUpdate(
         {
           _id: companyIdObj,
-          "orders._id": new ObjectId(id),
+          $or: [{ "orders._id": new ObjectId(id) }, { "orders.id": id }, { "orders.id": new ObjectId(id) }],
         },
         {
           $set: {
@@ -462,7 +463,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       // Update standalone order
       result = await db
         .collection("orders")
-        .findOneAndUpdate({ _id: new ObjectId(id) }, { $set: updateData }, { returnDocument: "after" })
+        .findOneAndUpdate(        { $or: [{ _id: new ObjectId(id) }, { id }] }, { $set: updateData }, { returnDocument: "after" })
 
       // For standalone orders, also sync company-level fields if we have a companyId.
       // Revenue is recalculated from scratch by summing ALL orders for the company to

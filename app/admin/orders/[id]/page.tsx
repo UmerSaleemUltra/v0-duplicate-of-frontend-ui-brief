@@ -868,7 +868,7 @@ export default function OrderDetailPage() {
       console.log(" Error updating status:", error)
       toast({
         title: "Update Failed",
-        description: "Failed to update order status. Please try again.",
+        description: error instanceof Error ? error.message : "Failed to update order status. Please try again.",
         variant: "destructive",
       })
     } finally {
