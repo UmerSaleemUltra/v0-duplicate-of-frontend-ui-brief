@@ -658,12 +658,43 @@ export default function AdminAddonsPage() {
           )}
         </div>
         </TooltipProvider>
-        {addons.length > itemsPerPage && (
-          <div className="flex items-center justify-between border-t border-slate-200 pt-4">
-            <p className="text-xs text-slate-500">Page {currentPage} of {totalPages}</p>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => page - 1)}><ChevronLeft className="h-4 w-4" /> Previous</Button>
-              <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => page + 1)}>Next <ChevronRight className="h-4 w-4" /></Button>
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between gap-4 border-t border-slate-200 px-2 py-4">
+            <p className="shrink-0 whitespace-nowrap text-xs text-slate-400">
+              {(currentPage - 1) * itemsPerPage + 1}–{Math.min(currentPage * itemsPerPage, addons.length)} of {addons.length} addons
+            </p>
+            <div className="flex min-w-0 flex-1 items-center justify-end gap-1 overflow-x-auto">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentPage((page) => Math.max(1, page - 1))}
+                disabled={currentPage === 1}
+                className="h-8 shrink-0 px-3 text-xs"
+              >
+                <ChevronLeft className="mr-1 h-4 w-4" /> Previous
+              </Button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                <Button
+                  key={page}
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setCurrentPage(page)}
+                  className={`h-8 w-8 shrink-0 p-0 text-xs ${currentPage === page ? "bg-slate-900 text-white hover:bg-slate-800" : "text-slate-600"}`}
+                  aria-label={`Go to page ${page}`}
+                  aria-current={currentPage === page ? "page" : undefined}
+                >
+                  {page}
+                </Button>
+              ))}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCurrentPage((page) => Math.min(totalPages, page + 1))}
+                disabled={currentPage === totalPages}
+                className="h-8 shrink-0 px-3 text-xs"
+              >
+                Next <ChevronRight className="ml-1 h-4 w-4" />
+              </Button>
             </div>
           </div>
         )}
