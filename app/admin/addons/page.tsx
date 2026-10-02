@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Plus, Edit, Trash2, Package, DollarSign, Search, X, Check, Copy } from "lucide-react"
+import { Plus, Edit, Trash2, Package, DollarSign, Search, X, Check, Copy, ChevronLeft, ChevronRight } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -102,6 +102,8 @@ export default function AdminAddonsPage() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [addonToDelete, setAddonToDelete] = useState<Addon | null>(null)
   const [isDeleting, setIsDeleting] = useState(false)
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 12
   const { toast } = useToast()
 
   const handleDeleteClick = (addon: Addon) => {
@@ -578,6 +580,13 @@ export default function AdminAddonsPage() {
     )
   }
 
+  const totalPages = Math.max(1, Math.ceil(addons.length / itemsPerPage))
+  const paginatedAddons = addons.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  useEffect(() => {
+    setCurrentPage((page) => Math.min(page, totalPages))
+  }, [totalPages])
+
   return (
       <div className="space-y-6">
         <div className="flex items-center justify-between">
@@ -593,7 +602,7 @@ export default function AdminAddonsPage() {
 
         <TooltipProvider delayDuration={300}>
         <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {addons.map((addon) => (
+          {paginatedAddons.map((addon) => (
             <div
               key={addon.id}
               className={`bg-white border border-slate-200 rounded-2xl p-5 transition-opacity ${!addon.isActive ? "opacity-50" : ""}`}
@@ -649,6 +658,15 @@ export default function AdminAddonsPage() {
           )}
         </div>
         </TooltipProvider>
+        {addons.length > itemsPerPage && (
+          <div className="flex items-center justify-between border-t border-slate-200 pt-4">
+            <p className="text-xs text-slate-500">Page {currentPage} of {totalPages}</p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => page - 1)}><ChevronLeft className="h-4 w-4" /> Previous</Button>
+              <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => page + 1)}>Next <ChevronRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
+        )}
 
         <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
           <DialogContent className="w-[95vw] sm:max-w-2xl md:max-w-3xl max-h-[90vh] overflow-y-auto">
