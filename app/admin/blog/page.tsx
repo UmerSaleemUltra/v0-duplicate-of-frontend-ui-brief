@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Edit, Trash2, Eye, Copy, Check } from "lucide-react"
+import { Plus, Search, Edit, Trash2, Eye, Copy, Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { toast } from "react-toastify"
 import Link from "next/link"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
@@ -55,6 +55,8 @@ export default function BlogManagement() {
   const [statusFilter, setStatusFilter] = useState<string>("all")
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [categories, setCategories] = useState<string[]>([])
+  const [currentPage, setCurrentPage] = useState(1)
+  const itemsPerPage = 12
 
   useEffect(() => {
     loadPosts()
@@ -131,6 +133,13 @@ export default function BlogManagement() {
     const matchesCategory = categoryFilter === "all" || post.category === categoryFilter
     return matchesSearch && matchesStatus && matchesCategory
   })
+
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / itemsPerPage))
+  const paginatedPosts = filteredPosts.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+  useEffect(() => {
+    setCurrentPage(1)
+  }, [searchTerm, statusFilter, categoryFilter])
 
   if (loading) {
     return (
@@ -236,9 +245,10 @@ export default function BlogManagement() {
           </Button>
         </div>
       ) : (
+        <div>
         <TooltipProvider delayDuration={300}>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredPosts.map((post) => (
+          {paginatedPosts.map((post) => (
             <div
               key={post._id}
               className="group bg-white rounded-2xl overflow-hidden border border-[#d2d2d7] hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] transition-shadow duration-300"
@@ -323,6 +333,16 @@ export default function BlogManagement() {
           ))}
         </div>
         </TooltipProvider>
+        {filteredPosts.length > itemsPerPage && (
+          <div className="flex items-center justify-between border-t border-[#d2d2d7] pt-4 mt-6">
+            <p className="text-xs text-[#6e6e73]">Page {currentPage} of {totalPages}</p>
+            <div className="flex items-center gap-2">
+              <Button variant="outline" size="sm" disabled={currentPage === 1} onClick={() => setCurrentPage((page) => page - 1)}><ChevronLeft className="h-4 w-4" /> Previous</Button>
+              <Button variant="outline" size="sm" disabled={currentPage === totalPages} onClick={() => setCurrentPage((page) => page + 1)}>Next <ChevronRight className="h-4 w-4" /></Button>
+            </div>
+          </div>
+        )}
+        </div>
       )}
     </div>
   )
