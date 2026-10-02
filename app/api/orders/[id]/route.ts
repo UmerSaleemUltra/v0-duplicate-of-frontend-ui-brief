@@ -327,6 +327,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     }
 
     const body = await req.json()
+    const requestId = crypto.randomUUID()
+    console.log("[v0] Order status update started", {
+      requestId,
+      orderId: id,
+      requestedStatus: body?.status,
+    })
     const { db } = await connectDB()
 
     const orderIdFilters = [
@@ -437,27 +443,29 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...companyLevelUpdate,
       }
 
-      const embeddedOrderQuery = {
-        _id: companyIdObj,
-        $or: [
-          { "orders._id": id },
-          ...(ObjectId.isValid(id) ? [{ "orders._id": new ObjectId(id) }] : []),
-          { "orders.id": id },
-          { "orders.orderId": id },
-        ],
-      }
-      const embeddedOrderUpdate = {
-        $set: {
-          ...setPayload,
-          "orders.$": { ...order, ...updateData },
-        },
+      const companyDocument = await db.collection("companies").findOne({ _id: companyIdObj })
+      const embeddedIndex = Array.isArray(companyDocument?.orders)
+        ? companyDocument.orders.findIndex((candidate: any) => {
+            const candidateIds = [candidate?._id, candidate?.id, candidate?.orderId]
+              .filter(Boolean)
+              .map((value: unknown) => String(value))
+            return candidateIds.includes(id)
+          }) ?? -1
+        : -1
+
+      if (embeddedIndex < 0) {
+        console.error("[v0] Embedded order update target missing", { orderId: id, companyId: String(companyIdObj) })
+        return addSecurityHeaders(NextResponse.json({ error: "Order update target not found" }, { status: 404 }))
       }
 
-      // Use the positional operator so string and ObjectId legacy IDs are both
-      // updated without relying on one specific array-filter shape.
-      let updatedCompany = await db.collection("companies").findOneAndUpdate(
-        embeddedOrderQuery,
-        embeddedOrderUpdate,
+      const updatedCompany = await db.collection("companies").findOneAndUpdate(
+        { _id: companyIdObj },
+        {
+          $set: {
+            ...setPayload,
+            [`orders.${embeddedIndex}`]: { ...order, ...updateData },
+          },
+        },
         { returnDocument: "after" },
       )
       result = updatedCompany
@@ -465,7 +473,11 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       // Update standalone order
       result = await db
         .collection("orders")
-        .findOneAndUpdate(        { $or: [{ _id: new ObjectId(id) }, { id }] }, { $set: updateData }, { returnDocument: "after" })
+        .findOneAndUpdate(
+          { $or: orderIdFilters },
+          { $set: updateData },
+          { returnDocument: "after" },
+        )
 
       // For standalone orders, also sync company-level fields if we have a companyId.
       // Revenue is recalculated from scratch by summing ALL orders for the company to
@@ -706,7 +718,12 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
       }),
     )
   } catch (error) {
-    console.error("[v0] PUT order status error:", { orderId: id, error })
+    console.error("[v0] PUT order status error:", {
+      orderId: id,
+      errorName: error instanceof Error ? error.name : "UnknownError",
+      errorMessage: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+    })
     return addSecurityHeaders(
       NextResponse.json(
         { error: error instanceof Error ? error.message : "Failed to update order" },
