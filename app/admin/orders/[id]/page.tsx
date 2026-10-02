@@ -836,11 +836,10 @@ export default function OrderDetailPage() {
         }),
       })
 
+      const result = await response.json().catch(() => null)
       if (!response.ok) {
-        throw new Error("Failed to update order status")
+        throw new Error(result?.error || "Failed to update order status")
       }
-
-      const result = await response.json()
 
       console.log("[v0] Order completion Trustpilot decision", {
         orderId: order.id,
