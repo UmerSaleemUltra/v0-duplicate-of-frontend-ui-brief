@@ -338,8 +338,19 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
     if (!order) {
       // Embedded orders may use either MongoDB _id or the legacy string id.
       const companies = await db.collection("companies").find({
-        $or: [{ "orders.id": id }, { "orders._id": new ObjectId(id) }],
+        $or: [
+          { "orders.id": id },
+          { "orders.orderId": id },
+          { "orders._id": id },
+          { "orders._id": new ObjectId(id) },
+        ],
       }).toArray()
+
+      // Legacy embedded records are not consistently indexed. Include a bounded
+      // fallback scan so the visible order and PUT endpoint use the same record.
+      if (companies.length === 0) {
+        companies.push(...(await db.collection("companies").find({ orders: { $exists: true, $ne: [] } }).toArray()))
+      }
 
       for (const company of companies) {
         const embeddedOrder = company.orders?.find((o: any) => {
@@ -424,40 +435,29 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ...companyLevelUpdate,
       }
 
-      // Try matching by _id first
-      let updatedCompany = await db.collection("companies").findOneAndUpdate(
-        {
-          _id: companyIdObj,
-          $or: [{ "orders._id": new ObjectId(id) }, { "orders.id": id }, { "orders.id": new ObjectId(id) }],
-        },
-        {
-          $set: {
-            ...setPayload,
-            "orders.$[elem]": { ...order, ...updateData },
-          },
-        },
-        {
-          arrayFilters: [{ "elem._id": new ObjectId(id) }],
-          returnDocument: "after",
-        },
-      )
-
-      if (!updatedCompany) {
-        console.log(" Update by _id failed, trying by id field")
-        updatedCompany = await db.collection("companies").findOneAndUpdate(
-          { _id: companyIdObj },
-          {
-            $set: {
-              ...setPayload,
-              "orders.$[elem]": { ...order, ...updateData },
-            },
-          },
-          {
-            arrayFilters: [{ "elem.id": id }],
-            returnDocument: "after",
-          },
-        )
+      const embeddedOrderQuery = {
+        _id: companyIdObj,
+        $or: [
+          { "orders._id": id },
+          { "orders._id": new ObjectId(id) },
+          { "orders.id": id },
+          { "orders.orderId": id },
+        ],
       }
+      const embeddedOrderUpdate = {
+        $set: {
+          ...setPayload,
+          "orders.$": { ...order, ...updateData },
+        },
+      }
+
+      // Use the positional operator so string and ObjectId legacy IDs are both
+      // updated without relying on one specific array-filter shape.
+      let updatedCompany = await db.collection("companies").findOneAndUpdate(
+        embeddedOrderQuery,
+        embeddedOrderUpdate,
+        { returnDocument: "after" },
+      )
       result = updatedCompany
     } else {
       // Update standalone order
