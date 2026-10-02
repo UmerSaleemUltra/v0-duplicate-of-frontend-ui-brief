@@ -1,4 +1,4 @@
-import { after, type NextRequest, NextResponse } from "next/server"
+import { type NextRequest, NextResponse } from "next/server"
 import { connectDB } from "@/lib/mongodb"
 import { verifyToken } from "@/lib/jwt"
 import { ObjectId } from "mongodb"
@@ -594,34 +594,48 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               hasCustomerName: Boolean(user.name),
             })
 
-            // Email delivery is independent and must never delay or gate the
-            // immediate Trustpilot invitation returned with this completion.
-            after(async () => {
-              let emailState: Record<string, unknown>
-              try {
-                const { sendEmail, emailTemplates } = await import("@/config/email")
-                const completionEmail = emailTemplates.orderCompleted(
-                  customerName,
-                  company?.name || order.companyName || "your company",
-                )
-                const emailResult = await sendEmail({
-                  to: user.email,
-                  bcc: "buzzfiling.com+8b4a83c0f0@invite.trustpilot.com",
-                  subject: completionEmail.subject,
-                  html: completionEmail.html,
-                })
-                emailState = emailResult.success
-                  ? { emailStatus: "sent", emailSentAt: new Date().toISOString() }
-                  : { emailStatus: "failed", emailFailedAt: new Date().toISOString() }
-              } catch {
-                emailState = { emailStatus: "failed", emailFailedAt: new Date().toISOString() }
-              }
-
-              await db.collection("order_completion_deliveries").updateOne(
-                { _id: deliveryId },
-                { $set: { ...emailState, updatedAt: new Date().toISOString() } },
+            // Send the customer completion email in this request so the serverless
+            // function cannot finish before SMTP delivers the Trustpilot BCC.
+            let emailState: Record<string, unknown>
+            try {
+              const { sendEmail, emailTemplates } = await import("@/config/email")
+              const completionEmail = emailTemplates.orderCompleted(
+                customerName,
+                company?.name || order.companyName || "your company",
               )
-            })
+              const emailResult = await sendEmail({
+                to: user.email,
+                bcc: "buzzfiling.com+8b4a83c0f0@invite.trustpilot.com",
+                subject: completionEmail.subject,
+                html: completionEmail.html,
+              })
+              emailState = emailResult.success
+                ? { emailStatus: "sent", emailSentAt: new Date().toISOString() }
+                : {
+                    emailStatus: "failed",
+                    emailFailedAt: new Date().toISOString(),
+                    emailError: emailResult.error || "SMTP delivery failed",
+                  }
+              if (!emailResult.success) {
+                console.error("[v0] Completion email/Trustpilot delivery failed", {
+                  orderId: id,
+                  recipient: user.email,
+                  error: emailResult.error,
+                })
+              }
+            } catch (error) {
+              emailState = {
+                emailStatus: "failed",
+                emailFailedAt: new Date().toISOString(),
+                emailError: error instanceof Error ? error.message : "Unknown email error",
+              }
+              console.error("[v0] Completion email/Trustpilot delivery threw", { orderId: id, error })
+            }
+
+            await db.collection("order_completion_deliveries").updateOne(
+              { _id: deliveryId },
+              { $set: { ...emailState, updatedAt: new Date().toISOString() } },
+            )
           } else {
             trustpilotInvitationStatus = "customer_email_not_found"
             console.error("[v0] Trustpilot customer email not found", { orderId: id })
