@@ -354,24 +354,33 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
         ],
       }).toArray()
 
-      // Legacy embedded records are not consistently indexed. Include a bounded
-      // fallback scan so the visible order and PUT endpoint use the same record.
-      if (companies.length === 0) {
-        companies.push(...(await db.collection("companies").find({ orders: { $exists: true, $ne: [] } }).toArray()))
+      const findEmbeddedOrder = (records: any[]) => {
+        for (const company of records) {
+          const embeddedOrder = company.orders?.find((candidate: any) =>
+            [candidate?._id, candidate?.id, candidate?.orderId]
+              .filter(Boolean)
+              .some((candidateId: unknown) => String(candidateId) === id),
+          )
+          if (embeddedOrder) return { company, embeddedOrder }
+        }
+        return null
       }
 
-      for (const company of companies) {
-        const embeddedOrder = company.orders?.find((o: any) => {
-          const orderId = o._id?.toString() || o.id?.toString()
-          return orderId === id
-        })
-        if (embeddedOrder) {
-          order = embeddedOrder
-          isEmbeddedOrder = true
-          companyId = company._id
-          console.log("[v0] Found embedded order in company:", company._id.toString())
-          break
-        }
+      let embeddedMatch = findEmbeddedOrder(companies)
+      if (!embeddedMatch) {
+        // Legacy records may not be indexed consistently; use the same bounded
+        // fallback scan as the GET path before returning a false 404.
+        embeddedMatch = findEmbeddedOrder(
+          await db.collection("companies").find({ orders: { $exists: true, $ne: [] } }).toArray(),
+        )
+      }
+
+      if (embeddedMatch) {
+        const { company, embeddedOrder } = embeddedMatch
+        order = embeddedOrder
+        isEmbeddedOrder = true
+        companyId = company._id
+        console.log("[v0] Found embedded order in company:", company._id.toString())
       }
     }
 

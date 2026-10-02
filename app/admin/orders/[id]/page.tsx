@@ -825,7 +825,10 @@ export default function OrderDetailPage() {
         return
       }
 
-      const response = await fetch(`/api/orders/${order.id}`, {
+      // Always use the route ID. The loaded order can be normalized from a
+      // legacy embedded record and its display id may differ from the API key.
+      const updateOrderId = orderId || order.id
+      const response = await fetch(`/api/orders/${encodeURIComponent(updateOrderId)}`, {
         method: "PUT",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -859,7 +862,13 @@ export default function OrderDetailPage() {
         })
       }
 
-      setOrder(result.data)
+      setOrder((current) => ({
+        ...current,
+        ...result.data,
+        id: result.data?.id || current.id,
+      }))
+      // Re-read the canonical record so the UI reflects the database immediately.
+      await loadOrderData()
       toast({
         title: "Status Updated",
         description: `Order status changed to ${newStatus}`,
