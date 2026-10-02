@@ -348,26 +348,34 @@ export default function PromoCodesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="flex flex-col gap-5 border-b border-slate-100 pb-6 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold text-slate-900">Promo Codes</h1>
+          <div className="flex flex-wrap items-center gap-3">
+            <h1 className="text-3xl font-semibold tracking-tight text-slate-950">Promo Codes</h1>
             {isLive && (
-              <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 gap-1">
+              <Badge variant="outline" className="gap-1 border-emerald-200 bg-emerald-50 text-emerald-700">
                 <Radio className="h-3 w-3 animate-pulse" />
                 Live
               </Badge>
             )}
           </div>
-          <p className="text-sm text-slate-500 mt-1">Manage discount codes for checkout</p>
+          <p className="mt-1 text-lg leading-7 text-slate-500">Manage discount codes for checkout</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="sm" onClick={fetchPromoCodes} disabled={isLoading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+        <div className="flex flex-wrap items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={fetchPromoCodes}
+            disabled={isLoading}
+            className="h-11 rounded-xl border-slate-200 px-5 text-slate-800 shadow-sm hover:bg-slate-50"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
-          <Button onClick={() => handleOpenDialog()} className="bg-[#880000] hover:bg-[#660000]">
-            <Plus className="h-4 w-4 mr-2" />
+          <Button
+            onClick={() => handleOpenDialog()}
+            className="h-11 rounded-xl bg-[#880000] px-5 shadow-sm hover:bg-[#660000]"
+          >
+            <Plus className="mr-2 h-4 w-4" />
             Add Promo Code
           </Button>
         </div>
