@@ -518,8 +518,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             $set: {
               orderId: id,
               emailStatus: "processing",
-              // Trustpilot invitation delivery is disabled; completion email remains active.
-              trustpilotStatus: "not_eligible",
+              trustpilotStatus: "claimed",
               claimedAt: completedAt,
               updatedAt: completedAt,
             },
@@ -579,11 +578,9 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
             const customerName = user.name || "Customer"
             completionDelivery = {
               emailStatus: "processing",
-              // Trustpilot invitation disabled; only the customer completion email is sent.
-              trustpilotStatus: "not_eligible",
+              trustpilotStatus: "claimed",
               completedAt,
             }
-            /* Trustpilot invitation disabled. Preserve this payload for reactivation.
             trustpilotInvitation = {
               recipientEmail: user.email,
               recipientName: customerName,
@@ -596,7 +593,6 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
               hasCustomerEmail: true,
               hasCustomerName: Boolean(user.name),
             })
-            */
 
             // Email delivery is independent and must never delay or gate the
             // immediate Trustpilot invitation returned with this completion.
@@ -610,8 +606,7 @@ export async function PUT(req: NextRequest, { params }: { params: Promise<{ id: 
                 )
                 const emailResult = await sendEmail({
                   to: user.email,
-                  // Trustpilot BCC temporarily disabled. Preserved for reactivation.
-                  // bcc: "buzzfiling.com+8b4a83c0f0@invite.trustpilot.com",
+                  bcc: "buzzfiling.com+8b4a83c0f0@invite.trustpilot.com",
                   subject: completionEmail.subject,
                   html: completionEmail.html,
                 })
