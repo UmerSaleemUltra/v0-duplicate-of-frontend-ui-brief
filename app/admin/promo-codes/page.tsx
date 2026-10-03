@@ -375,21 +375,21 @@ export default function PromoCodesPage() {
       {/* Stats Cards */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
         <Card className="rounded-2xl border-slate-200 bg-white shadow-none">
-          <CardContent className="p-5 sm:p-6">
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Total Codes</p>
-            <p className="mt-2 text-4xl font-bold tracking-tight text-slate-950">{promoCodes.length}</p>
+          <CardContent className="p-4 sm:p-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm">Total Codes</p>
+            <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{promoCodes.length}</p>
           </CardContent>
         </Card>
         <Card className="rounded-2xl border-slate-200 bg-white shadow-none">
-          <CardContent className="p-5 sm:p-6">
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Active Codes</p>
-            <p className="mt-2 text-4xl font-bold tracking-tight text-slate-950">{activeCount}</p>
+          <CardContent className="p-4 sm:p-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm">Active Codes</p>
+            <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{activeCount}</p>
           </CardContent>
         </Card>
         <Card className="rounded-2xl border-slate-200 bg-white shadow-none">
-          <CardContent className="p-5 sm:p-6">
-            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Total Uses</p>
-            <p className="mt-2 text-4xl font-bold tracking-tight text-slate-950">{totalUsed}</p>
+          <CardContent className="p-4 sm:p-5">
+            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500 sm:text-sm">Total Uses</p>
+            <p className="mt-1 text-3xl font-bold tracking-tight text-slate-950 sm:text-4xl">{totalUsed}</p>
           </CardContent>
         </Card>
       </div>
