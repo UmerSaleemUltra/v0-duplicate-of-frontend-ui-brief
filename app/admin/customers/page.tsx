@@ -13,6 +13,7 @@ import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { toast } from "@/components/ui/use-toast"
+import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog"
 
 export default function CustomersPage() {
   const { isAuthenticated, isLoading } = useAuthGuard("admin")
@@ -20,6 +21,7 @@ export default function CustomersPage() {
   const [filteredCustomers, setFilteredCustomers] = useState<any[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [dataLoading, setDataLoading] = useState(true)
+  const [deleteCustomerId, setDeleteCustomerId] = useState<string | null>(null)
   const router = useRouter()
 
   const [currentPage, setCurrentPage] = useState(1)
@@ -133,16 +135,6 @@ export default function CustomersPage() {
   }, [searchQuery, customers])
 
   const handleDeleteCustomer = async (customerId: string) => {
-    if (typeof window === "undefined") return
-
-    if (
-      !confirm(
-        "Are you sure you want to delete this customer? This will permanently delete their account, all companies, orders, and documents.",
-      )
-    ) {
-      return
-    }
-
     try {
       const token = authService.getToken()
       if (!token) return
@@ -315,7 +307,7 @@ export default function CustomersPage() {
                           <Eye className="h-4 w-4 mr-2" />
                           View Profile
                         </DropdownMenuItem>
-                        <DropdownMenuItem className="text-red-600" onClick={() => handleDeleteCustomer(customer.id)}>
+                        <DropdownMenuItem className="text-red-600" onClick={() => setDeleteCustomerId(customer.id)}>
                           <Trash2 className="h-4 w-4 mr-2" />
                           Delete
                         </DropdownMenuItem>
@@ -352,6 +344,19 @@ export default function CustomersPage() {
           )}
         </div>
       </div>
+      <ConfirmActionDialog
+        open={deleteCustomerId !== null}
+        onOpenChange={(open) => !open && setDeleteCustomerId(null)}
+        title="Delete User"
+        description="Are you sure you want to permanently delete this user? This will also remove all their companies, orders, documents, and associated data. This action cannot be undone."
+        actionLabel="Delete User"
+        onConfirm={() => {
+          if (deleteCustomerId) {
+            void handleDeleteCustomer(deleteCustomerId)
+          }
+          setDeleteCustomerId(null)
+        }}
+      />
     </div>
   )
 }
