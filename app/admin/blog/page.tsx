@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Edit, Trash2, Eye, Copy, Check, ChevronLeft, ChevronRight } from "lucide-react"
 import { toast } from "react-toastify"
 import Link from "next/link"
+import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog"
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 
@@ -56,6 +57,7 @@ export default function BlogManagement() {
   const [categoryFilter, setCategoryFilter] = useState<string>("all")
   const [categories, setCategories] = useState<string[]>([])
   const [currentPage, setCurrentPage] = useState(1)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const itemsPerPage = 12
 
   useEffect(() => {
@@ -99,8 +101,6 @@ export default function BlogManagement() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this blog post?")) return
-
     try {
       const response = await fetch(`/api/blog/${id}`, {
         method: "DELETE",
@@ -322,7 +322,7 @@ export default function BlogManagement() {
                   <Button
                     variant="ghost"
                     size="sm"
-                    onClick={() => handleDelete(post._id)}
+                    onClick={() => setPendingDeleteId(post._id)}
                     className="h-8 w-8 rounded-xl text-[#ff3b30] hover:bg-[#fff1f0] p-0"
                   >
                     <Trash2 className="h-3.5 w-3.5" />
@@ -355,6 +355,17 @@ export default function BlogManagement() {
         )}
         </div>
       )}
+      <ConfirmActionDialog
+        open={pendingDeleteId !== null}
+        onOpenChange={(open) => !open && setPendingDeleteId(null)}
+        title="Delete Blog Post"
+        description="Are you sure you want to delete this blog post? This action cannot be undone."
+        actionLabel="Delete Blog Post"
+        onConfirm={() => {
+          if (pendingDeleteId) void handleDelete(pendingDeleteId)
+          setPendingDeleteId(null)
+        }}
+      />
     </div>
   )
 }

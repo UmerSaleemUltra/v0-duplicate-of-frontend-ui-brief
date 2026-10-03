@@ -6,6 +6,7 @@ import Footer from "@/components/sections/footer"
 import { Badge } from "@/components/ui/badge"
 import { Calendar, Clock, ArrowLeft, Share2 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { useToast } from "@/hooks/use-toast"
 
 function formatContent(content: string) {
   return content
@@ -19,6 +20,7 @@ function formatContent(content: string) {
 }
 
 export default function BlogPostPageClient({ post }: { post: any }) {
+  const { toast } = useToast()
   const formattedContent = formatContent(post.content)
 
   return (
@@ -91,9 +93,20 @@ export default function BlogPostPageClient({ post }: { post: any }) {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  navigator.clipboard.writeText(window.location.href)
-                  alert("Link copied to clipboard!")
+                onClick={async () => {
+                  try {
+                    await navigator.clipboard.writeText(window.location.href)
+                    toast({
+                      title: "Link copied",
+                      description: "The article link was copied to your clipboard.",
+                    })
+                  } catch {
+                    toast({
+                      title: "Copy failed",
+                      description: "Unable to copy the article link. Please try again.",
+                      variant: "destructive",
+                    })
+                  }
                 }}
               >
                 Copy Link

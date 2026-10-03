@@ -15,6 +15,7 @@ import { useAuthGuard } from "@/lib/use-auth-guard"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
 import ApiClient from "@/lib/api-client"
+import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog"
 
 export default function CustomerDetailPage() {
   const params = useParams()
@@ -39,6 +40,8 @@ export default function CustomerDetailPage() {
   const [taxClassificationInput, setTaxClassificationInput] = useState("")
   const [annualReportDateInput, setAnnualReportDateInput] = useState("")
   const [taxFilingDateInput, setTaxFilingDateInput] = useState("")
+  const [deleteCustomerOpen, setDeleteCustomerOpen] = useState(false)
+  const [removeEinCompany, setRemoveEinCompany] = useState<any | null>(null)
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && customerId) {
@@ -262,16 +265,6 @@ export default function CustomerDetailPage() {
   }
 
   const handleDeleteCustomer = async () => {
-    if (typeof window === "undefined") return
-
-    if (
-      !confirm(
-        "Are you sure you want to delete this customer? This will permanently delete their account, all companies, orders, and documents.",
-      )
-    ) {
-      return
-    }
-
     try {
       const token = authService.getToken()
       if (!token) {
@@ -310,8 +303,6 @@ export default function CustomerDetailPage() {
   }
 
   const handleRemoveEIN = async (company: any) => {
-    if (!window.confirm("Are you sure you want to remove this EIN?")) return
-
     try {
       const token = authService.getToken()
       if (!token) {
@@ -503,7 +494,7 @@ export default function CustomerDetailPage() {
                 )}
               </div>
             </div>
-            <Button variant="destructive" onClick={handleDeleteCustomer}>
+            <Button variant="destructive" onClick={() => setDeleteCustomerOpen(true)}>
               Delete Customer
             </Button>
           </div>
@@ -715,8 +706,30 @@ export default function CustomerDetailPage() {
               )}
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+  </DialogContent>
+  </Dialog>
+      <ConfirmActionDialog
+        open={deleteCustomerOpen}
+        onOpenChange={setDeleteCustomerOpen}
+        title="Delete User"
+        description="Are you sure you want to permanently delete this user? This will also remove all their companies, orders, documents, and associated data. This action cannot be undone."
+        actionLabel="Delete User"
+        onConfirm={() => {
+          void handleDeleteCustomer()
+          setDeleteCustomerOpen(false)
+        }}
+      />
+      <ConfirmActionDialog
+        open={removeEinCompany !== null}
+        onOpenChange={(open) => !open && setRemoveEinCompany(null)}
+        title="Remove EIN"
+        description="Are you sure you want to remove this EIN? This action cannot be undone."
+        actionLabel="Remove EIN"
+        onConfirm={() => {
+          if (removeEinCompany) void handleRemoveEIN(removeEinCompany)
+          setRemoveEinCompany(null)
+        }}
+      />
     </div>
   )
 }
