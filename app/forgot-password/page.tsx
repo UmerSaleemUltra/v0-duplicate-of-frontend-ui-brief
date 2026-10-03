@@ -9,6 +9,7 @@ import { Mail, ArrowRight, ArrowLeft, CheckCircle, Clock, RefreshCw, InboxIcon }
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
+import { toast } from "@/components/ui/use-toast"
 
 export default function ForgotPasswordPage() {
   const router = useRouter()
@@ -78,7 +79,10 @@ export default function ForgotPasswordPage() {
       })
 
       if (response.ok) {
-        alert("Reset link resent successfully!")
+        toast({
+          title: "Reset link sent",
+          description: "The reset link was resent successfully.",
+        })
       } else {
         const data = await response.json()
         setError(data.error || "Failed to resend link")

@@ -556,7 +556,11 @@ export default function ClientDashboard() {
       setTimeout(() => setCopiedState(false), 2000)
     } catch (error) {
       console.error(" Failed to copy to clipboard:", error)
-      alert("Failed to copy. Please try again.")
+      toast({
+        title: "Copy failed",
+        description: "Failed to copy. Please try again.",
+        variant: "destructive",
+      })
     }
   }
 
