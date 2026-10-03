@@ -507,11 +507,11 @@ export default function PromoCodesPage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>{editingCode ? "Edit Promo Code" : "Create Promo Code"}</DialogTitle>
+        <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-1.5rem)] max-w-[620px] overflow-y-auto rounded-xl p-4 sm:p-6">
+          <DialogHeader className="pr-6">
+            <DialogTitle className="text-xl sm:text-2xl">{editingCode ? "Edit Promo Code" : "Create Promo Code"}</DialogTitle>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
+          <div className="grid gap-3 py-3 sm:gap-4 sm:py-4">
             <div className="grid gap-2">
               <Label htmlFor="code">Promo Code *</Label>
               <Input
@@ -519,7 +519,7 @@ export default function PromoCodesPage() {
                 placeholder="e.g. SAVE20"
                 value={formData.code}
                 onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-                className="font-mono uppercase"
+                className="h-10 font-mono uppercase"
               />
             </div>
 
@@ -531,10 +531,11 @@ export default function PromoCodesPage() {
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                 rows={2}
+                className="min-h-20 resize-y"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <div className="grid gap-2">
                 <Label>Discount Type *</Label>
                 <Select
@@ -567,7 +568,7 @@ export default function PromoCodesPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="minOrderAmount">Min Order Amount ($)</Label>
                 <Input
@@ -596,7 +597,7 @@ export default function PromoCodesPage() {
               )}
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="usageLimit">Total Usage Limit</Label>
                 <Input
@@ -625,7 +626,7 @@ export default function PromoCodesPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4">
               <div className="grid gap-2">
                 <Label htmlFor="validFrom">Valid From</Label>
                 <Input
@@ -665,14 +666,14 @@ export default function PromoCodesPage() {
               </Select>
             </div>
           </div>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+          <DialogFooter className="flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+            <Button variant="outline" onClick={() => setIsDialogOpen(false)} className="w-full sm:w-auto">
               Cancel
             </Button>
             <Button
               onClick={handleSubmit}
               disabled={isSubmitting}
-              className="bg-[#880000] hover:bg-[#660000]"
+              className="w-full bg-[#880000] hover:bg-[#660000] sm:w-auto"
             >
               {isSubmitting ? "Saving..." : editingCode ? "Update Code" : "Create Code"}
             </Button>
