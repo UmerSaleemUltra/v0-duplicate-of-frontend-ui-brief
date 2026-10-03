@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
+import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -85,6 +86,7 @@ export default function PromoCodesPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isLive, setIsLive] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
   const itemsPerPage = 12
 
   // Realtime SSE connection
@@ -252,8 +254,6 @@ export default function PromoCodesPage() {
   }
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Are you sure you want to delete this promo code?")) return
-
     try {
       const token = authService.getToken()
       const response = await fetch(`/api/promo-codes?id=${id}`, {
@@ -449,7 +449,7 @@ export default function PromoCodesPage() {
                   <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700" onClick={() => handleOpenDialog(code)} aria-label={`Edit ${code.code}`}>
                     <Pencil className="h-3.5 w-3.5" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-500" onClick={() => handleDelete(code._id)} aria-label={`Delete ${code.code}`}>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-500" onClick={() => setPendingDeleteId(code._id)} aria-label={`Delete ${code.code}`}>
                     <Trash2 className="h-3.5 w-3.5" />
                   </Button>
                 </div>
@@ -680,6 +680,17 @@ export default function PromoCodesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+      <ConfirmActionDialog
+        open={pendingDeleteId !== null}
+        onOpenChange={(open) => !open && setPendingDeleteId(null)}
+        title="Delete Promo Code"
+        description="Are you sure you want to delete this promo code? This action cannot be undone."
+        actionLabel="Delete Promo Code"
+        onConfirm={() => {
+          if (pendingDeleteId) void handleDelete(pendingDeleteId)
+          setPendingDeleteId(null)
+        }}
+      />
     </div>
   )
 }

@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
+import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog"
 
 const MAX_LEN = 28
 
@@ -69,6 +70,7 @@ export default function DocumentsPage() {
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [uploading, setUploading] = useState(false)
   const [companySearch, setCompanySearch] = useState("")
+  const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null)
 
   const [editModalOpen, setEditModalOpen] = useState(false)
   const [editingDocument, setEditingDocument] = useState<any | null>(null)
@@ -246,10 +248,6 @@ export default function DocumentsPage() {
   }
 
   const handleDeleteDocument = async (docId: string, docName: string) => {
-    if (!confirm(`Are you sure you want to delete "${docName}"? This action cannot be undone.`)) {
-      return
-    }
-
     try {
       const token = authService.getToken()
       if (!token) throw new Error("No auth token")
@@ -707,7 +705,7 @@ export default function DocumentsPage() {
                             }} title="Download">
                             <Download className="h-3.5 w-3.5" />
                           </Button>
-                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-red-500" onClick={() => handleDeleteDocument(doc.id, doc.fileName || doc.title)} title="Delete">
+                          <Button size="sm" variant="ghost" className="h-8 w-8 p-0 text-slate-400 hover:text-red-500" onClick={() => setPendingDelete({ id: doc.id, name: doc.fileName || doc.title })} title="Delete">
                             <Trash2 className="h-3.5 w-3.5" />
                           </Button>
                         </div>
@@ -819,6 +817,17 @@ export default function DocumentsPage() {
           </div>
         </DialogContent>
       </Dialog>
+      <ConfirmActionDialog
+        open={pendingDelete !== null}
+        onOpenChange={(open) => !open && setPendingDelete(null)}
+        title="Delete Document"
+        description={pendingDelete ? `Are you sure you want to delete "${pendingDelete.name}"? This action cannot be undone.` : "Are you sure you want to delete this document?"}
+        actionLabel="Delete Document"
+        onConfirm={() => {
+          if (pendingDelete) void handleDeleteDocument(pendingDelete.id, pendingDelete.name)
+          setPendingDelete(null)
+        }}
+      />
     </div>
   )
 }
