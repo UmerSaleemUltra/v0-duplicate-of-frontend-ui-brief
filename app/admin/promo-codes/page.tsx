@@ -21,14 +21,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
 import { Switch } from "@/components/ui/switch"
 import { Textarea } from "@/components/ui/textarea"
 import {
@@ -424,140 +416,71 @@ export default function PromoCodesPage() {
         </Card>
       </div>
 
-      {/* Table */}
-      <Card>
-        <CardHeader className="border-b border-slate-100">
-          <CardTitle className="text-lg">All Promo Codes</CardTitle>
-        </CardHeader>
-        <CardContent className="p-0">
-          {isLoading ? (
-            <div className="flex items-center justify-center py-12">
-              <RefreshCw className="h-6 w-6 animate-spin text-slate-400" />
+      {/* Promo code cards */}
+      {isLoading ? (
+        <div className="flex items-center justify-center py-16">
+          <RefreshCw className="h-6 w-6 animate-spin text-slate-400" />
+        </div>
+      ) : promoCodes.length === 0 ? (
+        <div className="rounded-2xl border border-slate-200 bg-white p-16 text-center">
+          <Tag className="mx-auto mb-3 h-10 w-10 text-slate-300" />
+          <p className="text-sm text-slate-400">No promo codes yet. Create your first promo code.</p>
+          <Button variant="outline" className="mt-4" onClick={() => handleOpenDialog()}>
+            <Plus className="mr-2 h-4 w-4" /> Create Promo Code
+          </Button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {paginatedCodes.map((code) => (
+            <div key={code._id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md">
+              <div className="flex items-start justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2">
+                    <code className="truncate text-sm font-semibold tracking-wide text-slate-950">{code.code}</code>
+                    <Button variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={() => copyToClipboard(code.code)} aria-label={`Copy ${code.code}`}>
+                      {copiedCode === code.code ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5 text-slate-400" />}
+                    </Button>
+                  </div>
+                  <p className="mt-1 truncate text-xs text-slate-500">{code.description || "Discount code for checkout"}</p>
+                </div>
+                {getStatusBadge(code)}
+              </div>
+
+              <div className="my-3 border-t border-slate-100" />
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-2xl font-semibold text-slate-950">
+                    {code.discountType === "percentage" ? `${code.discountValue}%` : `$${code.discountValue}`}
+                  </p>
+                  <p className="mt-1 text-xs text-slate-400">{code.discountType === "percentage" ? "Percentage discount" : "Fixed discount"}</p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-xs text-slate-400">Active</span>
+                  <Switch checked={code.isActive} onCheckedChange={() => handleToggleActive(code)} />
+                </div>
+              </div>
+
+              <div className="my-3 border-t border-slate-100" />
+              <div className="flex items-end justify-between gap-3">
+                <div className="space-y-1 text-xs text-slate-400">
+                  <p>{code.usedCount}{code.usageLimit ? ` / ${code.usageLimit}` : " / Unlimited"} uses</p>
+                  <p>{code.validUntil ? `Valid to ${formatDate(code.validUntil)}` : `From ${formatDate(code.validFrom)}`}</p>
+                  <Badge variant="outline" className="capitalize">{code.applicableTo === "all" ? "All Packages" : code.applicableTo}</Badge>
+                </div>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-slate-700" onClick={() => handleOpenDialog(code)} aria-label={`Edit ${code.code}`}>
+                    <Pencil className="h-3.5 w-3.5" />
+                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:bg-red-50 hover:text-red-500" onClick={() => handleDelete(code._id)} aria-label={`Delete ${code.code}`}>
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </Button>
+                </div>
+              </div>
             </div>
-          ) : promoCodes.length === 0 ? (
-            <div className="text-center py-12">
-              <Tag className="h-12 w-12 mx-auto text-slate-300 mb-3" />
-              <p className="text-slate-500">No promo codes yet</p>
-              <Button variant="outline" className="mt-4" onClick={() => handleOpenDialog()}>
-                <Plus className="h-4 w-4 mr-2" />
-                Create your first promo code
-              </Button>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow className="bg-slate-50">
-                    <TableHead>Code</TableHead>
-                    <TableHead>Discount</TableHead>
-                    <TableHead>Usage</TableHead>
-                    <TableHead>Valid Period</TableHead>
-                    <TableHead>Package</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead>Active</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {paginatedCodes.map((code) => (
-                    <TableRow key={code._id} className="hover:bg-slate-50/50">
-                      <TableCell>
-                        <div className="flex items-center gap-2">
-                          <code className="px-2 py-1 bg-slate-100 rounded text-sm font-mono font-semibold text-slate-800">
-                            {code.code}
-                          </code>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-7 w-7"
-                            onClick={() => copyToClipboard(code.code)}
-                          >
-                            {copiedCode === code.code ? (
-                              <Check className="h-3.5 w-3.5 text-green-600" />
-                            ) : (
-                              <Copy className="h-3.5 w-3.5 text-slate-400" />
-                            )}
-                          </Button>
-                        </div>
-                        {code.description && (
-                          <p className="text-xs text-slate-500 mt-1 max-w-[200px] truncate">
-                            {code.description}
-                          </p>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1">
-                          {code.discountType === "percentage" ? (
-                            <>
-                              <Percent className="h-4 w-4 text-slate-400" />
-                              <span className="font-semibold">{code.discountValue}%</span>
-                            </>
-                          ) : (
-                            <>
-                              <DollarSign className="h-4 w-4 text-slate-400" />
-                              <span className="font-semibold">${code.discountValue}</span>
-                            </>
-                          )}
-                        </div>
-                        {code.minOrderAmount > 0 && (
-                          <p className="text-xs text-slate-500">Min: ${code.minOrderAmount}</p>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <span className="font-medium">{code.usedCount}</span>
-                        <span className="text-slate-400">
-                          {code.usageLimit ? ` / ${code.usageLimit}` : " / Unlimited"}
-                        </span>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-1 text-sm">
-                          <Calendar className="h-3.5 w-3.5 text-slate-400" />
-                          <span>{formatDate(code.validFrom)}</span>
-                        </div>
-                        {code.validUntil && (
-                          <p className="text-xs text-slate-500">to {formatDate(code.validUntil)}</p>
-                        )}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="capitalize">
-                          {code.applicableTo === "all" ? "All Packages" : code.applicableTo}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>{getStatusBadge(code)}</TableCell>
-                      <TableCell>
-                        <Switch
-                          checked={code.isActive}
-                          onCheckedChange={() => handleToggleActive(code)}
-                        />
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex items-center justify-end gap-1">
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8"
-                            onClick={() => handleOpenDialog(code)}
-                          >
-                            <Pencil className="h-4 w-4 text-slate-500" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-red-500 hover:text-red-700 hover:bg-red-50"
-                            onClick={() => handleDelete(code._id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-        </CardContent>
-        {totalPages > 1 && (
+          ))}
+        </div>
+      )}
+      {totalPages > 1 && (
           <div className="flex items-center justify-between px-6 py-4 border-t border-slate-100 gap-4">
             <p className="text-xs text-slate-400 whitespace-nowrap shrink-0">
               {startIndex + 1}–{Math.min(endIndex, promoCodes.length)} of {promoCodes.length}
@@ -603,7 +526,6 @@ export default function PromoCodesPage() {
             </div>
           </div>
         )}
-      </Card>
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
