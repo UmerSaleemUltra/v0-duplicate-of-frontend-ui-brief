@@ -86,7 +86,7 @@ export default function PromoCodesPage() {
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
   const [isLive, setIsLive] = useState(false)
   const [currentPage, setCurrentPage] = useState(1)
-  const itemsPerPage = 10
+  const itemsPerPage = 12
 
   // Realtime SSE connection
   useEffect(() => {
@@ -375,8 +375,8 @@ export default function PromoCodesPage() {
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="bg-gradient-to-br from-white to-slate-50 border-slate-200">
-          <CardContent className="pt-6">
+        <Card className="border-slate-200 bg-white shadow-sm">
+          <CardContent className="p-5 sm:p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-[#880000]/10">
                 <Tag className="h-6 w-6 text-[#880000]" />
@@ -388,8 +388,8 @@ export default function PromoCodesPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-white to-green-50 border-green-100">
-          <CardContent className="pt-6">
+        <Card className="border-emerald-100 bg-emerald-50/40 shadow-sm">
+          <CardContent className="p-5 sm:p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-green-100">
                 <Check className="h-6 w-6 text-green-600" />
@@ -401,8 +401,8 @@ export default function PromoCodesPage() {
             </div>
           </CardContent>
         </Card>
-        <Card className="bg-gradient-to-br from-white to-blue-50 border-blue-100">
-          <CardContent className="pt-6">
+        <Card className="border-blue-100 bg-blue-50/40 shadow-sm">
+          <CardContent className="p-5 sm:p-6">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-xl bg-blue-100">
                 <Users className="h-6 w-6 text-blue-600" />
