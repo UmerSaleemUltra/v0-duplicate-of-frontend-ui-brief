@@ -31,7 +31,6 @@ import {
   Percent,
   DollarSign,
   Calendar,
-  Users,
   RefreshCw,
   Copy,
   Check,
@@ -374,44 +373,23 @@ export default function PromoCodesPage() {
       </div>
 
       {/* Stats Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <Card className="border-slate-200 bg-white shadow-sm">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+        <Card className="rounded-2xl border-slate-200 bg-white shadow-none">
           <CardContent className="p-5 sm:p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-[#880000]/10">
-                <Tag className="h-6 w-6 text-[#880000]" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Total Codes</p>
-                <p className="text-2xl font-bold text-slate-900">{promoCodes.length}</p>
-              </div>
-            </div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Total Codes</p>
+            <p className="mt-2 text-4xl font-bold tracking-tight text-slate-950">{promoCodes.length}</p>
           </CardContent>
         </Card>
-        <Card className="border-emerald-100 bg-emerald-50/40 shadow-sm">
+        <Card className="rounded-2xl border-slate-200 bg-white shadow-none">
           <CardContent className="p-5 sm:p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-green-100">
-                <Check className="h-6 w-6 text-green-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Active Codes</p>
-                <p className="text-2xl font-bold text-green-700">{activeCount}</p>
-              </div>
-            </div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Active Codes</p>
+            <p className="mt-2 text-4xl font-bold tracking-tight text-slate-950">{activeCount}</p>
           </CardContent>
         </Card>
-        <Card className="border-blue-100 bg-blue-50/40 shadow-sm">
+        <Card className="rounded-2xl border-slate-200 bg-white shadow-none">
           <CardContent className="p-5 sm:p-6">
-            <div className="flex items-center gap-4">
-              <div className="p-3 rounded-xl bg-blue-100">
-                <Users className="h-6 w-6 text-blue-600" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-500">Total Uses</p>
-                <p className="text-2xl font-bold text-blue-700">{totalUsed}</p>
-              </div>
-            </div>
+            <p className="text-sm font-semibold uppercase tracking-wide text-slate-500">Total Uses</p>
+            <p className="mt-2 text-4xl font-bold tracking-tight text-slate-950">{totalUsed}</p>
           </CardContent>
         </Card>
       </div>
