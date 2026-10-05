@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useCallback, useEffect, useRef, useState } from "react"
 
 export function useRealtime(token: string | null) {
   const [isConnected, setIsConnected] = useState(false)
@@ -30,15 +30,22 @@ export function useRealtime(token: string | null) {
           reconnectTimeoutRef.current = setTimeout(connect, 5000)
         }
 
-        // Listen for custom events
-        listenersRef.current.forEach((callbacks, event) => {
-          es.addEventListener(event, (e: any) => {
-            try {
-              const data = JSON.parse(e.data)
-              callbacks.forEach((callback) => callback(data))
-            } catch (error) {}
-          })
-        })
+        const dispatchEvent = (eventName: string, data: unknown) => {
+          listenersRef.current.get(eventName)?.forEach((callback) => callback(data))
+        }
+
+        // The server sends standard SSE messages. Route resource/action events to listeners.
+        es.onmessage = (message) => {
+          try {
+            const data = JSON.parse(message.data)
+            if (data?.resource && data?.action) {
+              dispatchEvent(`${data.resource}:${data.action}`, data)
+            }
+            if (data?.type) dispatchEvent(data.type, data)
+          } catch {
+            // Ignore malformed keepalive messages.
+          }
+        }
 
         eventSourceRef.current = es
       } catch (error) {
@@ -60,7 +67,7 @@ export function useRealtime(token: string | null) {
     }
   }, [token])
 
-  const on = (event: string, callback: (data: any) => void) => {
+  const on = useCallback((event: string, callback: (data: any) => void) => {
     if (!listenersRef.current.has(event)) {
       listenersRef.current.set(event, new Set())
     }
@@ -70,12 +77,10 @@ export function useRealtime(token: string | null) {
       const callbacks = listenersRef.current.get(event)
       if (callbacks) {
         callbacks.delete(callback)
-        if (callbacks.size === 0) {
-          listenersRef.current.delete(event)
-        }
+        if (callbacks.size === 0) listenersRef.current.delete(event)
       }
     }
-  }
+  }, [])
 
   return { isConnected, on }
 }

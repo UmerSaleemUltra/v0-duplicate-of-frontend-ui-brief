@@ -6,6 +6,7 @@ import { AuthProvider } from "@/components/auth/auth-provider"
 import { CompanyProvider } from "@/components/client/company-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { ThirdPartyErrorGuard } from "@/components/third-party-error-guard"
+import { QueryProvider } from "@/components/providers/query-provider"
 
 const unbounded = Unbounded({
   subsets: ["latin"],
@@ -380,9 +381,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         <ThirdPartyErrorGuard />
 
-        <AuthProvider>
-          <CompanyProvider>{children}</CompanyProvider>
-        </AuthProvider>
+        <QueryProvider>
+          <AuthProvider>
+            <CompanyProvider>{children}</CompanyProvider>
+          </AuthProvider>
+        </QueryProvider>
         <Toaster />
 
         <Script id="whatsapp-widget" strategy="lazyOnload">
