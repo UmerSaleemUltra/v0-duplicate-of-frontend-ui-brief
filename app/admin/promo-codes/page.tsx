@@ -507,7 +507,7 @@ export default function PromoCodesPage() {
 
       {/* Add/Edit Dialog */}
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-1.5rem)] max-w-[620px] overflow-y-auto rounded-xl p-4 sm:p-6">
+        <DialogContent className="max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-lg overflow-y-auto rounded-xl p-5 sm:p-6">
           <DialogHeader className="pr-6">
             <DialogTitle className="text-xl sm:text-2xl">{editingCode ? "Edit Promo Code" : "Create Promo Code"}</DialogTitle>
           </DialogHeader>
