@@ -347,9 +347,9 @@ export default function CustomersPage() {
       <ConfirmActionDialog
         open={deleteCustomerId !== null}
         onOpenChange={(open) => !open && setDeleteCustomerId(null)}
-        title="Delete User"
-        description="Are you sure you want to permanently delete this user? This will also remove all their companies, orders, documents, and associated data. This action cannot be undone."
-        actionLabel="Delete User"
+        title="Delete Customer"
+        description="Are you sure you want to permanently delete this customer? This will also remove all their companies, orders, documents, and associated data. This action cannot be undone."
+        actionLabel="Delete Customer"
         onConfirm={() => {
           if (deleteCustomerId) {
             void handleDeleteCustomer(deleteCustomerId)
