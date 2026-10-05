@@ -30,7 +30,7 @@ export function ConfirmActionDialog({
 }: ConfirmActionDialogProps) {
   return (
     <AlertDialog open={open} onOpenChange={onOpenChange}>
-      <AlertDialogContent className="w-[calc(100%-2rem)] max-w-lg rounded-xl border-0 p-5 sm:p-6">
+      <AlertDialogContent className="w-[calc(100%-2rem)] max-w-md rounded-xl border-0 p-5 sm:p-6">
         <AlertDialogHeader className="gap-2 text-left">
           <AlertDialogTitle className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">
             {title}
