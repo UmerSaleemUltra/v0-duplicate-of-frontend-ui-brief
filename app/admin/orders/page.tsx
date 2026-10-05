@@ -60,7 +60,7 @@ const US_STATES = [
   "Delaware",
   "Florida",
   "Georgia",
-  "Hawaii",
+  "Hawaii", 
   "Idaho",
   "Illinois",
   "Indiana",
