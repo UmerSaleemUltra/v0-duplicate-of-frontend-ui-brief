@@ -15,7 +15,16 @@ import { useAuthGuard } from "@/lib/use-auth-guard"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog"
 import { toast } from "@/components/ui/use-toast"
 import ApiClient from "@/lib/api-client"
-import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function CustomerDetailPage() {
   const params = useParams()
@@ -708,28 +717,30 @@ export default function CustomerDetailPage() {
           </div>
   </DialogContent>
   </Dialog>
-      <ConfirmActionDialog
-        open={deleteCustomerOpen}
-        onOpenChange={setDeleteCustomerOpen}
-        title="Delete Customer"
-        description="Are you sure you want to permanently delete this customer? This will also remove all their companies, orders, documents, and associated data. This action cannot be undone."
-        actionLabel="Delete Customer"
-        onConfirm={() => {
-          void handleDeleteCustomer()
-          setDeleteCustomerOpen(false)
-        }}
-      />
-      <ConfirmActionDialog
-        open={removeEinCompany !== null}
-        onOpenChange={(open) => !open && setRemoveEinCompany(null)}
-        title="Remove EIN"
-        description="Are you sure you want to remove this EIN? This action cannot be undone."
-        actionLabel="Remove EIN"
-        onConfirm={() => {
-          if (removeEinCompany) void handleRemoveEIN(removeEinCompany)
-          setRemoveEinCompany(null)
-        }}
-      />
+      <AlertDialog open={deleteCustomerOpen} onOpenChange={setDeleteCustomerOpen}>
+        <AlertDialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-xl border-0 p-5 sm:p-6">
+          <AlertDialogHeader className="gap-2 text-left">
+            <AlertDialogTitle className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">Delete Customer</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-5 text-slate-950 sm:text-base sm:leading-6">Are you sure you want to permanently delete this customer? This will also remove all their companies, orders, documents, and associated data. This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-2 gap-2 sm:mt-3">
+            <AlertDialogCancel className="h-10 rounded-lg border-slate-200 px-5 text-sm font-semibold text-slate-900 sm:h-11 sm:text-base">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { void handleDeleteCustomer(); setDeleteCustomerOpen(false) }} className="h-10 rounded-lg bg-red-600 px-5 text-sm font-semibold text-white hover:bg-red-700 sm:h-11 sm:text-base">Delete Customer</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+      <AlertDialog open={removeEinCompany !== null} onOpenChange={(open) => !open && setRemoveEinCompany(null)}>
+        <AlertDialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-xl border-0 p-5 sm:p-6">
+          <AlertDialogHeader className="gap-2 text-left">
+            <AlertDialogTitle className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">Remove EIN</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-5 text-slate-950 sm:text-base sm:leading-6">Are you sure you want to remove this EIN? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-2 gap-2 sm:mt-3">
+            <AlertDialogCancel className="h-10 rounded-lg border-slate-200 px-5 text-sm font-semibold text-slate-900 sm:h-11 sm:text-base">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (removeEinCompany) void handleRemoveEIN(removeEinCompany); setRemoveEinCompany(null) }} className="h-10 rounded-lg bg-red-600 px-5 text-sm font-semibold text-white hover:bg-red-700 sm:h-11 sm:text-base">Remove EIN</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

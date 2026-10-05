@@ -2,7 +2,16 @@
 
 import { useState, useEffect, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -680,17 +689,18 @@ export default function PromoCodesPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-      <ConfirmActionDialog
-        open={pendingDeleteId !== null}
-        onOpenChange={(open) => !open && setPendingDeleteId(null)}
-        title="Delete Promo Code"
-        description="Are you sure you want to delete this promo code? This action cannot be undone."
-        actionLabel="Delete Promo Code"
-        onConfirm={() => {
-          if (pendingDeleteId) void handleDelete(pendingDeleteId)
-          setPendingDeleteId(null)
-        }}
-      />
+      <AlertDialog open={pendingDeleteId !== null} onOpenChange={(open) => !open && setPendingDeleteId(null)}>
+        <AlertDialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-xl border-0 p-5 sm:p-6">
+          <AlertDialogHeader className="gap-2 text-left">
+            <AlertDialogTitle className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">Delete Promo Code</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-5 text-slate-950 sm:text-base sm:leading-6">Are you sure you want to delete this promo code? This action cannot be undone.</AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-2 gap-2 sm:mt-3">
+            <AlertDialogCancel className="h-10 rounded-lg border-slate-200 px-5 text-sm font-semibold text-slate-900 sm:h-11 sm:text-base">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (pendingDeleteId) void handleDelete(pendingDeleteId); setPendingDeleteId(null) }} className="h-10 rounded-lg bg-red-600 px-5 text-sm font-semibold text-white hover:bg-red-700 sm:h-11 sm:text-base">Delete Promo Code</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }

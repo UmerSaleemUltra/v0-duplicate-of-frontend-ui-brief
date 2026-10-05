@@ -13,7 +13,16 @@ import { useAuthGuard } from "@/lib/use-auth-guard"
 import { ApiClient } from "@/lib/api-client"
 import { authService } from "@/lib/auth"
 import { toast } from "@/components/ui/use-toast"
-import { ConfirmActionDialog } from "@/components/admin/confirm-action-dialog"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function CustomersPage() {
   const { isAuthenticated, isLoading } = useAuthGuard("admin")
@@ -344,19 +353,22 @@ export default function CustomersPage() {
           )}
         </div>
       </div>
-      <ConfirmActionDialog
-        open={deleteCustomerId !== null}
-        onOpenChange={(open) => !open && setDeleteCustomerId(null)}
-        title="Delete Customer"
-        description="Are you sure you want to permanently delete this customer? This will also remove all their companies, orders, documents, and associated data. This action cannot be undone."
-        actionLabel="Delete Customer"
-        onConfirm={() => {
-          if (deleteCustomerId) {
-            void handleDeleteCustomer(deleteCustomerId)
-          }
-          setDeleteCustomerId(null)
-        }}
-      />
+      <AlertDialog open={deleteCustomerId !== null} onOpenChange={(open) => !open && setDeleteCustomerId(null)}>
+        <AlertDialogContent className="w-[calc(100%-2rem)] max-w-sm rounded-xl border-0 p-5 sm:p-6">
+          <AlertDialogHeader className="gap-2 text-left">
+            <AlertDialogTitle className="text-xl font-bold tracking-tight text-slate-950 sm:text-2xl">Delete Customer</AlertDialogTitle>
+            <AlertDialogDescription className="text-sm leading-5 text-slate-950 sm:text-base sm:leading-6">
+              Are you sure you want to permanently delete this customer? This will also remove all their companies, orders, documents, and associated data. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter className="mt-2 gap-2 sm:mt-3">
+            <AlertDialogCancel className="h-10 rounded-lg border-slate-200 px-5 text-sm font-semibold text-slate-900 sm:h-11 sm:text-base">Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={() => { if (deleteCustomerId) void handleDeleteCustomer(deleteCustomerId); setDeleteCustomerId(null) }} className="h-10 rounded-lg bg-red-600 px-5 text-sm font-semibold text-white hover:bg-red-700 sm:h-11 sm:text-base">
+              Delete Customer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
