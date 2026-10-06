@@ -4,6 +4,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { useRouter, usePathname } from "next/navigation"
 import { authService, type AuthUser } from "@/lib/auth"
 import { useRealtime } from "@/lib/hooks/useRealtime"
+import { RealtimeQuerySync } from "@/components/providers/realtime-query-sync"
 
 interface AuthContextType {
   user: AuthUser | null
@@ -82,6 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         loading,
       }}
     >
+      <RealtimeQuerySync token={token} />
       {children}
     </AuthContext.Provider>
   )
