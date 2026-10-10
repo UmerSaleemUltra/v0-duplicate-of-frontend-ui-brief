@@ -49,7 +49,7 @@ export function AdminGlobalSearch() {
       } finally {
         setLoading(false)
       }
-    }, 220)
+    }, 120)
     return () => {
       window.clearTimeout(timer)
       controller.abort()
@@ -64,10 +64,10 @@ export function AdminGlobalSearch() {
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className="hidden md:flex h-9 w-full max-w-sm items-center gap-2 rounded-lg border border-border bg-muted/30 px-3 text-sm text-muted-foreground transition-colors hover:bg-accent" aria-label="Search admin data">
+      <button type="button" onClick={() => setOpen(true)} className="hidden md:flex h-9 w-full max-w-sm items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm text-foreground" aria-label="Search admin data">
         <Search className="size-4" />
         <span className="flex-1 text-left">Search anything...</span>
-        <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium">⌘K</kbd>
+        <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-foreground">⌘K</kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen} title="Search admin data" description="Search customers, companies, orders, documents, and promo codes">
         <CommandInput value={query} onValueChange={setQuery} placeholder="Search customers, orders, documents..." />
