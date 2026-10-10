@@ -106,6 +106,7 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
   const addonsTotal = pricing.addonsTotal ?? 0
   const promoCode = order?.promoCode || null
   const referralSource = order?.referralSource || null
+  const referralCode = order?.referralCode || null
 
   const whatsappPhone = order?.whatsappPhone || order?.paymentInfo?.whatsappPhone || ""
   const receiptUrl = order?.receiptUrl || order?.paymentInfo?.receiptUrl
@@ -303,6 +304,19 @@ export function OrderPricingCard({ order, onOrderUpdate }: OrderPricingCardProps
             </div>
           </div>
         )}
+
+        {/* Referral Code */}
+        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center">
+              <Tag className="w-4 h-4 text-gray-600" />
+            </div>
+            <div className="flex-1">
+              <p className="text-xs font-medium text-gray-500 mb-0.5">Referral Code</p>
+              <p className="text-sm font-semibold text-gray-900">{referralCode || "No"}</p>
+            </div>
+          </div>
+        </div>
 
         {/* Where Did You Hear About Us */}
         <div className="rounded-xl border border-blue-200 bg-blue-50 p-4">

@@ -18,6 +18,7 @@ import {
   Sparkles,
   Trash2,
   Upload,
+  Tag,
   X,
   User,
 } from "lucide-react";
@@ -148,6 +149,7 @@ export default function Page() {
   // Payment
   const [paymentMethod, setPaymentMethod] = useState<"already" | "make">("already");
   const [whatsapp, setWhatsapp] = useState("");
+  const [referralCode, setReferralCode] = useState("");
   const [receiptFileName, setReceiptFileName] = useState("");
   const [receiptFile, setReceiptFile] = useState<File | null>(null);
   const [visibleSsn, setVisibleSsn] = useState<Record<string, boolean>>({});
@@ -206,6 +208,7 @@ export default function Page() {
         if (m === "already" || m === "make") setPaymentMethod(m);
       }
       if ((saved as any).whatsapp) setWhatsapp((saved as any).whatsapp);
+      if ((saved as any).referralCode) setReferralCode((saved as any).referralCode);
 
       // Members
       const savedMembers = Array.isArray(saved.members) ? saved.members : [];
@@ -239,7 +242,7 @@ export default function Page() {
   useEffect(() => {
     if (!hydrated || submitted) return;
 
-    const payload: Partial<CheckoutData> & { website?: string; whatsapp?: string } = {
+    const payload: Partial<CheckoutData> & { website?: string; whatsapp?: string; referralCode?: string } = {
       account: {
         name: fullName,
         phone: phoneValue,
@@ -257,6 +260,7 @@ export default function Page() {
       },
       website,
       whatsapp,
+      referralCode: referralCode.trim(),
       payment: {
         method: paymentMethod,
         status: "pending",
@@ -287,7 +291,7 @@ export default function Page() {
     fullName, phoneValue, email,
     formationState, entityType, pkg,
     businessName, website, category, description,
-    members, paymentMethod, whatsapp,
+    members, paymentMethod, whatsapp, referralCode,
   ]);
 
   useEffect(() => {
@@ -608,6 +612,7 @@ export default function Page() {
           subtotal: totalAmount,
           total: totalAmount,
           promoCode: null,
+          referralCode: referralCode.trim() || null,
           referralSource: "whatsapp",
           selectedAddons: [],
           paymentMethod,
@@ -1127,6 +1132,23 @@ export default function Page() {
                       ? "We'll confirm your payment via this WhatsApp number"
                       : "Optional — we'll send updates to this number"}
                   </Hint>
+                </Field>
+
+                <Field
+                  label={<>Referral Code <span className="text-slate-400 font-normal text-xs">(optional)</span></>}
+                >
+                  <InputWrap icon={<Tag className="h-4 w-4" />}>
+                    <input
+                      type="text"
+                      className={inputCls}
+                      placeholder="Enter referral code"
+                      value={referralCode}
+                      onChange={(e) => setReferralCode(e.target.value)}
+                      maxLength={80}
+                      autoComplete="off"
+                    />
+                  </InputWrap>
+                  <Hint>Optional — add a referral code if you were given one</Hint>
                 </Field>
 
                 {/* Receipt — required for "make payment", optional for "already paid" */}
