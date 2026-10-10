@@ -41,6 +41,7 @@ export async function GET(req: NextRequest) {
         addonsTotal: order.addonsTotal,
         paymentStatus: order.paymentStatus,
         paymentMethod: order.paymentMethod,
+        referralCode: order.referralCode || null,
         items: order.items,
         purchasedAddons: order.purchasedAddons,
         createdAt: order.createdAt,
