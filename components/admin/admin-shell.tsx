@@ -13,6 +13,7 @@ import { authService } from "@/lib/auth"
   import { AdminNotificationDropdown } from "@/components/admin/admin-notification-dropdown"
   import { useDarkMode } from "@/hooks/use-dark-mode"
   import { prefetchAdminDashboard } from "@/lib/admin-dashboard-cache"
+import { AdminGlobalSearch } from "@/components/admin/admin-global-search"
 
 const navigation = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
@@ -195,6 +196,7 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
         <div className="flex-1" />
 
         <div className="flex items-center gap-x-2">
+          <AdminGlobalSearch />
           <Button variant="ghost" size="icon" className="h-9 w-9" onClick={toggleDark} title="Toggle dark mode">
             {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
           </Button>
@@ -212,8 +214,9 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
       <div className="lg:pl-72">
         <div className="sticky top-0 z-40 hidden lg:flex h-16 shrink-0 items-center gap-x-4 border-b border-border bg-background px-8 shadow-sm">
-          <div className="flex flex-1 items-center justify-end gap-x-6">
-            <div className="flex items-center gap-x-4">
+          <div className="flex flex-1 items-center gap-x-6">
+            <AdminGlobalSearch />
+            <div className="ml-auto flex items-center gap-x-4">
               <Button variant="ghost" size="icon" onClick={toggleDark} title="Toggle dark mode">
                 {isDark ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
