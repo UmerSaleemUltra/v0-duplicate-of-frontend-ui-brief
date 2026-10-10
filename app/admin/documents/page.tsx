@@ -2,7 +2,7 @@
 
 import type React from "react"
 import { useState, useEffect } from "react"
-import { Search, Upload, Download, FileText, CheckCircle2, X, Pencil, Trash2, Clock, Copy, Check, Camera } from "lucide-react"
+import { Search, Upload, Download, FileText, CheckCircle2, X, Pencil, Trash2, Clock, Copy, Check } from "lucide-react"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -77,7 +77,6 @@ export default function DocumentsPage() {
   const [selectedDocType, setSelectedDocType] = useState("")
   const [documentTitle, setDocumentTitle] = useState("")
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
-  const [scanning, setScanning] = useState(false)
   const [uploading, setUploading] = useState(false)
   const [companySearch, setCompanySearch] = useState("")
   const [pendingDelete, setPendingDelete] = useState<{ id: string; name: string } | null>(null)
@@ -159,49 +158,8 @@ export default function DocumentsPage() {
   }
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) setSelectedFiles(Array.from(e.target.files))
-  }
-
-  const handleCameraScan = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const images = Array.from(e.target.files || [])
-    if (!images.length) return
-
-    setScanning(true)
-    try {
-      const { jsPDF } = await import("jspdf")
-      const pdf = new jsPDF({ unit: "mm", format: "a4", compress: true })
-      const pageWidth = 210
-      const pageHeight = 297
-
-      for (const [index, image] of images.entries()) {
-        const dataUrl = await new Promise<string>((resolve, reject) => {
-          const reader = new FileReader()
-          reader.onload = () => resolve(String(reader.result))
-          reader.onerror = () => reject(new Error("Could not read scanned page"))
-          reader.readAsDataURL(image)
-        })
-        const dimensions = await new Promise<{ width: number; height: number }>((resolve, reject) => {
-          const preview = new Image()
-          preview.onload = () => resolve({ width: preview.naturalWidth, height: preview.naturalHeight })
-          preview.onerror = () => reject(new Error("Could not process scanned page"))
-          preview.src = dataUrl
-        })
-        if (index > 0) pdf.addPage()
-        const scale = Math.min((pageWidth - 16) / dimensions.width, (pageHeight - 16) / dimensions.height)
-        const width = dimensions.width * scale
-        const height = dimensions.height * scale
-        pdf.addImage(dataUrl, "JPEG", (pageWidth - width) / 2, (pageHeight - height) / 2, width, height, undefined, "FAST")
-      }
-
-      const scannedPdf = pdf.output("blob")
-      const fileName = `scanned-document-${new Date().toISOString().slice(0, 10)}.pdf`
-      setSelectedFiles([new File([scannedPdf], fileName, { type: "application/pdf" })])
-      toast({ title: "Scan ready", description: `${images.length} page${images.length === 1 ? "" : "s"} combined into a PDF.` })
-    } catch {
-      toast({ title: "Scan failed", description: "Could not create a PDF from the scanned pages.", variant: "destructive" })
-    } finally {
-      setScanning(false)
-      e.target.value = ""
+    if (e.target.files) {
+      setSelectedFiles(Array.from(e.target.files))
     }
   }
 
@@ -619,28 +577,15 @@ export default function DocumentsPage() {
               {/* File Upload */}
               <div className="space-y-2">
                 <Label htmlFor="file">Upload Files</Label>
-                <div className="flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2">
                   <Input
                     id="file"
                     type="file"
                     multiple
                     onChange={handleFileChange}
-                    className="h-10 min-w-[220px] flex-1"
+                    className="h-10"
                     accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
                   />
-                  <input
-                    id="cameraScan"
-                    type="file"
-                    accept="image/*"
-                    capture="environment"
-                    multiple
-                    onChange={handleCameraScan}
-                    className="sr-only"
-                  />
-                  <Button type="button" variant="outline" className="h-10 shrink-0" disabled={scanning} onClick={() => document.getElementById("cameraScan")?.click()}>
-                    {scanning ? <Clock className="mr-2 h-4 w-4 animate-spin" /> : <Camera className="mr-2 h-4 w-4" />}
-                    {scanning ? "Preparing..." : "Scan with camera"}
-                  </Button>
                   {selectedFiles.length > 0 && (
                     <Button variant="ghost" size="icon" className="h-10 w-10" onClick={() => setSelectedFiles([])}>
                       <X className="h-4 w-4" />
