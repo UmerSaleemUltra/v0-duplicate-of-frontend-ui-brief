@@ -67,7 +67,10 @@ export function AdminGlobalSearch() {
       <button type="button" onClick={() => setOpen(true)} className="hidden md:flex h-9 w-full max-w-sm items-center gap-2 rounded-lg border border-border bg-background px-3 text-sm text-foreground" aria-label="Search admin data">
         <Search className="size-4" />
         <span className="flex-1 text-left">Search anything...</span>
-        <kbd className="rounded border border-border bg-background px-1.5 py-0.5 text-[10px] font-medium text-foreground">⌘K</kbd>
+        <kbd className="inline-flex items-center gap-1 rounded border border-border bg-background px-2 py-1 text-[11px] font-medium leading-none text-foreground" aria-label="Command K">
+          <span aria-hidden="true" className="text-sm leading-none text-foreground">⌘</span>
+          <span className="leading-none text-foreground">K</span>
+        </kbd>
       </button>
       <CommandDialog open={open} onOpenChange={setOpen} title="Search admin data" description="Search customers, companies, orders, documents, and promo codes">
         <CommandInput value={query} onValueChange={setQuery} placeholder="Search customers, orders, documents..." />
